@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_resident_runtime_regression_contract
+  select_next_resident_runtime_breadth_or_patch_semantics
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -751,7 +751,18 @@ define_resident_runtime_regression_contract:
     - resident gate report records resident_steps=true
     - stdout tail includes resident_mode: true
     - README boundary remains limited to XuanTie-E902 nstates=128 steps=64
-  next_action: define_resident_runtime_regression_contract
+  test: tests/contract/test_resident_runtime_contract.py
+  command: python3 -m unittest tests.contract.test_resident_runtime_contract
+  status: pass
+  next_action: select_next_resident_runtime_breadth_or_patch_semantics
+
+select_next_resident_runtime_breadth_or_patch_semantics:
+  if prioritizing target breadth:
+    select the next non-TL-UL resident runtime candidate and define a matching gate
+  else:
+    define resident --patch / --patch-script semantics before more breadth
+  current_bias: target breadth, because patch semantics are explicitly out of the packaged XuanTie boundary
+  next_action: select_next_resident_runtime_breadth_or_patch_semantics
 ```
 
 ## source_of_truth

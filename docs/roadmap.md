@@ -113,7 +113,9 @@ phase_3:
   define_true_resident_gpu_runtime_interface: done
   implement_true_resident_gpu_runtime_flag: done
   package_xuantie_true_resident_runtime_boundary: done
-  define_resident_runtime_regression_contract: next
+  define_resident_runtime_regression_contract: done
+  run_resident_runtime_regression_contract: done
+  select_next_resident_runtime_breadth_or_patch_semantics: next
 ```
 
 ## acceptance
@@ -255,11 +257,13 @@ non_tlul_breadth_seed_candidate:
   best_true_resident_gpu_over_cpu_ratio: 1.2076
   true_resident_runtime_status: packaged_boundary
   true_resident_runtime_accepted_claim: XuanTie-E902 resident mode beats CPU exact-loop at nstates=128 steps=64
+  resident_runtime_regression_contract: tests/contract/test_resident_runtime_contract.py
+  resident_runtime_regression_status: pass
   true_resident_runtime_interface:
     cli_flag: src/tools/run_vl_hybrid.py --resident-steps
     runtime_env: RUN_VL_HYBRID_RESIDENT_STEPS=1
     c_runtime: src/hybrid/run_vl_hybrid.c
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: define_resident_runtime_regression_contract
+  next_task: select_next_resident_runtime_breadth_or_patch_semantics
 ```

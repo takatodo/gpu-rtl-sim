@@ -479,6 +479,7 @@ PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py \
 before_publishing:
   jq_configs: jq empty config/selection.json config/targets.json config/scaling_gates/*.json
   python_syntax: python3 -m py_compile src/tools/*.py
+  resident_contract: python3 -m unittest tests.contract.test_resident_runtime_contract
   first_seed_gpu_gate: reports/tlul_fifo_sync_repeated_steps_scaling.json
   first_seed_cpu_gate: reports/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json
   second_seed_gpu_gate: reports/tlul_sink_repeated_steps_scaling.json
