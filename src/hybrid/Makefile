@@ -35,7 +35,7 @@ INCLUDES = -I$(CUDA_INCLUDE_DIR)
 LDFLAGS  = -L$(CUDA_LIB_DIR) -Wl,-rpath,$(CUDA_LIB_DIR)
 LDLIBS   = -lcuda
 
-.PHONY: all clean tlul_slice_host_probe tlul_sink_host_probe
+.PHONY: all clean tlul_slice_host_probe tlul_sink_host_probe xuantie_e902_host_probe
 
 all: run_vl_hybrid
 
@@ -114,5 +114,47 @@ tlul_slice_host_probe: ../../$(TLUL_MDIR)/tlul_slice_host_probe
 
 tlul_sink_host_probe: ../../artifacts/tlul_sink_obj_dir/tlul_slice_host_probe
 
+../../artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe: tlul_slice_host_probe.cpp
+	$(CXX) -std=c++20 -fcoroutines -O2 -w \
+		-I../../artifacts/xuantie_e902_obj_dir \
+		-I$(VERILATOR_ROOT)/include \
+		-I$(VERILATOR_ROOT)/include/vltstd \
+		-DMODEL_HEADER='"Vxuantie_e902_gpu_cov_tb.h"' \
+		-DROOT_HEADER='"Vxuantie_e902_gpu_cov_tb___024root.h"' \
+		-DMODEL_CLASS=Vxuantie_e902_gpu_cov_tb \
+		-DROOT_CLASS=Vxuantie_e902_gpu_cov_tb___024root \
+		-DROOT_CLK_FIELD=xuantie_e902_gpu_cov_tb__DOT__dut__DOT__clk \
+		-DROOT_CLK_REPORT_NAME='"dut.clk"' \
+		-DROOT_RST_FIELD=xuantie_e902_gpu_cov_tb__DOT__dut__DOT__rst_b \
+		-DROOT_RST_REPORT_NAME='"dut.rst_b"' \
+		-DROOT_RST_ASSERTED_VALUE=0U \
+		-DROOT_RST_DEASSERTED_VALUE=1U \
+		-DHOST_CLOCK_CONTROL=0 \
+		-DHOST_RESET_CONTROL=0 \
+		-DTARGET_NAME='"xuantie_e902_gpu_cov_tb"' \
+		tlul_slice_host_probe.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb___024root__0.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb___024root__1.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb___024root__2.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb___024root__3.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb___024root__Slow.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb___024root__0__Slow.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb___024root__1__Slow.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb___024root__2__Slow.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb__ConstPool__0__Slow.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb__ConstPool__1__Slow.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb__Syms__Slow.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb_cr_clic_kid__0.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb_cr_clic_kid__Slow.cpp \
+		../../artifacts/xuantie_e902_obj_dir/Vxuantie_e902_gpu_cov_tb_cr_clic_kid__0__Slow.cpp \
+		$(VERILATOR_ROOT)/include/verilated.cpp \
+		$(VERILATOR_ROOT)/include/verilated_timing.cpp \
+		$(VERILATOR_ROOT)/include/verilated_threads.cpp \
+		-pthread \
+		-o $@
+
+xuantie_e902_host_probe: ../../artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe
+
 clean:
-	rm -f run_vl_hybrid ../../$(TLUL_MDIR)/tlul_slice_host_probe ../../artifacts/tlul_sink_obj_dir/tlul_slice_host_probe
+	rm -f run_vl_hybrid ../../$(TLUL_MDIR)/tlul_slice_host_probe ../../artifacts/tlul_sink_obj_dir/tlul_slice_host_probe ../../artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe

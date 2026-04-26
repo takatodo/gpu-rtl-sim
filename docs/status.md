@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_xuantie_e902_cpu_reference_contract
+  define_xuantie_e902_scaling_gate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -499,16 +499,44 @@ xuantie_e902_gpu_cubin_and_smoke:
     - not a full non-TL-UL support claim
   next_action: define_xuantie_e902_cpu_reference_contract
   weakest_point: The GPU kernel launches, but there is no CPU reference dump or normalized final-state equivalence contract for XuanTie-E902 yet.
+
+xuantie_e902_cpu_reference_contract:
+  status: pass
+  host_probe: artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe
+  source: src/hybrid/tlul_slice_host_probe.cpp
+  make_target: make -C src/hybrid xuantie_e902_host_probe
+  cpu_reference:
+    command_workdir: artifacts/xuantie_e902_obj_dir
+    state_dump: artifacts/xuantie_e902_obj_dir/xuantie_cpu_reference_state.bin
+    probe_stdout: artifacts/xuantie_e902_obj_dir/xuantie_cpu_reference_probe.json
+    note: stock tb emits a banner before JSON, so this probe output is operator-readable but not strict JSON
+  gpu_from_cpu_init:
+    state_dump: artifacts/xuantie_e902_obj_dir/xuantie_gpu_from_cpu_reference_state.bin
+    sanitize_host_only_internals: true
+  compare:
+    report: reports/xuantie_e902_cpu_vs_gpu_from_cpu_init_compare.json
+    selected_acceptance_policy: normalized_final_state_equivalence
+    result: pass
+    raw_mismatch_bytes: 39
+    design_state_mismatch_bytes: 0
+    top_level_io_mismatch_bytes: 0
+    other_mismatch_bytes: 0
+  non_claims:
+    - not a throughput or speedup claim
+    - not a repeated-step claim
+    - not a full non-TL-UL family support claim
+  next_action: define_xuantie_e902_scaling_gate
+  weakest_point: XuanTie-E902 has a one-state correctness smoke, but no scaling gate or CPU/GPU repeated-step comparison yet.
 ```
 
 ## next
 
 ```text
-define_xuantie_e902_cpu_reference_contract:
-  inspect XuanTie-E902 top-level reset/clock/input boundary
-  decide whether a host probe can generate a CPU reference state from case.pat
-  define normalized compare exclusions before claiming correctness
-  keep the current GPU smoke as launch evidence only
+define_xuantie_e902_scaling_gate:
+  choose conservative nstates/steps for the first non-TL-UL scaling gate
+  keep CPU/GPU correctness anchored to normalized final-state equivalence
+  separate launch/scaling evidence from throughput claims until CPU baseline exists
+  avoid broad XuanTie family claims from one E902 wrapper
 ```
 
 ## source_of_truth

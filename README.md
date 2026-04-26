@@ -339,6 +339,55 @@ PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py \
   --gpu-scaling-report reports/tlul_sink_repeated_steps_scaling.json
 ```
 
+## XuanTie-E902 Breadth Smoke
+
+weakest_point:
+  this is a first non-TL-UL E902 smoke, not a throughput claim or full
+  XuanTie family support claim.
+
+```text
+status:
+  verilator_obj_dir: pass_with_warnings
+  gpu_cubin: pass
+  one_state_gpu_smoke: pass
+  cpu_reference_dump: pass
+  normalized_final_state_equivalence: pass
+  next_task: define_xuantie_e902_scaling_gate
+```
+
+The host probe reuses `src/hybrid/tlul_slice_host_probe.cpp` with XuanTie
+model-specific macros. Run it from the generated obj_dir so the stock testbench
+can read `case.pat`.
+
+```bash
+make -C src/hybrid xuantie_e902_host_probe
+
+(
+  cd artifacts/xuantie_e902_obj_dir
+  ./xuantie_e902_host_probe \
+    --reset-cycles 120 \
+    --post-reset-cycles 120 \
+    --state-out xuantie_cpu_reference_state.bin \
+    > xuantie_cpu_reference_probe.json
+)
+
+PYTHONPATH=src/tools python3 src/tools/run_vl_hybrid.py \
+  --mdir artifacts/xuantie_e902_obj_dir \
+  --nstates 1 \
+  --steps 1 \
+  --init-state artifacts/xuantie_e902_obj_dir/xuantie_cpu_reference_state.bin \
+  --sanitize-host-only-internals \
+  --dump-state artifacts/xuantie_e902_obj_dir/xuantie_gpu_from_cpu_reference_state.bin
+
+PYTHONPATH=src/tools python3 src/tools/compare_vl_hybrid_modes.py \
+  artifacts/xuantie_e902_obj_dir \
+  --compare-dumps \
+    artifacts/xuantie_e902_obj_dir/xuantie_cpu_reference_state.bin \
+    artifacts/xuantie_e902_obj_dir/xuantie_gpu_from_cpu_reference_state.bin \
+  --json-out reports/xuantie_e902_cpu_vs_gpu_from_cpu_init_compare.json \
+  --acceptance-policy normalized_final_state_equivalence
+```
+
 ## Release Checklist
 
 ```text
