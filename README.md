@@ -195,3 +195,13 @@ PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_scaling_validation.py
 
 The command reads `config/scaling_gates/tlul_fifo_sync.json` and writes the
 generated report to `reports/tlul_fifo_sync_scaling_validation.json`.
+
+Run the CPU baseline timing gate for the same seed:
+
+```bash
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py
+```
+
+The CPU baseline report is generated at
+`reports/tlul_fifo_sync_cpu_baseline.json`. It is timing context only; it is not
+an exact `nstates > 1` CPU/GPU speedup claim.

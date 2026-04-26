@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate now passes for the configured `nstates` set; the next axis is a CPU baseline timing gate for the same seed.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate and CPU baseline timing gate both pass; the next decision is whether to implement a matching CPU multi-state loop, add a second seed, or package the repo boundary.
 
 ## goal
 
@@ -19,7 +19,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  implement_tlul_fifo_sync_cpu_baseline_runner
+  decide_post_cpu_baseline_next_axis
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -252,8 +252,13 @@ tlul_fifo_sync_scaling_validation:
 
 tlul_fifo_sync_cpu_baseline:
   gate: config/scaling_gates/tlul_fifo_sync_cpu_baseline.json
-  status: defined
-  next_action: implement_tlul_fifo_sync_cpu_baseline_runner
+  runner: src/tools/run_tlul_fifo_sync_cpu_baseline.py
+  report: reports/tlul_fifo_sync_cpu_baseline.json
+  status: pass
+  reps: 5
+  median_elapsed_ms: 18.653276027180254
+  root_size: 6016
+  next_action: decide_post_cpu_baseline_next_axis
   accepted_claim: CPU single-state host probe timing surface
   non_claim: exact nstates>1 CPU-vs-GPU speedup until matching CPU loop exists
 ```
@@ -261,10 +266,10 @@ tlul_fifo_sync_cpu_baseline:
 ## next
 
 ```text
-if cpu_baseline_runner_available:
-  run the CPU baseline gate
+if next_axis_selected:
+  define the next gate before adding source
 else:
-  implement the CPU baseline runner without broadening target surface
+  choose between matching CPU multi-state loop, second seed, or packaging boundary
 ```
 
 ## source_of_truth
