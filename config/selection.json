@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "generalize_cpu_exact_loop_probe_for_second_seed",
+  "current_priority": "decide_package_boundary_after_second_seed_speedup",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -11,6 +11,7 @@
   "current_cpu_exact_loop_repeated_steps_gate": "config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json",
   "current_second_seed": "tlul_sink",
   "current_second_seed_repeated_steps_gate": "config/scaling_gates/tlul_sink_repeated_steps.json",
+  "current_second_seed_cpu_exact_loop_gate": "config/scaling_gates/tlul_sink_cpu_exact_loop_repeated_steps.json",
   "current_scaling_runner": "src/tools/run_tlul_fifo_sync_scaling_validation.py",
   "current_cpu_baseline_runner": "src/tools/run_tlul_fifo_sync_cpu_baseline.py",
   "current_priority_source_artifact": "docs/status.md",

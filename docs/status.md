@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate, CPU baselines, large-nstates workload comparison, repeated-step comparison, and second-seed `tlul_sink` GPU repeated-step surface pass. The next blocker is generalizing the CPU exact-loop probe beyond `tlul_fifo_sync`.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` repeated-step comparison and second-seed `tlul_sink` CPU/GPU repeated-step comparison both pass with GPU wins. The next blocker is packaging the minimal two-seed boundary without overstating generality.
 
 ## goal
 
@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  generalize_cpu_exact_loop_probe_for_second_seed
+  decide_package_boundary_after_second_seed_speedup
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -318,23 +318,30 @@ tlul_sink_second_seed:
   launch_template: config/slice_launch_templates/tlul_sink.json
   gpu_gate: config/scaling_gates/tlul_sink_repeated_steps.json
   gpu_report: reports/tlul_sink_repeated_steps_scaling.json
+  cpu_gate: config/scaling_gates/tlul_sink_cpu_exact_loop_repeated_steps.json
+  cpu_report: reports/tlul_sink_cpu_exact_loop_repeated_steps.json
   build_surface:
     verilator_obj_dir: pass_with_warnings
     gpu_cubin: pass
     gpu_repeated_steps: pass
+    cpu_exact_loop_repeated_steps: pass
   observed_gpu_state_steps_per_second:
     steps_1: 1047.6424
     steps_8: 9412.8866
     steps_32: 32658.0798
-  next_action: generalize_cpu_exact_loop_probe_for_second_seed
-  weakest_point: CPU exact-loop probe and Makefile target are still hardcoded to tlul_fifo_sync
+  gpu_over_cpu:
+    steps_1: 5.2200
+    steps_8: 2.7046
+    steps_32: 6.0901
+  next_action: decide_package_boundary_after_second_seed_speedup
+  weakest_point: target breadth is still limited to two OpenTitan TL-UL seeds
 ```
 
 ## next
 
 ```text
 if target_breadth_needed:
-  generalize CPU exact-loop probe for tlul_sink
+  add non-TL-UL seed
 else:
   package minimal repo boundary with limited claims
 ```

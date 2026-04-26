@@ -267,9 +267,9 @@ calls after initialization. It is still scoped to `tlul_fifo_sync`.
 
 ## Second Seed
 
-The second active seed is `tlul_sink`. Its current gate validates GPU repeated
-steps only; CPU/GPU speedup is not claimed until the CPU exact-loop probe is
-generalized beyond `tlul_fifo_sync`.
+The second active seed is `tlul_sink`. Its repeated-step gate validates both GPU
+execution and a single-process CPU repeated-`eval_step` comparison. Claims remain
+limited to two OpenTitan TL-UL seeds.
 
 ```bash
 verilator --cc --timing -Wno-fatal \
@@ -301,4 +301,13 @@ PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_scaling_validation.py 
   --gate config/scaling_gates/tlul_sink_repeated_steps.json \
   --mdir artifacts/tlul_sink_obj_dir \
   --json-out reports/tlul_sink_repeated_steps_scaling.json
+
+make -C src/hybrid tlul_sink_host_probe
+
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py \
+  --exact-loop \
+  --mdir artifacts/tlul_sink_obj_dir \
+  --gate config/scaling_gates/tlul_sink_cpu_exact_loop_repeated_steps.json \
+  --json-out reports/tlul_sink_cpu_exact_loop_repeated_steps.json \
+  --gpu-scaling-report reports/tlul_sink_repeated_steps_scaling.json
 ```

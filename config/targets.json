@@ -13,9 +13,10 @@
     {
       "name": "tlul_sink",
       "role": "second_minimal_seed",
-      "status": "gpu_repeated_steps_surface_pass",
+      "status": "cpu_gpu_repeated_steps_speedup_pass",
       "launch_template_path": "config/slice_launch_templates/tlul_sink.json",
       "scaling_gate_path": "config/scaling_gates/tlul_sink_repeated_steps.json",
+      "cpu_exact_loop_gate_path": "config/scaling_gates/tlul_sink_cpu_exact_loop_repeated_steps.json",
       "reason": "Adds target breadth with a second OpenTitan TL-UL seed that has source-backed frozen multi-step GPU-win evidence in the exploration repository."
     }
   ]
