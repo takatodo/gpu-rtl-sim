@@ -76,7 +76,7 @@ selected:
     - output/design_scope_expansion_packet.json
 
 next:
-  generate_veer_el2_verilator_obj_dir
+  build_veer_el2_gpu_cubin
 ```
 
 Resident boundary:

@@ -67,6 +67,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
                 "resident_gate_defined_before_asset_copy",
                 "asset_boundary_materialized",
                 "asset_boundary_validated",
+                "verilator_obj_dir_generated",
             },
         )
 
@@ -104,7 +105,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("Not broad XuanTie family support", readme)
         self.assertIn("resident --patch / --patch-script semantics", readme)
         self.assertIn("config/scaling_gates/veer_el2_resident_workload.json", readme)
-        self.assertIn("generate_veer_el2_verilator_obj_dir", readme)
+        self.assertIn("build_veer_el2_gpu_cubin", readme)
 
 
 if __name__ == "__main__":

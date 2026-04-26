@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  generate_veer_el2_verilator_obj_dir
+  build_veer_el2_gpu_cubin
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -851,7 +851,19 @@ generate_veer_el2_verilator_obj_dir:
   weakest_point: boundary validation passed, but build behavior in the minimal repo is not proven and may expose include/order differences.
   planned_mdir: artifacts/veer_el2_obj_dir
   top_module: veer_el2_gpu_cov_tb
-  next_action: generate_veer_el2_verilator_obj_dir
+  support_rtl:
+    - third_party/rtlmeter/rtl/__rtlmeter_utils.sv
+    - third_party/rtlmeter/rtl/__rtlmeter_top_include.vh
+  verilator_define:
+    __RTLMETER_MAIN_CLOCK: veer_el2_gpu_cov_tb.dut.core_clk
+  status: pass_with_warnings
+  next_action: build_veer_el2_gpu_cubin
+
+build_veer_el2_gpu_cubin:
+  goal: build the VeeR-EL2 GPU cubin from artifacts/veer_el2_obj_dir
+  weakest_point: Verilator obj_dir exists, but GPU kernel generation may expose VeeR-specific lowering/classifier gaps.
+  mdir: artifacts/veer_el2_obj_dir
+  next_action: build_veer_el2_gpu_cubin
 ```
 
 ## source_of_truth
