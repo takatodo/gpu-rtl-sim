@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  decide_non_tlul_seed_or_release_after_package_boundary
+  prepare_minimal_two_seed_release_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -349,15 +349,34 @@ package_boundary:
     - raw byte equality claim
   next_action: decide_non_tlul_seed_or_release_after_package_boundary
   weakest_point: package is useful as two-seed TL-UL evidence, not as broad RTL generality
+
+release_readiness_audit:
+  status: pass_lightweight
+  checks:
+    jq_configs: pass
+    python_syntax: pass
+    diff_whitespace: pass
+    generated_outputs_tracked: artifacts/.gitignore and reports/.gitignore only
+    first_seed_gpu_gate: status_ok
+    first_seed_cpu_gate: status_ok
+    second_seed_gpu_gate: status_ok
+    second_seed_cpu_gate: status_ok
+  next_action: prepare_minimal_two_seed_release_boundary
+  weakest_point: this is a local lightweight audit, not an independent clean-clone rerun
 ```
 
 ## next
 
 ```text
-if broad_target_breadth_needed:
-  add non-TL-UL seed
+prepare_minimal_two_seed_release_boundary:
+  write release note / tag boundary using existing README claim limits
+  keep non-TL-UL breadth as next post-release axis
+  do not copy more RTL assets before release boundary is fixed
+
+if release_boundary_fixed:
+  select smallest non-TL-UL breadth seed candidate
 else:
-  publish minimal two-seed boundary
+  rerun clean-clone release checklist
 ```
 
 ## source_of_truth

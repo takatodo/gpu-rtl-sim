@@ -84,7 +84,9 @@ phase_3:
   document_two_seed_claim_boundary: done
   document_release_checklist: done
   package_minimal_two_seed_boundary: done
-  decide_non_tlul_seed_or_release_after_package_boundary: next
+  decide_non_tlul_seed_or_release_after_package_boundary: done_release_readiness_first
+  run_release_readiness_audit_after_package_boundary: done_lightweight_pass
+  prepare_minimal_two_seed_release_boundary: next
 ```
 
 ## acceptance
@@ -182,5 +184,7 @@ package_boundary:
   status: documented
   claim_scope: two OpenTitan TL-UL seeds only
   release_checklist: README.md
-  next_decision: publish minimal boundary or add non-TL-UL seed
+  release_readiness_audit: pass_lightweight
+  next_task: prepare_minimal_two_seed_release_boundary
+  next_decision: fix minimal release boundary first, then consider non-TL-UL seed
 ```
