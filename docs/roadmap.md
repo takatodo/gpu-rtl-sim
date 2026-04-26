@@ -87,7 +87,8 @@ phase_3:
   decide_non_tlul_seed_or_release_after_package_boundary: done_release_readiness_first
   run_release_readiness_audit_after_package_boundary: done_lightweight_pass
   prepare_minimal_two_seed_release_boundary: done_local_boundary_documented
-  select_smallest_non_tlul_breadth_seed_candidate: next
+  select_smallest_non_tlul_breadth_seed_candidate: done_xuantie_e902
+  define_xuantie_e902_minimal_gate_before_asset_copy: next
 ```
 
 ## acceptance
@@ -187,6 +188,12 @@ package_boundary:
   release_checklist: README.md
   release_readiness_audit: pass_lightweight
   release_boundary: README.md
-  next_task: select_smallest_non_tlul_breadth_seed_candidate
-  next_decision: choose non-TL-UL seed candidate before copying assets
+  next_task: define_xuantie_e902_minimal_gate_before_asset_copy
+  next_decision: define XuanTie-E902 gate before copying assets
+
+non_tlul_breadth_seed_candidate:
+  selected: XuanTie-E902
+  role: first non-TL-UL breadth candidate
+  selection_status: selected_before_asset_copy
+  next_task: define_xuantie_e902_minimal_gate_before_asset_copy
 ```

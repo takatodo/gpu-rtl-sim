@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  select_smallest_non_tlul_breadth_seed_candidate
+  define_xuantie_e902_minimal_gate_before_asset_copy
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -371,14 +371,32 @@ release_boundary:
   boundary_base_commit: 1da48dc
   next_action: select_smallest_non_tlul_breadth_seed_candidate
   weakest_point: release boundary is local and TL-UL only; no broad non-TL-UL claim
+
+non_tlul_breadth_seed_selection:
+  status: selected
+  selected_candidate: XuanTie-E902
+  selected_template_source: old repo config/slice_launch_templates/xuantie_e902.json
+  reason:
+    - old repo campaign_non_opentitan_entry selected xuantie_single_surface_e902
+    - selected profile describes it as the smallest ready stock-Verilator bootstrap candidate
+    - the existing template is a single-surface non-OpenTitan candidate
+  do_not_do_yet:
+    - copy XuanTie-E902 assets
+    - claim non-TL-UL runtime support
+    - broaden beyond one candidate before gate shape is fixed
+  next_action: define_xuantie_e902_minimal_gate_before_asset_copy
+  weakest_point: candidate evidence is inherited from old repo metadata; minimal repo has not built or run it
 ```
 
 ## next
 
 ```text
-select_smallest_non_tlul_breadth_seed_candidate:
-  inspect candidate families without copying assets
-  choose one smallest source-backed non-TL-UL seed
+define_xuantie_e902_minimal_gate_before_asset_copy:
+  define required source asset list
+  define expected Verilator top and runtime inputs
+  define first pass/fail gate
+  define generated artifact policy for this candidate
+  keep asset copy blocked until gate shape is documented
   define gate before implementation
   keep two-seed TL-UL boundary unchanged
 ```
