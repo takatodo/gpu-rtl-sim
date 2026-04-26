@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  decide_true_resident_runtime_or_package_xuantie_boundary
+  define_true_resident_gpu_runtime_interface
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -691,6 +691,21 @@ decide_true_resident_runtime_or_package_xuantie_boundary:
     XuanTie-E902 communication-reduction proxy gate has a GPU win at nstates=128 steps=64
   non_claim:
     not a fully resident GPU runtime proof
+
+define_true_resident_gpu_runtime_interface:
+  decision: pursue implementation depth before packaging XuanTie-E902
+  reason: the top-level goal is high-throughput regression/coverage, and the proxy gate indicates communication reduction can cross CPU throughput
+  first_task: define the host/runtime interface for keeping batched state resident across repeated eval steps
+  expected_scope:
+    - runtime flag or entrypoint for resident execution
+    - explicit ownership of device state allocation and final dump
+    - no per-step host/device state transfer in the resident path
+    - existing non-resident runner remains available for comparison
+  acceptance:
+    - interface is documented in README/status
+    - implementation task names exact files or modules before editing runtime code
+    - no true-resident speedup claim until a resident GPU run and matching CPU baseline pass
+  next_action: define_true_resident_gpu_runtime_interface
 ```
 
 ## source_of_truth

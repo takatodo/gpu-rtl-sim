@@ -109,7 +109,8 @@ phase_3:
   run_xuantie_e902_memory_resident_workload_gate: done
   define_xuantie_e902_cpu_exact_loop_memory_resident_workload_baseline: done
   run_xuantie_e902_cpu_exact_loop_memory_resident_workload_baseline: done_gpu_win_at_largest_shape
-  decide_true_resident_runtime_or_package_xuantie_boundary: next
+  decide_true_resident_runtime_or_package_xuantie_boundary: done_select_true_resident_runtime_interface
+  define_true_resident_gpu_runtime_interface: next
 ```
 
 ## acceptance
@@ -248,7 +249,8 @@ non_tlul_breadth_seed_candidate:
   cpu_exact_loop_memory_resident_workload_report: reports/xuantie_e902_cpu_exact_loop_memory_resident_workload.json
   cpu_exact_loop_memory_resident_workload_status: pass_gpu_win_at_largest_shape
   best_memory_resident_proxy_gpu_over_cpu_ratio: 1.0955
+  true_resident_runtime_status: not_defined
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: decide_true_resident_runtime_or_package_xuantie_boundary
+  next_task: define_true_resident_gpu_runtime_interface
 ```
