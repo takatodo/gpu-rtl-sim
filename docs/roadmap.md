@@ -53,7 +53,11 @@ phase_3:
   define_tlul_scaling_cpu_baseline_gate: done
   implement_tlul_fifo_sync_cpu_baseline_runner: done
   run_tlul_fifo_sync_cpu_baseline_gate: done
-  decide_post_cpu_baseline_next_axis: next
+  decide_post_cpu_baseline_next_axis: done_conservative_multistate_baseline
+  define_tlul_cpu_multistate_baseline_gate: done
+  implement_tlul_cpu_multistate_baseline_runner_mode: done
+  run_tlul_cpu_multistate_baseline_gate: done
+  decide_exact_cpu_loop_or_second_seed_after_conservative_multistate_baseline: next
 ```
 
 ## acceptance
@@ -86,5 +90,16 @@ next_cpu_baseline_gate:
   reps: 5
   accepted_claim: CPU single-state host probe timing surface
   non_claim: exact nstates>1 CPU-vs-GPU speedup until matching CPU loop exists
+  status: pass
+
+next_cpu_multistate_baseline_gate:
+  target: tlul_fifo_sync
+  config: config/scaling_gates/tlul_fifo_sync_cpu_multistate_baseline.json
+  runner: src/tools/run_tlul_fifo_sync_cpu_baseline.py --multi-state
+  report: reports/tlul_fifo_sync_cpu_multistate_baseline.json
+  nstates: [1, 8, 32]
+  steps: [1]
+  accepted_claim: conservative CPU process-per-state baseline compared with GPU scaling report
+  non_claim: exact single-process CPU-vs-GPU speedup
   status: pass
 ```

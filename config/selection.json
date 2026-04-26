@@ -1,8 +1,9 @@
 {
   "schema_version": 1,
-  "current_priority": "decide_post_cpu_baseline_next_axis",
+  "current_priority": "decide_exact_cpu_loop_or_second_seed_after_conservative_multistate_baseline",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_cpu_baseline_gate": "config/scaling_gates/tlul_fifo_sync_cpu_baseline.json",
+  "current_cpu_multistate_baseline_gate": "config/scaling_gates/tlul_fifo_sync_cpu_multistate_baseline.json",
   "current_scaling_runner": "src/tools/run_tlul_fifo_sync_scaling_validation.py",
   "current_cpu_baseline_runner": "src/tools/run_tlul_fifo_sync_cpu_baseline.py",
   "current_priority_source_artifact": "docs/status.md",

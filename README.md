@@ -205,3 +205,16 @@ PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py
 The CPU baseline report is generated at
 `reports/tlul_fifo_sync_cpu_baseline.json`. It is timing context only; it is not
 an exact `nstates > 1` CPU/GPU speedup claim.
+
+Run the conservative CPU process-per-state multi-state baseline:
+
+```bash
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py --multi-state
+```
+
+The multi-state CPU baseline report is generated at
+`reports/tlul_fifo_sync_cpu_multistate_baseline.json`. It compares the same
+`nstates` shapes as the GPU scaling gate when
+`reports/tlul_fifo_sync_scaling_validation.json` is present. Treat the ratio as
+a conservative process-per-state comparison, not an exact single-process CPU
+speedup claim.

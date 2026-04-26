@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate and CPU baseline timing gate both pass; the next decision is whether to implement a matching CPU multi-state loop, add a second seed, or package the repo boundary.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate, CPU single-state timing gate, and conservative CPU process-per-state multi-state baseline pass; the next decision is whether to replace the conservative CPU timing with an exact single-process CPU loop, add a second seed, or package the repo boundary.
 
 ## goal
 
@@ -19,7 +19,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  decide_post_cpu_baseline_next_axis
+  decide_exact_cpu_loop_or_second_seed_after_conservative_multistate_baseline
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -258,18 +258,28 @@ tlul_fifo_sync_cpu_baseline:
   reps: 5
   median_elapsed_ms: 18.653276027180254
   root_size: 6016
-  next_action: decide_post_cpu_baseline_next_axis
+  next_action: define_tlul_cpu_multistate_baseline_gate
   accepted_claim: CPU single-state host probe timing surface
   non_claim: exact nstates>1 CPU-vs-GPU speedup until matching CPU loop exists
+
+tlul_fifo_sync_cpu_multistate_baseline:
+  gate: config/scaling_gates/tlul_fifo_sync_cpu_multistate_baseline.json
+  runner: src/tools/run_tlul_fifo_sync_cpu_baseline.py --multi-state
+  report: reports/tlul_fifo_sync_cpu_multistate_baseline.json
+  status: pass
+  claim_scope: conservative_process_per_state_cpu_baseline
+  latest_metrics: read reports/tlul_fifo_sync_cpu_multistate_baseline.json
+  next_action: decide_exact_cpu_loop_or_second_seed_after_conservative_multistate_baseline
+  weakest_point: process-per-state CPU timing includes host probe process overhead, so it is not an exact single-process CPU speedup claim
 ```
 
 ## next
 
 ```text
-if next_axis_selected:
-  define the next gate before adding source
+if exact_speedup_claim_needed:
+  replace process-per-state CPU timing with a single-process host loop
 else:
-  choose between matching CPU multi-state loop, second seed, or packaging boundary
+  choose between second seed or packaging boundary
 ```
 
 ## source_of_truth
