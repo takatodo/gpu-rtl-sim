@@ -6,6 +6,7 @@
       "role": "first_minimal_seed",
       "status": "seed_config_copied",
       "launch_template_path": "config/slice_launch_templates/tlul_fifo_sync.json",
+      "scaling_gate_path": "config/scaling_gates/tlul_fifo_sync.json",
       "reason": "Preserves the most source-backed GPU responsibility expansion value from the exploration repository."
     }
   ]

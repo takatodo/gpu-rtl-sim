@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The next validation axis is scaling the existing `tlul_fifo_sync` seed before adding a second target.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The next validation axis is scaling the existing `tlul_fifo_sync` seed before adding a second target, and the scaling gate is now defined in config.
 
 ## goal
 
@@ -19,7 +19,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_tlul_fifo_sync_scaling_validation_gate
+  implement_tlul_fifo_sync_scaling_validation_runner
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -209,7 +209,8 @@ next_axis_candidates:
 selected_next_axis:
   axis: increase_nstates_or_steps_on_tlul_fifo_sync
   reason: reuse the proven seed to measure batching/state scaling before increasing target breadth
-  next_action: define_tlul_fifo_sync_scaling_validation_gate
+  gate: config/scaling_gates/tlul_fifo_sync.json
+  next_action: implement_tlul_fifo_sync_scaling_validation_runner
   gate_shape:
     build: reuse documented clean-checkout build
     runs:
