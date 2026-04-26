@@ -18,6 +18,13 @@
       "scaling_gate_path": "config/scaling_gates/tlul_sink_repeated_steps.json",
       "cpu_exact_loop_gate_path": "config/scaling_gates/tlul_sink_cpu_exact_loop_repeated_steps.json",
       "reason": "Adds target breadth with a second OpenTitan TL-UL seed that has source-backed frozen multi-step GPU-win evidence in the exploration repository."
+    },
+    {
+      "name": "xuantie_e902",
+      "role": "first_non_tlul_breadth_candidate",
+      "status": "asset_boundary_materialized",
+      "launch_template_path": "config/slice_launch_templates/xuantie_e902.json",
+      "reason": "Carries the old repo's smallest ready non-OpenTitan single-surface candidate into the minimal repo without claiming runtime support yet."
     }
   ]
 }

@@ -1,0 +1,1 @@
+/home/takatodo/gpu-toggle-coverage-campaigns/third_party/rtlmeter/designs/XuanTie-E902/tests/hello/case.pat

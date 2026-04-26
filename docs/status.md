@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  materialize_xuantie_e902_asset_boundary
+  define_xuantie_e902_rtlmeter_include_strategy
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -414,16 +414,51 @@ xuantie_e902_minimal_gate:
     - not a claim that all XuanTie family targets work
   next_action: materialize_xuantie_e902_asset_boundary
   weakest_point: gate definition still relies on old repo template and has not been validated in minimal repo
+
+xuantie_e902_asset_boundary:
+  status: materialized
+  copied_scope:
+    - third_party/rtlmeter/designs/XuanTie-E902/descriptor.yaml
+    - third_party/rtlmeter/designs/XuanTie-E902/LICENSE-XuanTie-E902
+    - third_party/rtlmeter/designs/XuanTie-E902/src/**
+    - third_party/rtlmeter/designs/XuanTie-E902/tests/hello/case.pat
+    - third_party/rtlmeter/designs/XuanTie-E902/tests/post.bash
+    - third_party/rtlmeter/designs/XuanTie-E902/tests/xuantie_e902_gpu_cov_coverage_regions.json
+  launch_template: config/slice_launch_templates/xuantie_e902.json
+  target_registry: config/targets.json
+  non_claims:
+    - copied source boundary is not a build pass claim
+    - copied source boundary is not a GPU runtime claim
+    - copied source boundary is not a supported non-TL-UL target claim
+  next_action: validate_xuantie_e902_asset_boundary
+  weakest_point: source boundary is copied but not yet validated by syntax/config checks
+
+xuantie_e902_asset_boundary_validation:
+  status: blocked
+  config_json: pass
+  python_syntax: pass
+  diff_check: pass
+  copied_file_count: 130
+  copied_families:
+    - OpenTitan
+    - XuanTie-E902
+  source_discovery:
+    descriptor_source_count: 125
+    missing_source_count: 0
+  verilator_lint_only:
+    status: blocked
+    blocker: tb.v includes missing __rtlmeter_top_include.vh
+  next_action: define_xuantie_e902_rtlmeter_include_strategy
+  weakest_point: XuanTie-E902 depends on an RTLMeter generated include seam that is not yet represented in the minimal repo
 ```
 
 ## next
 
 ```text
-materialize_xuantie_e902_asset_boundary:
-  copy only the defined XuanTie-E902 source/test boundary
-  do not copy broader RTLMeter families
-  add launch config only if the existing target registry cannot express this candidate
-  run syntax/config checks before any Verilator build claim
+define_xuantie_e902_rtlmeter_include_strategy:
+  decide whether to generate or hand-author the minimal __rtlmeter_top_include.vh equivalent
+  keep generated include out of source unless it becomes a stable template
+  rerun XuanTie-E902 lint-only after the include seam is resolved
 ```
 
 ## source_of_truth
