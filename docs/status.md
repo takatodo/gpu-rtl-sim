@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The next decision is which validation axis to open from this minimal baseline.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The next validation axis is scaling the existing `tlul_fifo_sync` seed before adding a second target.
 
 ## goal
 
@@ -19,7 +19,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  select_next_minimal_runtime_validation_axis
+  define_tlul_fifo_sync_scaling_validation_gate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -202,18 +202,37 @@ clean_checkout_reproduction:
   next_action: select_next_minimal_runtime_validation_axis
 
 next_axis_candidates:
-  - increase_nstates_or_steps_on_tlul_fifo_sync
+  - increase_nstates_or_steps_on_tlul_fifo_sync: selected
   - add_second_small_seed_target
   - package_remote_or_release_boundary
+
+selected_next_axis:
+  axis: increase_nstates_or_steps_on_tlul_fifo_sync
+  reason: reuse the proven seed to measure batching/state scaling before increasing target breadth
+  next_action: define_tlul_fifo_sync_scaling_validation_gate
+  gate_shape:
+    build: reuse documented clean-checkout build
+    runs:
+      - nstates: 1
+        steps: 1
+      - nstates: 8
+        steps: 1
+      - nstates: 32
+        steps: 1
+    acceptance:
+      - each run exits successfully
+      - generated state dumps have expected storage_size * nstates bytes
+      - normalized final-state equivalence remains the correctness policy for CPU/GPU aligned single-state comparison
+      - scaling gate reports runtime and throughput without claiming speedup until CPU baseline is measured
 ```
 
 ## next
 
 ```text
-if next_axis_selected:
-  define the next acceptance gate before adding source
+if scaling_gate_defined:
+  implement or run the tlul_fifo_sync scaling validation surface
 else:
-  choose between scaling tlul_fifo_sync, adding a second seed, or packaging the repo boundary
+  finish the gate definition before adding source
 ```
 
 ## source_of_truth

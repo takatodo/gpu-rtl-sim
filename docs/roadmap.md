@@ -45,7 +45,8 @@ phase_3:
   minimal_initial_commit_if_requested: done_f8349b9
   reproduce_from_clean_checkout_after_initial_commit: done_after_readme_fix
   commit_minimal_readme_clean_checkout_fix: done_c041911
-  select_next_minimal_runtime_validation_axis: next
+  select_next_minimal_runtime_validation_axis: done_scale_tlul_fifo_sync
+  define_tlul_fifo_sync_scaling_validation_gate: next
 ```
 
 ## acceptance
@@ -58,4 +59,11 @@ first_success_metric:
   status_report: pass
   generated_artifacts_tracked: 0
   active_targets: 1
+
+next_scaling_gate:
+  target: tlul_fifo_sync
+  nstates: [1, 8, 32]
+  steps: [1]
+  correctness_policy: normalized_final_state_equivalence_for_aligned_single_state
+  performance_policy: report_runtime_and_throughput_without_speedup_claim
 ```
