@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_xuantie_e902_minimal_gate_before_asset_copy
+  materialize_xuantie_e902_asset_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0

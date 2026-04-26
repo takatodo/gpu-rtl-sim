@@ -189,8 +189,8 @@ package_boundary:
   release_checklist: README.md
   release_readiness_audit: pass_lightweight
   release_boundary: README.md
-  next_task: define_xuantie_e902_minimal_gate_before_asset_copy
-  next_decision: define XuanTie-E902 gate before copying assets
+  next_task: materialize_xuantie_e902_asset_boundary
+  next_decision: copy only the defined XuanTie-E902 source/test boundary
 
 non_tlul_breadth_seed_candidate:
   selected: XuanTie-E902
