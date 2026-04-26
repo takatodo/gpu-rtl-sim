@@ -37,6 +37,25 @@ def _require_file(path: Path, message: str) -> None:
         raise SystemExit(f"error: {message}: {path}")
 
 
+def _parse_probe_json(stdout: str) -> dict[str, object] | None:
+    text = stdout.strip()
+    if not text:
+        return None
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    start = text.find("{")
+    end = text.rfind("}")
+    if start < 0 or end < start:
+        return None
+    try:
+        parsed = json.loads(text[start : end + 1])
+    except json.JSONDecodeError:
+        return None
+    return parsed if isinstance(parsed, dict) else None
+
+
 def _run_probe_once(*, probe: Path, reset_cycles: int, post_reset_cycles: int) -> dict[str, object]:
     cmd = [
         str(probe),
@@ -48,12 +67,7 @@ def _run_probe_once(*, probe: Path, reset_cycles: int, post_reset_cycles: int) -
     started = time.perf_counter()
     completed = subprocess.run(cmd, text=True, capture_output=True)
     elapsed_ms = (time.perf_counter() - started) * 1000.0
-    parsed: dict[str, object] | None = None
-    if completed.stdout.strip():
-        try:
-            parsed = json.loads(completed.stdout)
-        except json.JSONDecodeError:
-            parsed = None
+    parsed = _parse_probe_json(completed.stdout)
     constructor_ok = bool(parsed and parsed.get("constructor_ok") is True)
     root_size = int(parsed.get("root_size", 0)) if parsed else 0
     return {
@@ -129,12 +143,7 @@ def _run_exact_loop_case(
         str(steps),
     ]
     completed = subprocess.run(cmd, text=True, capture_output=True)
-    parsed: dict[str, object] | None = None
-    if completed.stdout.strip():
-        try:
-            parsed = json.loads(completed.stdout)
-        except json.JSONDecodeError:
-            parsed = None
+    parsed = _parse_probe_json(completed.stdout)
     elapsed_ms = float(parsed.get("elapsed_ms", 0.0)) if parsed else 0.0
     states_per_second = (
         float(parsed.get("state_steps_per_second", parsed.get("states_per_second", 0.0)))
@@ -320,6 +329,11 @@ def main() -> None:
     parser.add_argument("--multi-state", action="store_true")
     parser.add_argument("--exact-loop", action="store_true")
     parser.add_argument("--gpu-scaling-report", type=Path, default=DEFAULT_GPU_SCALING_REPORT)
+    parser.add_argument(
+        "--probe",
+        type=Path,
+        help="Host probe binary; defaults to <mdir>/tlul_slice_host_probe for existing TL-UL flows",
+    )
     args = parser.parse_args()
 
     if args.multi_state and args.exact_loop:
@@ -339,9 +353,9 @@ def main() -> None:
         json_out = args.json_out.resolve()
     gpu_scaling_report = args.gpu_scaling_report.resolve()
     _require_file(gate_path, "CPU baseline gate config not found")
-    probe = mdir / "tlul_slice_host_probe"
+    probe = args.probe.resolve() if args.probe else mdir / "tlul_slice_host_probe"
     meta_path = mdir / "vl_batch_gpu.meta.json"
-    _require_file(probe, "tlul_slice_host_probe not found; run README host build first")
+    _require_file(probe, "host probe not found; run the matching README host build first")
     _require_file(meta_path, "GPU meta not found; run README GPU build first")
 
     gate = _load_json(gate_path)

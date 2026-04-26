@@ -353,7 +353,8 @@ status:
   cpu_reference_dump: pass
   normalized_final_state_equivalence: pass
   conservative_gpu_scaling_gate: pass
-  next_task: define_xuantie_e902_cpu_repeated_steps_baseline
+  conservative_cpu_gpu_baseline: pass_cpu_favorable
+  next_task: decide_xuantie_e902_next_scaling_or_boundary
 ```
 
 The host probe reuses `src/hybrid/tlul_slice_host_probe.cpp` with XuanTie
@@ -392,6 +393,14 @@ PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_scaling_validation.py 
   --gate config/scaling_gates/xuantie_e902_scaling.json \
   --mdir artifacts/xuantie_e902_obj_dir \
   --json-out reports/xuantie_e902_scaling.json
+
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py \
+  --exact-loop \
+  --mdir artifacts/xuantie_e902_obj_dir \
+  --probe artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe \
+  --gate config/scaling_gates/xuantie_e902_cpu_exact_loop_repeated_steps.json \
+  --json-out reports/xuantie_e902_cpu_exact_loop_repeated_steps.json \
+  --gpu-scaling-report reports/xuantie_e902_scaling.json
 ```
 
 ## Release Checklist

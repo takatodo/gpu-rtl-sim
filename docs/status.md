@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_xuantie_e902_cpu_repeated_steps_baseline
+  decide_xuantie_e902_next_scaling_or_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -554,16 +554,43 @@ xuantie_e902_scaling_gate:
     - no broad non-TL-UL generality claim
   next_action: define_xuantie_e902_cpu_repeated_steps_baseline
   weakest_point: GPU launch/scaling passes for a conservative E902 shape, but the matching CPU repeated-step baseline is not defined.
+
+xuantie_e902_cpu_repeated_steps_baseline:
+  status: pass_cpu_favorable
+  gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_repeated_steps.json
+  runner: src/tools/run_tlul_fifo_sync_cpu_baseline.py --exact-loop
+  probe: artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe
+  report: reports/xuantie_e902_cpu_exact_loop_repeated_steps.json
+  source_gpu_report: reports/xuantie_e902_scaling.json
+  runs:
+    - shape: nstates=1 steps=1
+      passed: true
+      gpu_over_cpu_throughput_ratio: 0.0115
+    - shape: nstates=8 steps=1
+      passed: true
+      gpu_over_cpu_throughput_ratio: 0.1003
+    - shape: nstates=8 steps=8
+      passed: true
+      gpu_over_cpu_throughput_ratio: 0.0590
+  observation: CPU is faster than GPU for the conservative XuanTie-E902 gate shapes.
+  non_claims:
+    - no XuanTie speedup claim
+    - no broad non-TL-UL throughput claim
+    - no larger-nstates or longer-run conclusion yet
+  next_action: decide_xuantie_e902_next_scaling_or_boundary
+  weakest_point: The first non-TL-UL correctness path works, but the conservative performance gate is CPU-favorable; the next decision is whether to scale workload or package the correctness boundary.
 ```
 
 ## next
 
 ```text
-define_xuantie_e902_cpu_repeated_steps_baseline:
-  reuse the XuanTie host probe where possible
-  define a CPU repeated-eval shape matching the conservative GPU scaling gate
-  compare CPU/GPU throughput only after the CPU baseline gate is source-backed
-  keep normalized one-state correctness separate from repeated-step performance
+decide_xuantie_e902_next_scaling_or_boundary:
+  if the goal is throughput evidence:
+    increase XuanTie-E902 nstates/steps beyond the conservative gate
+  else:
+    package the first non-TL-UL correctness boundary
+  keep the current performance observation as CPU-favorable
+  do not claim XuanTie speedup from the conservative gate
 ```
 
 ## source_of_truth

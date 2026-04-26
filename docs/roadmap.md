@@ -98,7 +98,8 @@ phase_3:
   define_xuantie_e902_cpu_reference_contract: done_normalized_final_state_equivalence
   define_xuantie_e902_scaling_gate: done
   run_xuantie_e902_scaling_gate: done
-  define_xuantie_e902_cpu_repeated_steps_baseline: next
+  define_xuantie_e902_cpu_repeated_steps_baseline: done_cpu_favorable
+  decide_xuantie_e902_next_scaling_or_boundary: next
 ```
 
 ## acceptance
@@ -220,7 +221,10 @@ non_tlul_breadth_seed_candidate:
   scaling_gate: config/scaling_gates/xuantie_e902_scaling.json
   scaling_report: reports/xuantie_e902_scaling.json
   scaling_status: pass
+  cpu_exact_loop_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_repeated_steps.json
+  cpu_exact_loop_report: reports/xuantie_e902_cpu_exact_loop_repeated_steps.json
+  cpu_gpu_observation: cpu_favorable_at_conservative_gate
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: define_xuantie_e902_cpu_repeated_steps_baseline
+  next_task: decide_xuantie_e902_next_scaling_or_boundary
 ```
