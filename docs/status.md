@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_xuantie_e902_rtlmeter_include_strategy
+  generate_xuantie_e902_verilator_obj_dir
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -450,15 +450,34 @@ xuantie_e902_asset_boundary_validation:
     blocker: tb.v includes missing __rtlmeter_top_include.vh
   next_action: define_xuantie_e902_rtlmeter_include_strategy
   weakest_point: XuanTie-E902 depends on an RTLMeter generated include seam that is not yet represented in the minimal repo
+
+xuantie_e902_rtlmeter_include_strategy:
+  status: resolved_for_lint
+  support_rtl:
+    - third_party/rtlmeter/rtl/__rtlmeter_utils.sv
+    - third_party/rtlmeter/rtl/__rtlmeter_top_include.vh
+  verilator_define:
+    __RTLMETER_MAIN_CLOCK: xuantie_e902_gpu_cov_tb.dut.clk
+  lint_only:
+    status: pass_with_warnings
+    source_count: 126
+    warning_policy: accepted_for_lint_only
+  non_claims:
+    - not a Verilator obj_dir build claim
+    - not a GPU cubin build claim
+    - not a runtime support claim
+  next_action: generate_xuantie_e902_verilator_obj_dir
+  weakest_point: lint passes only with accepted source warnings; full obj_dir generation is still unproven
 ```
 
 ## next
 
 ```text
-define_xuantie_e902_rtlmeter_include_strategy:
-  decide whether to generate or hand-author the minimal __rtlmeter_top_include.vh equivalent
-  keep generated include out of source unless it becomes a stable template
-  rerun XuanTie-E902 lint-only after the include seam is resolved
+generate_xuantie_e902_verilator_obj_dir:
+  generate artifacts/xuantie_e902_obj_dir from descriptor source order
+  pass __RTLMETER_MAIN_CLOCK from descriptor mainClock
+  stage tests/hello/case.pat as generated runtime input if needed
+  do not claim GPU runtime until obj_dir and cubin build pass
 ```
 
 ## source_of_truth

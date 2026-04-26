@@ -91,7 +91,8 @@ phase_3:
   define_xuantie_e902_minimal_gate_before_asset_copy: done_gate_shape_defined
   materialize_xuantie_e902_asset_boundary: done_source_boundary_copied
   validate_xuantie_e902_asset_boundary: blocked_missing_rtlmeter_top_include
-  define_xuantie_e902_rtlmeter_include_strategy: next
+  define_xuantie_e902_rtlmeter_include_strategy: done_lint_pass_with_warnings
+  generate_xuantie_e902_verilator_obj_dir: next
 ```
 
 ## acceptance
@@ -203,6 +204,7 @@ non_tlul_breadth_seed_candidate:
   gate_shape: nstates=8 steps=56
   launch_template: config/slice_launch_templates/xuantie_e902.json
   asset_boundary_status: copied
-  lint_only_status: blocked_missing___rtlmeter_top_include_vh
-  next_task: define_xuantie_e902_rtlmeter_include_strategy
+  lint_only_status: pass_with_warnings
+  support_rtl: third_party/rtlmeter/rtl
+  next_task: generate_xuantie_e902_verilator_obj_dir
 ```
