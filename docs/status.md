@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  prepare_minimal_two_seed_release_boundary
+  select_smallest_non_tlul_breadth_seed_candidate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -363,20 +363,24 @@ release_readiness_audit:
     second_seed_cpu_gate: status_ok
   next_action: prepare_minimal_two_seed_release_boundary
   weakest_point: this is a local lightweight audit, not an independent clean-clone rerun
+
+release_boundary:
+  status: documented
+  documented_in: README.md
+  boundary_name: minimal-two-tlul-seed-boundary
+  boundary_base_commit: 1da48dc
+  next_action: select_smallest_non_tlul_breadth_seed_candidate
+  weakest_point: release boundary is local and TL-UL only; no broad non-TL-UL claim
 ```
 
 ## next
 
 ```text
-prepare_minimal_two_seed_release_boundary:
-  write release note / tag boundary using existing README claim limits
-  keep non-TL-UL breadth as next post-release axis
-  do not copy more RTL assets before release boundary is fixed
-
-if release_boundary_fixed:
-  select smallest non-TL-UL breadth seed candidate
-else:
-  rerun clean-clone release checklist
+select_smallest_non_tlul_breadth_seed_candidate:
+  inspect candidate families without copying assets
+  choose one smallest source-backed non-TL-UL seed
+  define gate before implementation
+  keep two-seed TL-UL boundary unchanged
 ```
 
 ## source_of_truth

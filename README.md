@@ -352,3 +352,27 @@ before_publishing:
   generated_outputs_tracked: 0
   claim_boundary_documented: true
 ```
+
+## Release Boundary
+
+weakest_point:
+  this boundary is a local source boundary, not a published remote release tag
+  or a broad non-TL-UL generality claim.
+
+```text
+boundary_name: minimal-two-tlul-seed-boundary
+boundary_base_commit: 1da48dc
+scope:
+  included:
+    - minimal Verilator -> LLVM -> CUDA build path
+    - tlul_fifo_sync repeated-step GPU/CPU comparison
+    - tlul_sink repeated-step GPU/CPU comparison
+    - generated artifact policy for artifacts/ and reports/
+  excluded:
+    - non-TL-UL target breadth
+    - full RTL application throughput
+    - raw byte equality
+    - historical campaign work/output artifacts
+next_axis:
+  select the smallest non-TL-UL breadth seed candidate before copying assets
+```
