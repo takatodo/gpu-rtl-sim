@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_fifo_sync_cpu_exact_loop_large_workload",
+  "target": "tlul_fifo_sync",
+  "source_gpu_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
+  "source_cpu_exact_loop_gate": "config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_baseline.json",
+  "purpose": "Compare the larger nstates GPU workload against a single-process CPU loop with matching nstates.",
+  "preconditions": [
+    "tlul_fifo_sync_large_workload_scaling passes",
+    "tlul_slice_host_probe is rebuilt with --repeat-states support",
+    "reports/tlul_fifo_sync_large_workload_scaling.json exists when CPU/GPU comparison fields are requested"
+  ],
+  "runs": [
+    {
+      "name": "large_batch_32_cpu_exact_loop",
+      "nstates": 32,
+      "steps": 1,
+      "reset_cycles": 4,
+      "post_reset_cycles": 2,
+      "required": true
+    },
+    {
+      "name": "large_batch_128_cpu_exact_loop",
+      "nstates": 128,
+      "steps": 1,
+      "reset_cycles": 4,
+      "post_reset_cycles": 2,
+      "required": true
+    },
+    {
+      "name": "large_batch_512_cpu_exact_loop",
+      "nstates": 512,
+      "steps": 1,
+      "reset_cycles": 4,
+      "post_reset_cycles": 2,
+      "required": true
+    }
+  ],
+  "acceptance": {
+    "run_exits_zero": true,
+    "each_loop_reports_constructor_ok": true,
+    "each_loop_root_size_matches_gpu_storage_size": true,
+    "record_elapsed_ms_and_states_per_second": true,
+    "compare_against_gpu_scaling_report_when_present": true
+  },
+  "comparison_policy": {
+    "allowed_claims": [
+      "single-process CPU loop wall time for nstates 32, 128, and 512",
+      "GPU batched throughput for nstates 32, 128, and 512",
+      "CPU/GPU throughput ratio for this seed and gate shape"
+    ],
+    "non_claims": [
+      "not a full RTL application throughput claim",
+      "no target-breadth claim because only tlul_fifo_sync is exercised",
+      "steps remain fixed at 1 because CPU exact-loop timing does not yet model repeated eval steps"
+    ],
+    "next_precision_step": "add repeated-step CPU semantics or move to a second seed if large nstates still does not show a GPU win"
+  },
+  "artifacts": {
+    "report": "reports/tlul_fifo_sync_cpu_exact_loop_large_workload.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "decide_repeated_steps_or_second_seed_after_large_workload",
+  "next_action_on_fail": "diagnose_tlul_large_workload_exact_cpu_loop_failure"
+}

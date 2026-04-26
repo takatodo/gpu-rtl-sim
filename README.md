@@ -230,3 +230,20 @@ The exact-loop CPU baseline report is generated at
 `reports/tlul_fifo_sync_cpu_exact_loop_baseline.json`. This removes one process
 launch per state from the CPU side, but it is still scoped to the small
 `tlul_fifo_sync` workload and should not be generalized to full RTL workloads.
+
+Run the larger `nstates` workload gate:
+
+```bash
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_scaling_validation.py \
+  --gate config/scaling_gates/tlul_fifo_sync_large_workload.json \
+  --json-out reports/tlul_fifo_sync_large_workload_scaling.json
+
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py \
+  --exact-loop \
+  --gate config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_large_workload.json \
+  --json-out reports/tlul_fifo_sync_cpu_exact_loop_large_workload.json \
+  --gpu-scaling-report reports/tlul_fifo_sync_large_workload_scaling.json
+```
+
+This gate keeps `steps=1` and increases only `nstates`. The current accepted
+claim is limited to this seed and gate shape.

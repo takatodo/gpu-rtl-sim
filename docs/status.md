@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate, CPU single-state timing gate, conservative CPU process-per-state multi-state baseline, and single-process CPU loop baseline pass; the next decision is whether to enlarge workload, add a second seed, or package the repo boundary.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate, CPU single-state timing gate, conservative CPU process-per-state multi-state baseline, single-process CPU loop baseline, and large-nstates workload comparison pass. At `nstates=512`, the GPU is faster than the exact CPU loop for this seed and gate shape; the next decision is repeated-step semantics or a second seed.
 
 ## goal
 
@@ -19,7 +19,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  decide_second_seed_or_larger_workload_after_exact_cpu_loop_baseline
+  decide_repeated_steps_or_second_seed_after_large_workload
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -282,15 +282,29 @@ tlul_fifo_sync_cpu_exact_loop_baseline:
   latest_observation: GPU is still slower than CPU for nstates <= 32 under this small seed/workload
   next_action: decide_second_seed_or_larger_workload_after_exact_cpu_loop_baseline
   weakest_point: exact loop removes process overhead, but the current workload is too small to demonstrate a GPU win
+
+tlul_fifo_sync_large_workload:
+  gpu_gate: config/scaling_gates/tlul_fifo_sync_large_workload.json
+  cpu_gate: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_large_workload.json
+  gpu_report: reports/tlul_fifo_sync_large_workload_scaling.json
+  cpu_report: reports/tlul_fifo_sync_cpu_exact_loop_large_workload.json
+  status: pass
+  accepted_claim: GPU beats single-process CPU exact loop at nstates=512 for tlul_fifo_sync steps=1
+  latest_metrics:
+    nstates_32_gpu_over_cpu: 0.1296
+    nstates_128_gpu_over_cpu: 0.7455
+    nstates_512_gpu_over_cpu: 2.8779
+  next_action: decide_repeated_steps_or_second_seed_after_large_workload
+  weakest_point: steps remain fixed at 1 because CPU exact-loop timing does not yet model repeated eval steps
 ```
 
 ## next
 
 ```text
-if speedup_claim_still_needed:
-  increase steps or workload size before claiming GPU efficiency
+if repeated_step_claim_needed:
+  add CPU repeated-step semantics before increasing steps
 else:
-  choose between second seed or packaging boundary
+  add second seed to prove target breadth
 ```
 
 ## source_of_truth

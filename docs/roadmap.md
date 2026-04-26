@@ -61,7 +61,12 @@ phase_3:
   define_tlul_cpu_exact_loop_baseline_gate: done
   implement_tlul_cpu_exact_loop_probe_and_runner_mode: done
   run_tlul_cpu_exact_loop_baseline_gate: done
-  decide_second_seed_or_larger_workload_after_exact_cpu_loop_baseline: next
+  decide_second_seed_or_larger_workload_after_exact_cpu_loop_baseline: done_large_nstates
+  define_tlul_large_workload_scaling_gate: done
+  run_tlul_large_workload_scaling_gate: done
+  define_tlul_large_workload_exact_cpu_loop_gate: done
+  run_tlul_large_workload_exact_cpu_loop_gate: done
+  decide_repeated_steps_or_second_seed_after_large_workload: next
 ```
 
 ## acceptance
@@ -117,5 +122,17 @@ next_cpu_exact_loop_baseline_gate:
   accepted_claim: single-process CPU loop baseline compared with GPU scaling report
   current_observation: GPU is slower than CPU for this small seed/workload
   next_decision: increase workload or add second seed
+  status: pass
+
+next_large_workload_gate:
+  target: tlul_fifo_sync
+  gpu_config: config/scaling_gates/tlul_fifo_sync_large_workload.json
+  cpu_config: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_large_workload.json
+  gpu_report: reports/tlul_fifo_sync_large_workload_scaling.json
+  cpu_report: reports/tlul_fifo_sync_cpu_exact_loop_large_workload.json
+  nstates: [32, 128, 512]
+  steps: [1]
+  accepted_claim: GPU beats exact CPU loop at nstates=512 for this seed and gate shape
+  non_claim: repeated-step throughput and target-breadth generality
   status: pass
 ```

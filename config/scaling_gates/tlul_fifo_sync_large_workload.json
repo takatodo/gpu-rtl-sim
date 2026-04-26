@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_fifo_sync_large_workload_scaling",
+  "target": "tlul_fifo_sync",
+  "source_gpu_gate": "config/scaling_gates/tlul_fifo_sync.json",
+  "purpose": "Increase nstates to test whether GPU batching can amortize launch and transfer overhead for the current seed.",
+  "preconditions": [
+    "README clean-checkout build/run/compare flow passes",
+    "tlul_fifo_sync_scaling_validation passes",
+    "artifacts/ and reports/ are ignored generated outputs",
+    "vl_batch_gpu.meta.json reports storage_size=6016 for the current seed build"
+  ],
+  "runs": [
+    {
+      "name": "large_batch_32",
+      "nstates": 32,
+      "steps": 1,
+      "required": true
+    },
+    {
+      "name": "large_batch_128",
+      "nstates": 128,
+      "steps": 1,
+      "required": true
+    },
+    {
+      "name": "large_batch_512",
+      "nstates": 512,
+      "steps": 1,
+      "required": true
+    }
+  ],
+  "correctness_policy": {
+    "batched_gpu_runs": [
+      "run exits with status 0",
+      "dumped state byte size equals storage_size * nstates when dump is requested",
+      "no raw-byte CPU/GPU equality claim is made for batched states"
+    ]
+  },
+  "performance_policy": {
+    "record": [
+      "nstates",
+      "steps",
+      "elapsed_ms",
+      "states_per_second"
+    ],
+    "non_claims": [
+      "no target-breadth claim because this gate uses only tlul_fifo_sync",
+      "steps remain fixed at 1 because CPU exact-loop timing does not yet model repeated eval steps"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/tlul_fifo_sync_large_workload_scaling.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "run_tlul_large_workload_exact_cpu_loop_comparison",
+  "next_action_on_fail": "diagnose_tlul_large_workload_scaling_failure"
+}
