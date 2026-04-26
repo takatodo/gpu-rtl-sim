@@ -31,6 +31,15 @@
       "memory_resident_workload_gate_path": "config/scaling_gates/xuantie_e902_memory_resident_workload.json",
       "cpu_exact_loop_memory_resident_workload_gate_path": "config/scaling_gates/xuantie_e902_cpu_exact_loop_memory_resident_workload.json",
       "reason": "First non-TL-UL resident runtime boundary with a limited XuanTie-E902 GPU win; broad family/general RTL claims remain out of scope."
+    },
+    {
+      "name": "veer_el2",
+      "role": "next_non_tlul_resident_breadth_candidate",
+      "status": "resident_gate_defined_before_asset_copy",
+      "launch_template_path": "config/slice_launch_templates/veer_el2.json",
+      "resident_workload_gate_path": "config/scaling_gates/veer_el2_resident_workload.json",
+      "cpu_exact_loop_resident_workload_gate_path": "config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json",
+      "reason": "Next bounded non-TL-UL resident runtime candidate selected from old-repo VeeR-EL2 gpu_cov_gate evidence; source/test assets are intentionally not copied yet."
     }
   ]
 }

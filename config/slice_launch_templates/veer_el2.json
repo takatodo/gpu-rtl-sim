@@ -1,0 +1,25 @@
+{
+  "schema_version": "rtlmeter-design-launch-template-v1",
+  "target": "VeeR.veer_el2",
+  "status": "candidate_non_tlul_resident_breadth_before_asset_copy",
+  "notes": [
+    "Minimal stock-Verilator timed-TB template for the VeeR-EL2 gpu_cov_gate resident breadth line.",
+    "This template is defined before copying VeeR-EL2 assets into the minimal repo.",
+    "Old-repo evidence records VeeR-EL2:gpu_cov_gate:dhry reaching TEST_PASSED."
+  ],
+  "enrollment": {
+    "slug": "veer_el2",
+    "mdir_name": "veer_el2_gpu_cov_vl",
+    "runtime_input_type": "program_hex",
+    "runtime_input_path": "third_party/rtlmeter/designs/VeeR-EL2/tests/dhry/program.hex"
+  },
+  "runner_args_template": {
+    "coverage_tb_path": "third_party/rtlmeter/designs/VeeR-EL2/src/veer_el2_gpu_cov_tb.sv",
+    "debug_internal_output_names": [],
+    "driver_defaults": {},
+    "gpu_nstates": 128,
+    "gpu_sequential_steps": 64,
+    "target": "VeeR.veer_el2",
+    "top_module": "veer_el2_gpu_cov_tb"
+  }
+}

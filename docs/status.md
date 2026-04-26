@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_veer_el2_resident_gate_before_asset_copy
+  materialize_veer_el2_asset_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -792,18 +792,38 @@ define_veer_el2_resident_gate_before_asset_copy:
   planned_gate:
     name: veer_el2_resident_workload
     target: VeeR.veer_el2
-    source_template: old_repo:config/slice_launch_templates/veer_el2.json
-    initial_workload_hint: nstates=128 steps=64 resident_steps=true
+    source_template: config/slice_launch_templates/veer_el2.json
+    gpu_gate: config/scaling_gates/veer_el2_resident_workload.json
+    cpu_gate: config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json
+    initial_workload_shapes:
+      - nstates=64 steps=64 resident_steps=true
+      - nstates=128 steps=64 resident_steps=true
   acceptance:
     - gate config names only the bounded VeeR-EL2 source/test boundary to be copied
     - asset copy excludes old repo work/output history
     - resident mode must report resident_mode=true before any speedup claim
     - matching CPU exact-loop baseline must be defined before comparing throughput
+  status: done_gate_defined_before_asset_copy
   non_claims:
     - VeeR-EL2 resident runtime is not proven yet
     - broad VeeR family support is not proven yet
     - resident patch/script semantics remain out of scope
-  next_action: define_veer_el2_resident_gate_before_asset_copy
+  next_action: materialize_veer_el2_asset_boundary
+
+materialize_veer_el2_asset_boundary:
+  goal: copy only the bounded VeeR-EL2 source/test boundary required by the defined launch template and resident gates
+  weakest_point: gate config now exists, but the minimal repo still lacks VeeR-EL2 RTL/test assets and therefore cannot build or run the gate.
+  copy_policy:
+    - copy descriptor, license, required src tree, and dhry program input from old repo
+    - exclude old repo work/output history and transient /tmp evidence
+    - preserve config/ as the operational source of truth
+  expected_paths:
+    - third_party/rtlmeter/designs/VeeR-EL2/descriptor.yaml
+    - third_party/rtlmeter/designs/VeeR-EL2/LICENSE-VeeR-EL2
+    - third_party/rtlmeter/designs/VeeR-EL2/src/
+    - third_party/rtlmeter/designs/VeeR-EL2/tests/dhry/program.hex
+    - third_party/rtlmeter/designs/VeeR-EL2/tests/veer_el2_coverage_regions.json
+  next_action: materialize_veer_el2_asset_boundary
 ```
 
 ## source_of_truth

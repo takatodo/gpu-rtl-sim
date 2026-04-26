@@ -117,7 +117,8 @@ phase_3:
   run_resident_runtime_regression_contract: done
   select_next_resident_runtime_breadth_or_patch_semantics: done_select_breadth
   select_next_non_tlul_resident_candidate: done_veer_el2
-  define_veer_el2_resident_gate_before_asset_copy: next
+  define_veer_el2_resident_gate_before_asset_copy: done
+  materialize_veer_el2_asset_boundary: next
 ```
 
 ## acceptance
@@ -263,27 +264,35 @@ non_tlul_breadth_seed_candidate:
   resident_runtime_regression_status: pass
   next_resident_breadth_policy: select bounded non-TL-UL candidate before copying assets
   next_resident_breadth_candidate: veer_el2
-  next_resident_breadth_candidate_status: selected_before_asset_copy
+  next_resident_breadth_candidate_status: resident_gate_defined_before_asset_copy
   next_resident_breadth_candidate_evidence:
     - old_repo:output/family_readiness/veer_el2_gpu_toggle_readiness.md
     - old_repo:output/design_scope_expansion_packet.json
     - old_repo:config/slice_launch_templates/veer_el2.json
+  next_resident_breadth_candidate_launch_template: config/slice_launch_templates/veer_el2.json
+  next_resident_breadth_candidate_gpu_gate: config/scaling_gates/veer_el2_resident_workload.json
+  next_resident_breadth_candidate_cpu_gate: config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json
   true_resident_runtime_interface:
     cli_flag: src/tools/run_vl_hybrid.py --resident-steps
     runtime_env: RUN_VL_HYBRID_RESIDENT_STEPS=1
     c_runtime: src/hybrid/run_vl_hybrid.c
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: define_veer_el2_resident_gate_before_asset_copy
+  next_task: materialize_veer_el2_asset_boundary
 
 veer_el2_resident_breadth_candidate:
   selected: true
-  selection_status: selected_before_asset_copy
+  selection_status: resident_gate_defined_before_asset_copy
   role: next non-TL-UL resident runtime breadth candidate
   old_repo_launch_template: config/slice_launch_templates/veer_el2.json
   old_repo_gate_evidence: output/family_readiness/veer_el2_gpu_toggle_readiness.md
   old_repo_candidate_score_evidence: output/design_scope_expansion_packet.json
-  initial_gate_hint: nstates=128 steps=64 resident_steps=true
-  required_next_step: define bounded resident gate before copying assets
+  launch_template: config/slice_launch_templates/veer_el2.json
+  gpu_gate: config/scaling_gates/veer_el2_resident_workload.json
+  cpu_gate: config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json
+  gate_shapes:
+    - nstates=64 steps=64 resident_steps=true
+    - nstates=128 steps=64 resident_steps=true
+  required_next_step: materialize bounded VeeR-EL2 source/test assets
   non_claim: no VeeR-EL2 resident-mode result exists in the minimal repo yet
 ```

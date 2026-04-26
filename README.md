@@ -67,13 +67,15 @@ weakest_point:
 
 selected:
   target: veer_el2
-  old_repo_template: config/slice_launch_templates/veer_el2.json
+  launch_template: config/slice_launch_templates/veer_el2.json
+  gpu_gate: config/scaling_gates/veer_el2_resident_workload.json
+  cpu_gate: config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json
   old_repo_evidence:
     - output/family_readiness/veer_el2_gpu_toggle_readiness.md
     - output/design_scope_expansion_packet.json
 
 next:
-  define_veer_el2_resident_gate_before_asset_copy
+  materialize_veer_el2_asset_boundary
 ```
 
 Resident boundary:
