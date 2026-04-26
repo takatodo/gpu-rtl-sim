@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` repeated-step comparison and second-seed `tlul_sink` CPU/GPU repeated-step comparison both pass with GPU wins. The next blocker is packaging the minimal two-seed boundary without overstating generality.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` repeated-step comparison and second-seed `tlul_sink` CPU/GPU repeated-step comparison both pass with GPU wins. The minimal two-seed package boundary is now documented, with claims limited to OpenTitan TL-UL repeated-step gates.
 
 ## goal
 
@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  decide_package_boundary_after_second_seed_speedup
+  package_minimal_two_seed_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -335,15 +335,29 @@ tlul_sink_second_seed:
     steps_32: 6.0901
   next_action: decide_package_boundary_after_second_seed_speedup
   weakest_point: target breadth is still limited to two OpenTitan TL-UL seeds
+
+package_boundary:
+  status: documented
+  documented_in: README.md
+  included:
+    - minimal Verilator to LLVM to CUDA build path
+    - tlul_fifo_sync repeated-step CPU/GPU comparison
+    - tlul_sink repeated-step CPU/GPU comparison
+  excluded:
+    - non-TL-UL target breadth
+    - full RTL application throughput claim
+    - raw byte equality claim
+  next_action: decide_non_tlul_seed_or_release_after_package_boundary
+  weakest_point: package is useful as two-seed TL-UL evidence, not as broad RTL generality
 ```
 
 ## next
 
 ```text
-if target_breadth_needed:
+if broad_target_breadth_needed:
   add non-TL-UL seed
 else:
-  package minimal repo boundary with limited claims
+  publish minimal two-seed boundary
 ```
 
 ## source_of_truth

@@ -36,6 +36,33 @@ See:
 - `docs/roadmap.md`
 - `config/selection.json`
 
+## Two-Seed Claim Boundary
+
+weakest_point:
+  the current evidence covers two OpenTitan TL-UL seeds only. It does not prove
+  full RTL application throughput, non-TL-UL generality, or raw byte equality.
+
+| Seed | Status | Accepted claim | Key ratio | Non-claim |
+| --- | --- | --- | --- | --- |
+| `tlul_fifo_sync` | CPU/GPU repeated-step comparison passes | GPU beats a single-process CPU repeated-`eval_step` loop for `nstates=512`, `steps=[1,8,32]` | `2.56x`, `5.30x`, `2.72x` | Not full timed-cycle equivalence or non-TL-UL generality |
+| `tlul_sink` | CPU/GPU repeated-step comparison passes | GPU beats a single-process CPU repeated-`eval_step` loop for `nstates=512`, `steps=[1,8,32]` | `5.22x`, `2.70x`, `6.09x` | Not full timed-cycle equivalence or non-TL-UL generality |
+
+Package boundary:
+
+```text
+included:
+  - minimal Verilator -> LLVM -> CUDA build path
+  - two TL-UL seed GPU repeated-step gates
+  - two TL-UL seed single-process CPU repeated-eval comparison gates
+  - generated artifacts ignored under artifacts/ and reports/
+
+excluded:
+  - broad historical campaign artifacts
+  - non-TL-UL target breadth
+  - full RTL application throughput claims
+  - raw byte equality claims
+```
+
 ## Minimal CPU/GPU Repro Flow
 
 weakest_point:
@@ -310,4 +337,18 @@ PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py \
   --gate config/scaling_gates/tlul_sink_cpu_exact_loop_repeated_steps.json \
   --json-out reports/tlul_sink_cpu_exact_loop_repeated_steps.json \
   --gpu-scaling-report reports/tlul_sink_repeated_steps_scaling.json
+```
+
+## Release Checklist
+
+```text
+before_publishing:
+  jq_configs: jq empty config/selection.json config/targets.json config/scaling_gates/*.json
+  python_syntax: python3 -m py_compile src/tools/*.py
+  first_seed_gpu_gate: reports/tlul_fifo_sync_repeated_steps_scaling.json
+  first_seed_cpu_gate: reports/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json
+  second_seed_gpu_gate: reports/tlul_sink_repeated_steps_scaling.json
+  second_seed_cpu_gate: reports/tlul_sink_cpu_exact_loop_repeated_steps.json
+  generated_outputs_tracked: 0
+  claim_boundary_documented: true
 ```

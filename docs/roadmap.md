@@ -80,7 +80,10 @@ phase_3:
   generalize_cpu_exact_loop_probe_for_second_seed: done
   build_tlul_sink_host_probe: done
   run_tlul_sink_repeated_steps_exact_cpu_loop_gate: done
-  decide_package_boundary_after_second_seed_speedup: next
+  decide_package_boundary_after_second_seed_speedup: done_package_boundary
+  document_two_seed_claim_boundary: done
+  document_release_checklist: done
+  package_minimal_two_seed_boundary: next
 ```
 
 ## acceptance
@@ -173,4 +176,10 @@ second_seed_gate:
   accepted_claim: second seed shows GPU win against single-process CPU repeated-eval loop
   non_claim: generality beyond two OpenTitan TL-UL seeds
   status: pass
+
+package_boundary:
+  status: documented
+  claim_scope: two OpenTitan TL-UL seeds only
+  release_checklist: README.md
+  next_decision: publish minimal boundary or add non-TL-UL seed
 ```
