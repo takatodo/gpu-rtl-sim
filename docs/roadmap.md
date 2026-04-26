@@ -83,7 +83,8 @@ phase_3:
   decide_package_boundary_after_second_seed_speedup: done_package_boundary
   document_two_seed_claim_boundary: done
   document_release_checklist: done
-  package_minimal_two_seed_boundary: next
+  package_minimal_two_seed_boundary: done
+  decide_non_tlul_seed_or_release_after_package_boundary: next
 ```
 
 ## acceptance

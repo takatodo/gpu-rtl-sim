@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  package_minimal_two_seed_boundary
+  decide_non_tlul_seed_or_release_after_package_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
