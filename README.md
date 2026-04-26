@@ -58,6 +58,24 @@ weakest_point:
 | --- | --- | --- | --- | --- |
 | `xuantie_e902` | Explicit resident mode passes | GPU resident mode beats a single-process CPU repeated-`eval_step` loop for `nstates=128`, `steps=64` | `1.2076x` | Not broad XuanTie family support or resident patch-script semantics |
 
+Next resident breadth candidate:
+
+```text
+weakest_point:
+  VeeR-EL2 is selected from old-repo evidence, but its source/test boundary and
+  resident gate have not been materialized in this minimal repo yet.
+
+selected:
+  target: veer_el2
+  old_repo_template: config/slice_launch_templates/veer_el2.json
+  old_repo_evidence:
+    - output/family_readiness/veer_el2_gpu_toggle_readiness.md
+    - output/design_scope_expansion_packet.json
+
+next:
+  define_veer_el2_resident_gate_before_asset_copy
+```
+
 Resident boundary:
 
 ```text

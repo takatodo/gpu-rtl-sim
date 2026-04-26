@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  select_next_non_tlul_resident_candidate
+  define_veer_el2_resident_gate_before_asset_copy
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -768,16 +768,42 @@ select_next_resident_runtime_breadth_or_patch_semantics:
 select_next_non_tlul_resident_candidate:
   goal: choose the next non-TL-UL target to test the resident runtime beyond XuanTie-E902
   weakest_point: the minimal repo currently carries only one non-TL-UL source asset, so broadening requires selecting and importing a bounded source/test boundary from the old repo.
+  selected_candidate: veer_el2
+  selection_reason:
+    - old repo evidence records VeeR-EL2 gpu_cov_gate dhry reaching TEST_PASSED
+    - old repo design scope packet ranks VeeR family candidates at candidate_score 14
+    - old repo already has a bounded launch template for VeeR-EL2
   candidate_policy:
     - prefer a target with existing old-repo campaign evidence and small source boundary
     - define gate shape before copying assets
     - do not import broad historical work/output artifacts
     - keep resident patch/script semantics out of scope unless the candidate requires them
-  likely_sources:
-    - old repo campaign target registry/docs
-    - existing non-OpenTitan family notes
-    - prior candidate-only breadth evidence
-  next_action: select_next_non_tlul_resident_candidate
+  source_evidence:
+    - old_repo:output/family_readiness/veer_el2_gpu_toggle_readiness.md
+    - old_repo:output/design_scope_expansion_packet.json
+    - old_repo:config/slice_launch_templates/veer_el2.json
+  status: done_selected_before_asset_copy
+  next_action: define_veer_el2_resident_gate_before_asset_copy
+
+define_veer_el2_resident_gate_before_asset_copy:
+  goal: define the VeeR-EL2 resident runtime gate shape before importing its source/test boundary
+  weakest_point: VeeR-EL2 is selected from old-repo evidence, but the minimal repo has not copied its RTL/test assets and has no resident-mode result for it yet.
+  selected_candidate: veer_el2
+  planned_gate:
+    name: veer_el2_resident_workload
+    target: VeeR.veer_el2
+    source_template: old_repo:config/slice_launch_templates/veer_el2.json
+    initial_workload_hint: nstates=128 steps=64 resident_steps=true
+  acceptance:
+    - gate config names only the bounded VeeR-EL2 source/test boundary to be copied
+    - asset copy excludes old repo work/output history
+    - resident mode must report resident_mode=true before any speedup claim
+    - matching CPU exact-loop baseline must be defined before comparing throughput
+  non_claims:
+    - VeeR-EL2 resident runtime is not proven yet
+    - broad VeeR family support is not proven yet
+    - resident patch/script semantics remain out of scope
+  next_action: define_veer_el2_resident_gate_before_asset_copy
 ```
 
 ## source_of_truth
