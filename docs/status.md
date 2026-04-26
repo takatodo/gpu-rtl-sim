@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  validate_veer_el2_asset_boundary
+  generate_veer_el2_verilator_obj_dir
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -822,6 +822,9 @@ materialize_veer_el2_asset_boundary:
     - third_party/rtlmeter/designs/VeeR-EL2/LICENSE-VeeR-EL2
     - third_party/rtlmeter/designs/VeeR-EL2/src/
     - third_party/rtlmeter/designs/VeeR-EL2/tests/dhry/program.hex
+    - third_party/rtlmeter/designs/VeeR-EL2/tests/hello/program.hex
+    - third_party/rtlmeter/designs/VeeR-EL2/tests/cmark/program.hex
+    - third_party/rtlmeter/designs/VeeR-EL2/tests/cmark_iccm/program.hex
     - third_party/rtlmeter/designs/VeeR-EL2/tests/veer_el2_coverage_regions.json
     - third_party/rtlmeter/designs/VeeR-EL2/tests/veer_el2_program_hex_target_config.json
   status: done_asset_boundary_materialized
@@ -838,7 +841,17 @@ validate_veer_el2_asset_boundary:
     - launch template dhry program input exists
     - resident GPU and CPU gate configs are registered
     - no old repo work/output history is copied under the VeeR-EL2 boundary
-  next_action: validate_veer_el2_asset_boundary
+    - descriptor-referenced src/tests files exist
+  status: pass_contract
+  test: tests/contract/test_resident_runtime_contract.py
+  next_action: generate_veer_el2_verilator_obj_dir
+
+generate_veer_el2_verilator_obj_dir:
+  goal: run stock Verilator against the copied VeeR-EL2 gpu_cov_gate boundary and produce artifacts/veer_el2_obj_dir
+  weakest_point: boundary validation passed, but build behavior in the minimal repo is not proven and may expose include/order differences.
+  planned_mdir: artifacts/veer_el2_obj_dir
+  top_module: veer_el2_gpu_cov_tb
+  next_action: generate_veer_el2_verilator_obj_dir
 ```
 
 ## source_of_truth

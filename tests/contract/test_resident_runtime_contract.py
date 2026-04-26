@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 import unittest
@@ -62,7 +63,11 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(len(veer_targets), 1)
         self.assertIn(
             veer_targets[0]["status"],
-            {"resident_gate_defined_before_asset_copy", "asset_boundary_materialized"},
+            {
+                "resident_gate_defined_before_asset_copy",
+                "asset_boundary_materialized",
+                "asset_boundary_validated",
+            },
         )
 
     def test_veer_el2_asset_boundary_is_materialized_without_work_history(self) -> None:
@@ -81,6 +86,12 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertNotIn("work", copied_files)
         self.assertNotIn("output", copied_files)
 
+    def test_veer_el2_descriptor_referenced_assets_exist(self) -> None:
+        descriptor = (VEER_EL2_ASSETS / "descriptor.yaml").read_text(encoding="utf-8")
+        relative_paths = re.findall(r"- (src/[^\n ]+|tests/[^\n ]+)", descriptor)
+        missing = [path for path in relative_paths if not (VEER_EL2_ASSETS / path).exists()]
+        self.assertEqual(missing, [])
+
     def test_runtime_reports_resident_mode(self) -> None:
         runtime = RUNTIME.read_text(encoding="utf-8")
         self.assertIn("RUN_VL_HYBRID_RESIDENT_STEPS", runtime)
@@ -93,7 +104,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("Not broad XuanTie family support", readme)
         self.assertIn("resident --patch / --patch-script semantics", readme)
         self.assertIn("config/scaling_gates/veer_el2_resident_workload.json", readme)
-        self.assertIn("validate_veer_el2_asset_boundary", readme)
+        self.assertIn("generate_veer_el2_verilator_obj_dir", readme)
 
 
 if __name__ == "__main__":

@@ -119,7 +119,8 @@ phase_3:
   select_next_non_tlul_resident_candidate: done_veer_el2
   define_veer_el2_resident_gate_before_asset_copy: done
   materialize_veer_el2_asset_boundary: done
-  validate_veer_el2_asset_boundary: next
+  validate_veer_el2_asset_boundary: done
+  generate_veer_el2_verilator_obj_dir: next
 ```
 
 ## acceptance
@@ -265,7 +266,7 @@ non_tlul_breadth_seed_candidate:
   resident_runtime_regression_status: pass
   next_resident_breadth_policy: select bounded non-TL-UL candidate before copying assets
   next_resident_breadth_candidate: veer_el2
-  next_resident_breadth_candidate_status: asset_boundary_materialized
+  next_resident_breadth_candidate_status: asset_boundary_validated
   next_resident_breadth_candidate_evidence:
     - old_repo:output/family_readiness/veer_el2_gpu_toggle_readiness.md
     - old_repo:output/design_scope_expansion_packet.json
@@ -280,11 +281,11 @@ non_tlul_breadth_seed_candidate:
     c_runtime: src/hybrid/run_vl_hybrid.c
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: validate_veer_el2_asset_boundary
+  next_task: generate_veer_el2_verilator_obj_dir
 
 veer_el2_resident_breadth_candidate:
   selected: true
-  selection_status: asset_boundary_materialized
+  selection_status: asset_boundary_validated
   role: next non-TL-UL resident runtime breadth candidate
   old_repo_launch_template: config/slice_launch_templates/veer_el2.json
   old_repo_gate_evidence: output/family_readiness/veer_el2_gpu_toggle_readiness.md
@@ -301,8 +302,12 @@ veer_el2_resident_breadth_candidate:
     - LICENSE-VeeR-EL2
     - src/
     - tests/dhry/program.hex
+    - tests/hello/program.hex
+    - tests/cmark/program.hex
+    - tests/cmark_iccm/program.hex
     - tests/veer_el2_coverage_regions.json
     - tests/veer_el2_program_hex_target_config.json
-  required_next_step: validate copied asset boundary before Verilator obj_dir generation
+  asset_validation_status: pass_contract
+  required_next_step: generate Verilator obj_dir
   non_claim: no VeeR-EL2 resident-mode result exists in the minimal repo yet
 ```

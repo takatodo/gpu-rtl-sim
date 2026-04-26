@@ -76,7 +76,7 @@ selected:
     - output/design_scope_expansion_packet.json
 
 next:
-  validate_veer_el2_asset_boundary
+  generate_veer_el2_verilator_obj_dir
 ```
 
 Resident boundary:
