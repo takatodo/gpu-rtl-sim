@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  build_xuantie_e902_gpu_cubin
+  define_xuantie_e902_cpu_reference_contract
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -478,16 +478,37 @@ xuantie_e902_obj_dir_generation:
   warning_policy: accepted_for_build_surface_only
   next_action: build_xuantie_e902_gpu_cubin
   weakest_point: Verilator C++ obj_dir exists, but the GPU cubin and runtime execution path are still unproven for this non-TL-UL seed.
+
+xuantie_e902_gpu_cubin_and_smoke:
+  status: pass
+  mdir: artifacts/xuantie_e902_obj_dir
+  cubin: artifacts/xuantie_e902_obj_dir/vl_batch_gpu.cubin
+  meta: artifacts/xuantie_e902_obj_dir/vl_batch_gpu.meta.json
+  storage_size: 1318784
+  smoke:
+    nstates: 1
+    steps: 1
+    state_dump: artifacts/xuantie_e902_obj_dir/xuantie_gpu_smoke_state.bin
+    result: pass
+  runtime_observation:
+    gpu_kernel_time_ms_total: 0.229376
+    wall_time_ms: 2.312
+  non_claims:
+    - not a CPU/GPU correctness claim
+    - not a throughput or speedup claim
+    - not a full non-TL-UL support claim
+  next_action: define_xuantie_e902_cpu_reference_contract
+  weakest_point: The GPU kernel launches, but there is no CPU reference dump or normalized final-state equivalence contract for XuanTie-E902 yet.
 ```
 
 ## next
 
 ```text
-build_xuantie_e902_gpu_cubin:
-  use artifacts/xuantie_e902_obj_dir as the generated Verilator C++ surface
-  reuse the minimal LLVM-to-CUDA build path from TL-UL seeds where possible
-  treat Verilator warnings as build-surface warnings only
-  do not claim non-TL-UL runtime support until cubin build and smoke run pass
+define_xuantie_e902_cpu_reference_contract:
+  inspect XuanTie-E902 top-level reset/clock/input boundary
+  decide whether a host probe can generate a CPU reference state from case.pat
+  define normalized compare exclusions before claiming correctness
+  keep the current GPU smoke as launch evidence only
 ```
 
 ## source_of_truth

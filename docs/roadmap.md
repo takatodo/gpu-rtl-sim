@@ -93,7 +93,9 @@ phase_3:
   validate_xuantie_e902_asset_boundary: blocked_missing_rtlmeter_top_include
   define_xuantie_e902_rtlmeter_include_strategy: done_lint_pass_with_warnings
   generate_xuantie_e902_verilator_obj_dir: done_pass_with_warnings
-  build_xuantie_e902_gpu_cubin: next
+  build_xuantie_e902_gpu_cubin: done
+  run_xuantie_e902_gpu_smoke: done
+  define_xuantie_e902_cpu_reference_contract: next
 ```
 
 ## acceptance
@@ -208,6 +210,9 @@ non_tlul_breadth_seed_candidate:
   lint_only_status: pass_with_warnings
   obj_dir_status: pass_with_warnings
   obj_dir: artifacts/xuantie_e902_obj_dir
+  gpu_cubin_status: pass
+  gpu_smoke_status: pass
+  storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: build_xuantie_e902_gpu_cubin
+  next_task: define_xuantie_e902_cpu_reference_contract
 ```
