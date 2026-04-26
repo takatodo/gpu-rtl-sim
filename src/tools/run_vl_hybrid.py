@@ -42,6 +42,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent.parent
 HYBRID_BIN = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid"
 _CUBIN_CHAIN_ENV = "RUN_VL_HYBRID_CUBINS"
+_RESIDENT_STEPS_ENV = "RUN_VL_HYBRID_RESIDENT_STEPS"
 _POINTER_SIZED_HOST_ONLY_FIELDS = {"__VdlySched"}
 _FULLY_ZEROED_HOST_ONLY_FIELDS = {"vlNamep"}
 _TRANSIENT_VERILATOR_RUNTIME_FIELDS = {
@@ -280,7 +281,17 @@ def main() -> None:
         action="store_true",
         help="Emit stage trace lines from the CUDA runner to help localize module-load vs launch failures.",
     )
+    p.add_argument(
+        "--resident-steps",
+        action="store_true",
+        help=(
+            "Keep batched state resident on device across repeated eval steps. "
+            "Rejects --patch and --patch-script until resident patch semantics are defined."
+        ),
+    )
     args = p.parse_args()
+    if args.resident_steps and (args.patch or args.patch_script):
+        p.error("--resident-steps rejects --patch and --patch-script")
     launch_sequence = None
     cubin_override = _parse_path_list(args.cubins)
     cubin_paths: list[Path]
@@ -363,6 +374,10 @@ def main() -> None:
         env["RUN_VL_HYBRID_TRACE_STAGES"] = "1"
     else:
         env.pop("RUN_VL_HYBRID_TRACE_STAGES", None)
+    if args.resident_steps:
+        env[_RESIDENT_STEPS_ENV] = "1"
+    else:
+        env.pop(_RESIDENT_STEPS_ENV, None)
     sanitized_init_tmp: Path | None = None
     if args.init_state:
         init_state = args.init_state.resolve()

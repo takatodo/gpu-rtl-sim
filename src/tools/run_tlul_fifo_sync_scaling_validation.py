@@ -38,6 +38,7 @@ def _run_case(
     name = str(run["name"])
     nstates = int(run["nstates"])
     steps = int(run["steps"])
+    resident_steps = bool(run.get("resident_steps", False))
     dump_state = dump_dir / f"{name}_state.bin"
     cmd = [
         sys.executable,
@@ -51,6 +52,8 @@ def _run_case(
         "--dump-state",
         str(dump_state),
     ]
+    if resident_steps:
+        cmd.append("--resident-steps")
     started = time.perf_counter()
     completed = subprocess.run(cmd, text=True, capture_output=True)
     elapsed_ms = (time.perf_counter() - started) * 1000.0
@@ -62,6 +65,7 @@ def _run_case(
         "name": name,
         "nstates": nstates,
         "steps": steps,
+        "resident_steps": resident_steps,
         "returncode": completed.returncode,
         "elapsed_ms": elapsed_ms,
         "states_per_second": states_per_second,
@@ -107,6 +111,7 @@ def main() -> None:
         "target": gate["target"],
         "status": "ok" if passed else "fail",
         "storage_size": storage_size,
+        "resident_steps": any(bool(run.get("resident_steps", False)) for run in gate["runs"]),
         "runs": results,
         "acceptance": {
             "all_required_runs_passed": passed,

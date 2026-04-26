@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_true_resident_gpu_runtime_interface
+  package_xuantie_true_resident_runtime_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -672,14 +672,14 @@ xuantie_e902_cpu_exact_loop_memory_resident_workload_baseline:
   runs:
     - shape: nstates=64 steps=64
       passed: true
-      gpu_over_cpu_throughput_ratio: 0.5615
+      gpu_over_cpu_throughput_ratio: 0.8634
     - shape: nstates=64 steps=128
       passed: true
-      gpu_over_cpu_throughput_ratio: 0.8981
+      gpu_over_cpu_throughput_ratio: 0.5997
     - shape: nstates=128 steps=64
       passed: true
-      gpu_over_cpu_throughput_ratio: 1.0955
-  observation: GPU beats the CPU exact-loop baseline at the largest proxy shape, but this is still not proof of a true fully resident GPU runtime.
+      gpu_over_cpu_throughput_ratio: 1.2076
+  observation: GPU beats the CPU exact-loop baseline at the largest resident shape after explicit resident mode was implemented.
   next_action: decide_true_resident_runtime_or_package_xuantie_boundary
 
 decide_true_resident_runtime_or_package_xuantie_boundary:
@@ -696,16 +696,50 @@ define_true_resident_gpu_runtime_interface:
   decision: pursue implementation depth before packaging XuanTie-E902
   reason: the top-level goal is high-throughput regression/coverage, and the proxy gate indicates communication reduction can cross CPU throughput
   first_task: define the host/runtime interface for keeping batched state resident across repeated eval steps
+  selected_interface:
+    cli_flag: src/tools/run_vl_hybrid.py --resident-steps
+    runtime_env: RUN_VL_HYBRID_RESIDENT_STEPS=1
+    c_runtime: src/hybrid/run_vl_hybrid.c
+    validation_runner: src/tools/run_tlul_fifo_sync_scaling_validation.py
   expected_scope:
     - runtime flag or entrypoint for resident execution
     - explicit ownership of device state allocation and final dump
     - no per-step host/device state transfer in the resident path
     - existing non-resident runner remains available for comparison
+    - resident mode refuses per-step patch inputs until script semantics are defined
   acceptance:
     - interface is documented in README/status
     - implementation task names exact files or modules before editing runtime code
     - no true-resident speedup claim until a resident GPU run and matching CPU baseline pass
-  next_action: define_true_resident_gpu_runtime_interface
+  status: done
+  next_action: implement_true_resident_gpu_runtime_flag
+
+implement_true_resident_gpu_runtime_flag:
+  goal: make resident execution explicit rather than relying on proxy gate wording
+  edit_scope:
+    - src/tools/run_vl_hybrid.py
+    - src/hybrid/run_vl_hybrid.c
+    - src/tools/run_tlul_fifo_sync_scaling_validation.py
+  behavior:
+    - --resident-steps forwards RUN_VL_HYBRID_RESIDENT_STEPS=1
+    - resident mode reports resident_mode=true in stdout/report
+    - resident mode rejects --patch and --patch-script for now
+    - final dump remains allowed
+  status: done
+  result:
+    resident_gpu_gate: pass
+    cpu_exact_loop_baseline: pass
+    best_gpu_over_cpu_ratio: 1.2076
+  next_action: package_xuantie_true_resident_runtime_boundary
+
+package_xuantie_true_resident_runtime_boundary:
+  goal: document the first non-TL-UL true resident runtime boundary without overclaiming broad generality
+  include:
+    - XuanTie-E902 resident flag semantics
+    - resident GPU gate command and matching CPU exact-loop command
+    - accepted claim limited to nstates=128 steps=64 on XuanTie-E902
+    - non-claims for full RTL generality and patch-script resident semantics
+  next_action: package_xuantie_true_resident_runtime_boundary
 ```
 
 ## source_of_truth

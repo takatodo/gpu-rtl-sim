@@ -42,6 +42,8 @@
 #define ENV_INIT_STATE "RUN_VL_HYBRID_INIT_STATE"
 /* Optional per-step patch script file; each non-comment line is one step of patch tokens. */
 #define ENV_PATCH_SCRIPT "RUN_VL_HYBRID_PATCH_SCRIPT"
+/* Explicit resident repeated-step mode; keeps state on device and rejects per-step host patches. */
+#define ENV_RESIDENT_STEPS "RUN_VL_HYBRID_RESIDENT_STEPS"
 
 /* Set to force one cuCtxSynchronize per step (slower wall clock; old behavior). */
 #define ENV_SYNC_EACH_STEP "RUN_VL_HYBRID_SYNC_EACH_STEP"
@@ -789,6 +791,8 @@ int main(int argc, char **argv) {
     npatch++;
   }
 
+  const int resident_steps = getenv(ENV_RESIDENT_STEPS) != NULL;
+
   {
     const char *patch_script_path = getenv(ENV_PATCH_SCRIPT);
     if (patch_script_path && patch_script_path[0] != '\0') {
@@ -798,6 +802,13 @@ int main(int argc, char **argv) {
       }
       steps = script_logical_step_count;
     }
+  }
+  if (resident_steps && (npatch > 0 || script_blocks != NULL)) {
+    fprintf(stderr,
+            "%s=1 rejects per-step host patches; omit argv patches and %s\n",
+            ENV_RESIDENT_STEPS, ENV_PATCH_SCRIPT);
+    free_step_patch_blocks(script_blocks, script_block_count);
+    return 1;
   }
 
   if (storage_ull == 0ULL || storage_ull > (1ULL << 40)) {
@@ -1143,6 +1154,7 @@ int main(int argc, char **argv) {
   printf("ok: steps=%u kernels_per_step=%d patches_per_step=%d grid=%u block=%u "
          "nstates=%u storage=%zu B\n",
          steps, nk, npatch, grid, block, nstates, storage);
+  printf("resident_mode: %s\n", resident_steps ? "true" : "false");
   if (script_blocks) {
     printf("patch_script_steps: logical=%u records=%u blocks=%u\n",
            script_logical_step_count, script_record_count, script_block_count);
@@ -1154,6 +1166,11 @@ int main(int argc, char **argv) {
   } else if (steps <= 1U) {
     printf("gpu_kernel_time_ms: total=%.6f  per_launch=%.6f  (CUDA events, "
            "kernels only; HtoD patches before launch excluded)\n",
+           gpu_kernel_ms_sum, ms_per_launch);
+  } else if (resident_steps) {
+    printf("gpu_kernel_time_ms: total=%.6f  per_launch=%.6f  (CUDA events, "
+           "resident repeated-step mode: one HtoD init before launches, no "
+           "per-step host patches, final DtoH only if requested)\n",
            gpu_kernel_ms_sum, ms_per_launch);
   } else {
     printf("gpu_kernel_time_ms: total=%.6f  per_launch=%.6f  (CUDA events, "

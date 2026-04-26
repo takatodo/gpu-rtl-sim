@@ -360,16 +360,18 @@ status:
   memory_resident_workload_gpu_gate: pass
   memory_resident_workload_cpu_baseline_gate: pass_gpu_win_at_largest_shape
   best_memory_resident_proxy_gpu_over_cpu_ratio: 1.0955
-  true_resident_runtime_status: not_defined
-  next_task: define_true_resident_gpu_runtime_interface
+  best_true_resident_gpu_over_cpu_ratio: 1.2076
+  true_resident_runtime_status: flag_implemented_and_gate_passed
+  next_task: package_xuantie_true_resident_runtime_boundary
 ```
 
-The `memory_resident_workload_*` gates are communication-reduction proxies. They
-do not prove a fully resident GPU runtime yet because the current runner still
-uses the existing host/runtime path. The next implementation boundary is to
-define a resident runtime interface that keeps batched state on device across
-repeated eval steps, preserves the existing non-resident path for comparison,
-and only dumps final state at the boundary.
+The `memory_resident_workload_*` gates now use explicit resident mode:
+`--resident-steps` in `src/tools/run_vl_hybrid.py` forwards
+`RUN_VL_HYBRID_RESIDENT_STEPS=1` into `src/hybrid/run_vl_hybrid.c`. This keeps
+batched state on device across repeated eval steps, preserves the existing
+non-resident path for comparison, and only dumps final state at the boundary.
+The first resident mode rejects per-step `--patch` / `--patch-script` inputs
+until their semantics are defined.
 
 The host probe reuses `src/hybrid/tlul_slice_host_probe.cpp` with XuanTie
 model-specific macros. Run it from the generated obj_dir so the stock testbench

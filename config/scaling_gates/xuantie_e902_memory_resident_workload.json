@@ -16,18 +16,21 @@
       "name": "resident_proxy_batch_64_steps_64",
       "nstates": 64,
       "steps": 64,
+      "resident_steps": true,
       "required": true
     },
     {
       "name": "resident_proxy_batch_64_steps_128",
       "nstates": 64,
       "steps": 128,
+      "resident_steps": true,
       "required": true
     },
     {
       "name": "resident_proxy_batch_128_steps_64",
       "nstates": 128,
       "steps": 64,
+      "resident_steps": true,
       "required": true
     }
   ],
@@ -36,6 +39,7 @@
     "batched_gpu_runs": [
       "run exits with status 0",
       "dumped state byte size equals storage_size * nstates when dump is requested",
+      "resident mode rejects per-step host patch inputs",
       "no memory-resident speedup claim is made until a matching CPU exact-loop baseline exists"
     ]
   },
@@ -47,7 +51,7 @@
       "state_steps_per_second"
     ],
     "non_claims": [
-      "this is a communication-reduction proxy gate, not proof of a true fully resident GPU runtime",
+      "this is the first explicit resident-step runtime gate, but not proof of broad fully resident GPU runtime generality",
       "no XuanTie speedup claim until a matching memory-resident CPU exact-loop baseline exists",
       "no full non-TL-UL generality claim from one E902 wrapper"
     ]
