@@ -22,7 +22,7 @@
     {
       "name": "xuantie_e902",
       "role": "first_non_tlul_breadth_candidate",
-      "status": "true_resident_runtime_flag_pass_gpu_win",
+      "status": "true_resident_runtime_boundary_packaged",
       "launch_template_path": "config/slice_launch_templates/xuantie_e902.json",
       "scaling_gate_path": "config/scaling_gates/xuantie_e902_scaling.json",
       "cpu_exact_loop_gate_path": "config/scaling_gates/xuantie_e902_cpu_exact_loop_repeated_steps.json",
@@ -30,7 +30,7 @@
       "cpu_exact_loop_large_workload_gate_path": "config/scaling_gates/xuantie_e902_cpu_exact_loop_large_workload.json",
       "memory_resident_workload_gate_path": "config/scaling_gates/xuantie_e902_memory_resident_workload.json",
       "cpu_exact_loop_memory_resident_workload_gate_path": "config/scaling_gates/xuantie_e902_cpu_exact_loop_memory_resident_workload.json",
-      "reason": "Carries the old repo's smallest ready non-OpenTitan single-surface candidate into the minimal repo without claiming runtime support yet."
+      "reason": "First non-TL-UL resident runtime boundary with a limited XuanTie-E902 GPU win; broad family/general RTL claims remain out of scope."
     }
   ]
 }

@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  package_xuantie_true_resident_runtime_boundary
+  define_resident_runtime_regression_contract
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -739,7 +739,19 @@ package_xuantie_true_resident_runtime_boundary:
     - resident GPU gate command and matching CPU exact-loop command
     - accepted claim limited to nstates=128 steps=64 on XuanTie-E902
     - non-claims for full RTL generality and patch-script resident semantics
-  next_action: package_xuantie_true_resident_runtime_boundary
+  status: done
+  accepted_claim: XuanTie-E902 resident mode beats CPU exact-loop baseline at nstates=128 steps=64
+  best_gpu_over_cpu_ratio: 1.2076
+  next_action: define_resident_runtime_regression_contract
+
+define_resident_runtime_regression_contract:
+  goal: prevent resident-mode regressions before broadening to another non-TL-UL target
+  include:
+    - run_vl_hybrid.py --resident-steps rejects --patch and --patch-script
+    - resident gate report records resident_steps=true
+    - stdout tail includes resident_mode: true
+    - README boundary remains limited to XuanTie-E902 nstates=128 steps=64
+  next_action: define_resident_runtime_regression_contract
 ```
 
 ## source_of_truth

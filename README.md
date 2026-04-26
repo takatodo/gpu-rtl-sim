@@ -47,6 +47,34 @@ weakest_point:
 | `tlul_fifo_sync` | CPU/GPU repeated-step comparison passes | GPU beats a single-process CPU repeated-`eval_step` loop for `nstates=512`, `steps=[1,8,32]` | `2.56x`, `5.30x`, `2.72x` | Not full timed-cycle equivalence or non-TL-UL generality |
 | `tlul_sink` | CPU/GPU repeated-step comparison passes | GPU beats a single-process CPU repeated-`eval_step` loop for `nstates=512`, `steps=[1,8,32]` | `5.22x`, `2.70x`, `6.09x` | Not full timed-cycle equivalence or non-TL-UL generality |
 
+## XuanTie-E902 Resident Runtime Boundary
+
+weakest_point:
+  this is one non-TL-UL wrapper with explicit resident mode. It does not prove
+  broad non-TL-UL generality, timed-cycle equivalence, or resident patch-script
+  semantics.
+
+| Target | Status | Accepted claim | Key ratio | Non-claim |
+| --- | --- | --- | --- | --- |
+| `xuantie_e902` | Explicit resident mode passes | GPU resident mode beats a single-process CPU repeated-`eval_step` loop for `nstates=128`, `steps=64` | `1.2076x` | Not broad XuanTie family support or resident patch-script semantics |
+
+Resident boundary:
+
+```text
+included:
+  - XuanTie-E902 source/test boundary copied into the minimal repo
+  - normalized one-state CPU/GPU final-state equivalence
+  - conservative and large-workload CPU/GPU baselines
+  - explicit --resident-steps / RUN_VL_HYBRID_RESIDENT_STEPS=1 runtime path
+  - matching CPU exact-loop comparison for the resident gate
+
+excluded:
+  - broad non-TL-UL target generality
+  - XuanTie family support beyond E902
+  - resident --patch / --patch-script semantics
+  - full timed-cycle CPU/GPU equivalence
+```
+
 Package boundary:
 
 ```text
@@ -361,8 +389,8 @@ status:
   memory_resident_workload_cpu_baseline_gate: pass_gpu_win_at_largest_shape
   best_memory_resident_proxy_gpu_over_cpu_ratio: 1.0955
   best_true_resident_gpu_over_cpu_ratio: 1.2076
-  true_resident_runtime_status: flag_implemented_and_gate_passed
-  next_task: package_xuantie_true_resident_runtime_boundary
+  true_resident_runtime_status: packaged_boundary
+  next_task: define_resident_runtime_regression_contract
 ```
 
 The `memory_resident_workload_*` gates now use explicit resident mode:
