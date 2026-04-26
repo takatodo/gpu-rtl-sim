@@ -44,7 +44,8 @@ phase_3:
   review_minimal_initial_source_boundary: done
   minimal_initial_commit_if_requested: done_f8349b9
   reproduce_from_clean_checkout_after_initial_commit: done_after_readme_fix
-  commit_minimal_readme_clean_checkout_fix: next
+  commit_minimal_readme_clean_checkout_fix: done_c041911
+  select_next_minimal_runtime_validation_axis: next
 ```
 
 ## acceptance

@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, and the initial source boundary is committed. Clean-checkout reproduction now passes after fixing the README Verilator command to include `prim_pkg.sv`; commit that documentation fix next.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The next decision is which validation axis to open from this minimal baseline.
 
 ## goal
 
@@ -19,7 +19,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  commit_minimal_readme_clean_checkout_fix
+  select_next_minimal_runtime_validation_axis
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -190,24 +190,30 @@ source_boundary_review:
   weakest_point: third_party seed provenance should be reviewed before publishing beyond local development
 
 clean_checkout_reproduction:
-  status: pass_after_readme_fix
+  status: pass
   source_commit: 8419685
   readme_fix_required: add prim_pkg.sv to the Verilator command
+  readme_fix_commit: c041911
   selected_acceptance_policy: normalized_final_state_equivalence
   selected_acceptance_policy_passed: true
   design_state_mismatch_bytes: 0
   top_level_io_mismatch_bytes: 0
   other_mismatch_bytes: 0
-  next_action: commit_minimal_readme_clean_checkout_fix
+  next_action: select_next_minimal_runtime_validation_axis
+
+next_axis_candidates:
+  - increase_nstates_or_steps_on_tlul_fifo_sync
+  - add_second_small_seed_target
+  - package_remote_or_release_boundary
 ```
 
 ## next
 
 ```text
-if readme_fix_commit_requested_or_status_sync_needed:
-  commit the README clean-checkout fix and status update
+if next_axis_selected:
+  define the next acceptance gate before adding source
 else:
-  keep generated clean-checkout outputs ignored
+  choose between scaling tlul_fifo_sync, adding a second seed, or packaging the repo boundary
 ```
 
 ## source_of_truth

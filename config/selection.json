@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "commit_minimal_readme_clean_checkout_fix",
+  "current_priority": "select_next_minimal_runtime_validation_axis",
   "current_priority_source_artifact": "docs/status.md",
   "top_level_goal": "generalize_verilator_llvm_hybrid_runtime_for_high_throughput_regression_and_coverage",
   "active_seed_target": "tlul_fifo_sync",
