@@ -96,7 +96,9 @@ phase_3:
   build_xuantie_e902_gpu_cubin: done
   run_xuantie_e902_gpu_smoke: done
   define_xuantie_e902_cpu_reference_contract: done_normalized_final_state_equivalence
-  define_xuantie_e902_scaling_gate: next
+  define_xuantie_e902_scaling_gate: done
+  run_xuantie_e902_scaling_gate: done
+  define_xuantie_e902_cpu_repeated_steps_baseline: next
 ```
 
 ## acceptance
@@ -215,7 +217,10 @@ non_tlul_breadth_seed_candidate:
   gpu_smoke_status: pass
   cpu_reference_contract_status: pass
   normalized_final_state_equivalence: pass
+  scaling_gate: config/scaling_gates/xuantie_e902_scaling.json
+  scaling_report: reports/xuantie_e902_scaling.json
+  scaling_status: pass
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: define_xuantie_e902_scaling_gate
+  next_task: define_xuantie_e902_cpu_repeated_steps_baseline
 ```

@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_xuantie_e902_scaling_gate
+  define_xuantie_e902_cpu_repeated_steps_baseline
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -527,16 +527,43 @@ xuantie_e902_cpu_reference_contract:
     - not a full non-TL-UL family support claim
   next_action: define_xuantie_e902_scaling_gate
   weakest_point: XuanTie-E902 has a one-state correctness smoke, but no scaling gate or CPU/GPU repeated-step comparison yet.
+
+xuantie_e902_scaling_gate:
+  status: pass
+  gate: config/scaling_gates/xuantie_e902_scaling.json
+  runner: src/tools/run_tlul_fifo_sync_scaling_validation.py
+  report: reports/xuantie_e902_scaling.json
+  mdir: artifacts/xuantie_e902_obj_dir
+  storage_size: 1318784
+  runs:
+    - name: single_state_smoke
+      nstates: 1
+      steps: 1
+      passed: true
+    - name: small_batch
+      nstates: 8
+      steps: 1
+      passed: true
+    - name: small_repeated_steps
+      nstates: 8
+      steps: 8
+      passed: true
+  non_claims:
+    - no XuanTie CPU speedup claim yet
+    - no repeated-step CPU/GPU correctness claim yet
+    - no broad non-TL-UL generality claim
+  next_action: define_xuantie_e902_cpu_repeated_steps_baseline
+  weakest_point: GPU launch/scaling passes for a conservative E902 shape, but the matching CPU repeated-step baseline is not defined.
 ```
 
 ## next
 
 ```text
-define_xuantie_e902_scaling_gate:
-  choose conservative nstates/steps for the first non-TL-UL scaling gate
-  keep CPU/GPU correctness anchored to normalized final-state equivalence
-  separate launch/scaling evidence from throughput claims until CPU baseline exists
-  avoid broad XuanTie family claims from one E902 wrapper
+define_xuantie_e902_cpu_repeated_steps_baseline:
+  reuse the XuanTie host probe where possible
+  define a CPU repeated-eval shape matching the conservative GPU scaling gate
+  compare CPU/GPU throughput only after the CPU baseline gate is source-backed
+  keep normalized one-state correctness separate from repeated-step performance
 ```
 
 ## source_of_truth
