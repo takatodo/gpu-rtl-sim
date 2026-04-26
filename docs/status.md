@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  materialize_veer_el2_asset_boundary
+  validate_veer_el2_asset_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -823,7 +823,22 @@ materialize_veer_el2_asset_boundary:
     - third_party/rtlmeter/designs/VeeR-EL2/src/
     - third_party/rtlmeter/designs/VeeR-EL2/tests/dhry/program.hex
     - third_party/rtlmeter/designs/VeeR-EL2/tests/veer_el2_coverage_regions.json
-  next_action: materialize_veer_el2_asset_boundary
+    - third_party/rtlmeter/designs/VeeR-EL2/tests/veer_el2_program_hex_target_config.json
+  status: done_asset_boundary_materialized
+  copied_size: about_1_8MiB
+  next_action: validate_veer_el2_asset_boundary
+
+validate_veer_el2_asset_boundary:
+  goal: prove the copied VeeR-EL2 asset boundary is internally consistent before attempting Verilator obj_dir generation
+  weakest_point: the assets are present, but no Verilator build or resident runtime result exists for VeeR-EL2 in the minimal repo yet.
+  checks:
+    - descriptor exists
+    - license exists
+    - launch template coverage_tb_path exists
+    - launch template dhry program input exists
+    - resident GPU and CPU gate configs are registered
+    - no old repo work/output history is copied under the VeeR-EL2 boundary
+  next_action: validate_veer_el2_asset_boundary
 ```
 
 ## source_of_truth

@@ -35,11 +35,12 @@
     {
       "name": "veer_el2",
       "role": "next_non_tlul_resident_breadth_candidate",
-      "status": "resident_gate_defined_before_asset_copy",
+      "status": "asset_boundary_materialized",
       "launch_template_path": "config/slice_launch_templates/veer_el2.json",
       "resident_workload_gate_path": "config/scaling_gates/veer_el2_resident_workload.json",
       "cpu_exact_loop_resident_workload_gate_path": "config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json",
-      "reason": "Next bounded non-TL-UL resident runtime candidate selected from old-repo VeeR-EL2 gpu_cov_gate evidence; source/test assets are intentionally not copied yet."
+      "asset_boundary_path": "third_party/rtlmeter/designs/VeeR-EL2",
+      "reason": "Next bounded non-TL-UL resident runtime candidate selected from old-repo VeeR-EL2 gpu_cov_gate evidence; only the descriptor, license, src tree, dhry program input, and coverage/program config assets are copied."
     }
   ]
 }

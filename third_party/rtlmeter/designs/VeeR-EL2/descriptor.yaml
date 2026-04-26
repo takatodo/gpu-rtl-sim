@@ -1,0 +1,188 @@
+origin:
+  - repository: https://github.com/chipsalliance/Cores-VeeR-EL2.git
+    revision: c5c004589ee0a308b63278ee609e1597f61a4143
+    licenses:
+      - LICENSE-VeeR-EL2
+
+compile:
+  verilogSourceFiles:
+    - src/el2_def.sv
+    - src/veer_wrapper.sv
+    - src/el2_veer_wrapper.sv
+    - src/el2_mem.sv
+    - src/el2_pic_ctrl.sv
+    - src/el2_veer.sv
+    - src/el2_dma_ctrl.sv
+    - src/el2_pmp.sv
+    - src/el2_ifu_aln_ctl.sv
+    - src/el2_ifu_compress_ctl.sv
+    - src/el2_ifu_ifc_ctl.sv
+    - src/el2_ifu_bp_ctl.sv
+    - src/el2_ifu_ic_mem.sv
+    - src/el2_ifu_mem_ctl.sv
+    - src/el2_ifu_iccm_mem.sv
+    - src/el2_ifu.sv
+    - src/el2_dec_decode_ctl.sv
+    - src/el2_dec_gpr_ctl.sv
+    - src/el2_dec_ib_ctl.sv
+    - src/el2_dec_pmp_ctl.sv
+    - src/el2_dec_tlu_ctl.sv
+    - src/el2_dec_trigger.sv
+    - src/el2_dec.sv
+    - src/el2_exu_alu_ctl.sv
+    - src/el2_exu_mul_ctl.sv
+    - src/el2_exu_div_ctl.sv
+    - src/el2_exu.sv
+    - src/el2_lsu.sv
+    - src/el2_lsu_clkdomain.sv
+    - src/el2_lsu_addrcheck.sv
+    - src/el2_lsu_lsc_ctl.sv
+    - src/el2_lsu_stbuf.sv
+    - src/el2_lsu_bus_buffer.sv
+    - src/el2_lsu_bus_intf.sv
+    - src/el2_lsu_ecc.sv
+    - src/el2_lsu_dccm_mem.sv
+    - src/el2_lsu_dccm_ctl.sv
+    - src/el2_lsu_trigger.sv
+    - src/el2_dbg.sv
+    - src/dmi_mux.v
+    - src/dmi_wrapper.v
+    - src/dmi_jtag_to_core_sync.v
+    - src/rvjtag_tap.v
+    - src/el2_lib.sv
+    - src/beh_lib.sv
+    - src/mem_lib.sv
+    - src/axi_lsu_dma_bridge.sv
+    - src/tb_top_pkg.sv
+    - src/tb_top.sv
+    - src/ahb_sif.sv
+    - src/el2_mem_if.sv
+  verilogIncludeFiles:
+    - src/dasm.svi
+    - src/el2_dec_csr_equ_m.svh
+    - src/icache_macros.svh
+  topModule: tb_top
+  mainClock: tb_top.core_clk
+  verilatorArgs: [
+    --autoflush
+  ]
+
+execute:
+  common:
+    postHook: tests/post.bash
+  tests:
+    hello:
+      files:
+        - tests/hello/program.hex
+    cmark:
+      files:
+        - tests/cmark/program.hex
+    cmark_iccm:
+      files:
+        - tests/cmark_iccm/program.hex
+    dhry:
+      files:
+        - tests/dhry/program.hex
+
+configurations:
+  default:
+    compile:
+      verilogIncludeFiles:
+        - src/default/common_defines.vh
+        - src/default/el2_param.vh
+        - src/default/el2_pdef.vh
+        - src/default/pic_map_auto.h
+    execute:
+      tests:
+        hello:
+          tags: [ sanity ]
+        cmark:
+          args: [ +iterations=14 ]
+        cmark_iccm:
+          args: [ +iterations=22 ]
+        dhry:
+          args: [ +iterations=17500 ]
+          tags: [ standard ]
+
+  hiperf:
+    compile:
+      verilogIncludeFiles:
+        - src/hiperf/common_defines.vh
+        - src/hiperf/el2_param.vh
+        - src/hiperf/el2_pdef.vh
+        - src/hiperf/pic_map_auto.h
+    execute:
+      tests:
+        cmark:
+          args: [ +iterations=11 ]
+        cmark_iccm:
+          args: [ +iterations=16 ]
+        dhry:
+          args: [ +iterations=13600 ]
+
+  asic:
+    compile:
+      verilogIncludeFiles:
+        - src/asic/common_defines.vh
+        - src/asic/el2_param.vh
+        - src/asic/el2_pdef.vh
+        - src/asic/pic_map_auto.h
+    execute:
+      tests:
+        cmark:
+          args: [ +iterations=6 ]
+        cmark_iccm:
+          args: [ +iterations=9 ]
+        dhry:
+          args: [ +iterations=7000 ]
+
+  gpu_cov:
+    compile:
+      verilogSourceFiles:
+        - src/veer_el2_gpu_cov_tb.sv
+      topModule: veer_el2_gpu_cov_tb
+      mainClock: veer_el2_gpu_cov_tb.dut.core_clk
+      verilatorArgs: [ --autoflush, -Wno-fatal, --timing ]
+      verilogDefines:
+        VEER_GPU_COV_SIM_ACCEL: 1
+      verilogIncludeFiles:
+        - src/default/common_defines.vh
+        - src/default/el2_param.vh
+        - src/default/el2_pdef.vh
+        - src/default/pic_map_auto.h
+    execute:
+      common:
+        files:
+          - tests/veer_el2_coverage_regions.json
+      tests:
+        hello:
+          tags: [ sanity ]
+        dhry:
+          args: [ +iterations=17500 ]
+          tags: [ standard ]
+
+  gpu_cov_gate:
+    compile:
+      verilogSourceFiles:
+        - src/veer_el2_gpu_cov_tb.sv
+      topModule: veer_el2_gpu_cov_tb
+      mainClock: veer_el2_gpu_cov_tb.dut.core_clk
+      verilatorArgs: [ --autoflush, -Wno-fatal, --timing ]
+      verilogDefines:
+        VEER_GPU_COV_SIM_ACCEL: 1
+        VEER_GPU_COV_TERMINATE_ON_MAILBOX: 1
+      verilogIncludeFiles:
+        - src/default/common_defines.vh
+        - src/default/el2_param.vh
+        - src/default/el2_pdef.vh
+        - src/default/pic_map_auto.h
+    execute:
+      common:
+        files:
+          - tests/veer_el2_coverage_regions.json
+      tests:
+        hello:
+          tags: [ sanity ]
+        dhry:
+          args: [ +iterations=17500 ]
+          tags: [ standard ]

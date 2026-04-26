@@ -70,12 +70,13 @@ selected:
   launch_template: config/slice_launch_templates/veer_el2.json
   gpu_gate: config/scaling_gates/veer_el2_resident_workload.json
   cpu_gate: config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json
+  asset_boundary: third_party/rtlmeter/designs/VeeR-EL2
   old_repo_evidence:
     - output/family_readiness/veer_el2_gpu_toggle_readiness.md
     - output/design_scope_expansion_packet.json
 
 next:
-  materialize_veer_el2_asset_boundary
+  validate_veer_el2_asset_boundary
 ```
 
 Resident boundary:

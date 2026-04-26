@@ -1,0 +1,15 @@
+{
+  "dccm_region_end_addr": 4026793983,
+  "dccm_region_start_addr": 4026791936,
+  "dccm_target_prefix": "veer_el2_gpu_cov_tb.dut.Gen_dccm_enable.dccm_loop__BRA__",
+  "dccm_target_suffixes": [
+    ".dccm.dccm_bank.ram_core"
+  ],
+  "iccm_region_end_addr": 3993044991,
+  "iccm_region_start_addr": 3992979456,
+  "iccm_target_prefix": "veer_el2_gpu_cov_tb.dut.Gen_iccm_enable.iccm_loop__BRA__",
+  "iccm_target_suffixes": [
+    ".iccm.iccm_bank.ram_core"
+  ],
+  "iteration_base_addr": 268435456
+}
