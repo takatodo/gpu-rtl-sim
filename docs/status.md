@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The next validation axis is scaling the existing `tlul_fifo_sync` seed before adding a second target, and the scaling gate is now defined in config.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate now passes for the configured `nstates` set; the next decision is whether to deepen scaling, add a second seed, or package the repo boundary.
 
 ## goal
 
@@ -19,7 +19,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  implement_tlul_fifo_sync_scaling_validation_runner
+  decide_post_tlul_scaling_validation_next_axis
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -210,7 +210,10 @@ selected_next_axis:
   axis: increase_nstates_or_steps_on_tlul_fifo_sync
   reason: reuse the proven seed to measure batching/state scaling before increasing target breadth
   gate: config/scaling_gates/tlul_fifo_sync.json
-  next_action: implement_tlul_fifo_sync_scaling_validation_runner
+  runner: src/tools/run_tlul_fifo_sync_scaling_validation.py
+  report: reports/tlul_fifo_sync_scaling_validation.json
+  status: pass
+  next_action: decide_post_tlul_scaling_validation_next_axis
   gate_shape:
     build: reuse documented clean-checkout build
     runs:
@@ -225,15 +228,36 @@ selected_next_axis:
       - generated state dumps have expected storage_size * nstates bytes
       - normalized final-state equivalence remains the correctness policy for CPU/GPU aligned single-state comparison
       - scaling gate reports runtime and throughput without claiming speedup until CPU baseline is measured
+
+tlul_fifo_sync_scaling_validation:
+  status: pass
+  report: reports/tlul_fifo_sync_scaling_validation.json
+  storage_size: 6016
+  runs:
+    - name: single_state_smoke
+      nstates: 1
+      steps: 1
+      passed: true
+    - name: small_batch
+      nstates: 8
+      steps: 1
+      passed: true
+    - name: medium_batch
+      nstates: 32
+      steps: 1
+      passed: true
+  non_claims:
+    - CPU speedup is not claimed yet
+    - target breadth is not claimed because only tlul_fifo_sync was exercised
 ```
 
 ## next
 
 ```text
-if scaling_gate_defined:
-  implement or run the tlul_fifo_sync scaling validation surface
+if post_scaling_axis_selected:
+  define the next gate before adding source
 else:
-  finish the gate definition before adding source
+  choose between deeper scaling, second seed, or packaging boundary
 ```
 
 ## source_of_truth

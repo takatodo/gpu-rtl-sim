@@ -182,3 +182,16 @@ canonical_state:
 ```
 
 Both `artifacts/` and `reports/` keep only their `.gitignore` files in source.
+
+## Scaling Gate
+
+Run the selected `tlul_fifo_sync` scaling gate after the repro flow has produced
+`artifacts/tlul_fifo_sync_obj_dir/vl_batch_gpu.meta.json` and the hybrid host
+runtime.
+
+```bash
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_scaling_validation.py
+```
+
+The command reads `config/scaling_gates/tlul_fifo_sync.json` and writes the
+generated report to `reports/tlul_fifo_sync_scaling_validation.json`.

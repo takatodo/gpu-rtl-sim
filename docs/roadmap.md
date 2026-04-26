@@ -47,7 +47,9 @@ phase_3:
   commit_minimal_readme_clean_checkout_fix: done_c041911
   select_next_minimal_runtime_validation_axis: done_scale_tlul_fifo_sync
   define_tlul_fifo_sync_scaling_validation_gate: done
-  implement_tlul_fifo_sync_scaling_validation_runner: next
+  implement_tlul_fifo_sync_scaling_validation_runner: done
+  run_tlul_fifo_sync_scaling_validation_gate: done
+  decide_post_tlul_scaling_validation_next_axis: next
 ```
 
 ## acceptance
@@ -64,8 +66,11 @@ first_success_metric:
 next_scaling_gate:
   target: tlul_fifo_sync
   config: config/scaling_gates/tlul_fifo_sync.json
+  runner: src/tools/run_tlul_fifo_sync_scaling_validation.py
+  report: reports/tlul_fifo_sync_scaling_validation.json
   nstates: [1, 8, 32]
   steps: [1]
   correctness_policy: normalized_final_state_equivalence_for_aligned_single_state
   performance_policy: report_runtime_and_throughput_without_speedup_claim
+  status: pass
 ```
