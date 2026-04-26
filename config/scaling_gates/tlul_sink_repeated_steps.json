@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_sink_repeated_steps_scaling",
+  "target": "tlul_sink",
+  "purpose": "Validate the second seed can build and run the same GPU repeated-step shape used after tlul_fifo_sync.",
+  "preconditions": [
+    "tlul_sink Verilator obj_dir is generated",
+    "tlul_sink GPU cubin is built",
+    "artifacts/ and reports/ are ignored generated outputs"
+  ],
+  "runs": [
+    {
+      "name": "steps_1_batch_512",
+      "nstates": 512,
+      "steps": 1,
+      "required": true
+    },
+    {
+      "name": "steps_8_batch_512",
+      "nstates": 512,
+      "steps": 8,
+      "required": true
+    },
+    {
+      "name": "steps_32_batch_512",
+      "nstates": 512,
+      "steps": 32,
+      "required": true
+    }
+  ],
+  "correctness_policy": {
+    "batched_gpu_runs": [
+      "run exits with status 0",
+      "dumped state byte size equals storage_size * nstates when dump is requested",
+      "no CPU/GPU equality claim is made until the second-seed CPU probe is generalized"
+    ]
+  },
+  "performance_policy": {
+    "record": [
+      "nstates",
+      "steps",
+      "elapsed_ms",
+      "state_steps_per_second"
+    ],
+    "non_claims": [
+      "no CPU speedup claim until a tlul_sink CPU exact-loop probe exists",
+      "target breadth is limited to two TL-UL seeds"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/tlul_sink_repeated_steps_scaling.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "generalize_cpu_exact_loop_probe_for_second_seed",
+  "next_action_on_fail": "diagnose_tlul_sink_repeated_steps_scaling_failure"
+}

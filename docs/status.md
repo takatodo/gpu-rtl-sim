@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate, CPU single-state timing gate, conservative CPU process-per-state multi-state baseline, single-process CPU loop baseline, large-nstates workload comparison, and repeated-step comparison pass. At `nstates=512`, repeated GPU steps beat the CPU repeated-`eval_step` loop for this seed and gate shape; the next decision is a second seed.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate, CPU baselines, large-nstates workload comparison, repeated-step comparison, and second-seed `tlul_sink` GPU repeated-step surface pass. The next blocker is generalizing the CPU exact-loop probe beyond `tlul_fifo_sync`.
 
 ## goal
 
@@ -16,10 +16,11 @@ generalize_verilator_llvm_hybrid_runtime_for_high_throughput_regression_and_cove
 repo:
   status: runtime_core_source_local_dependency_closure_ok
   active_seed_target: tlul_fifo_sync
+  active_second_seed_target: tlul_sink
   generated_history_carried: false
 
 current_priority:
-  decide_second_seed_after_repeated_steps
+  generalize_cpu_exact_loop_probe_for_second_seed
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -310,13 +311,30 @@ tlul_fifo_sync_repeated_steps:
     steps_32_gpu_over_cpu: 2.7165
   next_action: decide_second_seed_after_repeated_steps
   weakest_point: CPU repeated steps are modeled as repeated eval_step calls after initialization, not full timed clock cycles
+
+tlul_sink_second_seed:
+  selection_status: selected
+  reason: second OpenTitan TL-UL seed with source-backed frozen multi-step GPU-win evidence in the exploration repository
+  launch_template: config/slice_launch_templates/tlul_sink.json
+  gpu_gate: config/scaling_gates/tlul_sink_repeated_steps.json
+  gpu_report: reports/tlul_sink_repeated_steps_scaling.json
+  build_surface:
+    verilator_obj_dir: pass_with_warnings
+    gpu_cubin: pass
+    gpu_repeated_steps: pass
+  observed_gpu_state_steps_per_second:
+    steps_1: 1047.6424
+    steps_8: 9412.8866
+    steps_32: 32658.0798
+  next_action: generalize_cpu_exact_loop_probe_for_second_seed
+  weakest_point: CPU exact-loop probe and Makefile target are still hardcoded to tlul_fifo_sync
 ```
 
 ## next
 
 ```text
 if target_breadth_needed:
-  add second seed to prove target breadth
+  generalize CPU exact-loop probe for tlul_sink
 else:
   package minimal repo boundary with limited claims
 ```

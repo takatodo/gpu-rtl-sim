@@ -264,3 +264,41 @@ PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py \
 
 This gate compares GPU repeated kernel launches with CPU repeated `eval_step`
 calls after initialization. It is still scoped to `tlul_fifo_sync`.
+
+## Second Seed
+
+The second active seed is `tlul_sink`. Its current gate validates GPU repeated
+steps only; CPU/GPU speedup is not claimed until the CPU exact-loop probe is
+generalized beyond `tlul_fifo_sync`.
+
+```bash
+verilator --cc --timing -Wno-fatal \
+  -Ithird_party/rtlmeter/designs/OpenTitan/src \
+  --Mdir artifacts/tlul_sink_obj_dir \
+  --top-module tlul_sink_gpu_cov_tb \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_secded_pkg.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_util_pkg.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/top_pkg.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/tlul_pkg.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_64_57_enc.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_39_32_enc.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/tlul_data_integ_enc.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/tlul_rsp_intg_gen.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/tlul_err.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/tlul_sink.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/tlul_sink_gpu_cov_tb.sv
+
+PYTHONPATH=src/tools python3 src/tools/build_vl_gpu.py \
+  artifacts/tlul_sink_obj_dir \
+  --sm sm_89 \
+  --ptxas-opt-level 0
+
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_scaling_validation.py \
+  --gate config/scaling_gates/tlul_sink_repeated_steps.json \
+  --mdir artifacts/tlul_sink_obj_dir \
+  --json-out reports/tlul_sink_repeated_steps_scaling.json
+```

@@ -71,7 +71,13 @@ phase_3:
   run_tlul_repeated_steps_scaling_gate: done
   define_tlul_repeated_steps_exact_cpu_loop_gate: done
   run_tlul_repeated_steps_exact_cpu_loop_gate: done
-  decide_second_seed_after_repeated_steps: next
+  decide_second_seed_after_repeated_steps: done_tlul_sink
+  select_second_small_seed_target: done_tlul_sink
+  copy_tlul_sink_minimal_assets: done
+  generate_tlul_sink_verilator_obj_dir: done
+  build_tlul_sink_gpu_cubin: done
+  run_tlul_sink_repeated_steps_gpu_gate: done
+  generalize_cpu_exact_loop_probe_for_second_seed: next
 ```
 
 ## acceptance
@@ -151,5 +157,15 @@ next_repeated_steps_gate:
   steps: [1, 8, 32]
   accepted_claim: GPU beats CPU repeated-eval loop for this seed and gate shape
   non_claim: target-breadth generality and full timed-cycle equivalence
+  status: pass
+
+second_seed_gate:
+  target: tlul_sink
+  gpu_config: config/scaling_gates/tlul_sink_repeated_steps.json
+  gpu_report: reports/tlul_sink_repeated_steps_scaling.json
+  nstates: [512]
+  steps: [1, 8, 32]
+  accepted_claim: second seed can build and run the GPU repeated-step surface
+  non_claim: CPU/GPU speedup for second seed until CPU exact-loop probe is generalized
   status: pass
 ```
