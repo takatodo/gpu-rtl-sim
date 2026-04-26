@@ -18,9 +18,13 @@ DEFAULT_GATE = REPO_ROOT / "config" / "scaling_gates" / "tlul_fifo_sync_cpu_base
 DEFAULT_MULTISTATE_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "tlul_fifo_sync_cpu_multistate_baseline.json"
 )
+DEFAULT_EXACT_LOOP_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "tlul_fifo_sync_cpu_exact_loop_baseline.json"
+)
 DEFAULT_MDIR = REPO_ROOT / "artifacts" / "tlul_fifo_sync_obj_dir"
 DEFAULT_REPORT = REPO_ROOT / "reports" / "tlul_fifo_sync_cpu_baseline.json"
 DEFAULT_MULTISTATE_REPORT = REPO_ROOT / "reports" / "tlul_fifo_sync_cpu_multistate_baseline.json"
+DEFAULT_EXACT_LOOP_REPORT = REPO_ROOT / "reports" / "tlul_fifo_sync_cpu_exact_loop_baseline.json"
 DEFAULT_GPU_SCALING_REPORT = REPO_ROOT / "reports" / "tlul_fifo_sync_scaling_validation.json"
 
 
@@ -103,6 +107,54 @@ def _run_multistate_case(
     }
 
 
+def _run_exact_loop_case(
+    *,
+    probe: Path,
+    run_cfg: dict[str, object],
+    storage_size: int,
+) -> dict[str, object]:
+    nstates = int(run_cfg["nstates"])
+    steps = int(run_cfg["steps"])
+    reset_cycles = int(run_cfg["reset_cycles"])
+    post_reset_cycles = int(run_cfg["post_reset_cycles"])
+    cmd = [
+        str(probe),
+        "--reset-cycles",
+        str(reset_cycles),
+        "--post-reset-cycles",
+        str(post_reset_cycles),
+        "--repeat-states",
+        str(nstates),
+    ]
+    completed = subprocess.run(cmd, text=True, capture_output=True)
+    parsed: dict[str, object] | None = None
+    if completed.stdout.strip():
+        try:
+            parsed = json.loads(completed.stdout)
+        except json.JSONDecodeError:
+            parsed = None
+    elapsed_ms = float(parsed.get("elapsed_ms", 0.0)) if parsed else 0.0
+    states_per_second = float(parsed.get("states_per_second", 0.0)) if parsed else None
+    constructor_ok = bool(parsed and parsed.get("constructor_ok") is True)
+    root_size = int(parsed.get("root_size", 0)) if parsed else 0
+    passed = completed.returncode == 0 and constructor_ok and root_size == storage_size
+    return {
+        "name": str(run_cfg["name"]),
+        "nstates": nstates,
+        "steps": steps,
+        "reset_cycles": reset_cycles,
+        "post_reset_cycles": post_reset_cycles,
+        "returncode": completed.returncode,
+        "elapsed_ms": elapsed_ms,
+        "states_per_second": states_per_second,
+        "constructor_ok": constructor_ok,
+        "root_size": root_size,
+        "passed": passed,
+        "stdout_tail": completed.stdout.splitlines()[-20:],
+        "stderr_tail": completed.stderr.splitlines()[-20:],
+    }
+
+
 def _gpu_runs_by_shape(path: Path) -> dict[tuple[int, int], dict[str, object]]:
     if not path.is_file():
         return {}
@@ -141,9 +193,8 @@ def _attach_gpu_comparison(
         result["gpu_comparison"] = {
             "gpu_elapsed_ms": gpu.get("elapsed_ms"),
             "gpu_states_per_second": gpu_sps,
-            "cpu_process_per_state_states_per_second": cpu_sps,
-            "gpu_over_cpu_process_per_state_throughput_ratio": throughput_ratio,
-            "claim_scope": "conservative_process_per_state_cpu_baseline",
+            "cpu_states_per_second": cpu_sps,
+            "gpu_over_cpu_throughput_ratio": throughput_ratio,
         }
         compared.append(result)
     return compared
@@ -220,6 +271,37 @@ def _run_multistate_gate(
         "source_gpu_scaling_report": (
             str(gpu_scaling_report.relative_to(REPO_ROOT)) if gpu_scaling_report.is_file() else None
         ),
+}
+
+
+def _run_exact_loop_gate(
+    *,
+    gate: dict[str, object],
+    probe: Path,
+    storage_size: int,
+    gpu_scaling_report: Path,
+) -> dict[str, object]:
+    results = [
+        _run_exact_loop_case(probe=probe, run_cfg=run, storage_size=storage_size)
+        for run in gate["runs"]
+    ]
+    results = _attach_gpu_comparison(cpu_results=results, gpu_scaling_report=gpu_scaling_report)
+    passed = all(bool(result["passed"]) for result in results)
+    return {
+        "schema_version": 1,
+        "gate": gate["gate"],
+        "target": gate["target"],
+        "status": "ok" if passed else "fail",
+        "storage_size": storage_size,
+        "runs": results,
+        "acceptance": {
+            "all_required_runs_passed": passed,
+            "policy": gate["acceptance"],
+        },
+        "comparison_policy": gate["comparison_policy"],
+        "source_gpu_scaling_report": (
+            str(gpu_scaling_report.relative_to(REPO_ROOT)) if gpu_scaling_report.is_file() else None
+        ),
     }
 
 
@@ -229,16 +311,25 @@ def main() -> None:
     parser.add_argument("--mdir", type=Path, default=DEFAULT_MDIR)
     parser.add_argument("--json-out", type=Path, default=DEFAULT_REPORT)
     parser.add_argument("--multi-state", action="store_true")
+    parser.add_argument("--exact-loop", action="store_true")
     parser.add_argument("--gpu-scaling-report", type=Path, default=DEFAULT_GPU_SCALING_REPORT)
     args = parser.parse_args()
 
-    gate_path = (DEFAULT_MULTISTATE_GATE if args.multi_state and args.gate == DEFAULT_GATE else args.gate).resolve()
+    if args.multi_state and args.exact_loop:
+        raise SystemExit("error: choose only one of --multi-state or --exact-loop")
+    if args.exact_loop and args.gate == DEFAULT_GATE:
+        gate_path = DEFAULT_EXACT_LOOP_GATE.resolve()
+    elif args.multi_state and args.gate == DEFAULT_GATE:
+        gate_path = DEFAULT_MULTISTATE_GATE.resolve()
+    else:
+        gate_path = args.gate.resolve()
     mdir = args.mdir.resolve()
-    json_out = (
-        DEFAULT_MULTISTATE_REPORT
-        if args.multi_state and args.json_out == DEFAULT_REPORT
-        else args.json_out
-    ).resolve()
+    if args.exact_loop and args.json_out == DEFAULT_REPORT:
+        json_out = DEFAULT_EXACT_LOOP_REPORT.resolve()
+    elif args.multi_state and args.json_out == DEFAULT_REPORT:
+        json_out = DEFAULT_MULTISTATE_REPORT.resolve()
+    else:
+        json_out = args.json_out.resolve()
     gpu_scaling_report = args.gpu_scaling_report.resolve()
     _require_file(gate_path, "CPU baseline gate config not found")
     probe = mdir / "tlul_slice_host_probe"
@@ -251,7 +342,14 @@ def main() -> None:
     storage_size = int(meta["storage_size"])
     json_out.parent.mkdir(parents=True, exist_ok=True)
 
-    if args.multi_state:
+    if args.exact_loop:
+        report = _run_exact_loop_gate(
+            gate=gate,
+            probe=probe,
+            storage_size=storage_size,
+            gpu_scaling_report=gpu_scaling_report,
+        )
+    elif args.multi_state:
         report = _run_multistate_gate(
             gate=gate,
             probe=probe,

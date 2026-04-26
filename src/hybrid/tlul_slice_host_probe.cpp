@@ -21,6 +21,7 @@
 #include <iterator>
 #include <stdexcept>
 #include <string>
+#include <chrono>
 #include <utility>
 #include <vector>
 
@@ -91,6 +92,8 @@ constexpr int kMaxEventDrains = 100000;
 struct ProbeConfig {
   uint32_t reset_cycles = 4;
   uint32_t post_reset_cycles = 2;
+  uint32_t repeat_states = 1;
+  bool repeat_states_requested = false;
   std::string state_out;
   std::string program_entries_bin;
   std::string memory_image;
@@ -205,6 +208,12 @@ ProbeConfig parse_args(int argc, char** argv) {
           parse_u32("--post-reset-cycles", (i + 1) < argc ? argv[++i] : nullptr);
       continue;
     }
+    if (arg == "--repeat-states") {
+      cfg.repeat_states_requested = true;
+      cfg.repeat_states = parse_u32("--repeat-states", (i + 1) < argc ? argv[++i] : nullptr);
+      if (cfg.repeat_states == 0U) fail("--repeat-states must be >= 1");
+      continue;
+    }
     if (arg == "--state-out") {
       cfg.state_out = (i + 1) < argc ? argv[++i] : "";
       if (cfg.state_out.empty()) fail("missing value for --state-out");
@@ -250,6 +259,7 @@ ProbeConfig parse_args(int argc, char** argv) {
     if (arg == "--help" || arg == "-h") {
       std::cout
           << "Usage: tlul_slice_host_probe [--reset-cycles N] [--post-reset-cycles N]\n"
+          << "                             [--repeat-states N]\n"
           << "                             [--set field=value ...] [--state-out path]\n"
           << "                             [--program-entries-bin path]\n"
           << "                             [--memory-image path]\n"
@@ -262,6 +272,13 @@ ProbeConfig parse_args(int argc, char** argv) {
   }
   if (cfg.clock_sequence.empty() && !cfg.edge_state_dir.empty()) {
     fail("--edge-state-dir requires --clock-sequence");
+  }
+  if (cfg.repeat_states_requested) {
+    if (!cfg.state_out.empty()) fail("--repeat-states does not support --state-out");
+    if (!cfg.edge_state_dir.empty()) fail("--repeat-states does not support --edge-state-dir");
+    if (cfg.raw_root_eval_steps != 0U) {
+      fail("--repeat-states does not support --raw-root-eval-steps");
+    }
   }
   if (cfg.raw_root_eval_steps != 0U && cfg.raw_root_eval_state_out.empty()) {
     fail("--raw-root-eval-steps requires --raw-root-eval-state-out");
@@ -716,11 +733,125 @@ void emit_summary(const ProbeSummary& summary, const Root* root) {
   std::cout << "}\n";
 }
 
+ProbeSummary run_one_probe_state(const ProbeConfig& cfg, int argc, char** argv) {
+  VerilatedContext context;
+  context.commandArgs(argc, argv);
+  context.randReset(0);
+  context.quiet(true);
+  context.time(0);
+
+  Model model(&context, TARGET_NAME);
+  Root* const root = model.rootp;
+
+  ProbeSummary summary;
+  summary.constructor_ok = true;
+  summary.reset_cycles = cfg.reset_cycles;
+  summary.post_reset_cycles = cfg.post_reset_cycles;
+  summary.root_size = static_cast<uint32_t>(sizeof(Root));
+
+  configure_defaults(model);
+  for (const auto& entry : cfg.sets) {
+    apply_setting(model, entry.first, entry.second);
+  }
+  if (!cfg.program_entries_bin.empty()) {
+    preload_program_entries(root, cfg.program_entries_bin);
+  }
+  if (!cfg.memory_image.empty()) {
+    preload_memory_image(root, cfg.memory_image);
+  }
+
+  root->ROOT_CLK_FIELD = 0U;
+  root->ROOT_RST_FIELD = HOST_RESET_CONTROL ? ROOT_RST_ASSERTED_VALUE : ROOT_RST_DEASSERTED_VALUE;
+  model.eval_step();
+  if (HOST_CLOCK_CONTROL) {
+    summary.drained_events += run_host_cycles(model, context, root, cfg.reset_cycles);
+    if (HOST_RESET_CONTROL) {
+      root->ROOT_RST_FIELD = ROOT_RST_DEASSERTED_VALUE;
+      model.eval_step();
+    }
+    summary.drained_events += run_host_cycles(model, context, root, cfg.post_reset_cycles);
+  } else {
+    summary.drained_events += run_scheduled_events(
+        model,
+        context,
+        static_cast<int>(cfg.reset_cycles * 2U));
+
+    root->ROOT_RST_FIELD = ROOT_RST_DEASSERTED_VALUE;
+    model.eval_step();
+    summary.drained_events += run_scheduled_events(
+        model,
+        context,
+        static_cast<int>(cfg.post_reset_cycles * 2U));
+  }
+
+  summary.sim_time = context.time();
+  summary.cfg_signature_o = model.cfg_signature_o;
+  summary.host_req_accepted_o = model.host_req_accepted_o;
+  summary.device_req_accepted_o = model.device_req_accepted_o;
+  summary.device_rsp_accepted_o = model.device_rsp_accepted_o;
+  summary.host_rsp_accepted_o = model.host_rsp_accepted_o;
+  summary.rsp_queue_overflow_o = model.rsp_queue_overflow_o;
+  summary.progress_cycle_count_o = model.progress_cycle_count_o;
+  summary.progress_signature_o = model.progress_signature_o;
+  summary.toggle_bitmap_word0_o = model.toggle_bitmap_word0_o;
+  summary.toggle_bitmap_word1_o = model.toggle_bitmap_word1_o;
+  summary.toggle_bitmap_word2_o = model.toggle_bitmap_word2_o;
+  summary.done_o = model.done_o;
+  summary.final_clk_i = root->ROOT_CLK_FIELD;
+  summary.final_reset_field_value = root->ROOT_RST_FIELD;
+  summary.final_rst_ni =
+      (summary.final_reset_field_value == ROOT_RST_DEASSERTED_VALUE) ? 1U : 0U;
+
+  model.final();
+  return summary;
+}
+
+void emit_repeat_summary(
+    const ProbeConfig& cfg,
+    const std::vector<ProbeSummary>& summaries,
+    double elapsed_ms) {
+  bool all_ok = true;
+  uint32_t root_size = summaries.empty() ? 0U : summaries.front().root_size;
+  uint64_t total_drained_events = 0;
+  for (const auto& summary : summaries) {
+    all_ok = all_ok && summary.constructor_ok && summary.root_size == root_size;
+    total_drained_events += static_cast<uint64_t>(summary.drained_events);
+  }
+  const double states_per_second =
+      elapsed_ms > 0.0 ? (static_cast<double>(summaries.size()) / (elapsed_ms / 1000.0)) : 0.0;
+
+  std::cout << "{\n";
+  std::cout << "  \"target\": \"" << TARGET_NAME << "\",\n";
+  std::cout << "  \"constructor_ok\": " << (all_ok ? "true" : "false") << ",\n";
+  std::cout << "  \"repeat_states\": " << cfg.repeat_states << ",\n";
+  std::cout << "  \"reset_cycles\": " << cfg.reset_cycles << ",\n";
+  std::cout << "  \"post_reset_cycles\": " << cfg.post_reset_cycles << ",\n";
+  std::cout << "  \"root_size\": " << root_size << ",\n";
+  std::cout << "  \"elapsed_ms\": " << elapsed_ms << ",\n";
+  std::cout << "  \"states_per_second\": " << states_per_second << ",\n";
+  std::cout << "  \"total_drained_events\": " << total_drained_events << "\n";
+  std::cout << "}\n";
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
   try {
     const ProbeConfig cfg = parse_args(argc, argv);
+
+    if (cfg.repeat_states_requested) {
+      std::vector<ProbeSummary> summaries;
+      summaries.reserve(cfg.repeat_states);
+      const auto started = std::chrono::steady_clock::now();
+      for (uint32_t index = 0; index < cfg.repeat_states; ++index) {
+        summaries.push_back(run_one_probe_state(cfg, argc, argv));
+      }
+      const auto finished = std::chrono::steady_clock::now();
+      const double elapsed_ms =
+          std::chrono::duration<double, std::milli>(finished - started).count();
+      emit_repeat_summary(cfg, summaries, elapsed_ms);
+      return 0;
+    }
 
     VerilatedContext context;
     context.commandArgs(argc, argv);

@@ -57,7 +57,11 @@ phase_3:
   define_tlul_cpu_multistate_baseline_gate: done
   implement_tlul_cpu_multistate_baseline_runner_mode: done
   run_tlul_cpu_multistate_baseline_gate: done
-  decide_exact_cpu_loop_or_second_seed_after_conservative_multistate_baseline: next
+  decide_exact_cpu_loop_or_second_seed_after_conservative_multistate_baseline: done_exact_loop
+  define_tlul_cpu_exact_loop_baseline_gate: done
+  implement_tlul_cpu_exact_loop_probe_and_runner_mode: done
+  run_tlul_cpu_exact_loop_baseline_gate: done
+  decide_second_seed_or_larger_workload_after_exact_cpu_loop_baseline: next
 ```
 
 ## acceptance
@@ -101,5 +105,17 @@ next_cpu_multistate_baseline_gate:
   steps: [1]
   accepted_claim: conservative CPU process-per-state baseline compared with GPU scaling report
   non_claim: exact single-process CPU-vs-GPU speedup
+  status: pass
+
+next_cpu_exact_loop_baseline_gate:
+  target: tlul_fifo_sync
+  config: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_baseline.json
+  runner: src/tools/run_tlul_fifo_sync_cpu_baseline.py --exact-loop
+  report: reports/tlul_fifo_sync_cpu_exact_loop_baseline.json
+  nstates: [1, 8, 32]
+  steps: [1]
+  accepted_claim: single-process CPU loop baseline compared with GPU scaling report
+  current_observation: GPU is slower than CPU for this small seed/workload
+  next_decision: increase workload or add second seed
   status: pass
 ```

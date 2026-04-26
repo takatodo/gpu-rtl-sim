@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate, CPU single-state timing gate, and conservative CPU process-per-state multi-state baseline pass; the next decision is whether to replace the conservative CPU timing with an exact single-process CPU loop, add a second seed, or package the repo boundary.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate, CPU single-state timing gate, conservative CPU process-per-state multi-state baseline, and single-process CPU loop baseline pass; the next decision is whether to enlarge workload, add a second seed, or package the repo boundary.
 
 ## goal
 
@@ -19,7 +19,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  decide_exact_cpu_loop_or_second_seed_after_conservative_multistate_baseline
+  decide_second_seed_or_larger_workload_after_exact_cpu_loop_baseline
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -271,13 +271,24 @@ tlul_fifo_sync_cpu_multistate_baseline:
   latest_metrics: read reports/tlul_fifo_sync_cpu_multistate_baseline.json
   next_action: decide_exact_cpu_loop_or_second_seed_after_conservative_multistate_baseline
   weakest_point: process-per-state CPU timing includes host probe process overhead, so it is not an exact single-process CPU speedup claim
+
+tlul_fifo_sync_cpu_exact_loop_baseline:
+  gate: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_baseline.json
+  runner: src/tools/run_tlul_fifo_sync_cpu_baseline.py --exact-loop
+  report: reports/tlul_fifo_sync_cpu_exact_loop_baseline.json
+  status: pass
+  claim_scope: single_process_cpu_loop_baseline
+  latest_metrics: read reports/tlul_fifo_sync_cpu_exact_loop_baseline.json
+  latest_observation: GPU is still slower than CPU for nstates <= 32 under this small seed/workload
+  next_action: decide_second_seed_or_larger_workload_after_exact_cpu_loop_baseline
+  weakest_point: exact loop removes process overhead, but the current workload is too small to demonstrate a GPU win
 ```
 
 ## next
 
 ```text
-if exact_speedup_claim_needed:
-  replace process-per-state CPU timing with a single-process host loop
+if speedup_claim_still_needed:
+  increase steps or workload size before claiming GPU efficiency
 else:
   choose between second seed or packaging boundary
 ```

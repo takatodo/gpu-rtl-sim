@@ -218,3 +218,15 @@ The multi-state CPU baseline report is generated at
 `reports/tlul_fifo_sync_scaling_validation.json` is present. Treat the ratio as
 a conservative process-per-state comparison, not an exact single-process CPU
 speedup claim.
+
+Run the single-process CPU loop baseline:
+
+```bash
+make -C src/hybrid tlul_slice_host_probe
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py --exact-loop
+```
+
+The exact-loop CPU baseline report is generated at
+`reports/tlul_fifo_sync_cpu_exact_loop_baseline.json`. This removes one process
+launch per state from the CPU side, but it is still scoped to the small
+`tlul_fifo_sync` workload and should not be generalized to full RTL workloads.
