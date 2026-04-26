@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  generate_xuantie_e902_verilator_obj_dir
+  build_xuantie_e902_gpu_cubin
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -468,16 +468,26 @@ xuantie_e902_rtlmeter_include_strategy:
     - not a runtime support claim
   next_action: generate_xuantie_e902_verilator_obj_dir
   weakest_point: lint passes only with accepted source warnings; full obj_dir generation is still unproven
+
+xuantie_e902_obj_dir_generation:
+  status: pass_with_warnings
+  source_count: 126
+  mdir: artifacts/xuantie_e902_obj_dir
+  runtime_input_staged: artifacts/xuantie_e902_obj_dir/case.pat
+  top_module: xuantie_e902_gpu_cov_tb
+  warning_policy: accepted_for_build_surface_only
+  next_action: build_xuantie_e902_gpu_cubin
+  weakest_point: Verilator C++ obj_dir exists, but the GPU cubin and runtime execution path are still unproven for this non-TL-UL seed.
 ```
 
 ## next
 
 ```text
-generate_xuantie_e902_verilator_obj_dir:
-  generate artifacts/xuantie_e902_obj_dir from descriptor source order
-  pass __RTLMETER_MAIN_CLOCK from descriptor mainClock
-  stage tests/hello/case.pat as generated runtime input if needed
-  do not claim GPU runtime until obj_dir and cubin build pass
+build_xuantie_e902_gpu_cubin:
+  use artifacts/xuantie_e902_obj_dir as the generated Verilator C++ surface
+  reuse the minimal LLVM-to-CUDA build path from TL-UL seeds where possible
+  treat Verilator warnings as build-surface warnings only
+  do not claim non-TL-UL runtime support until cubin build and smoke run pass
 ```
 
 ## source_of_truth

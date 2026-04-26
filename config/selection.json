@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "generate_xuantie_e902_verilator_obj_dir",
+  "current_priority": "build_xuantie_e902_gpu_cubin",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
