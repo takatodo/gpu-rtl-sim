@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "decide_xuantie_e902_larger_memory_resident_workload_or_boundary",
+  "current_priority": "define_xuantie_e902_memory_resident_workload_gate",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",

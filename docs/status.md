@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  decide_xuantie_e902_larger_memory_resident_workload_or_boundary
+  define_xuantie_e902_memory_resident_workload_gate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -634,6 +634,16 @@ decide_xuantie_e902_larger_memory_resident_workload_or_boundary:
     conservative_gate: CPU-favorable
     large_workload_gate: CPU-favorable_but_gap_narrowed
   do_not_claim: XuanTie speedup
+
+define_xuantie_e902_memory_resident_workload_gate:
+  goal: reduce host/device communication enough to test whether XuanTie-E902 crosses from CPU-favorable to GPU-favorable
+  first_task: define a GPU gate that keeps more work resident per transfer instead of only increasing small launch shapes
+  acceptance:
+    - gate config exists under config/scaling_gates
+    - README command is documented
+    - status and roadmap point to the same gate
+    - no speedup claim is made until a matching CPU exact-loop baseline exists
+  next_action: define_xuantie_e902_memory_resident_workload_gate
 ```
 
 ## source_of_truth

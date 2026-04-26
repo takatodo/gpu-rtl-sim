@@ -357,7 +357,7 @@ status:
   large_workload_gpu_gate: pass
   large_workload_cpu_baseline_gate: pass_cpu_favorable_but_gap_narrowed
   best_large_workload_gpu_over_cpu_ratio: 0.8625
-  next_task: decide_xuantie_e902_larger_memory_resident_workload_or_boundary
+  next_task: define_xuantie_e902_memory_resident_workload_gate
 ```
 
 The host probe reuses `src/hybrid/tlul_slice_host_probe.cpp` with XuanTie
