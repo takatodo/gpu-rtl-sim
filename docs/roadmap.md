@@ -43,7 +43,8 @@ phase_3:
   initialize_minimal_repo_git_repository: done
   review_minimal_initial_source_boundary: done
   minimal_initial_commit_if_requested: done_f8349b9
-  reproduce_from_clean_checkout_after_initial_commit: next
+  reproduce_from_clean_checkout_after_initial_commit: done_after_readme_fix
+  commit_minimal_readme_clean_checkout_fix: next
 ```
 
 ## acceptance

@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, and the initial source boundary is committed. The next durability check is reproducing the documented flow from a clean checkout.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, and the initial source boundary is committed. Clean-checkout reproduction now passes after fixing the README Verilator command to include `prim_pkg.sv`; commit that documentation fix next.
 
 ## goal
 
@@ -19,7 +19,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  reproduce_from_clean_checkout_after_initial_commit
+  commit_minimal_readme_clean_checkout_fix
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -188,15 +188,26 @@ source_boundary_review:
   initial_commit: f8349b9
   next_action: reproduce_from_clean_checkout_after_initial_commit
   weakest_point: third_party seed provenance should be reviewed before publishing beyond local development
+
+clean_checkout_reproduction:
+  status: pass_after_readme_fix
+  source_commit: 8419685
+  readme_fix_required: add prim_pkg.sv to the Verilator command
+  selected_acceptance_policy: normalized_final_state_equivalence
+  selected_acceptance_policy_passed: true
+  design_state_mismatch_bytes: 0
+  top_level_io_mismatch_bytes: 0
+  other_mismatch_bytes: 0
+  next_action: commit_minimal_readme_clean_checkout_fix
 ```
 
 ## next
 
 ```text
-if clean_checkout_available:
-  run documented repro flow from a clean checkout
+if readme_fix_commit_requested_or_status_sync_needed:
+  commit the README clean-checkout fix and status update
 else:
-  keep current repo clean and prepare clean-checkout reproduction
+  keep generated clean-checkout outputs ignored
 ```
 
 ## source_of_truth

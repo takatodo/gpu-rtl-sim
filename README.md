@@ -66,6 +66,7 @@ verilator --cc --timing -Wno-fatal \
   --top-module tlul_fifo_sync_gpu_cov_tb \
   third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh \
   third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv \
   third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv \
   third_party/rtlmeter/designs/OpenTitan/src/prim_secded_pkg.sv \
   third_party/rtlmeter/designs/OpenTitan/src/prim_util_pkg.sv \
