@@ -105,7 +105,11 @@ phase_3:
   define_xuantie_e902_cpu_exact_loop_large_workload_baseline: done
   run_xuantie_e902_cpu_exact_loop_large_workload_baseline: done_cpu_favorable_but_gap_narrowed
   decide_xuantie_e902_larger_memory_resident_workload_or_boundary: done_select_memory_resident_gate
-  define_xuantie_e902_memory_resident_workload_gate: next
+  define_xuantie_e902_memory_resident_workload_gate: done
+  run_xuantie_e902_memory_resident_workload_gate: done
+  define_xuantie_e902_cpu_exact_loop_memory_resident_workload_baseline: done
+  run_xuantie_e902_cpu_exact_loop_memory_resident_workload_baseline: done_gpu_win_at_largest_shape
+  decide_true_resident_runtime_or_package_xuantie_boundary: next
 ```
 
 ## acceptance
@@ -237,7 +241,14 @@ non_tlul_breadth_seed_candidate:
   cpu_exact_loop_large_workload_report: reports/xuantie_e902_cpu_exact_loop_large_workload.json
   cpu_exact_loop_large_workload_status: pass_cpu_favorable_but_gap_narrowed
   best_large_workload_gpu_over_cpu_ratio: 0.8625
+  memory_resident_workload_gate: config/scaling_gates/xuantie_e902_memory_resident_workload.json
+  memory_resident_workload_report: reports/xuantie_e902_memory_resident_workload_scaling.json
+  memory_resident_workload_status: pass
+  cpu_exact_loop_memory_resident_workload_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_memory_resident_workload.json
+  cpu_exact_loop_memory_resident_workload_report: reports/xuantie_e902_cpu_exact_loop_memory_resident_workload.json
+  cpu_exact_loop_memory_resident_workload_status: pass_gpu_win_at_largest_shape
+  best_memory_resident_proxy_gpu_over_cpu_ratio: 1.0955
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: define_xuantie_e902_memory_resident_workload_gate
+  next_task: decide_true_resident_runtime_or_package_xuantie_boundary
 ```

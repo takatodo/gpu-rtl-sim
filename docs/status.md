@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_xuantie_e902_memory_resident_workload_gate
+  decide_true_resident_runtime_or_package_xuantie_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -638,12 +638,59 @@ decide_xuantie_e902_larger_memory_resident_workload_or_boundary:
 define_xuantie_e902_memory_resident_workload_gate:
   goal: reduce host/device communication enough to test whether XuanTie-E902 crosses from CPU-favorable to GPU-favorable
   first_task: define a GPU gate that keeps more work resident per transfer instead of only increasing small launch shapes
+  selected_gate: config/scaling_gates/xuantie_e902_memory_resident_workload.json
   acceptance:
     - gate config exists under config/scaling_gates
     - README command is documented
     - status and roadmap point to the same gate
     - no speedup claim is made until a matching CPU exact-loop baseline exists
-  next_action: define_xuantie_e902_memory_resident_workload_gate
+  status: done
+  next_action: run_xuantie_e902_memory_resident_workload_gate
+
+xuantie_e902_memory_resident_workload_gate:
+  gate: config/scaling_gates/xuantie_e902_memory_resident_workload.json
+  runner: src/tools/run_tlul_fifo_sync_scaling_validation.py
+  report: reports/xuantie_e902_memory_resident_workload_scaling.json
+  mdir: artifacts/xuantie_e902_obj_dir
+  runs:
+    - shape: nstates=64 steps=64
+    - shape: nstates=64 steps=128
+    - shape: nstates=128 steps=64
+  status: pass
+  non_claims:
+    - communication-reduction proxy only; not proof of fully resident GPU runtime
+    - no speedup claim until matching CPU exact-loop baseline exists
+  next_action: run_xuantie_e902_cpu_exact_loop_memory_resident_workload_baseline
+
+xuantie_e902_cpu_exact_loop_memory_resident_workload_baseline:
+  gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_memory_resident_workload.json
+  runner: src/tools/run_tlul_fifo_sync_cpu_baseline.py --exact-loop
+  probe: artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe
+  report: reports/xuantie_e902_cpu_exact_loop_memory_resident_workload.json
+  source_gpu_report: reports/xuantie_e902_memory_resident_workload_scaling.json
+  status: pass_gpu_win_at_largest_shape
+  runs:
+    - shape: nstates=64 steps=64
+      passed: true
+      gpu_over_cpu_throughput_ratio: 0.5615
+    - shape: nstates=64 steps=128
+      passed: true
+      gpu_over_cpu_throughput_ratio: 0.8981
+    - shape: nstates=128 steps=64
+      passed: true
+      gpu_over_cpu_throughput_ratio: 1.0955
+  observation: GPU beats the CPU exact-loop baseline at the largest proxy shape, but this is still not proof of a true fully resident GPU runtime.
+  next_action: decide_true_resident_runtime_or_package_xuantie_boundary
+
+decide_true_resident_runtime_or_package_xuantie_boundary:
+  if the goal is implementation depth:
+    implement a true resident GPU runtime path that avoids per-step host/device transfers
+  else:
+    package XuanTie-E902 as a first non-TL-UL proxy-throughput boundary with clear non-claims
+  allowed_claim:
+    XuanTie-E902 communication-reduction proxy gate has a GPU win at nstates=128 steps=64
+  non_claim:
+    not a fully resident GPU runtime proof
 ```
 
 ## source_of_truth

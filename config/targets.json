@@ -22,12 +22,14 @@
     {
       "name": "xuantie_e902",
       "role": "first_non_tlul_breadth_candidate",
-      "status": "large_workload_baseline_pass_cpu_favorable_but_gap_narrowed",
+      "status": "memory_resident_proxy_baseline_pass_gpu_win",
       "launch_template_path": "config/slice_launch_templates/xuantie_e902.json",
       "scaling_gate_path": "config/scaling_gates/xuantie_e902_scaling.json",
       "cpu_exact_loop_gate_path": "config/scaling_gates/xuantie_e902_cpu_exact_loop_repeated_steps.json",
       "large_workload_gate_path": "config/scaling_gates/xuantie_e902_large_workload.json",
       "cpu_exact_loop_large_workload_gate_path": "config/scaling_gates/xuantie_e902_cpu_exact_loop_large_workload.json",
+      "memory_resident_workload_gate_path": "config/scaling_gates/xuantie_e902_memory_resident_workload.json",
+      "cpu_exact_loop_memory_resident_workload_gate_path": "config/scaling_gates/xuantie_e902_cpu_exact_loop_memory_resident_workload.json",
       "reason": "Carries the old repo's smallest ready non-OpenTitan single-surface candidate into the minimal repo without claiming runtime support yet."
     }
   ]

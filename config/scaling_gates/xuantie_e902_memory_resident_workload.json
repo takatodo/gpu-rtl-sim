@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "gate": "xuantie_e902_memory_resident_workload_scaling",
+  "target": "xuantie_e902",
+  "source_gpu_gate": "config/scaling_gates/xuantie_e902_large_workload.json",
+  "source_cpu_gate": "config/scaling_gates/xuantie_e902_cpu_exact_loop_large_workload.json",
+  "purpose": "Probe whether longer repeated-step XuanTie-E902 work can amortize host/device communication enough to justify a true memory-resident runtime path.",
+  "preconditions": [
+    "xuantie_e902_large_workload_scaling passes",
+    "xuantie_e902_cpu_exact_loop_large_workload passes but remains CPU-favorable",
+    "XuanTie-E902 GPU cubin and meta are present under artifacts/xuantie_e902_obj_dir",
+    "artifacts/ and reports/ are ignored generated outputs"
+  ],
+  "runs": [
+    {
+      "name": "resident_proxy_batch_64_steps_64",
+      "nstates": 64,
+      "steps": 64,
+      "required": true
+    },
+    {
+      "name": "resident_proxy_batch_64_steps_128",
+      "nstates": 64,
+      "steps": 128,
+      "required": true
+    },
+    {
+      "name": "resident_proxy_batch_128_steps_64",
+      "nstates": 128,
+      "steps": 64,
+      "required": true
+    }
+  ],
+  "correctness_policy": {
+    "baseline": "one-state normalized CPU/GPU final-state equivalence plus prior large-workload CPU/GPU timing surface",
+    "batched_gpu_runs": [
+      "run exits with status 0",
+      "dumped state byte size equals storage_size * nstates when dump is requested",
+      "no memory-resident speedup claim is made until a matching CPU exact-loop baseline exists"
+    ]
+  },
+  "performance_policy": {
+    "record": [
+      "nstates",
+      "steps",
+      "elapsed_ms",
+      "state_steps_per_second"
+    ],
+    "non_claims": [
+      "this is a communication-reduction proxy gate, not proof of a true fully resident GPU runtime",
+      "no XuanTie speedup claim until a matching memory-resident CPU exact-loop baseline exists",
+      "no full non-TL-UL generality claim from one E902 wrapper"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/xuantie_e902_memory_resident_workload_scaling.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "define_xuantie_e902_cpu_exact_loop_memory_resident_workload_baseline",
+  "next_action_on_fail": "diagnose_xuantie_e902_memory_resident_workload_scaling_failure"
+}
