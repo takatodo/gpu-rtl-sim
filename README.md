@@ -354,7 +354,10 @@ status:
   normalized_final_state_equivalence: pass
   conservative_gpu_scaling_gate: pass
   conservative_cpu_gpu_baseline: pass_cpu_favorable
-  next_task: decide_xuantie_e902_next_scaling_or_boundary
+  large_workload_gpu_gate: pass
+  large_workload_cpu_baseline_gate: pass_cpu_favorable_but_gap_narrowed
+  best_large_workload_gpu_over_cpu_ratio: 0.8625
+  next_task: decide_xuantie_e902_larger_memory_resident_workload_or_boundary
 ```
 
 The host probe reuses `src/hybrid/tlul_slice_host_probe.cpp` with XuanTie
@@ -401,6 +404,19 @@ PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py \
   --gate config/scaling_gates/xuantie_e902_cpu_exact_loop_repeated_steps.json \
   --json-out reports/xuantie_e902_cpu_exact_loop_repeated_steps.json \
   --gpu-scaling-report reports/xuantie_e902_scaling.json
+
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_scaling_validation.py \
+  --gate config/scaling_gates/xuantie_e902_large_workload.json \
+  --mdir artifacts/xuantie_e902_obj_dir \
+  --json-out reports/xuantie_e902_large_workload_scaling.json
+
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py \
+  --exact-loop \
+  --mdir artifacts/xuantie_e902_obj_dir \
+  --probe artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe \
+  --gate config/scaling_gates/xuantie_e902_cpu_exact_loop_large_workload.json \
+  --json-out reports/xuantie_e902_cpu_exact_loop_large_workload.json \
+  --gpu-scaling-report reports/xuantie_e902_large_workload_scaling.json
 ```
 
 ## Release Checklist

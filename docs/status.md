@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  decide_xuantie_e902_next_scaling_or_boundary
+  decide_xuantie_e902_larger_memory_resident_workload_or_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -585,12 +585,55 @@ xuantie_e902_cpu_repeated_steps_baseline:
 
 ```text
 decide_xuantie_e902_next_scaling_or_boundary:
-  if the goal is throughput evidence:
-    increase XuanTie-E902 nstates/steps beyond the conservative gate
+  decision: increase XuanTie-E902 nstates/steps beyond the conservative gate
+  reason: the project goal is throughput evidence, and the conservative gate is CPU-favorable
+  selected_gate: config/scaling_gates/xuantie_e902_large_workload.json
+
+xuantie_e902_large_workload_scaling_gate:
+  gate: config/scaling_gates/xuantie_e902_large_workload.json
+  runner: src/tools/run_tlul_fifo_sync_scaling_validation.py
+  report: reports/xuantie_e902_large_workload_scaling.json
+  mdir: artifacts/xuantie_e902_obj_dir
+  runs:
+    - shape: nstates=32 steps=8
+    - shape: nstates=64 steps=8
+    - shape: nstates=64 steps=32
+  status: pass
+  observation: GPU large-workload gate runs, but speedup is not claimed until the matching CPU exact-loop baseline is run.
+  non_claims:
+    - no XuanTie speedup claim until matching large-workload CPU exact-loop baseline exists
+    - no full non-TL-UL generality claim from one E902 wrapper
+  next_action: run_xuantie_e902_cpu_exact_loop_large_workload_baseline
+
+xuantie_e902_cpu_exact_loop_large_workload_baseline:
+  gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_large_workload.json
+  runner: src/tools/run_tlul_fifo_sync_cpu_baseline.py --exact-loop
+  probe: artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe
+  report: reports/xuantie_e902_cpu_exact_loop_large_workload.json
+  source_gpu_report: reports/xuantie_e902_large_workload_scaling.json
+  status: pass_cpu_favorable_but_gap_narrowed
+  runs:
+    - shape: nstates=32 steps=8
+      passed: true
+      gpu_over_cpu_throughput_ratio: 0.5008
+    - shape: nstates=64 steps=8
+      passed: true
+      gpu_over_cpu_throughput_ratio: 0.5632
+    - shape: nstates=64 steps=32
+      passed: true
+      gpu_over_cpu_throughput_ratio: 0.8625
+  observation: GPU does not beat CPU yet, but increasing repeated steps narrows the gap.
+  next_action: decide_xuantie_e902_larger_memory_resident_workload_or_boundary
+
+decide_xuantie_e902_larger_memory_resident_workload_or_boundary:
+  if the goal remains throughput evidence:
+    reduce host/device communication further and define a larger memory-resident XuanTie workload
   else:
-    package the first non-TL-UL correctness boundary
-  keep the current performance observation as CPU-favorable
-  do not claim XuanTie speedup from the conservative gate
+    package the first non-TL-UL correctness plus CPU-favorable performance boundary
+  keep_current_observation:
+    conservative_gate: CPU-favorable
+    large_workload_gate: CPU-favorable_but_gap_narrowed
+  do_not_claim: XuanTie speedup
 ```
 
 ## source_of_truth

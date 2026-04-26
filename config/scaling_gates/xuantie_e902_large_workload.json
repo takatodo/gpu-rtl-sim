@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "gate": "xuantie_e902_large_workload_scaling",
+  "target": "xuantie_e902",
+  "source_gpu_gate": "config/scaling_gates/xuantie_e902_scaling.json",
+  "source_cpu_gate": "config/scaling_gates/xuantie_e902_cpu_exact_loop_repeated_steps.json",
+  "purpose": "Increase XuanTie-E902 nstates and repeated steps after the conservative CPU exact-loop baseline showed CPU-favorable throughput.",
+  "preconditions": [
+    "xuantie_e902_scaling passes",
+    "xuantie_e902_cpu_exact_loop_repeated_steps passes and is CPU-favorable",
+    "XuanTie-E902 GPU cubin and meta are present under artifacts/xuantie_e902_obj_dir",
+    "artifacts/ and reports/ are ignored generated outputs"
+  ],
+  "runs": [
+    {
+      "name": "larger_batch_32_steps_8",
+      "nstates": 32,
+      "steps": 8,
+      "required": true
+    },
+    {
+      "name": "larger_batch_64_steps_8",
+      "nstates": 64,
+      "steps": 8,
+      "required": true
+    },
+    {
+      "name": "larger_batch_64_steps_32",
+      "nstates": 64,
+      "steps": 32,
+      "required": true
+    }
+  ],
+  "correctness_policy": {
+    "baseline": "one-state normalized CPU/GPU final-state equivalence plus conservative repeated-step CPU/GPU timing surface",
+    "batched_gpu_runs": [
+      "run exits with status 0",
+      "dumped state byte size equals storage_size * nstates when dump is requested",
+      "no large-workload CPU/GPU speedup claim is made until a matching CPU exact-loop baseline exists"
+    ]
+  },
+  "performance_policy": {
+    "record": [
+      "nstates",
+      "steps",
+      "elapsed_ms",
+      "state_steps_per_second"
+    ],
+    "non_claims": [
+      "no XuanTie speedup claim until a matching large-workload CPU exact-loop baseline exists",
+      "no full non-TL-UL generality claim from one E902 wrapper",
+      "this gate is a GPU crossover search gate, not a release boundary"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/xuantie_e902_large_workload_scaling.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "define_xuantie_e902_cpu_exact_loop_large_workload_baseline",
+  "next_action_on_fail": "diagnose_xuantie_e902_large_workload_scaling_failure"
+}

@@ -99,7 +99,12 @@ phase_3:
   define_xuantie_e902_scaling_gate: done
   run_xuantie_e902_scaling_gate: done
   define_xuantie_e902_cpu_repeated_steps_baseline: done_cpu_favorable
-  decide_xuantie_e902_next_scaling_or_boundary: next
+  decide_xuantie_e902_next_scaling_or_boundary: done_scale_workload
+  define_xuantie_e902_large_workload_scaling_gate: done
+  run_xuantie_e902_large_workload_scaling_gate: done
+  define_xuantie_e902_cpu_exact_loop_large_workload_baseline: done
+  run_xuantie_e902_cpu_exact_loop_large_workload_baseline: done_cpu_favorable_but_gap_narrowed
+  decide_xuantie_e902_larger_memory_resident_workload_or_boundary: next
 ```
 
 ## acceptance
@@ -224,7 +229,14 @@ non_tlul_breadth_seed_candidate:
   cpu_exact_loop_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_repeated_steps.json
   cpu_exact_loop_report: reports/xuantie_e902_cpu_exact_loop_repeated_steps.json
   cpu_gpu_observation: cpu_favorable_at_conservative_gate
+  large_workload_gate: config/scaling_gates/xuantie_e902_large_workload.json
+  large_workload_report: reports/xuantie_e902_large_workload_scaling.json
+  large_workload_status: pass
+  cpu_exact_loop_large_workload_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_large_workload.json
+  cpu_exact_loop_large_workload_report: reports/xuantie_e902_cpu_exact_loop_large_workload.json
+  cpu_exact_loop_large_workload_status: pass_cpu_favorable_but_gap_narrowed
+  best_large_workload_gpu_over_cpu_ratio: 0.8625
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: decide_xuantie_e902_next_scaling_or_boundary
+  next_task: decide_xuantie_e902_larger_memory_resident_workload_or_boundary
 ```
