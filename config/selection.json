@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "decide_exact_cpu_loop_or_second_seed_after_conservative_multistate_baseline",
+  "current_priority": "decide_second_seed_or_larger_workload_after_exact_cpu_loop_baseline",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_cpu_baseline_gate": "config/scaling_gates/tlul_fifo_sync_cpu_baseline.json",
   "current_cpu_multistate_baseline_gate": "config/scaling_gates/tlul_fifo_sync_cpu_multistate_baseline.json",
