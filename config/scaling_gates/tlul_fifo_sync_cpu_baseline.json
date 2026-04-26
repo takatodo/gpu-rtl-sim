@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_fifo_sync_cpu_baseline_for_scaling",
+  "target": "tlul_fifo_sync",
+  "source_gpu_gate": "config/scaling_gates/tlul_fifo_sync.json",
+  "purpose": "Provide a CPU reference timing surface for the existing GPU scaling gate without claiming identical multi-state CPU semantics.",
+  "preconditions": [
+    "tlul_fifo_sync_scaling_validation passes",
+    "tlul_slice_host_probe is built from the README flow",
+    "generated reports remain under reports/"
+  ],
+  "runs": [
+    {
+      "name": "cpu_single_state_reference",
+      "reset_cycles": 4,
+      "post_reset_cycles": 2,
+      "reps": 5,
+      "required": true
+    }
+  ],
+  "acceptance": {
+    "run_exits_zero": true,
+    "each_rep_emits_constructor_ok": true,
+    "each_rep_root_size_matches_gpu_storage_size": true,
+    "record_median_elapsed_ms": true
+  },
+  "comparison_policy": {
+    "allowed_claims": [
+      "CPU single-state host probe timing",
+      "GPU batched throughput from the existing scaling report",
+      "rough order-of-magnitude comparison clearly labeled as non-equivalent workload"
+    ],
+    "non_claims": [
+      "no exact CPU-vs-GPU speedup claim for nstates > 1 until a CPU loop with matching state count is implemented",
+      "no target-breadth claim because only tlul_fifo_sync is exercised"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/tlul_fifo_sync_cpu_baseline.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "implement_tlul_fifo_sync_cpu_baseline_runner",
+  "next_action_on_fail": "diagnose_tlul_fifo_sync_cpu_baseline_gate_failure"
+}

@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate now passes for the configured `nstates` set; the next decision is whether to deepen scaling, add a second seed, or package the repo boundary.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate now passes for the configured `nstates` set; the next axis is a CPU baseline timing gate for the same seed.
 
 ## goal
 
@@ -19,7 +19,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  decide_post_tlul_scaling_validation_next_axis
+  implement_tlul_fifo_sync_cpu_baseline_runner
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -249,15 +249,22 @@ tlul_fifo_sync_scaling_validation:
   non_claims:
     - CPU speedup is not claimed yet
     - target breadth is not claimed because only tlul_fifo_sync was exercised
+
+tlul_fifo_sync_cpu_baseline:
+  gate: config/scaling_gates/tlul_fifo_sync_cpu_baseline.json
+  status: defined
+  next_action: implement_tlul_fifo_sync_cpu_baseline_runner
+  accepted_claim: CPU single-state host probe timing surface
+  non_claim: exact nstates>1 CPU-vs-GPU speedup until matching CPU loop exists
 ```
 
 ## next
 
 ```text
-if post_scaling_axis_selected:
-  define the next gate before adding source
+if cpu_baseline_runner_available:
+  run the CPU baseline gate
 else:
-  choose between deeper scaling, second seed, or packaging boundary
+  implement the CPU baseline runner without broadening target surface
 ```
 
 ## source_of_truth

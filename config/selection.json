@@ -1,7 +1,8 @@
 {
   "schema_version": 1,
-  "current_priority": "decide_post_tlul_scaling_validation_next_axis",
+  "current_priority": "implement_tlul_fifo_sync_cpu_baseline_runner",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
+  "current_cpu_baseline_gate": "config/scaling_gates/tlul_fifo_sync_cpu_baseline.json",
   "current_scaling_runner": "src/tools/run_tlul_fifo_sync_scaling_validation.py",
   "current_priority_source_artifact": "docs/status.md",
   "top_level_goal": "generalize_verilator_llvm_hybrid_runtime_for_high_throughput_regression_and_coverage",

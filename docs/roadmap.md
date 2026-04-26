@@ -49,7 +49,9 @@ phase_3:
   define_tlul_fifo_sync_scaling_validation_gate: done
   implement_tlul_fifo_sync_scaling_validation_runner: done
   run_tlul_fifo_sync_scaling_validation_gate: done
-  decide_post_tlul_scaling_validation_next_axis: next
+  decide_post_tlul_scaling_validation_next_axis: done_cpu_baseline
+  define_tlul_scaling_cpu_baseline_gate: done
+  implement_tlul_fifo_sync_cpu_baseline_runner: next
 ```
 
 ## acceptance
@@ -73,4 +75,11 @@ next_scaling_gate:
   correctness_policy: normalized_final_state_equivalence_for_aligned_single_state
   performance_policy: report_runtime_and_throughput_without_speedup_claim
   status: pass
+
+next_cpu_baseline_gate:
+  target: tlul_fifo_sync
+  config: config/scaling_gates/tlul_fifo_sync_cpu_baseline.json
+  reps: 5
+  accepted_claim: CPU single-state host probe timing surface
+  non_claim: exact nstates>1 CPU-vs-GPU speedup until matching CPU loop exists
 ```
