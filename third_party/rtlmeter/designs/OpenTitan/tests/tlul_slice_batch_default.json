@@ -1,0 +1,28 @@
+{
+  "driver": {
+    "seed": 1,
+    "batch_length": 256,
+    "req_valid_pct": 65,
+    "rsp_valid_pct": 70,
+    "host_d_ready_pct": 75,
+    "device_a_ready_pct": 80,
+    "put_full_pct": 34,
+    "put_partial_pct": 33,
+    "access_ack_data_pct": 50,
+    "rsp_error_pct": 10,
+    "address_base": 0,
+    "address_mask": 4092,
+    "source_mask": 255,
+    "reset_cycles": 4,
+    "drain_cycles": 24,
+    "host_half_period": 5,
+    "device_half_period": 7,
+    "invalid_addr_pct": 12,
+    "main_half_period": 5,
+    "fixed_half_period": 7,
+    "usb_half_period": 9,
+    "spi_host0_half_period": 11,
+    "spi_host1_half_period": 13,
+    "timeout_events": 0
+  }
+}

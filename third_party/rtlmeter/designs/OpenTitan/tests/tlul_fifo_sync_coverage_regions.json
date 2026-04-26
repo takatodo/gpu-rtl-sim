@@ -1,0 +1,55 @@
+{
+  "schema_version": "coverage-region-manifest-v1",
+  "target": "OpenTitan.tlul_fifo_sync",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "regions": [
+    {
+      "name": "core_control",
+      "words": [
+        "real_toggle_subset_word0_o",
+        "real_toggle_subset_word5_o"
+      ]
+    },
+    {
+      "name": "reqfifo_storage_upper",
+      "words": [
+        "real_toggle_subset_word1_o",
+        "real_toggle_subset_word2_o",
+        "real_toggle_subset_word3_o",
+        "real_toggle_subset_word4_o",
+        "real_toggle_subset_word16_o"
+      ]
+    },
+    {
+      "name": "rspfifo_storage_upper",
+      "words": [
+        "real_toggle_subset_word6_o",
+        "real_toggle_subset_word7_o"
+      ]
+    },
+    {
+      "name": "request_path",
+      "words": [
+        "real_toggle_subset_word8_o",
+        "real_toggle_subset_word9_o",
+        "real_toggle_subset_word10_o",
+        "real_toggle_subset_word11_o",
+        "real_toggle_subset_word12_o",
+        "real_toggle_subset_word13_o"
+      ]
+    },
+    {
+      "name": "response_payload",
+      "words": [
+        "real_toggle_subset_word14_o",
+        "real_toggle_subset_word15_o"
+      ]
+    },
+    {
+      "name": "progress_and_misc",
+      "words": [
+        "real_toggle_subset_word17_o"
+      ]
+    }
+  ]
+}

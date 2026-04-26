@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "current_priority": "minimal_initial_commit_if_requested",
+  "current_priority_source_artifact": "docs/status.md",
+  "top_level_goal": "generalize_verilator_llvm_hybrid_runtime_for_high_throughput_regression_and_coverage",
+  "active_seed_target": "tlul_fifo_sync",
+  "non_claims": [
+    "raw byte equality is not achieved because Verilator internals differ",
+    "the current correctness surface is one-state one-step only",
+    "generated artifacts are not source of truth",
+    "old repository history is not imported into this minimal repository"
+  ]
+}

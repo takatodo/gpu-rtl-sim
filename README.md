@@ -1,0 +1,183 @@
+# GPU Toggle Coverage Minimal
+
+Minimal extraction of the Verilator LLVM hybrid-runtime work.
+
+## Goal
+
+Build a small, reproducible baseline for:
+
+```text
+generalize_verilator_llvm_hybrid_runtime_for_high_throughput_regression_and_coverage
+```
+
+The first seed target is `tlul_fifo_sync`. This repository intentionally does not carry historical `work/`, `output/`, `obj_dir/`, or broad campaign artifacts from the exploration repository.
+
+## First Success Metric
+
+```text
+from_clean_checkout:
+  build: pass
+  run_seed: pass
+  compare_seed: pass
+  status_report: pass
+
+surface_limits:
+  repo_root_python_file_count: 0
+  generated_artifacts_tracked: 0
+  active_targets: 1
+  active_docs_max: 3
+```
+
+## Current State
+
+See:
+
+- `docs/status.md`
+- `docs/roadmap.md`
+- `config/selection.json`
+
+## Minimal CPU/GPU Repro Flow
+
+weakest_point:
+  raw byte equality is not the acceptance criterion. Verilator runtime/internal
+  fields can differ between host C++ execution and GPU storage execution, so the
+  supported correctness claim is normalized final-state equivalence for
+  comparable design state / top-level IO fields.
+
+prerequisites:
+  - Verilator 5.x with timing coroutine support
+  - LLVM/Clang 18 tools available as `llvm-config-18`, `clang++-18`, and `opt-18`
+  - CUDA Driver API headers and `libcuda.so`
+  - an NVIDIA GPU visible to the CUDA driver
+
+from_clean_checkout:
+  1. Build the LLVM pass binaries.
+
+```bash
+make -C src/passes
+```
+
+  2. Generate the Verilator object directory for the first seed.
+
+```bash
+verilator --cc --timing -Wno-fatal \
+  -Ithird_party/rtlmeter/designs/OpenTitan/src \
+  --Mdir artifacts/tlul_fifo_sync_obj_dir \
+  --top-module tlul_fifo_sync_gpu_cov_tb \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_secded_pkg.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_util_pkg.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/top_pkg.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/tlul_pkg.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_count_pkg.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_count.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_fifo_sync_cnt.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/prim_fifo_sync.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/tlul_fifo_sync.sv \
+  third_party/rtlmeter/designs/OpenTitan/src/tlul_fifo_sync_gpu_cov_tb.sv
+```
+
+  3. Build the GPU cubin.
+
+```bash
+PYTHONPATH=src/tools python3 src/tools/build_vl_gpu.py \
+  artifacts/tlul_fifo_sync_obj_dir \
+  --sm sm_89 \
+  --ptxas-opt-level 0
+```
+
+  4. Build host-side runtimes.
+
+```bash
+make -C src/hybrid run_vl_hybrid
+make -C src/hybrid tlul_slice_host_probe
+```
+
+  5. Produce the CPU reference state dump.
+
+```bash
+./artifacts/tlul_fifo_sync_obj_dir/tlul_slice_host_probe \
+  --reset-cycles 4 \
+  --post-reset-cycles 2 \
+  --state-out artifacts/tlul_fifo_sync_obj_dir/minimal_cpu_reference_state.bin \
+  > reports/minimal_cpu_reference_probe.json
+```
+
+  6. Run the GPU from the CPU reference init-state.
+
+```bash
+PYTHONPATH=src/tools python3 src/tools/run_vl_hybrid.py \
+  --mdir artifacts/tlul_fifo_sync_obj_dir \
+  --nstates 1 \
+  --steps 1 \
+  --init-state artifacts/tlul_fifo_sync_obj_dir/minimal_cpu_reference_state.bin \
+  --sanitize-host-only-internals \
+  --dump-state artifacts/tlul_fifo_sync_obj_dir/minimal_gpu_from_cpu_init_state.bin
+```
+
+  7. Compare CPU and GPU final state with the normalized policy.
+
+```bash
+PYTHONPATH=src/tools python3 src/tools/compare_vl_hybrid_modes.py \
+  artifacts/tlul_fifo_sync_obj_dir \
+  --compare-dumps \
+  artifacts/tlul_fifo_sync_obj_dir/minimal_cpu_reference_state.bin \
+  artifacts/tlul_fifo_sync_obj_dir/minimal_gpu_from_cpu_init_state.bin \
+  --reference-label cpu_reference \
+  --candidate-label gpu_from_cpu_init \
+  --acceptance-policy normalized_final_state_equivalence \
+  --json-out reports/minimal_cpu_vs_gpu_from_cpu_init_compare.json
+```
+
+expected_result:
+
+```text
+selected_acceptance_policy.passed: true
+acceptance_candidates.design_state_mismatch_bytes: 0
+acceptance_candidates.top_level_io_mismatch_bytes: 0
+acceptance_candidates.other_mismatch_bytes: 0
+raw match: false, because Verilator internal bytes may differ
+```
+
+artifact_policy:
+  generated outputs under `artifacts/` and `reports/` are reproducible and are
+  not tracked as source. Keep hand-authored decisions in `config/` or `docs/`.
+
+## Generated Artifact Policy
+
+```text
+artifacts/:
+  purpose: generated build/runtime outputs
+  examples:
+    - Verilator obj_dir files
+    - cubin / ptx / LLVM IR outputs
+    - generated host-probe binaries
+    - raw state dumps
+  do_not_store:
+    - hand-authored source
+    - operational decisions
+    - unique notes that cannot be regenerated
+
+reports/:
+  purpose: generated summaries from documented commands
+  examples:
+    - CPU probe JSON output
+    - GPU run summary
+    - CPU/GPU compare JSON
+  do_not_store:
+    - canonical roadmap state
+    - hand-authored status decisions
+    - clone-local absolute paths
+
+canonical_state:
+  - config/selection.json
+  - docs/status.md
+  - docs/roadmap.md
+  - README.md
+```
+
+Both `artifacts/` and `reports/` keep only their `.gitignore` files in source.

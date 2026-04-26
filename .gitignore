@@ -1,0 +1,19 @@
+# Generated runtime/build outputs.
+/artifacts/**
+!/artifacts/.gitignore
+/reports/**
+!/reports/.gitignore
+
+# Local build products.
+/src/hybrid/run_vl_hybrid
+/src/hybrid/*_host_probe
+/src/passes/VlGpuPasses.so
+/src/passes/vlgpugen
+
+# Python/cache noise.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local editor/OS noise.
+.DS_Store
