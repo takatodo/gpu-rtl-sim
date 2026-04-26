@@ -35,12 +35,13 @@
     {
       "name": "veer_el2",
       "role": "next_non_tlul_resident_breadth_candidate",
-      "status": "verilator_obj_dir_generated",
+      "status": "gpu_cubin_built",
       "launch_template_path": "config/slice_launch_templates/veer_el2.json",
       "resident_workload_gate_path": "config/scaling_gates/veer_el2_resident_workload.json",
       "cpu_exact_loop_resident_workload_gate_path": "config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json",
       "asset_boundary_path": "third_party/rtlmeter/designs/VeeR-EL2",
       "mdir": "artifacts/veer_el2_obj_dir",
+      "cubin": "artifacts/veer_el2_obj_dir/vl_batch_gpu.cubin",
       "reason": "Next bounded non-TL-UL resident runtime candidate selected from old-repo VeeR-EL2 gpu_cov_gate evidence; descriptor-referenced source/test assets are copied without old work/output history."
     }
   ]

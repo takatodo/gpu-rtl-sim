@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  build_veer_el2_gpu_cubin
+  run_veer_el2_gpu_smoke
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -863,7 +863,18 @@ build_veer_el2_gpu_cubin:
   goal: build the VeeR-EL2 GPU cubin from artifacts/veer_el2_obj_dir
   weakest_point: Verilator obj_dir exists, but GPU kernel generation may expose VeeR-specific lowering/classifier gaps.
   mdir: artifacts/veer_el2_obj_dir
-  next_action: build_veer_el2_gpu_cubin
+  storage_size: 431808
+  cubin: artifacts/veer_el2_obj_dir/vl_batch_gpu.cubin
+  cubin_bytes: 5220896
+  status: pass
+  next_action: run_veer_el2_gpu_smoke
+
+run_veer_el2_gpu_smoke:
+  goal: run one small VeeR-EL2 GPU smoke from the generated cubin before making resident throughput claims
+  weakest_point: cubin builds, but no VeeR-EL2 runtime execution result exists yet.
+  mdir: artifacts/veer_el2_obj_dir
+  smoke_shape: nstates=1 steps=1
+  next_action: run_veer_el2_gpu_smoke
 ```
 
 ## source_of_truth
