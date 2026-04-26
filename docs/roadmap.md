@@ -115,7 +115,8 @@ phase_3:
   package_xuantie_true_resident_runtime_boundary: done
   define_resident_runtime_regression_contract: done
   run_resident_runtime_regression_contract: done
-  select_next_resident_runtime_breadth_or_patch_semantics: next
+  select_next_resident_runtime_breadth_or_patch_semantics: done_select_breadth
+  select_next_non_tlul_resident_candidate: next
 ```
 
 ## acceptance
@@ -259,11 +260,12 @@ non_tlul_breadth_seed_candidate:
   true_resident_runtime_accepted_claim: XuanTie-E902 resident mode beats CPU exact-loop at nstates=128 steps=64
   resident_runtime_regression_contract: tests/contract/test_resident_runtime_contract.py
   resident_runtime_regression_status: pass
+  next_resident_breadth_policy: select bounded non-TL-UL candidate before copying assets
   true_resident_runtime_interface:
     cli_flag: src/tools/run_vl_hybrid.py --resident-steps
     runtime_env: RUN_VL_HYBRID_RESIDENT_STEPS=1
     c_runtime: src/hybrid/run_vl_hybrid.c
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: select_next_resident_runtime_breadth_or_patch_semantics
+  next_task: select_next_non_tlul_resident_candidate
 ```

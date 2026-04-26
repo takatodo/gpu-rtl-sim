@@ -390,7 +390,8 @@ status:
   best_memory_resident_proxy_gpu_over_cpu_ratio: 1.0955
   best_true_resident_gpu_over_cpu_ratio: 1.2076
   true_resident_runtime_status: packaged_boundary
-  next_task: define_resident_runtime_regression_contract
+  resident_runtime_regression_contract: pass
+  next_task: select_next_non_tlul_resident_candidate
 ```
 
 The `memory_resident_workload_*` gates now use explicit resident mode:

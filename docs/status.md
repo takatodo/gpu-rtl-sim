@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  select_next_resident_runtime_breadth_or_patch_semantics
+  select_next_non_tlul_resident_candidate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -762,7 +762,22 @@ select_next_resident_runtime_breadth_or_patch_semantics:
   else:
     define resident --patch / --patch-script semantics before more breadth
   current_bias: target breadth, because patch semantics are explicitly out of the packaged XuanTie boundary
-  next_action: select_next_resident_runtime_breadth_or_patch_semantics
+  decision: prioritize target breadth
+  next_action: select_next_non_tlul_resident_candidate
+
+select_next_non_tlul_resident_candidate:
+  goal: choose the next non-TL-UL target to test the resident runtime beyond XuanTie-E902
+  weakest_point: the minimal repo currently carries only one non-TL-UL source asset, so broadening requires selecting and importing a bounded source/test boundary from the old repo.
+  candidate_policy:
+    - prefer a target with existing old-repo campaign evidence and small source boundary
+    - define gate shape before copying assets
+    - do not import broad historical work/output artifacts
+    - keep resident patch/script semantics out of scope unless the candidate requires them
+  likely_sources:
+    - old repo campaign target registry/docs
+    - existing non-OpenTitan family notes
+    - prior candidate-only breadth evidence
+  next_action: select_next_non_tlul_resident_candidate
 ```
 
 ## source_of_truth
