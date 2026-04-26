@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate, CPU single-state timing gate, conservative CPU process-per-state multi-state baseline, single-process CPU loop baseline, and large-nstates workload comparison pass. At `nstates=512`, the GPU is faster than the exact CPU loop for this seed and gate shape; the next decision is repeated-step semantics or a second seed.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, the initial source boundary is committed, and clean-checkout reproduction passes after fixing the README Verilator command to include `prim_pkg.sv`. The `tlul_fifo_sync` scaling gate, CPU single-state timing gate, conservative CPU process-per-state multi-state baseline, single-process CPU loop baseline, large-nstates workload comparison, and repeated-step comparison pass. At `nstates=512`, repeated GPU steps beat the CPU repeated-`eval_step` loop for this seed and gate shape; the next decision is a second seed.
 
 ## goal
 
@@ -19,7 +19,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  decide_repeated_steps_or_second_seed_after_large_workload
+  decide_second_seed_after_repeated_steps
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -296,15 +296,29 @@ tlul_fifo_sync_large_workload:
     nstates_512_gpu_over_cpu: 2.8779
   next_action: decide_repeated_steps_or_second_seed_after_large_workload
   weakest_point: steps remain fixed at 1 because CPU exact-loop timing does not yet model repeated eval steps
+
+tlul_fifo_sync_repeated_steps:
+  gpu_gate: config/scaling_gates/tlul_fifo_sync_repeated_steps.json
+  cpu_gate: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json
+  gpu_report: reports/tlul_fifo_sync_repeated_steps_scaling.json
+  cpu_report: reports/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json
+  status: pass
+  accepted_claim: GPU beats CPU repeated-eval loop for nstates=512 and steps in [1, 8, 32] on tlul_fifo_sync
+  latest_metrics:
+    steps_1_gpu_over_cpu: 2.5619
+    steps_8_gpu_over_cpu: 5.2985
+    steps_32_gpu_over_cpu: 2.7165
+  next_action: decide_second_seed_after_repeated_steps
+  weakest_point: CPU repeated steps are modeled as repeated eval_step calls after initialization, not full timed clock cycles
 ```
 
 ## next
 
 ```text
-if repeated_step_claim_needed:
-  add CPU repeated-step semantics before increasing steps
-else:
+if target_breadth_needed:
   add second seed to prove target breadth
+else:
+  package minimal repo boundary with limited claims
 ```
 
 ## source_of_truth

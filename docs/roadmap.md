@@ -66,7 +66,12 @@ phase_3:
   run_tlul_large_workload_scaling_gate: done
   define_tlul_large_workload_exact_cpu_loop_gate: done
   run_tlul_large_workload_exact_cpu_loop_gate: done
-  decide_repeated_steps_or_second_seed_after_large_workload: next
+  decide_repeated_steps_or_second_seed_after_large_workload: done_repeated_steps
+  define_tlul_repeated_steps_scaling_gate: done
+  run_tlul_repeated_steps_scaling_gate: done
+  define_tlul_repeated_steps_exact_cpu_loop_gate: done
+  run_tlul_repeated_steps_exact_cpu_loop_gate: done
+  decide_second_seed_after_repeated_steps: next
 ```
 
 ## acceptance
@@ -134,5 +139,17 @@ next_large_workload_gate:
   steps: [1]
   accepted_claim: GPU beats exact CPU loop at nstates=512 for this seed and gate shape
   non_claim: repeated-step throughput and target-breadth generality
+  status: pass
+
+next_repeated_steps_gate:
+  target: tlul_fifo_sync
+  gpu_config: config/scaling_gates/tlul_fifo_sync_repeated_steps.json
+  cpu_config: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json
+  gpu_report: reports/tlul_fifo_sync_repeated_steps_scaling.json
+  cpu_report: reports/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json
+  nstates: [512]
+  steps: [1, 8, 32]
+  accepted_claim: GPU beats CPU repeated-eval loop for this seed and gate shape
+  non_claim: target-breadth generality and full timed-cycle equivalence
   status: pass
 ```

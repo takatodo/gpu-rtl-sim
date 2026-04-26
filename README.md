@@ -247,3 +247,20 @@ PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py \
 
 This gate keeps `steps=1` and increases only `nstates`. The current accepted
 claim is limited to this seed and gate shape.
+
+Run the repeated-step workload gate:
+
+```bash
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_scaling_validation.py \
+  --gate config/scaling_gates/tlul_fifo_sync_repeated_steps.json \
+  --json-out reports/tlul_fifo_sync_repeated_steps_scaling.json
+
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py \
+  --exact-loop \
+  --gate config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json \
+  --json-out reports/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json \
+  --gpu-scaling-report reports/tlul_fifo_sync_repeated_steps_scaling.json
+```
+
+This gate compares GPU repeated kernel launches with CPU repeated `eval_step`
+calls after initialization. It is still scoped to `tlul_fifo_sync`.

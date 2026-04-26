@@ -125,6 +125,8 @@ def _run_exact_loop_case(
         str(post_reset_cycles),
         "--repeat-states",
         str(nstates),
+        "--repeat-eval-steps",
+        str(steps),
     ]
     completed = subprocess.run(cmd, text=True, capture_output=True)
     parsed: dict[str, object] | None = None
@@ -134,7 +136,11 @@ def _run_exact_loop_case(
         except json.JSONDecodeError:
             parsed = None
     elapsed_ms = float(parsed.get("elapsed_ms", 0.0)) if parsed else 0.0
-    states_per_second = float(parsed.get("states_per_second", 0.0)) if parsed else None
+    states_per_second = (
+        float(parsed.get("state_steps_per_second", parsed.get("states_per_second", 0.0)))
+        if parsed
+        else None
+    )
     constructor_ok = bool(parsed and parsed.get("constructor_ok") is True)
     root_size = int(parsed.get("root_size", 0)) if parsed else 0
     passed = completed.returncode == 0 and constructor_ok and root_size == storage_size
@@ -149,6 +155,7 @@ def _run_exact_loop_case(
         "states_per_second": states_per_second,
         "constructor_ok": constructor_ok,
         "root_size": root_size,
+        "throughput_unit": "state_steps_per_second",
         "passed": passed,
         "stdout_tail": completed.stdout.splitlines()[-20:],
         "stderr_tail": completed.stderr.splitlines()[-20:],

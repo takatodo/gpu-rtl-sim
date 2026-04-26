@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_fifo_sync_repeated_steps_scaling",
+  "target": "tlul_fifo_sync",
+  "source_gpu_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
+  "purpose": "Test repeated GPU kernel launches on the same batched state storage after the large-nstates gate showed a GPU win.",
+  "preconditions": [
+    "tlul_fifo_sync_large_workload_scaling passes",
+    "CPU exact-loop probe supports --repeat-eval-steps",
+    "artifacts/ and reports/ are ignored generated outputs"
+  ],
+  "runs": [
+    {
+      "name": "steps_1_batch_512",
+      "nstates": 512,
+      "steps": 1,
+      "required": true
+    },
+    {
+      "name": "steps_8_batch_512",
+      "nstates": 512,
+      "steps": 8,
+      "required": true
+    },
+    {
+      "name": "steps_32_batch_512",
+      "nstates": 512,
+      "steps": 32,
+      "required": true
+    }
+  ],
+  "correctness_policy": {
+    "batched_gpu_runs": [
+      "run exits with status 0",
+      "dumped state byte size equals storage_size * nstates when dump is requested",
+      "no raw-byte CPU/GPU equality claim is made for repeated batched states"
+    ]
+  },
+  "performance_policy": {
+    "record": [
+      "nstates",
+      "steps",
+      "elapsed_ms",
+      "state_steps_per_second"
+    ],
+    "non_claims": [
+      "no target-breadth claim because this gate uses only tlul_fifo_sync",
+      "CPU repeated steps are modeled as repeated eval_step calls after initialization"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/tlul_fifo_sync_repeated_steps_scaling.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "run_tlul_repeated_steps_exact_cpu_loop_comparison",
+  "next_action_on_fail": "diagnose_tlul_repeated_steps_scaling_failure"
+}

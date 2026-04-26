@@ -93,6 +93,7 @@ struct ProbeConfig {
   uint32_t reset_cycles = 4;
   uint32_t post_reset_cycles = 2;
   uint32_t repeat_states = 1;
+  uint32_t repeat_eval_steps = 1;
   bool repeat_states_requested = false;
   std::string state_out;
   std::string program_entries_bin;
@@ -214,6 +215,12 @@ ProbeConfig parse_args(int argc, char** argv) {
       if (cfg.repeat_states == 0U) fail("--repeat-states must be >= 1");
       continue;
     }
+    if (arg == "--repeat-eval-steps") {
+      cfg.repeat_eval_steps =
+          parse_u32("--repeat-eval-steps", (i + 1) < argc ? argv[++i] : nullptr);
+      if (cfg.repeat_eval_steps == 0U) fail("--repeat-eval-steps must be >= 1");
+      continue;
+    }
     if (arg == "--state-out") {
       cfg.state_out = (i + 1) < argc ? argv[++i] : "";
       if (cfg.state_out.empty()) fail("missing value for --state-out");
@@ -260,6 +267,7 @@ ProbeConfig parse_args(int argc, char** argv) {
       std::cout
           << "Usage: tlul_slice_host_probe [--reset-cycles N] [--post-reset-cycles N]\n"
           << "                             [--repeat-states N]\n"
+          << "                             [--repeat-eval-steps N]\n"
           << "                             [--set field=value ...] [--state-out path]\n"
           << "                             [--program-entries-bin path]\n"
           << "                             [--memory-image path]\n"
@@ -279,6 +287,9 @@ ProbeConfig parse_args(int argc, char** argv) {
     if (cfg.raw_root_eval_steps != 0U) {
       fail("--repeat-states does not support --raw-root-eval-steps");
     }
+  }
+  if (!cfg.repeat_states_requested && cfg.repeat_eval_steps > 1U) {
+    fail("--repeat-eval-steps requires --repeat-states");
   }
   if (cfg.raw_root_eval_steps != 0U && cfg.raw_root_eval_state_out.empty()) {
     fail("--raw-root-eval-steps requires --raw-root-eval-state-out");
@@ -784,6 +795,11 @@ ProbeSummary run_one_probe_state(const ProbeConfig& cfg, int argc, char** argv) 
         static_cast<int>(cfg.post_reset_cycles * 2U));
   }
 
+  for (uint32_t step = 1; step < cfg.repeat_eval_steps; ++step) {
+    model.eval_step();
+    summary.drained_events += 1;
+  }
+
   summary.sim_time = context.time();
   summary.cfg_signature_o = model.cfg_signature_o;
   summary.host_req_accepted_o = model.host_req_accepted_o;
@@ -819,16 +835,22 @@ void emit_repeat_summary(
   }
   const double states_per_second =
       elapsed_ms > 0.0 ? (static_cast<double>(summaries.size()) / (elapsed_ms / 1000.0)) : 0.0;
+  const double state_steps_per_second =
+      elapsed_ms > 0.0
+          ? ((static_cast<double>(summaries.size()) * cfg.repeat_eval_steps) / (elapsed_ms / 1000.0))
+          : 0.0;
 
   std::cout << "{\n";
   std::cout << "  \"target\": \"" << TARGET_NAME << "\",\n";
   std::cout << "  \"constructor_ok\": " << (all_ok ? "true" : "false") << ",\n";
   std::cout << "  \"repeat_states\": " << cfg.repeat_states << ",\n";
+  std::cout << "  \"repeat_eval_steps\": " << cfg.repeat_eval_steps << ",\n";
   std::cout << "  \"reset_cycles\": " << cfg.reset_cycles << ",\n";
   std::cout << "  \"post_reset_cycles\": " << cfg.post_reset_cycles << ",\n";
   std::cout << "  \"root_size\": " << root_size << ",\n";
   std::cout << "  \"elapsed_ms\": " << elapsed_ms << ",\n";
   std::cout << "  \"states_per_second\": " << states_per_second << ",\n";
+  std::cout << "  \"state_steps_per_second\": " << state_steps_per_second << ",\n";
   std::cout << "  \"total_drained_events\": " << total_drained_events << "\n";
   std::cout << "}\n";
 }
