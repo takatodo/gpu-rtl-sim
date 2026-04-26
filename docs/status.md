@@ -386,19 +386,44 @@ non_tlul_breadth_seed_selection:
     - broaden beyond one candidate before gate shape is fixed
   next_action: define_xuantie_e902_minimal_gate_before_asset_copy
   weakest_point: candidate evidence is inherited from old repo metadata; minimal repo has not built or run it
+
+xuantie_e902_minimal_gate:
+  status: defined_before_asset_copy
+  target: XuanTie.xuantie_e902
+  top_module: xuantie_e902_gpu_cov_tb
+  old_template: old repo config/slice_launch_templates/xuantie_e902.json
+  planned_mdir: artifacts/xuantie_e902_obj_dir
+  initial_gate_shape:
+    gpu_nstates: 8
+    gpu_sequential_steps: 56
+    first_acceptance: stock Verilator object directory can be generated from copied source boundary
+    followup_acceptance: GPU cubin builds and runs without broad performance claim
+  required_asset_boundary:
+    - third_party/rtlmeter/designs/XuanTie-E902/descriptor.yaml
+    - third_party/rtlmeter/designs/XuanTie-E902/LICENSE-XuanTie-E902
+    - third_party/rtlmeter/designs/XuanTie-E902/src/**
+    - third_party/rtlmeter/designs/XuanTie-E902/tests/hello/case.pat
+    - third_party/rtlmeter/designs/XuanTie-E902/tests/post.bash
+    - third_party/rtlmeter/designs/XuanTie-E902/tests/xuantie_e902_gpu_cov_coverage_regions.json
+  generated_outputs:
+    - artifacts/xuantie_e902_obj_dir/**
+    - reports/xuantie_e902_*.json
+  non_claims:
+    - not a GPU speedup claim
+    - not a supported non-TL-UL target claim
+    - not a claim that all XuanTie family targets work
+  next_action: materialize_xuantie_e902_asset_boundary
+  weakest_point: gate definition still relies on old repo template and has not been validated in minimal repo
 ```
 
 ## next
 
 ```text
-define_xuantie_e902_minimal_gate_before_asset_copy:
-  define required source asset list
-  define expected Verilator top and runtime inputs
-  define first pass/fail gate
-  define generated artifact policy for this candidate
-  keep asset copy blocked until gate shape is documented
-  define gate before implementation
-  keep two-seed TL-UL boundary unchanged
+materialize_xuantie_e902_asset_boundary:
+  copy only the defined XuanTie-E902 source/test boundary
+  do not copy broader RTLMeter families
+  add launch config only if the existing target registry cannot express this candidate
+  run syntax/config checks before any Verilator build claim
 ```
 
 ## source_of_truth
