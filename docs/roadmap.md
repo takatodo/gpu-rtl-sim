@@ -42,8 +42,8 @@ phase_3:
   add_root_gitignore_policy: done
   initialize_minimal_repo_git_repository: done
   review_minimal_initial_source_boundary: done
-  minimal_initial_commit_if_requested: next
-  reproduce_from_clean_checkout_after_initial_commit: pending
+  minimal_initial_commit_if_requested: done_f8349b9
+  reproduce_from_clean_checkout_after_initial_commit: next
 ```
 
 ## acceptance

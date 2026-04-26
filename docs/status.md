@@ -2,7 +2,7 @@
 
 ## weakest_point
 
-The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, and the initial source boundary has been reviewed. The project is not yet durable until the initial source boundary is committed.
+The copied runtime core and first `tlul_fifo_sync` repro flow work, generated outputs are ignored, and the initial source boundary is committed. The next durability check is reproducing the documented flow from a clean checkout.
 
 ## goal
 
@@ -19,7 +19,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  minimal_initial_commit_if_requested
+  reproduce_from_clean_checkout_after_initial_commit
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -185,17 +185,18 @@ git_ownership:
 source_boundary_review:
   status: pass
   tracked_candidate_count: 48
-  next_action: minimal_initial_commit_if_requested
+  initial_commit: f8349b9
+  next_action: reproduce_from_clean_checkout_after_initial_commit
   weakest_point: third_party seed provenance should be reviewed before publishing beyond local development
 ```
 
 ## next
 
 ```text
-if initial_commit_requested:
-  commit the minimal source boundary
+if clean_checkout_available:
+  run documented repro flow from a clean checkout
 else:
-  wait without adding more hand-authored source
+  keep current repo clean and prepare clean-checkout reproduction
 ```
 
 ## source_of_truth
