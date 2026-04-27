@@ -160,7 +160,8 @@ phase_3:
   package_rom_memory_delta_patch_schedule_boundary: done
   commit_rom_memory_delta_patch_schedule_boundary: done_010fb86
   define_named_rom_memory_symbol_mapping_gate: done_candidate_fields_inspected
-  define_xuantie_e902_named_rom_memory_mapping_contract: next
+  define_xuantie_e902_named_rom_memory_mapping_contract: done_contract_defined
+  define_xuantie_e902_named_rom_memory_mapping_gate: next
 ```
 
 ## acceptance

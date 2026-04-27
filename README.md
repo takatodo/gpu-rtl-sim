@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  define_xuantie_e902_named_rom_memory_mapping_contract
+  define_xuantie_e902_named_rom_memory_mapping_gate
 
 policy:
   - upload init-state once
@@ -487,8 +487,7 @@ accepted_claim:
   boundary_status: committed_xuantie_e902_rom_memory_delta_patch_schedule_gpu_win
 
 next_candidate_order:
-  - xuantie_e902_named_rom_memory_mapping_contract
-  - named_rom_memory_symbol_mapping_gate
+  - xuantie_e902_named_rom_memory_mapping_gate
   - input_stream_delta
   - program_image_delta
 

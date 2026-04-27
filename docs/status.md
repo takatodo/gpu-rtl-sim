@@ -1401,13 +1401,44 @@ define_xuantie_e902_named_rom_memory_mapping_contract:
   weakest_point: the candidate field names are generated Verilator storage names; without an address/byte-lane contract, a patch against them can still be a renamed proxy rather than a defensible ROM/memory-image delta.
   source_contract: config/resident_patch_script_semantics.json
   candidate_target: xuantie_e902
+  selected_family: iahb_instruction_memory
+  source_rtl:
+    - third_party/rtlmeter/designs/XuanTie-E902/src/tb.v
+    - third_party/rtlmeter/designs/XuanTie-E902/src/mem_ctrl.v
+  mapping_contract:
+    memory_image_source: case.pat loaded through mem_inst_temp
+    word_index_mapping: case.pat word index i maps to x_iahb_mem_ctrl.ram0..3.mem[i]
+    testbench_initialization_lanes:
+      ram0: word[31:24]
+      ram1: word[23:16]
+      ram2: word[15:8]
+      ram3: word[7:0]
+    ahb_readback_lanes: mem_ctrl readback assembles {ram3, ram2, ram1, ram0}
+    required_gate_note: the named gate must state whether its deltas follow testbench image order or AHB readback order
+  unselected_families:
+    - x_smem_ctrl.ram0..3.mem
+    - x_dmem_ctrl.ram0..3.mem
   acceptance:
     - document which candidate family is instruction memory, scratch/shared memory, or data memory for this target
     - define byte-lane mapping from memory-image deltas to ram0..3.mem indices
     - define unresolved fallback if a named family cannot be tied to a memory-image region
     - keep GPU and CPU baselines on the same named mapping
+  status: done_contract_defined
+  next_action: define_xuantie_e902_named_rom_memory_mapping_gate
+
+define_xuantie_e902_named_rom_memory_mapping_gate:
+  goal: define GPU and CPU exact-loop gates that apply XuanTie-E902 case.pat deltas through the named IAHB instruction-memory mapping instead of raw root offsets
+  weakest_point: even with named IAHB mapping, this still validates bounded memory-image delta communication reduction, not ISA correctness or full software boot.
+  source_contract: config/resident_patch_script_semantics.json
+  selected_target: xuantie_e902
+  selected_family: iahb_instruction_memory
+  acceptance:
+    - define GPU gate patch records from named case.pat word/lane deltas
+    - define matching CPU exact-loop baseline with the same named mapping
+    - keep one-time schedule upload and no per-step host-device copies
+    - preserve non-claims for ISA correctness, full software boot, and broad XuanTie family support
   status: next
-  next_action: define_xuantie_e902_named_rom_memory_mapping_contract
+  next_action: define_xuantie_e902_named_rom_memory_mapping_gate
 ```
 
 ## source_of_truth
