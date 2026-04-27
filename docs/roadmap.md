@@ -176,7 +176,8 @@ phase_3:
   select_next_runtime_depth_after_breadth_closure: done_resident_schedule_scalability_selected
   define_resident_schedule_scalability_envelope: done_from_existing_reports
   define_larger_resident_schedule_envelope_gate: done_gates_defined
-  run_larger_resident_schedule_envelope_gate: next
+  run_larger_resident_schedule_envelope_gate: done_gpu_cpu_pass
+  select_next_runtime_depth_after_larger_resident_envelope: next
 ```
 
 ## acceptance

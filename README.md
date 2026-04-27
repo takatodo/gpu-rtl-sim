@@ -443,7 +443,11 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  run_larger_resident_schedule_envelope_gate
+  select_next_runtime_depth_after_larger_resident_envelope
+
+latest_larger_envelope:
+  tlul_sink_1024x64_gpu_over_cpu_ratio: 5.557127971950416
+  tlul_sink_2048x64_gpu_over_cpu_ratio: 6.685046741041471
 
 policy:
   - upload init-state once

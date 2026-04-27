@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  run_larger_resident_schedule_envelope_gate
+  select_next_runtime_depth_after_larger_resident_envelope
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1719,8 +1719,26 @@ run_larger_resident_schedule_envelope_gate:
     - GPU gate exits ok for 1024x64 and 2048x64
     - CPU exact-loop gate exits ok for the same shapes
     - compare ratios against the existing tlul_sink 512x32 envelope point
+  observed:
+    - 1024x64 ratio: 5.557127971950416
+    - 2048x64 ratio: 6.685046741041471
+    - baseline comparison: both larger shapes improve over the existing tlul_sink 512x32 ratio 2.002480966457029
+  status: done_gpu_cpu_pass
+  next_action: select_next_runtime_depth_after_larger_resident_envelope
+
+select_next_runtime_depth_after_larger_resident_envelope:
+  goal: decide the next runtime-depth implementation boundary after the larger resident schedule envelope passed
+  weakest_point: the larger TL-UL sink result proves resident schedule scalability for bounded state-step throughput, but still does not move state construction, initialization, or ROM/program setup onto GPU.
+  inputs:
+    - reports/tlul_sink_larger_resident_patch_schedule.json
+    - reports/tlul_sink_cpu_exact_loop_larger_resident_patch_schedule.json
+    - config/selection.json
+  decision_options:
+    - start_gpu_owned_state_construction_boundary
+    - define_one_more_construction_readiness_gate
+  recommended_next: start_gpu_owned_state_construction_boundary
   status: next
-  next_action: run_larger_resident_schedule_envelope_gate
+  next_action: select_next_runtime_depth_after_larger_resident_envelope
 ```
 
 ## source_of_truth

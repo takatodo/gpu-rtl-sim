@@ -349,7 +349,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "run_larger_resident_schedule_envelope_gate",
+            "select_next_runtime_depth_after_larger_resident_envelope",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -431,12 +431,22 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         envelope = selection["resident_schedule_scalability_envelope"]
         self.assertIn("tlul_fifo_sync resident_patch_schedule 512x32 ratio 3.1160088024052413", envelope["gpu_favorable_batch_shapes"])
+        self.assertIn("tlul_sink resident_patch_schedule 1024x64 ratio 5.557127971950416", envelope["gpu_favorable_batch_shapes"])
+        self.assertIn("tlul_sink resident_patch_schedule 2048x64 ratio 6.685046741041471", envelope["gpu_favorable_batch_shapes"])
         self.assertIn("xuantie_e902 program_image_delta 1x6 ratio 0.016034347357067786", envelope["cpu_favorable_smoke_shapes"])
         self.assertEqual(
             selection["next_runtime_depth_after_envelope"],
-            "define_larger_resident_schedule_envelope_gate",
+            "select_next_runtime_depth_after_larger_resident_envelope",
         )
-        self.assertEqual(selection["larger_resident_schedule_envelope_status"], "defined_gates")
+        self.assertEqual(selection["larger_resident_schedule_envelope_status"], "gpu_cpu_passed")
+        self.assertEqual(
+            selection["larger_resident_schedule_envelope_1024x64_gpu_over_cpu_ratio"],
+            5.557127971950416,
+        )
+        self.assertEqual(
+            selection["larger_resident_schedule_envelope_2048x64_gpu_over_cpu_ratio"],
+            6.685046741041471,
+        )
         self.assertEqual(
             selection["larger_resident_schedule_envelope_gate"],
             "config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json",

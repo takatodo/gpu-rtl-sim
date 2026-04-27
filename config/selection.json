@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "run_larger_resident_schedule_envelope_gate",
+  "current_priority": "select_next_runtime_depth_after_larger_resident_envelope",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -137,13 +137,15 @@
     "gpu_favorable_batch_shapes": [
       "tlul_fifo_sync resident_patch_schedule 512x32 ratio 3.1160088024052413",
       "tlul_sink resident_patch_schedule 512x32 ratio 2.002480966457029",
+      "tlul_sink resident_patch_schedule 1024x64 ratio 5.557127971950416",
+      "tlul_sink resident_patch_schedule 2048x64 ratio 6.685046741041471",
       "veer_el2 resident_patch_schedule 512x32 ratio 2.8489279680483475",
       "xuantie_e902 resident_patch_schedule 128x32 ratio 1.1724144754038845",
       "xuantie_e902 program_image_delta 128x32 ratio 1.3826459191531113"
     ],
-    "decision": "extend larger envelope measurement before starting gpu_owned_state_construction"
+    "decision": "larger TL-UL sink envelope improves over the existing 512x32 point; select whether to start gpu_owned_state_construction or define one more construction-readiness gate"
   },
-  "next_runtime_depth_after_envelope": "define_larger_resident_schedule_envelope_gate",
+  "next_runtime_depth_after_envelope": "select_next_runtime_depth_after_larger_resident_envelope",
   "named_rom_memory_symbol_mapping_contract": {
     "selected_family": "iahb_instruction_memory",
     "source_rtl": "third_party/rtlmeter/designs/XuanTie-E902/src/tb.v",
@@ -169,5 +171,8 @@
   "larger_resident_schedule_envelope_cpu_gate": "config/scaling_gates/tlul_sink_cpu_exact_loop_larger_resident_patch_schedule.json",
   "larger_resident_schedule_envelope_report": "reports/tlul_sink_larger_resident_patch_schedule.json",
   "larger_resident_schedule_envelope_cpu_report": "reports/tlul_sink_cpu_exact_loop_larger_resident_patch_schedule.json",
-  "larger_resident_schedule_envelope_status": "defined_gates"
+  "larger_resident_schedule_envelope_status": "gpu_cpu_passed",
+  "larger_resident_schedule_envelope_1024x64_gpu_over_cpu_ratio": 5.557127971950416,
+  "larger_resident_schedule_envelope_2048x64_gpu_over_cpu_ratio": 6.685046741041471,
+  "larger_resident_schedule_envelope_decision": "larger resident schedule keeps improving on TL-UL sink, so the next runtime-depth task should decide the GPU-owned state construction boundary rather than adding more target breadth"
 }
