@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "gate": "xuantie_e902_named_rom_memory_mapping_validation",
+  "target": "xuantie_e902",
+  "source_contract": "config/resident_patch_script_semantics.json",
+  "source_launch_template": "config/slice_launch_templates/xuantie_e902.json",
+  "source_proxy_gate": "config/scaling_gates/xuantie_e902_rom_memory_delta_patch_schedule.json",
+  "semantic": "rom_or_memory_init_delta",
+  "mapping_semantic": "named_rom_memory_symbol_mapping",
+  "purpose": "Define a named XuanTie-E902 ROM/memory delta gate using case.pat to IAHB instruction-memory mapping instead of raw root offsets.",
+  "preconditions": [
+    "config/scaling_gates/xuantie_e902_rom_memory_delta_patch_schedule.json has a bounded proxy GPU win",
+    "config/resident_patch_script_semantics.json records the XuanTie-E902 named mapping contract",
+    "third_party/rtlmeter/designs/XuanTie-E902/src/tb.v maps case.pat words into x_iahb_mem_ctrl.ram0..3.mem",
+    "third_party/rtlmeter/designs/XuanTie-E902/src/mem_ctrl.v documents AHB readback lane assembly"
+  ],
+  "named_mapping": {
+    "selected_family": "iahb_instruction_memory",
+    "memory_image_source": "case.pat loaded through mem_inst_temp",
+    "word_index_mapping": "case.pat word index i maps to x_iahb_mem_ctrl.ram0..3.mem[i]",
+    "testbench_initialization_lane_mapping": {
+      "ram0": "word[31:24]",
+      "ram1": "word[23:16]",
+      "ram2": "word[15:8]",
+      "ram3": "word[7:0]"
+    },
+    "ahb_readback_lane_mapping": "{ram3, ram2, ram1, ram0}",
+    "gate_delta_order": "testbench_initialization_lane_mapping",
+    "unselected_families": [
+      "x_smem_ctrl.ram0..3.mem",
+      "x_dmem_ctrl.ram0..3.mem"
+    ]
+  },
+  "named_patch_deltas": [
+    {
+      "logical_step": 0,
+      "word_index": 0,
+      "lane": "ram3",
+      "byte_value": 1,
+      "source_semantic": "case.pat word[7:0]"
+    },
+    {
+      "logical_step": 2,
+      "word_index": 0,
+      "lane": "ram2",
+      "byte_value": 2,
+      "source_semantic": "case.pat word[15:8]"
+    }
+  ],
+  "runtime_support": {
+    "status": "named_mapping_lowering_required",
+    "current_patch_script_lines_are_not_source_of_truth": true,
+    "required_lowering": "translate named_patch_deltas to resident patch records using generated root field offsets for x_iahb_mem_ctrl.ram0..3.mem"
+  },
+  "runs": [
+    {
+      "name": "xuantie_e902_named_rom_memory_mapping_smoke_1x6",
+      "nstates": 1,
+      "steps": 1,
+      "resident_steps": true,
+      "required": true,
+      "named_patch_delta_sequence": "named_patch_deltas"
+    },
+    {
+      "name": "xuantie_e902_named_rom_memory_mapping_batch_128x32",
+      "nstates": 128,
+      "steps": 1,
+      "resident_steps": true,
+      "required": true,
+      "named_patch_delta_sequence": "named_patch_deltas_repeated_to_32_logical_steps"
+    }
+  ],
+  "correctness_policy": {
+    "resident_gpu_runs": [
+      "run exits with status 0 after named mapping lowering exists",
+      "stdout reports resident_mode: true",
+      "stdout reports resident_patch_schedule",
+      "lowered patch records are derived from named_patch_deltas, not hand-written root offsets"
+    ],
+    "non_claims": [
+      "not ISA/program correctness",
+      "not full software boot correctness",
+      "not broad XuanTie family support",
+      "not full RTL application throughput"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/xuantie_e902_named_rom_memory_mapping.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_defined": "define_xuantie_e902_cpu_exact_loop_named_rom_memory_mapping_gate",
+  "next_action_on_run_blocked": "implement_xuantie_e902_named_rom_memory_mapping_lowering"
+}

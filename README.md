@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  define_xuantie_e902_named_rom_memory_mapping_gate
+  implement_xuantie_e902_named_rom_memory_mapping_lowering
 
 policy:
   - upload init-state once
@@ -463,6 +463,8 @@ source_of_truth:
   - config/scaling_gates/xuantie_e902_cpu_exact_loop_resident_patch_schedule.json
   - config/scaling_gates/xuantie_e902_rom_memory_delta_patch_schedule.json
   - config/scaling_gates/xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule.json
+  - config/scaling_gates/xuantie_e902_named_rom_memory_mapping.json
+  - config/scaling_gates/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json
 ```
 
 Current bounded resident changing-input result:
@@ -487,7 +489,8 @@ accepted_claim:
   boundary_status: committed_xuantie_e902_rom_memory_delta_patch_schedule_gpu_win
 
 next_candidate_order:
-  - xuantie_e902_named_rom_memory_mapping_gate
+  - implement_xuantie_e902_named_rom_memory_mapping_lowering
+  - run_xuantie_e902_named_rom_memory_mapping_gate
   - input_stream_delta
   - program_image_delta
 

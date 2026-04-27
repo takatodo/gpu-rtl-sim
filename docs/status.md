@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_xuantie_e902_named_rom_memory_mapping_contract
+  implement_xuantie_e902_named_rom_memory_mapping_lowering
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1432,13 +1432,29 @@ define_xuantie_e902_named_rom_memory_mapping_gate:
   source_contract: config/resident_patch_script_semantics.json
   selected_target: xuantie_e902
   selected_family: iahb_instruction_memory
+  gpu_gate: config/scaling_gates/xuantie_e902_named_rom_memory_mapping.json
+  cpu_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json
+  runtime_support_status: named_mapping_lowering_required
   acceptance:
     - define GPU gate patch records from named case.pat word/lane deltas
     - define matching CPU exact-loop baseline with the same named mapping
     - keep one-time schedule upload and no per-step host-device copies
     - preserve non-claims for ISA correctness, full software boot, and broad XuanTie family support
+  status: done_gates_defined
+  next_action: implement_xuantie_e902_named_rom_memory_mapping_lowering
+
+implement_xuantie_e902_named_rom_memory_mapping_lowering:
+  goal: lower XuanTie-E902 named case.pat word/lane deltas to resident patch records using generated root field offsets for x_iahb_mem_ctrl.ram0..3.mem
+  weakest_point: until lowering exists, the named gate is a contract artifact and cannot be run by the current patch-script runner without reintroducing hand-written root offsets.
+  source_gpu_gate: config/scaling_gates/xuantie_e902_named_rom_memory_mapping.json
+  source_cpu_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json
+  acceptance:
+    - derive global storage offsets from generated root fields rather than hard-coded raw offsets
+    - preserve the named_patch_deltas as source of truth
+    - generate patch_script_lines or equivalent resident records for both GPU and CPU runners
+    - keep artifacts generated-only under reports/ or work/
   status: next
-  next_action: define_xuantie_e902_named_rom_memory_mapping_gate
+  next_action: implement_xuantie_e902_named_rom_memory_mapping_lowering
 ```
 
 ## source_of_truth

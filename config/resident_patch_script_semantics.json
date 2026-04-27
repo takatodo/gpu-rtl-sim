@@ -50,7 +50,7 @@
       "cpu_baseline": "matching single-process CPU exact-loop applies the same memory-image deltas before each corresponding eval step",
       "allowed_claim": "communication-reduced resident execution for a bounded ROM or memory initialization delta workload",
       "current_limit": "the first ROM/memory delta gate uses explicit root storage offsets as a proxy mapping",
-      "next_precision_step": "define_xuantie_e902_named_rom_memory_mapping_gate",
+      "next_precision_step": "implement_xuantie_e902_named_rom_memory_mapping_lowering",
       "named_mapping_contract": "XuanTie-E902 case.pat words map through tb.v mem_inst_temp into x_iahb_mem_ctrl.ram0..3.mem with testbench initialization lanes ram0=word[31:24], ram1=word[23:16], ram2=word[15:8], ram3=word[7:0].",
       "non_claim": "not ISA/program correctness, not full software boot correctness, and not arbitrary root-byte patch semantics"
     },
@@ -60,5 +60,5 @@
       "do not reintroduce per-step host-device copies"
     ]
   },
-  "next_action": "define_xuantie_e902_named_rom_memory_mapping_gate"
+  "next_action": "implement_xuantie_e902_named_rom_memory_mapping_lowering"
 }
