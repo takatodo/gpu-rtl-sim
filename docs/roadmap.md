@@ -123,7 +123,12 @@ phase_3:
   generate_veer_el2_verilator_obj_dir: done_pass_with_warnings
   build_veer_el2_gpu_cubin: done
   run_veer_el2_gpu_smoke: done
-  define_veer_el2_cpu_reference_contract: next
+  define_veer_el2_cpu_reference_contract: done_normalized_final_state_equivalence
+  run_veer_el2_resident_workload_gate: done_cpu_favorable
+  define_veer_el2_larger_resident_workload_gate: done
+  run_veer_el2_larger_resident_workload_gate: done_gpu_win
+  package_veer_el2_larger_resident_boundary: done
+  commit_veer_el2_larger_resident_boundary: next
 ```
 
 ## acceptance
@@ -287,11 +292,11 @@ non_tlul_breadth_seed_candidate:
     c_runtime: src/hybrid/run_vl_hybrid.c
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: define_veer_el2_cpu_reference_contract
+  next_task: commit_veer_el2_larger_resident_boundary
 
 veer_el2_resident_breadth_candidate:
   selected: true
-  selection_status: gpu_smoke_pass
+  selection_status: packaged_larger_resident_boundary
   role: next non-TL-UL resident runtime breadth candidate
   old_repo_launch_template: config/slice_launch_templates/veer_el2.json
   old_repo_gate_evidence: output/family_readiness/veer_el2_gpu_toggle_readiness.md
@@ -310,6 +315,16 @@ veer_el2_resident_breadth_candidate:
   gpu_smoke_status: pass
   gpu_smoke_shape: nstates=1 steps=1
   gpu_smoke_state: artifacts/veer_el2_obj_dir/veer_el2_gpu_smoke_state.bin
+  host_probe: artifacts/veer_el2_obj_dir/veer_el2_host_probe
+  cpu_reference_state: artifacts/veer_el2_obj_dir/veer_el2_cpu_reference_state.bin
+  gpu_from_cpu_reference_state: artifacts/veer_el2_obj_dir/veer_el2_gpu_from_cpu_reference_state.bin
+  cpu_gpu_compare_report: reports/veer_el2_cpu_vs_gpu_from_cpu_init_compare.json
+  cpu_reference_contract_status: pass_normalized_final_state_equivalence
+  normalized_final_state_equivalence:
+    passed: true
+    included_member_count: 6494
+    included_byte_count: 431346
+    functional_non_internal_mismatch_bytes: 0
   copied_assets:
     - descriptor.yaml
     - LICENSE-VeeR-EL2
@@ -321,6 +336,26 @@ veer_el2_resident_breadth_candidate:
     - tests/veer_el2_coverage_regions.json
     - tests/veer_el2_program_hex_target_config.json
   asset_validation_status: pass_contract
-  required_next_step: define CPU reference contract and normalized compare
-  non_claim: no VeeR-EL2 resident-mode result exists in the minimal repo yet
+  required_next_step: run resident workload gate and matching CPU exact-loop resident baseline
+  resident_workload_gate: config/scaling_gates/veer_el2_resident_workload.json
+  resident_workload_report: reports/veer_el2_resident_workload_scaling.json
+  cpu_exact_loop_resident_workload_report: reports/veer_el2_cpu_exact_loop_resident_workload.json
+  larger_resident_workload_gate: config/scaling_gates/veer_el2_larger_resident_workload.json
+  cpu_exact_loop_larger_resident_workload_gate: config/scaling_gates/veer_el2_cpu_exact_loop_larger_resident_workload.json
+  larger_resident_workload_report: reports/veer_el2_larger_resident_workload_scaling.json
+  cpu_exact_loop_larger_resident_workload_report: reports/veer_el2_cpu_exact_loop_larger_resident_workload.json
+  larger_gate_shapes:
+    - nstates=256 steps=64 resident_steps=true
+    - nstates=512 steps=64 resident_steps=true
+  larger_gpu_over_cpu_ratio:
+    nstates_256_steps_64: 2.3705374232694565
+    nstates_512_steps_64: 2.45997554488639
+  resident_workload_status: pass_cpu_favorable
+  larger_resident_workload_status: pass_gpu_win
+  gpu_over_cpu_ratio:
+    nstates_64_steps_64: 0.6021517508485191
+    nstates_128_steps_64: 0.8295362109911266
+  package_status: done_bounded_larger_resident_claim
+  required_next_step: commit the bounded VeeR-EL2 larger resident boundary source/config/docs changes
+  non_claim: broad VeeR family support and full RTL application throughput are not proven
 ```

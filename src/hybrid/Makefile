@@ -35,7 +35,7 @@ INCLUDES = -I$(CUDA_INCLUDE_DIR)
 LDFLAGS  = -L$(CUDA_LIB_DIR) -Wl,-rpath,$(CUDA_LIB_DIR)
 LDLIBS   = -lcuda
 
-.PHONY: all clean tlul_slice_host_probe tlul_sink_host_probe xuantie_e902_host_probe
+.PHONY: all clean tlul_slice_host_probe tlul_sink_host_probe xuantie_e902_host_probe veer_el2_host_probe
 
 all: run_vl_hybrid
 
@@ -156,5 +156,56 @@ tlul_sink_host_probe: ../../artifacts/tlul_sink_obj_dir/tlul_slice_host_probe
 
 xuantie_e902_host_probe: ../../artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe
 
+../../artifacts/veer_el2_obj_dir/veer_el2_host_probe: tlul_slice_host_probe.cpp
+	$(CXX) -std=c++20 -fcoroutines -O2 -w \
+		-I../../artifacts/veer_el2_obj_dir \
+		-I$(VERILATOR_ROOT)/include \
+		-I$(VERILATOR_ROOT)/include/vltstd \
+		-DMODEL_HEADER='"Vveer_el2_gpu_cov_tb.h"' \
+		-DROOT_HEADER='"Vveer_el2_gpu_cov_tb___024root.h"' \
+		-DMODEL_CLASS=Vveer_el2_gpu_cov_tb \
+		-DROOT_CLASS=Vveer_el2_gpu_cov_tb___024root \
+		-DROOT_CLK_FIELD=veer_el2_gpu_cov_tb__DOT__dut__DOT__core_clk \
+		-DROOT_CLK_REPORT_NAME='"dut.core_clk"' \
+		-DROOT_RST_FIELD=veer_el2_gpu_cov_tb__DOT__dut__DOT__gpu_cov_rst_l_w \
+		-DROOT_RST_REPORT_NAME='"dut.gpu_cov_rst_l_w"' \
+		-DROOT_RST_ASSERTED_VALUE=0U \
+		-DROOT_RST_DEASSERTED_VALUE=1U \
+		-DHOST_CLOCK_CONTROL=0 \
+		-DHOST_RESET_CONTROL=0 \
+		-DPROBE_TLUL_SIGNALS=0 \
+		-DTARGET_NAME='"veer_el2_gpu_cov_tb"' \
+		tlul_slice_host_probe.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__0.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__1.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__2.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__3.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__4.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__5.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__6.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb_el2_configurable_gw__0.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb__ConstPool__0__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb__ConstPool__1__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__0__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__1__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__2__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__3__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__4__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024root__5__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024unit__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb___024unit__0__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb_el2_configurable_gw__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb_el2_configurable_gw__0__Slow.cpp \
+		../../artifacts/veer_el2_obj_dir/Vveer_el2_gpu_cov_tb__Syms__Slow.cpp \
+		$(VERILATOR_ROOT)/include/verilated.cpp \
+		$(VERILATOR_ROOT)/include/verilated_timing.cpp \
+		$(VERILATOR_ROOT)/include/verilated_threads.cpp \
+		-pthread \
+		-o $@
+
+veer_el2_host_probe: ../../artifacts/veer_el2_obj_dir/veer_el2_host_probe
+
 clean:
-	rm -f run_vl_hybrid ../../$(TLUL_MDIR)/tlul_slice_host_probe ../../artifacts/tlul_sink_obj_dir/tlul_slice_host_probe ../../artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe
+	rm -f run_vl_hybrid ../../$(TLUL_MDIR)/tlul_slice_host_probe ../../artifacts/tlul_sink_obj_dir/tlul_slice_host_probe ../../artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe ../../artifacts/veer_el2_obj_dir/veer_el2_host_probe

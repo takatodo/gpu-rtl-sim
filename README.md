@@ -57,13 +57,14 @@ weakest_point:
 | Target | Status | Accepted claim | Key ratio | Non-claim |
 | --- | --- | --- | --- | --- |
 | `xuantie_e902` | Explicit resident mode passes | GPU resident mode beats a single-process CPU repeated-`eval_step` loop for `nstates=128`, `steps=64` | `1.2076x` | Not broad XuanTie family support or resident patch-script semantics |
+| `veer_el2` | Larger resident gate passes | GPU resident mode beats a single-process CPU repeated-`eval_step` loop for `nstates=[256,512]`, `steps=64` | `2.37x`, `2.46x` | Not broad VeeR family support, full RTL application throughput, or resident patch-script semantics |
 
 Next resident breadth candidate:
 
 ```text
 weakest_point:
-  VeeR-EL2 is selected from old-repo evidence, but its source/test boundary and
-  resident gate have not been materialized in this minimal repo yet.
+  VeeR-EL2 has a bounded larger-resident GPU win, but the claim is limited to
+  one wrapper and two measured shapes.
 
 selected:
   target: veer_el2
@@ -76,7 +77,7 @@ selected:
     - output/design_scope_expansion_packet.json
 
 next:
-  define_veer_el2_cpu_reference_contract
+  commit_veer_el2_larger_resident_boundary
 ```
 
 Resident boundary:
@@ -454,6 +455,46 @@ PYTHONPATH=src/tools python3 src/tools/compare_vl_hybrid_modes.py \
     artifacts/xuantie_e902_obj_dir/xuantie_gpu_from_cpu_reference_state.bin \
   --json-out reports/xuantie_e902_cpu_vs_gpu_from_cpu_init_compare.json \
   --acceptance-policy normalized_final_state_equivalence
+
+make -C src/hybrid veer_el2_host_probe
+
+(
+  cd artifacts/veer_el2_obj_dir
+  ./veer_el2_host_probe \
+    --reset-cycles 120 \
+    --post-reset-cycles 120 \
+    --state-out veer_el2_cpu_reference_state.bin \
+    > veer_el2_cpu_reference_probe.json
+)
+
+PYTHONPATH=src/tools python3 src/tools/run_vl_hybrid.py \
+  --mdir artifacts/veer_el2_obj_dir \
+  --nstates 1 \
+  --steps 1 \
+  --init-state artifacts/veer_el2_obj_dir/veer_el2_cpu_reference_state.bin \
+  --sanitize-host-only-internals \
+  --dump-state artifacts/veer_el2_obj_dir/veer_el2_gpu_from_cpu_reference_state.bin
+
+PYTHONPATH=src/tools python3 src/tools/compare_vl_hybrid_modes.py \
+  artifacts/veer_el2_obj_dir \
+  --compare-dumps \
+    artifacts/veer_el2_obj_dir/veer_el2_cpu_reference_state.bin \
+    artifacts/veer_el2_obj_dir/veer_el2_gpu_from_cpu_reference_state.bin \
+  --json-out reports/veer_el2_cpu_vs_gpu_from_cpu_init_compare.json \
+  --acceptance-policy normalized_final_state_equivalence
+
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_scaling_validation.py \
+  --gate config/scaling_gates/veer_el2_larger_resident_workload.json \
+  --mdir artifacts/veer_el2_obj_dir \
+  --json-out reports/veer_el2_larger_resident_workload_scaling.json
+
+PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py \
+  --exact-loop \
+  --mdir artifacts/veer_el2_obj_dir \
+  --probe artifacts/veer_el2_obj_dir/veer_el2_host_probe \
+  --gate config/scaling_gates/veer_el2_cpu_exact_loop_larger_resident_workload.json \
+  --json-out reports/veer_el2_cpu_exact_loop_larger_resident_workload.json \
+  --gpu-scaling-report reports/veer_el2_larger_resident_workload_scaling.json
 
 PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_scaling_validation.py \
   --gate config/scaling_gates/xuantie_e902_scaling.json \

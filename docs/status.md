@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_veer_el2_cpu_reference_contract
+  commit_veer_el2_larger_resident_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -881,12 +881,107 @@ run_veer_el2_gpu_smoke:
 
 define_veer_el2_cpu_reference_contract:
   goal: define how to obtain a CPU reference state and normalized compare for VeeR-EL2 before resident throughput gates
-  weakest_point: the GPU smoke runs from zero/default state, but no CPU reference state or CPU/GPU correctness comparison exists for VeeR-EL2 yet.
-  expected_scope:
-    - reuse or generalize existing host probe machinery if possible
-    - avoid adding a public CLI until the CPU reference seam is known
-    - define normalized final-state equivalence before resident scaling claims
-  next_action: define_veer_el2_cpu_reference_contract
+  weakest_point: the CPU/GPU one-state correctness contract now passes, but VeeR-EL2 resident throughput is still unmeasured and the CPU reference probe stdout contains Verilog readmem warnings before JSON.
+  host_probe:
+    build: make -C src/hybrid veer_el2_host_probe
+    binary: artifacts/veer_el2_obj_dir/veer_el2_host_probe
+    source: src/hybrid/tlul_slice_host_probe.cpp
+    non_tlul_mode: PROBE_TLUL_SIGNALS=0
+  cpu_reference:
+    state_dump: artifacts/veer_el2_obj_dir/veer_el2_cpu_reference_state.bin
+    probe_stdout: artifacts/veer_el2_obj_dir/veer_el2_cpu_reference_probe.json
+    note: probe stdout is not strict JSON because VeeR emits readmem warnings before the JSON object
+  gpu_from_cpu_reference:
+    state_dump: artifacts/veer_el2_obj_dir/veer_el2_gpu_from_cpu_reference_state.bin
+  compare:
+    report: reports/veer_el2_cpu_vs_gpu_from_cpu_init_compare.json
+    acceptance_policy: normalized_final_state_equivalence
+    result: pass
+    included_member_count: 6494
+    included_byte_count: 431346
+    functional_non_internal_mismatch_bytes: 0
+  status: pass_normalized_final_state_equivalence
+  next_action: run_veer_el2_resident_workload_gate
+
+run_veer_el2_resident_workload_gate:
+  goal: run the predefined VeeR-EL2 resident workload gate after CPU/GPU correctness has a normalized baseline
+  weakest_point: resident mode now runs, but the matching CPU exact-loop baseline is still faster at the current 64/128-state shapes.
+  gpu_gate: config/scaling_gates/veer_el2_resident_workload.json
+  cpu_gate: config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json
+  gpu_report: reports/veer_el2_resident_workload_scaling.json
+  cpu_report: reports/veer_el2_cpu_exact_loop_resident_workload.json
+  result:
+    resident_gpu_gate: pass
+    cpu_exact_loop_gate: pass
+    resident_mode_observed: true
+    nstates_64_steps_64_gpu_over_cpu_ratio: 0.6021517508485191
+    nstates_128_steps_64_gpu_over_cpu_ratio: 0.8295362109911266
+  status: pass_cpu_favorable
+  next_action: define_veer_el2_larger_resident_workload_gate
+
+define_veer_el2_larger_resident_workload_gate:
+  goal: increase the VeeR-EL2 resident workload shape before deciding whether to package or abandon this candidate for speedup claims
+  weakest_point: current VeeR-EL2 resident shapes pass functionally but do not beat CPU, so packaging now would overstate the project benefit.
+  gpu_gate: config/scaling_gates/veer_el2_larger_resident_workload.json
+  cpu_gate: config/scaling_gates/veer_el2_cpu_exact_loop_larger_resident_workload.json
+  shapes:
+    - nstates=256 steps=64 resident_steps=true
+    - nstates=512 steps=64 resident_steps=true
+  acceptance:
+    - define matching GPU and CPU exact-loop gate configs before running
+    - require resident_mode=true for GPU
+    - compare only same nstates/steps shapes
+    - if still CPU-favorable, record VeeR-EL2 as correctness/breadth win but not throughput win
+  status: done_defined_before_run
+  next_action: run_veer_el2_larger_resident_workload_gate
+
+run_veer_el2_larger_resident_workload_gate:
+  goal: run the larger VeeR-EL2 resident GPU gate and then the matching CPU exact-loop baseline
+  weakest_point: the larger gate proves a bounded GPU win, but the claim is limited to the measured VeeR-EL2 shapes and does not imply broad VeeR family support.
+  gpu_gate: config/scaling_gates/veer_el2_larger_resident_workload.json
+  cpu_gate: config/scaling_gates/veer_el2_cpu_exact_loop_larger_resident_workload.json
+  gpu_report: reports/veer_el2_larger_resident_workload_scaling.json
+  cpu_report: reports/veer_el2_cpu_exact_loop_larger_resident_workload.json
+  result:
+    resident_gpu_gate: pass
+    cpu_exact_loop_gate: pass
+    resident_mode_observed: true
+    nstates_256_steps_64_gpu_over_cpu_ratio: 2.3705374232694565
+    nstates_512_steps_64_gpu_over_cpu_ratio: 2.45997554488639
+  status: pass_gpu_win
+  next_action: package_veer_el2_larger_resident_boundary
+
+package_veer_el2_larger_resident_boundary:
+  goal: document the bounded VeeR-EL2 larger resident workload win without overstating target generality
+  weakest_point: the result is strong at larger resident shapes, but it is still one VeeR-EL2 wrapper and does not prove full CPU application throughput or broad VeeR family support.
+  accepted_claim:
+    - VeeR-EL2 larger resident GPU gate beats the matching single-process CPU repeated-eval loop at nstates=256/512, steps=64
+  non_claims:
+    - not broad VeeR family support
+    - not full RTL application throughput
+    - not resident patch/script semantics
+  status: done_packaged_boundary
+  next_action: commit_veer_el2_larger_resident_boundary
+
+commit_veer_el2_larger_resident_boundary:
+  goal: create a source commit for the VeeR-EL2 host-probe, larger resident gate, docs, and contract updates
+  weakest_point: the generated reports and artifacts prove the result locally, but the hand-authored source/config/docs boundary is still uncommitted.
+  include:
+    - src/hybrid/Makefile
+    - src/hybrid/tlul_slice_host_probe.cpp
+    - config/scaling_gates/veer_el2_larger_resident_workload.json
+    - config/scaling_gates/veer_el2_cpu_exact_loop_larger_resident_workload.json
+    - config/selection.json
+    - config/targets.json
+    - docs/status.md
+    - docs/roadmap.md
+    - README.md
+    - tests/contract/test_resident_runtime_contract.py
+  exclude:
+    - artifacts/**
+    - reports/**
+  status: next
+  next_action: commit_veer_el2_larger_resident_boundary
 ```
 
 ## source_of_truth

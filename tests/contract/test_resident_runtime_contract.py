@@ -16,6 +16,8 @@ RUN_VL_HYBRID = REPO_ROOT / "src" / "tools" / "run_vl_hybrid.py"
 RESIDENT_GATE = REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_memory_resident_workload.json"
 VEER_EL2_RESIDENT_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_resident_workload.json"
 VEER_EL2_CPU_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_cpu_exact_loop_resident_workload.json"
+VEER_EL2_LARGER_RESIDENT_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_larger_resident_workload.json"
+VEER_EL2_LARGER_CPU_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_cpu_exact_loop_larger_resident_workload.json"
 VEER_EL2_TEMPLATE = REPO_ROOT / "config" / "slice_launch_templates" / "veer_el2.json"
 VEER_EL2_ASSETS = REPO_ROOT / "third_party" / "rtlmeter" / "designs" / "VeeR-EL2"
 TARGETS = REPO_ROOT / "config" / "targets.json"
@@ -53,12 +55,20 @@ class ResidentRuntimeContractTest(unittest.TestCase):
     def test_veer_el2_resident_gate_is_defined_before_asset_copy(self) -> None:
         gate = json.loads(VEER_EL2_RESIDENT_GATE.read_text(encoding="utf-8"))
         cpu_gate = json.loads(VEER_EL2_CPU_GATE.read_text(encoding="utf-8"))
+        larger_gate = json.loads(VEER_EL2_LARGER_RESIDENT_GATE.read_text(encoding="utf-8"))
+        larger_cpu_gate = json.loads(VEER_EL2_LARGER_CPU_GATE.read_text(encoding="utf-8"))
         targets = json.loads(TARGETS.read_text(encoding="utf-8"))
         self.assertEqual(gate["gate"], "veer_el2_resident_workload_scaling")
         self.assertEqual(gate["target"], "veer_el2")
         self.assertGreater(len(gate["runs"]), 0)
         self.assertTrue(all(run.get("resident_steps") is True for run in gate["runs"]))
         self.assertEqual(cpu_gate["source_gpu_gate"], "config/scaling_gates/veer_el2_resident_workload.json")
+        self.assertEqual(larger_gate["gate"], "veer_el2_larger_resident_workload_scaling")
+        self.assertTrue(all(run.get("resident_steps") is True for run in larger_gate["runs"]))
+        self.assertEqual(
+            larger_cpu_gate["source_gpu_gate"],
+            "config/scaling_gates/veer_el2_larger_resident_workload.json",
+        )
         veer_targets = [target for target in targets["active_targets"] if target["name"] == "veer_el2"]
         self.assertEqual(len(veer_targets), 1)
         self.assertIn(
@@ -70,6 +80,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
                 "verilator_obj_dir_generated",
                 "gpu_cubin_built",
                 "gpu_smoke_pass",
+                "cpu_reference_contract_pass",
+                "resident_workload_cpu_favorable",
+                "larger_resident_workload_gpu_win",
+                "packaged_larger_resident_boundary",
             },
         )
 
@@ -107,7 +121,9 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("Not broad XuanTie family support", readme)
         self.assertIn("resident --patch / --patch-script semantics", readme)
         self.assertIn("config/scaling_gates/veer_el2_resident_workload.json", readme)
-        self.assertIn("define_veer_el2_cpu_reference_contract", readme)
+        self.assertIn("commit_veer_el2_larger_resident_boundary", readme)
+        self.assertIn("config/scaling_gates/veer_el2_larger_resident_workload.json", readme)
+        self.assertIn("make -C src/hybrid veer_el2_host_probe", readme)
 
 
 if __name__ == "__main__":

@@ -66,6 +66,9 @@
 #ifndef HOST_RESET_CONTROL
 #define HOST_RESET_CONTROL 0
 #endif
+#ifndef PROBE_TLUL_SIGNALS
+#define PROBE_TLUL_SIGNALS 1
+#endif
 
 #ifdef EXTRA_WATCH_FIELDS_HEADER
 #include EXTRA_WATCH_FIELDS_HEADER
@@ -306,6 +309,7 @@ void assign_u32(T& field, uint32_t value) {
 }
 
 void configure_defaults(Model& model) {
+#if PROBE_TLUL_SIGNALS
   assign_u32(model.cfg_valid_i, 1U);
   assign_u32(model.cfg_batch_length_i, 256U);
   assign_u32(model.cfg_req_valid_pct_i, 65U);
@@ -334,9 +338,13 @@ void configure_defaults(Model& model) {
   assign_u32(model.cfg_address_base_i, 0U);
   assign_u32(model.cfg_address_mask_i, 0x00000ffcU);
   assign_u32(model.cfg_source_mask_i, 0x000000ffU);
+#else
+  (void)model;
+#endif
 }
 
 void apply_setting(Model& model, const std::string& name, uint32_t value) {
+#if PROBE_TLUL_SIGNALS
   if (name == "cfg_valid_i") assign_u32(model.cfg_valid_i, value);
   else if (name == "cfg_batch_length_i") assign_u32(model.cfg_batch_length_i, value);
   else if (name == "cfg_req_valid_pct_i") assign_u32(model.cfg_req_valid_pct_i, value);
@@ -366,6 +374,11 @@ void apply_setting(Model& model, const std::string& name, uint32_t value) {
   else if (name == "cfg_address_mask_i") assign_u32(model.cfg_address_mask_i, value);
   else if (name == "cfg_source_mask_i") assign_u32(model.cfg_source_mask_i, value);
   else fail(std::string("unsupported --set field: ") + name);
+#else
+  (void)model;
+  (void)value;
+  fail(std::string("--set requires PROBE_TLUL_SIGNALS support: ") + name);
+#endif
 }
 
 int run_scheduled_events(Model& model, VerilatedContext& context, int event_count) {
@@ -506,12 +519,14 @@ std::vector<EdgeSummary> run_host_clock_sequence(
     summary.index = static_cast<uint32_t>(index + 1U);
     summary.clock_level = level;
     summary.sim_time = context.time();
+#if PROBE_TLUL_SIGNALS
     summary.done_o = model.done_o;
     summary.progress_cycle_count_o = model.progress_cycle_count_o;
     summary.progress_signature_o = model.progress_signature_o;
     summary.toggle_bitmap_word0_o = model.toggle_bitmap_word0_o;
     summary.toggle_bitmap_word1_o = model.toggle_bitmap_word1_o;
     summary.toggle_bitmap_word2_o = model.toggle_bitmap_word2_o;
+#endif
     if (!edge_state_dir.empty()) {
       const std::filesystem::path dump =
           std::filesystem::path(edge_state_dir) / ("edge_" + std::to_string(index + 1U) + ".bin");
@@ -558,12 +573,14 @@ EdgeSummary run_raw_root_eval(
   summary.index = steps;
   summary.clock_level = root->ROOT_CLK_FIELD;
   summary.sim_time = context.time();
+#if PROBE_TLUL_SIGNALS
   summary.done_o = model.done_o;
   summary.progress_cycle_count_o = model.progress_cycle_count_o;
   summary.progress_signature_o = model.progress_signature_o;
   summary.toggle_bitmap_word0_o = model.toggle_bitmap_word0_o;
   summary.toggle_bitmap_word1_o = model.toggle_bitmap_word1_o;
   summary.toggle_bitmap_word2_o = model.toggle_bitmap_word2_o;
+#endif
   write_state_file(state_out, root);
   summary.dump_state = state_out;
   return summary;
@@ -572,6 +589,7 @@ EdgeSummary run_raw_root_eval(
 
 std::vector<FieldDescriptor> collect_standard_field_descriptors(const Root* root) {
   return {
+#if PROBE_TLUL_SIGNALS
       {"done_o", byte_offset(root, &root->done_o), sizeof(root->done_o)},
       {"cfg_signature_o", byte_offset(root, &root->cfg_signature_o), sizeof(root->cfg_signature_o)},
       {"host_req_accepted_o",
@@ -604,6 +622,7 @@ std::vector<FieldDescriptor> collect_standard_field_descriptors(const Root* root
       {"toggle_bitmap_word2_o",
        byte_offset(root, &root->toggle_bitmap_word2_o),
        sizeof(root->toggle_bitmap_word2_o)},
+#endif
       {"clk_i", byte_offset(root, &root->ROOT_CLK_FIELD), sizeof(root->ROOT_CLK_FIELD)},
       {ROOT_RST_REPORT_NAME, byte_offset(root, &root->ROOT_RST_FIELD), sizeof(root->ROOT_RST_FIELD)},
   };
@@ -801,6 +820,7 @@ ProbeSummary run_one_probe_state(const ProbeConfig& cfg, int argc, char** argv) 
   }
 
   summary.sim_time = context.time();
+#if PROBE_TLUL_SIGNALS
   summary.cfg_signature_o = model.cfg_signature_o;
   summary.host_req_accepted_o = model.host_req_accepted_o;
   summary.device_req_accepted_o = model.device_req_accepted_o;
@@ -813,6 +833,7 @@ ProbeSummary run_one_probe_state(const ProbeConfig& cfg, int argc, char** argv) 
   summary.toggle_bitmap_word1_o = model.toggle_bitmap_word1_o;
   summary.toggle_bitmap_word2_o = model.toggle_bitmap_word2_o;
   summary.done_o = model.done_o;
+#endif
   summary.final_clk_i = root->ROOT_CLK_FIELD;
   summary.final_reset_field_value = root->ROOT_RST_FIELD;
   summary.final_rst_ni =
@@ -934,6 +955,7 @@ int main(int argc, char** argv) {
     }
 
     summary.sim_time = context.time();
+#if PROBE_TLUL_SIGNALS
     summary.cfg_signature_o = model.cfg_signature_o;
     summary.host_req_accepted_o = model.host_req_accepted_o;
     summary.device_req_accepted_o = model.device_req_accepted_o;
@@ -946,6 +968,7 @@ int main(int argc, char** argv) {
     summary.toggle_bitmap_word1_o = model.toggle_bitmap_word1_o;
     summary.toggle_bitmap_word2_o = model.toggle_bitmap_word2_o;
     summary.done_o = model.done_o;
+#endif
     summary.final_clk_i = root->ROOT_CLK_FIELD;
     summary.final_reset_field_value = root->ROOT_RST_FIELD;
     summary.final_rst_ni =

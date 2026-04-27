@@ -35,14 +35,24 @@
     {
       "name": "veer_el2",
       "role": "next_non_tlul_resident_breadth_candidate",
-      "status": "gpu_smoke_pass",
+      "status": "packaged_larger_resident_boundary",
       "launch_template_path": "config/slice_launch_templates/veer_el2.json",
       "resident_workload_gate_path": "config/scaling_gates/veer_el2_resident_workload.json",
       "cpu_exact_loop_resident_workload_gate_path": "config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json",
+      "larger_resident_workload_gate_path": "config/scaling_gates/veer_el2_larger_resident_workload.json",
+      "cpu_exact_loop_larger_resident_workload_gate_path": "config/scaling_gates/veer_el2_cpu_exact_loop_larger_resident_workload.json",
       "asset_boundary_path": "third_party/rtlmeter/designs/VeeR-EL2",
       "mdir": "artifacts/veer_el2_obj_dir",
       "cubin": "artifacts/veer_el2_obj_dir/vl_batch_gpu.cubin",
       "gpu_smoke_state": "artifacts/veer_el2_obj_dir/veer_el2_gpu_smoke_state.bin",
+      "host_probe": "artifacts/veer_el2_obj_dir/veer_el2_host_probe",
+      "cpu_reference_state": "artifacts/veer_el2_obj_dir/veer_el2_cpu_reference_state.bin",
+      "gpu_from_cpu_reference_state": "artifacts/veer_el2_obj_dir/veer_el2_gpu_from_cpu_reference_state.bin",
+      "cpu_gpu_compare_report": "reports/veer_el2_cpu_vs_gpu_from_cpu_init_compare.json",
+      "resident_workload_report": "reports/veer_el2_resident_workload_scaling.json",
+      "cpu_exact_loop_resident_workload_report": "reports/veer_el2_cpu_exact_loop_resident_workload.json",
+      "larger_resident_workload_report": "reports/veer_el2_larger_resident_workload_scaling.json",
+      "cpu_exact_loop_larger_resident_workload_report": "reports/veer_el2_cpu_exact_loop_larger_resident_workload.json",
       "reason": "Next bounded non-TL-UL resident runtime candidate selected from old-repo VeeR-EL2 gpu_cov_gate evidence; descriptor-referenced source/test assets are copied without old work/output history."
     }
   ]
