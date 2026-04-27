@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_resident_schedule_scalability_envelope
+  define_larger_resident_schedule_envelope_gate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1673,8 +1673,35 @@ define_resident_schedule_scalability_envelope:
     - list included gate families and measured shapes
     - state where GPU wins and where CPU-favorable smoke remains
     - choose whether the next implementation axis is larger envelope measurement or gpu_owned_state_construction
+  envelope:
+    cpu_favorable_smoke_shapes:
+      - tlul_fifo_sync resident_patch_schedule 1x6 ratio 0.005627988093961567
+      - tlul_sink resident_patch_schedule 1x6 ratio 0.008255714084067339
+      - veer_el2 resident_patch_schedule 1x6 ratio 0.005922418043868761
+      - xuantie_e902 resident_patch_schedule 1x6 ratio 0.01038989322830183
+      - xuantie_e902 program_image_delta 1x6 ratio 0.016034347357067786
+    gpu_favorable_batch_shapes:
+      - tlul_fifo_sync resident_patch_schedule 512x32 ratio 3.1160088024052413
+      - tlul_sink resident_patch_schedule 512x32 ratio 2.002480966457029
+      - veer_el2 resident_patch_schedule 512x32 ratio 2.8489279680483475
+      - xuantie_e902 resident_patch_schedule 128x32 ratio 1.1724144754038845
+      - xuantie_e902 program_image_delta 128x32 ratio 1.3826459191531113
+    decision: extend larger envelope measurement before starting gpu_owned_state_construction
+  status: done_from_existing_reports
+  next_action: define_larger_resident_schedule_envelope_gate
+
+define_larger_resident_schedule_envelope_gate:
+  goal: define a larger resident schedule envelope gate using existing targets and runners, without importing new assets
+  weakest_point: current accepted batch shapes prove GPU-favorable regimes, but do not show whether throughput improves, saturates, or regresses at larger resident schedule sizes.
+  candidate_scope:
+    - extend TL-UL resident patch schedule beyond 512x32 if memory budget remains safe
+    - extend XuanTie-E902 program-image delta beyond 128x32 only if state memory footprint remains practical
+  acceptance:
+    - define GPU and CPU exact-loop gate configs or explicitly choose a documentation-only envelope
+    - keep source-backed semantics unchanged
+    - do not add target assets
   status: next
-  next_action: define_resident_schedule_scalability_envelope
+  next_action: define_larger_resident_schedule_envelope_gate
 ```
 
 ## source_of_truth

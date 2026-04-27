@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  define_resident_schedule_scalability_envelope
+  define_larger_resident_schedule_envelope_gate
 
 policy:
   - upload init-state once

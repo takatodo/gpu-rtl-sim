@@ -343,7 +343,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "define_resident_schedule_scalability_envelope",
+            "define_larger_resident_schedule_envelope_gate",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -419,6 +419,17 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(selection["next_runtime_depth_deferred_axis"], "gpu_owned_state_construction")
         self.assertIn("VeeR-EL2", selection["next_runtime_depth_selection_reason"])
+        self.assertEqual(
+            selection["resident_schedule_scalability_envelope_status"],
+            "defined_from_existing_reports",
+        )
+        envelope = selection["resident_schedule_scalability_envelope"]
+        self.assertIn("tlul_fifo_sync resident_patch_schedule 512x32 ratio 3.1160088024052413", envelope["gpu_favorable_batch_shapes"])
+        self.assertIn("xuantie_e902 program_image_delta 1x6 ratio 0.016034347357067786", envelope["cpu_favorable_smoke_shapes"])
+        self.assertEqual(
+            selection["next_runtime_depth_after_envelope"],
+            "define_larger_resident_schedule_envelope_gate",
+        )
         self.assertEqual(
             selection["active_non_tlul_candidate_program_image_delta_gate"],
             "config/scaling_gates/xuantie_e902_program_image_delta.json",
