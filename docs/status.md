@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_rom_or_memory_init_delta_patch_gate
+  run_xuantie_e902_rom_memory_delta_patch_schedule_gate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1318,13 +1318,24 @@ define_rom_or_memory_init_delta_patch_gate:
   goal: define the first ROM or memory initialization delta resident patch schedule gate
   weakest_point: selecting ROM/memory delta improves semantic clarity, but the gate still needs target-specific mapping from memory image bytes to the generated root storage layout.
   source_contract: config/resident_patch_script_semantics.json
+  selected_target: xuantie_e902
+  gpu_gate: config/scaling_gates/xuantie_e902_rom_memory_delta_patch_schedule.json
+  cpu_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule.json
+  gpu_report: reports/xuantie_e902_rom_memory_delta_patch_schedule.json
+  cpu_report: reports/xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule.json
   acceptance:
     - gate identifies a target with existing generated artifacts and CPU host probe
     - gate explains how memory-image deltas map to resident patch schedule records
     - gate preserves one-time schedule upload and no per-step host-device copies
     - matching CPU exact-loop baseline is defined with the same delta sequence
+  status: done
+  next_action: run_xuantie_e902_rom_memory_delta_patch_schedule_gate
+
+run_xuantie_e902_rom_memory_delta_patch_schedule_gate:
+  goal: run the first ROM or memory initialization delta resident patch schedule GPU gate on XuanTie-E902
+  weakest_point: this first gate still uses explicit root-storage offsets as a proxy mapping; named ROM/memory symbol mapping remains a later precision step.
   status: next
-  next_action: define_rom_or_memory_init_delta_patch_gate
+  next_action: run_xuantie_e902_rom_memory_delta_patch_schedule_gate
 ```
 
 ## source_of_truth

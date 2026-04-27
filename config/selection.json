@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "define_rom_or_memory_init_delta_patch_gate",
+  "current_priority": "run_xuantie_e902_rom_memory_delta_patch_schedule_gate",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -29,6 +29,8 @@
   "active_non_tlul_candidate_cpu_exact_loop_memory_resident_workload_gate": "config/scaling_gates/xuantie_e902_cpu_exact_loop_memory_resident_workload.json",
   "active_non_tlul_candidate_resident_patch_schedule_gate": "config/scaling_gates/xuantie_e902_resident_patch_schedule.json",
   "active_non_tlul_candidate_cpu_exact_loop_resident_patch_schedule_gate": "config/scaling_gates/xuantie_e902_cpu_exact_loop_resident_patch_schedule.json",
+  "active_non_tlul_candidate_rom_memory_delta_patch_schedule_gate": "config/scaling_gates/xuantie_e902_rom_memory_delta_patch_schedule.json",
+  "active_non_tlul_candidate_cpu_exact_loop_rom_memory_delta_patch_schedule_gate": "config/scaling_gates/xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule.json",
   "next_non_tlul_resident_candidate": "veer_el2",
   "next_non_tlul_resident_candidate_source_template": "old_repo:config/slice_launch_templates/veer_el2.json",
   "next_non_tlul_resident_candidate_source_evidence": [
@@ -72,6 +74,7 @@
   "xuantie_e902_resident_patch_schedule_boundary_status": "committed_xuantie_e902_resident_patch_schedule_gpu_win",
   "next_patch_schedule_semantics_axis": "application_like_patch_schedule_semantics",
   "selected_application_like_patch_schedule_semantic": "rom_or_memory_init_delta",
+  "rom_or_memory_init_delta_boundary_status": "defined_xuantie_e902_rom_memory_delta_patch_schedule_gate",
   "current_second_seed_resident_patch_schedule_gate": "config/scaling_gates/tlul_sink_resident_patch_schedule.json",
   "current_second_seed_resident_patch_schedule_report": "reports/tlul_sink_resident_patch_schedule.json",
   "current_second_seed_cpu_exact_loop_resident_patch_schedule_gate": "config/scaling_gates/tlul_sink_cpu_exact_loop_resident_patch_schedule.json",

@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  define_rom_or_memory_init_delta_patch_gate
+  run_xuantie_e902_rom_memory_delta_patch_schedule_gate
 
 policy:
   - upload init-state once
@@ -461,6 +461,8 @@ source_of_truth:
   - config/scaling_gates/veer_el2_cpu_exact_loop_resident_patch_schedule.json
   - config/scaling_gates/xuantie_e902_resident_patch_schedule.json
   - config/scaling_gates/xuantie_e902_cpu_exact_loop_resident_patch_schedule.json
+  - config/scaling_gates/xuantie_e902_rom_memory_delta_patch_schedule.json
+  - config/scaling_gates/xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule.json
 ```
 
 Current bounded resident changing-input result:
@@ -482,7 +484,7 @@ accepted_claim:
   boundary_status: committed_xuantie_e902_resident_patch_schedule_gpu_win
 
 next_candidate_order:
-  - rom_or_memory_init_delta
+  - xuantie_e902_rom_memory_delta_patch_schedule
   - input_stream_delta
   - program_image_delta
 

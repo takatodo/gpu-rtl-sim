@@ -154,7 +154,8 @@ phase_3:
   package_xuantie_e902_resident_patch_schedule_boundary: done
   commit_xuantie_e902_resident_patch_schedule_boundary: done_30e17bd
   define_application_like_patch_schedule_semantics: done_rom_or_memory_init_delta
-  define_rom_or_memory_init_delta_patch_gate: next
+  define_rom_or_memory_init_delta_patch_gate: done_xuantie_e902
+  run_xuantie_e902_rom_memory_delta_patch_schedule_gate: next
 ```
 
 ## acceptance

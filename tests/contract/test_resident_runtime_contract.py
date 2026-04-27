@@ -39,6 +39,12 @@ XUANTIE_E902_PATCH_GATE = REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902
 XUANTIE_E902_PATCH_CPU_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_cpu_exact_loop_resident_patch_schedule.json"
 )
+XUANTIE_E902_ROM_DELTA_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_rom_memory_delta_patch_schedule.json"
+)
+XUANTIE_E902_ROM_DELTA_CPU_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule.json"
+)
 TARGETS = REPO_ROOT / "config" / "targets.json"
 README = REPO_ROOT / "README.md"
 RUNTIME = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid.c"
@@ -256,9 +262,25 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertTrue(all("patch_script_lines" in run for run in gpu_gate["runs"]))
         self.assertTrue(all("patch_script_lines" in run for run in cpu_gate["runs"]))
 
+    def test_xuantie_e902_rom_memory_delta_patch_schedule_gate_is_defined(self) -> None:
+        gpu_gate = json.loads(XUANTIE_E902_ROM_DELTA_GATE.read_text(encoding="utf-8"))
+        cpu_gate = json.loads(XUANTIE_E902_ROM_DELTA_CPU_GATE.read_text(encoding="utf-8"))
+        self.assertEqual(gpu_gate["gate"], "xuantie_e902_rom_memory_delta_patch_schedule_validation")
+        self.assertEqual(gpu_gate["semantic"], "rom_or_memory_init_delta")
+        self.assertEqual(cpu_gate["source_gpu_gate"], "config/scaling_gates/xuantie_e902_rom_memory_delta_patch_schedule.json")
+        self.assertEqual(gpu_gate["artifacts"]["report"], "reports/xuantie_e902_rom_memory_delta_patch_schedule.json")
+        self.assertEqual(
+            cpu_gate["artifacts"]["report"],
+            "reports/xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule.json",
+        )
+        self.assertIn("storage_mapping", gpu_gate["semantic_mapping"])
+        self.assertTrue(all(run.get("resident_steps") is True for run in gpu_gate["runs"]))
+        self.assertTrue(all("patch_script_lines" in run for run in gpu_gate["runs"]))
+        self.assertTrue(all("patch_script_lines" in run for run in cpu_gate["runs"]))
+
     def test_selection_advances_after_two_seed_boundary_commit(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
-        self.assertEqual(selection["current_priority"], "define_rom_or_memory_init_delta_patch_gate")
+        self.assertEqual(selection["current_priority"], "run_xuantie_e902_rom_memory_delta_patch_schedule_gate")
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
             "committed_veer_el2_resident_patch_schedule_gpu_win",
@@ -274,6 +296,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(
             selection["selected_application_like_patch_schedule_semantic"],
             "rom_or_memory_init_delta",
+        )
+        self.assertEqual(
+            selection["rom_or_memory_init_delta_boundary_status"],
+            "defined_xuantie_e902_rom_memory_delta_patch_schedule_gate",
         )
 
     def test_resident_patch_semantics_names_application_like_next_axis(self) -> None:
