@@ -140,7 +140,8 @@ phase_3:
   select_next_resident_patch_schedule_breadth_or_commit: done_commit_first
   port_patch_schedule_gate_to_tlul_sink: done
   package_two_seed_resident_patch_schedule_boundary: done
-  commit_two_seed_resident_patch_schedule_boundary: next
+  commit_two_seed_resident_patch_schedule_boundary: done_9bddec4
+  select_non_tlul_resident_patch_schedule_breadth_candidate: next
 ```
 
 ## acceptance

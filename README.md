@@ -430,11 +430,11 @@ Next resident communication-reduction task:
 
 ```text
 weakest_point:
-  resident --patch-script GPU and CPU gates pass, but the positive speedup
-  result is bounded to `tlul_fifo_sync` batch 512 with 32 logical patch steps.
+  resident --patch-script GPU and CPU gates pass on two TL-UL seeds, but this
+  is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  commit_two_seed_resident_patch_schedule_boundary
+  select_non_tlul_resident_patch_schedule_breadth_candidate
 
 policy:
   - upload init-state once
@@ -460,7 +460,11 @@ accepted_claim:
   tlul_sink:
     shape: nstates=512 logical_patch_steps=32
     gpu_over_cpu_throughput_ratio: 2.002480966457029
-  boundary_status: packaged_two_seed_tlul_resident_patch_schedule_gpu_win
+  boundary_status: committed_two_seed_tlul_resident_patch_schedule_gpu_win
+
+next_candidate_order:
+  - veer_el2
+  - xuantie_e902
 
 non_claims:
   - not non-TL-UL resident patch schedule breadth

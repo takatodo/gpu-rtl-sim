@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  commit_two_seed_resident_patch_schedule_boundary
+  select_non_tlul_resident_patch_schedule_breadth_candidate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1139,8 +1139,19 @@ package_two_seed_resident_patch_schedule_boundary:
 commit_two_seed_resident_patch_schedule_boundary:
   goal: commit the two-seed TL-UL resident patch schedule boundary before starting non-TL-UL breadth work
   weakest_point: without a commit boundary, the next breadth experiment can blur the validated TL-UL claim.
+  commit: 9bddec4
+  status: done
+  next_action: select_non_tlul_resident_patch_schedule_breadth_candidate
+
+select_non_tlul_resident_patch_schedule_breadth_candidate:
+  goal: choose the first non-TL-UL resident changing-input patch schedule target after two TL-UL seeds passed
+  weakest_point: tlul_fifo_sync and tlul_sink prove the mechanism on small OpenTitan TL-UL seeds, not non-TL-UL breadth or full RTL application throughput.
+  candidate_order:
+    - veer_el2
+    - xuantie_e902
+  recommended_next: define_veer_el2_resident_patch_schedule_gate
   status: next
-  next_action: commit_current_boundary
+  next_action: define_veer_el2_resident_patch_schedule_gate
 ```
 
 ## source_of_truth
