@@ -169,7 +169,8 @@ phase_3:
   package_xuantie_e902_program_image_delta_boundary: done
   define_xuantie_e902_broader_memory_family_delta_gate: blocked_source_contract_gap
   document_xuantie_e902_non_iahb_memory_family_contract_gap: done
-  select_post_xuantie_memory_gap_responsibility_axis: next
+  select_post_xuantie_memory_gap_responsibility_axis: done_input_stream_delta_selected
+  define_xuantie_e902_input_stream_delta_contract: next
 ```
 
 ## acceptance

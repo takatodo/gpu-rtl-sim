@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  select_post_xuantie_memory_gap_responsibility_axis
+  define_xuantie_e902_input_stream_delta_contract
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1581,12 +1581,28 @@ select_post_xuantie_memory_gap_responsibility_axis:
   candidate_axes:
     input_stream_delta: reuse the existing XuanTie-E902 program-image source contract if an externally meaningful input/stimulus delta can be represented without inventing a new unsupported memory image.
     target_breadth: move to another target only if its memory/input contract is clearer than XuanTie-E902 x_smem/x_dmem.
+  selected_axis: input_stream_delta
+  deferred_axis: target_breadth
+  selection_reason: input_stream_delta can be scoped against the existing XuanTie-E902 case.pat / IAHB program-image contract before adding another target; target_breadth is deferred until a clearer source-backed memory/input contract is selected.
   acceptance:
     - select exactly one next axis
     - record why the rejected axis is deferred
     - do not add new GPU/CPU gate configs until the selected axis has a source-backed contract
+  status: done_input_stream_delta_selected
+  next_action: define_xuantie_e902_input_stream_delta_contract
+
+define_xuantie_e902_input_stream_delta_contract:
+  goal: define the source-backed contract for the next XuanTie-E902 input/stimulus delta before adding GPU/CPU gates
+  weakest_point: an input-stream delta that is only another arbitrary instruction-memory byte mutation would not expand responsibility beyond the existing program-image delta claim.
+  source_boundary:
+    reusable_contract: case.pat loaded through mem_inst_temp into x_iahb_mem_ctrl.ram0..3.mem
+    forbidden_shortcut: hand-written generated root byte offsets without a program-image or stimulus-level source meaning
+  acceptance:
+    - define what input/stimulus source is being varied
+    - prove the delta lowers through the existing named program-image mapping or explicitly reject the axis
+    - only then add matching GPU and CPU exact-loop gate configs
   status: next
-  next_action: select_post_xuantie_memory_gap_responsibility_axis
+  next_action: define_xuantie_e902_input_stream_delta_contract
 ```
 
 ## source_of_truth
