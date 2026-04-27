@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "define_larger_resident_schedule_envelope_gate",
+  "current_priority": "run_larger_resident_schedule_envelope_gate",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -164,5 +164,10 @@
   "current_second_seed_resident_patch_schedule_gate": "config/scaling_gates/tlul_sink_resident_patch_schedule.json",
   "current_second_seed_resident_patch_schedule_report": "reports/tlul_sink_resident_patch_schedule.json",
   "current_second_seed_cpu_exact_loop_resident_patch_schedule_gate": "config/scaling_gates/tlul_sink_cpu_exact_loop_resident_patch_schedule.json",
-  "current_second_seed_cpu_exact_loop_resident_patch_schedule_report": "reports/tlul_sink_cpu_exact_loop_resident_patch_schedule.json"
+  "current_second_seed_cpu_exact_loop_resident_patch_schedule_report": "reports/tlul_sink_cpu_exact_loop_resident_patch_schedule.json",
+  "larger_resident_schedule_envelope_gate": "config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json",
+  "larger_resident_schedule_envelope_cpu_gate": "config/scaling_gates/tlul_sink_cpu_exact_loop_larger_resident_patch_schedule.json",
+  "larger_resident_schedule_envelope_report": "reports/tlul_sink_larger_resident_patch_schedule.json",
+  "larger_resident_schedule_envelope_cpu_report": "reports/tlul_sink_cpu_exact_loop_larger_resident_patch_schedule.json",
+  "larger_resident_schedule_envelope_status": "defined_gates"
 }

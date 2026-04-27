@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_sink_larger_resident_patch_schedule_envelope",
+  "target": "tlul_sink",
+  "source_contract": "config/resident_patch_script_semantics.json",
+  "source_envelope_gate": "config/scaling_gates/tlul_sink_resident_patch_schedule.json",
+  "purpose": "Extend the resident patch schedule scalability envelope on the small-storage TL-UL sink target before attempting heavier GPU-owned state construction.",
+  "preconditions": [
+    "config/scaling_gates/tlul_sink_resident_patch_schedule.json has a GPU-favorable 512x32 batch result",
+    "the same resident patch schedule semantics are preserved",
+    "no new target assets are introduced"
+  ],
+  "runs": [
+    {
+      "name": "tlul_sink_larger_resident_patch_schedule_batch_1024x64",
+      "nstates": 1024,
+      "steps": 1,
+      "resident_steps": true,
+      "required": true,
+      "patch_script_lines": [
+        "0:1",
+        "-",
+        "@repeat-seq 31",
+        "1:2",
+        "-",
+        "@end-repeat-seq"
+      ]
+    },
+    {
+      "name": "tlul_sink_larger_resident_patch_schedule_batch_2048x64",
+      "nstates": 2048,
+      "steps": 1,
+      "resident_steps": true,
+      "required": true,
+      "patch_script_lines": [
+        "0:1",
+        "-",
+        "@repeat-seq 31",
+        "1:2",
+        "-",
+        "@end-repeat-seq"
+      ]
+    }
+  ],
+  "correctness_policy": {
+    "resident_gpu_runs": [
+      "run exits with status 0",
+      "stdout reports resident_mode: true",
+      "stdout reports resident_patch_schedule",
+      "dumped state byte size equals storage_size * nstates when dump is requested"
+    ],
+    "non_claims": [
+      "not a new target-breadth claim",
+      "not full RTL application throughput",
+      "not GPU-owned state construction"
+    ]
+  },
+  "performance_policy": {
+    "record": [
+      "nstates",
+      "logical patch-script steps",
+      "elapsed_ms",
+      "state_steps_per_second"
+    ],
+    "acceptance": [
+      "compare only against the matching CPU exact-loop gate at the same shapes",
+      "record whether throughput improves, saturates, or regresses against the existing 512x32 envelope point"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/tlul_sink_larger_resident_patch_schedule.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "run_tlul_sink_larger_resident_patch_schedule_cpu_gate",
+  "next_action_on_fail": "diagnose_tlul_sink_larger_resident_patch_schedule_envelope"
+}

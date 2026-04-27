@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_larger_resident_schedule_envelope_gate
+  run_larger_resident_schedule_envelope_gate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1696,12 +1696,31 @@ define_larger_resident_schedule_envelope_gate:
   candidate_scope:
     - extend TL-UL resident patch schedule beyond 512x32 if memory budget remains safe
     - extend XuanTie-E902 program-image delta beyond 128x32 only if state memory footprint remains practical
+  selected_scope: tlul_sink resident patch schedule at 1024x64 and 2048x64
+  gpu_gate: config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json
+  cpu_gate: config/scaling_gates/tlul_sink_cpu_exact_loop_larger_resident_patch_schedule.json
+  gpu_report: reports/tlul_sink_larger_resident_patch_schedule.json
+  cpu_report: reports/tlul_sink_cpu_exact_loop_larger_resident_patch_schedule.json
   acceptance:
     - define GPU and CPU exact-loop gate configs or explicitly choose a documentation-only envelope
     - keep source-backed semantics unchanged
     - do not add target assets
+  status: done_gates_defined
+  next_action: run_larger_resident_schedule_envelope_gate
+
+run_larger_resident_schedule_envelope_gate:
+  goal: run the larger TL-UL sink resident schedule GPU gate and matching CPU exact-loop baseline
+  weakest_point: larger TL-UL sink shapes are memory-safe, but CPU runtime may grow; if this is too slow, reduce to documentation-only envelope rather than adding targets.
+  gpu_gate: config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json
+  cpu_gate: config/scaling_gates/tlul_sink_cpu_exact_loop_larger_resident_patch_schedule.json
+  gpu_report: reports/tlul_sink_larger_resident_patch_schedule.json
+  cpu_report: reports/tlul_sink_cpu_exact_loop_larger_resident_patch_schedule.json
+  acceptance:
+    - GPU gate exits ok for 1024x64 and 2048x64
+    - CPU exact-loop gate exits ok for the same shapes
+    - compare ratios against the existing tlul_sink 512x32 envelope point
   status: next
-  next_action: define_larger_resident_schedule_envelope_gate
+  next_action: run_larger_resident_schedule_envelope_gate
 ```
 
 ## source_of_truth

@@ -60,6 +60,12 @@ XUANTIE_E902_PROGRAM_IMAGE_DELTA_GATE = (
 XUANTIE_E902_PROGRAM_IMAGE_DELTA_CPU_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_cpu_exact_loop_program_image_delta.json"
 )
+TLUL_SINK_LARGER_ENVELOPE_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "tlul_sink_larger_resident_patch_schedule.json"
+)
+TLUL_SINK_LARGER_ENVELOPE_CPU_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "tlul_sink_cpu_exact_loop_larger_resident_patch_schedule.json"
+)
 TARGETS = REPO_ROOT / "config" / "targets.json"
 README = REPO_ROOT / "README.md"
 RUNTIME = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid.c"
@@ -343,7 +349,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "define_larger_resident_schedule_envelope_gate",
+            "run_larger_resident_schedule_envelope_gate",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -430,6 +436,11 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             selection["next_runtime_depth_after_envelope"],
             "define_larger_resident_schedule_envelope_gate",
         )
+        self.assertEqual(selection["larger_resident_schedule_envelope_status"], "defined_gates")
+        self.assertEqual(
+            selection["larger_resident_schedule_envelope_gate"],
+            "config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json",
+        )
         self.assertEqual(
             selection["active_non_tlul_candidate_program_image_delta_gate"],
             "config/scaling_gates/xuantie_e902_program_image_delta.json",
@@ -477,6 +488,18 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "x_iahb_mem_ctrl.ram0..3.mem",
             semantics["next_semantics_axis"]["selected_semantic_contract"]["named_mapping_contract"],
         )
+
+    def test_tlul_sink_larger_resident_schedule_envelope_gates_are_defined(self) -> None:
+        gpu_gate = json.loads(TLUL_SINK_LARGER_ENVELOPE_GATE.read_text(encoding="utf-8"))
+        cpu_gate = json.loads(TLUL_SINK_LARGER_ENVELOPE_CPU_GATE.read_text(encoding="utf-8"))
+        self.assertEqual(gpu_gate["gate"], "tlul_sink_larger_resident_patch_schedule_envelope")
+        self.assertEqual(
+            cpu_gate["source_gpu_gate"],
+            "config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json",
+        )
+        self.assertEqual([run["nstates"] for run in gpu_gate["runs"]], [1024, 2048])
+        self.assertEqual([run["steps"] for run in cpu_gate["runs"]], [64, 64])
+        self.assertTrue(all(run.get("resident_steps") is True for run in gpu_gate["runs"]))
 
     def test_readme_keeps_xuantie_boundary_limited(self) -> None:
         readme = README.read_text(encoding="utf-8")
