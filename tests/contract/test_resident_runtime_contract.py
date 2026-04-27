@@ -20,6 +20,7 @@ VEER_EL2_LARGER_RESIDENT_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_e
 VEER_EL2_LARGER_CPU_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_cpu_exact_loop_larger_resident_workload.json"
 VEER_EL2_TEMPLATE = REPO_ROOT / "config" / "slice_launch_templates" / "veer_el2.json"
 VEER_EL2_ASSETS = REPO_ROOT / "third_party" / "rtlmeter" / "designs" / "VeeR-EL2"
+RESIDENT_PATCH_SEMANTICS = REPO_ROOT / "config" / "resident_patch_script_semantics.json"
 TARGETS = REPO_ROOT / "config" / "targets.json"
 README = REPO_ROOT / "README.md"
 RUNTIME = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid.c"
@@ -114,6 +115,20 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("RUN_VL_HYBRID_RESIDENT_STEPS", runtime)
         self.assertIn('printf("resident_mode: %s\\n"', runtime)
 
+    def test_resident_patch_script_semantics_are_defined_before_implementation(self) -> None:
+        semantics = json.loads(RESIDENT_PATCH_SEMANTICS.read_text(encoding="utf-8"))
+        self.assertEqual(semantics["name"], "resident_patch_script_semantics")
+        self.assertEqual(semantics["status"], "defined_before_runtime_implementation")
+        self.assertEqual(
+            semantics["accepted_semantics"]["per_step_host_copy"],
+            "No cuMemcpyHtoD patch copy may occur inside the resident step loop.",
+        )
+        self.assertEqual(
+            semantics["implementation_policy"]["phase_1"],
+            "Keep rejecting --patch and --patch-script with --resident-steps until the device schedule ABI is implemented.",
+        )
+        self.assertEqual(semantics["next_action"], "implement_resident_patch_schedule_upload")
+
     def test_readme_keeps_xuantie_boundary_limited(self) -> None:
         readme = README.read_text(encoding="utf-8")
         self.assertIn("XuanTie-E902 Resident Runtime Boundary", readme)
@@ -121,6 +136,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("Not broad XuanTie family support", readme)
         self.assertIn("resident --patch / --patch-script semantics", readme)
         self.assertIn("define_resident_patch_script_semantics", readme)
+        self.assertIn("config/resident_patch_script_semantics.json", readme)
         self.assertIn("config/scaling_gates/veer_el2_resident_workload.json", readme)
         self.assertIn("config/scaling_gates/veer_el2_larger_resident_workload.json", readme)
         self.assertIn("make -C src/hybrid veer_el2_host_probe", readme)

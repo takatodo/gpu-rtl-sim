@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_resident_patch_script_semantics
+  implement_resident_patch_schedule_upload
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -996,11 +996,27 @@ define_resident_patch_script_semantics:
     - per-step patches must be represented as a compact device-side patch schedule before the resident loop begins
     - host must not perform per-step cuMemcpyHtoD during resident mode
     - final DtoH remains optional and occurs only at the boundary when --dump-state is requested
+  contract:
+    file: config/resident_patch_script_semantics.json
+    status: defined_before_runtime_implementation
+    next_action: implement_resident_patch_schedule_upload
   first_contract:
     - reject current --patch / --patch-script remains valid until a resident patch buffer ABI is defined
     - add config/test/docs describing the resident patch buffer ABI before C runtime implementation
+  status: done_defined_before_runtime_implementation
+  next_action: implement_resident_patch_schedule_upload
+
+implement_resident_patch_schedule_upload:
+  goal: implement the resident patch schedule upload path without reintroducing per-step host-device copies
+  weakest_point: semantics are now defined, but runtime still rejects resident --patch-script and has no device-side schedule upload path.
+  source_contract: config/resident_patch_script_semantics.json
+  implementation_scope:
+    - preserve existing non-resident --patch and --patch-script behavior
+    - upload resident patch schedule once before the resident launch loop
+    - keep per-step cuMemcpyHtoD out of resident mode
+    - retain final DtoH only at --dump-state boundary
   status: next
-  next_action: define_resident_patch_script_semantics
+  next_action: implement_resident_patch_schedule_upload
 ```
 
 ## source_of_truth

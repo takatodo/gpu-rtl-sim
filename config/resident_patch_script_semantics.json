@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "name": "resident_patch_script_semantics",
+  "status": "defined_before_runtime_implementation",
+  "purpose": "Define resident-mode patch/script semantics before allowing changing-input workloads to use --resident-steps.",
+  "weakest_point": "The current resident mode keeps state on device across eval steps, but it rejects --patch and --patch-script because the existing patch path performs per-step host-device copies.",
+  "accepted_semantics": {
+    "state_residency": "The full state array remains device-resident across all resident eval steps.",
+    "initial_state_upload": "The optional init-state upload is performed once before the resident loop begins.",
+    "patch_schedule_upload": "Per-step patch changes are uploaded once as a compact schedule before the resident loop begins.",
+    "per_step_host_copy": "No cuMemcpyHtoD patch copy may occur inside the resident step loop.",
+    "final_state_download": "Final DtoH occurs only when --dump-state is requested."
+  },
+  "patch_schedule_abi": {
+    "host_input_text_format": "Reuse the existing --patch-script text grammar as the source format.",
+    "device_schedule_encoding": "A compact array of patch records plus per-step index metadata is prepared before resident execution.",
+    "patch_record_fields": [
+      "logical_step",
+      "global_byte_offset",
+      "byte_value"
+    ],
+    "empty_step_encoding": "A step with '-' has zero records and still advances one resident eval step.",
+    "repeat_encoding": "@repeat-seq blocks are expanded or indexed before resident execution; runtime semantics must be equivalent to the non-resident parser.",
+    "offset_scope": "global_byte_offset is relative to the full device storage buffer, matching the current --patch syntax."
+  },
+  "implementation_policy": {
+    "phase_1": "Keep rejecting --patch and --patch-script with --resident-steps until the device schedule ABI is implemented.",
+    "phase_2": "Allow --resident-steps with --patch-script only after the schedule is uploaded once before launch.",
+    "phase_3": "Consider direct --patch with --resident-steps only as a one-step schedule shorthand.",
+    "forbidden": [
+      "per-step host-device patch copies in resident mode",
+      "changing non-resident --patch-script semantics while adding resident support",
+      "claiming resident changing-input throughput before a matching CPU baseline exists"
+    ]
+  },
+  "next_action": "implement_resident_patch_schedule_upload"
+}

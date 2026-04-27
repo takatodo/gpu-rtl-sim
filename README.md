@@ -432,13 +432,16 @@ weakest_point:
   defined patch/script semantics.
 
 next:
-  define_resident_patch_script_semantics
+  implement_resident_patch_schedule_upload
 
 policy:
   - upload init-state once
   - keep state device-resident across repeated eval steps
   - represent per-step changes as a compact device-side patch schedule
   - do not reintroduce per-step host-device patch copies
+
+source_of_truth:
+  - config/resident_patch_script_semantics.json
 ```
 
 The host probe reuses `src/hybrid/tlul_slice_host_probe.cpp` with XuanTie
