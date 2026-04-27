@@ -173,7 +173,8 @@ phase_3:
   define_xuantie_e902_input_stream_delta_contract: rejected_no_distinct_source_contract
   select_next_target_breadth_source_backed_contract: blocked_checked_in_minimal_targets_exhausted
   decide_next_source_backed_target_import_or_close_breadth: done_close_current_minimal_breadth
-  select_next_runtime_depth_after_breadth_closure: next
+  select_next_runtime_depth_after_breadth_closure: done_resident_schedule_scalability_selected
+  define_resident_schedule_scalability_envelope: next
 ```
 
 ## acceptance

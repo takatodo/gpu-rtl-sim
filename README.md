@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  select_next_runtime_depth_after_breadth_closure
+  define_resident_schedule_scalability_envelope
 
 policy:
   - upload init-state once

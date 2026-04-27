@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  select_next_runtime_depth_after_breadth_closure
+  define_resident_schedule_scalability_envelope
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1650,12 +1650,31 @@ select_next_runtime_depth_after_breadth_closure:
   candidate_axes:
     resident_schedule_scalability_envelope: measure and document where resident patch/program-image schedules remain GPU-favorable across larger nstates/steps.
     gpu_owned_state_construction: reduce host-device transfer by constructing or deriving more per-state initial data on GPU before resident eval.
+  selected_axis: resident_schedule_scalability_envelope
+  deferred_axis: gpu_owned_state_construction
+  selection_reason: resident patch/program-image schedule reports already exist across TL-UL, VeeR-EL2, and XuanTie-E902; define the scalability envelope before designing heavier GPU-owned state construction.
   acceptance:
     - select one runtime-depth axis
     - define the first gate or documentation packet for that axis
     - avoid adding new target assets
+  status: done_resident_schedule_scalability_selected
+  next_action: define_resident_schedule_scalability_envelope
+
+define_resident_schedule_scalability_envelope:
+  goal: define the bounded resident schedule scalability envelope using existing GPU/CPU reports before adding new runtime mechanisms
+  weakest_point: existing wins are shape-specific; without an envelope, it is unclear which nstates/steps regimes justify further GPU-resident optimization.
+  source_reports:
+    - reports/tlul_fifo_sync_resident_patch_schedule.json
+    - reports/tlul_sink_resident_patch_schedule.json
+    - reports/veer_el2_resident_patch_schedule.json
+    - reports/xuantie_e902_resident_patch_schedule.json
+    - reports/xuantie_e902_program_image_delta.json
+  acceptance:
+    - list included gate families and measured shapes
+    - state where GPU wins and where CPU-favorable smoke remains
+    - choose whether the next implementation axis is larger envelope measurement or gpu_owned_state_construction
   status: next
-  next_action: select_next_runtime_depth_after_breadth_closure
+  next_action: define_resident_schedule_scalability_envelope
 ```
 
 ## source_of_truth

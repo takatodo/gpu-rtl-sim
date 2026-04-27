@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "select_next_runtime_depth_after_breadth_closure",
+  "current_priority": "define_resident_schedule_scalability_envelope",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -122,6 +122,9 @@
     "resident_schedule_scalability_envelope",
     "gpu_owned_state_construction"
   ],
+  "next_runtime_depth_selected_axis": "resident_schedule_scalability_envelope",
+  "next_runtime_depth_deferred_axis": "gpu_owned_state_construction",
+  "next_runtime_depth_selection_reason": "resident patch/program-image schedule reports already exist across TL-UL, VeeR-EL2, and XuanTie-E902; define the scalability envelope before designing heavier GPU-owned state construction",
   "named_rom_memory_symbol_mapping_contract": {
     "selected_family": "iahb_instruction_memory",
     "source_rtl": "third_party/rtlmeter/designs/XuanTie-E902/src/tb.v",
