@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  commit_veer_el2_resident_patch_schedule_boundary
+  select_next_patch_schedule_breadth_after_veer_el2
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1212,8 +1212,23 @@ package_veer_el2_resident_patch_schedule_boundary:
 commit_veer_el2_resident_patch_schedule_boundary:
   goal: commit the packaged VeeR-EL2 resident patch schedule boundary before the next breadth experiment
   weakest_point: without a commit boundary, the first non-TL-UL patch schedule claim can be mixed with later target-breadth attempts.
+  commit: 5697daa
+  status: done
+  next_action: select_next_patch_schedule_breadth_after_veer_el2
+
+select_next_patch_schedule_breadth_after_veer_el2:
+  goal: choose the next resident patch schedule breadth axis after TL-UL two-seed and VeeR-EL2 pass at the bounded 512x32 shape
+  weakest_point: adding another design-family seed improves breadth, but it still may not prove application-like input semantics or full RTL application throughput.
+  candidates:
+    - target: xuantie_e902
+      reason: existing non-TL-UL resident workload artifacts and host probe are already present in the minimal repo
+      next_action: define_xuantie_e902_resident_patch_schedule_gate
+    - target: application_like_patch_semantics
+      reason: move beyond arbitrary root byte patches toward meaningful input/ROM/program-driven state changes
+      next_action: define_application_like_patch_schedule_semantics
+  recommended_next: define_xuantie_e902_resident_patch_schedule_gate
   status: next
-  next_action: commit_veer_el2_resident_patch_schedule_boundary
+  next_action: define_xuantie_e902_resident_patch_schedule_gate
 ```
 
 ## source_of_truth

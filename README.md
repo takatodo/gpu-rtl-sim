@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  commit_veer_el2_resident_patch_schedule_boundary
+  select_next_patch_schedule_breadth_after_veer_el2
 
 policy:
   - upload init-state once
@@ -474,11 +474,11 @@ accepted_claim:
   veer_el2:
     shape: nstates=512 logical_patch_steps=32
     gpu_over_cpu_throughput_ratio: 2.8489279680483475
-  boundary_status: packaged_veer_el2_resident_patch_schedule_gpu_win
+  boundary_status: committed_veer_el2_resident_patch_schedule_gpu_win
 
 next_candidate_order:
-  - veer_el2
   - xuantie_e902
+  - application_like_patch_semantics
 
 non_claims:
   - not broad non-TL-UL resident patch schedule breadth

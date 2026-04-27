@@ -236,10 +236,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
 
     def test_selection_advances_after_two_seed_boundary_commit(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
-        self.assertEqual(selection["current_priority"], "commit_veer_el2_resident_patch_schedule_boundary")
+        self.assertEqual(selection["current_priority"], "select_next_patch_schedule_breadth_after_veer_el2")
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
-            "packaged_veer_el2_resident_patch_schedule_gpu_win",
+            "committed_veer_el2_resident_patch_schedule_gpu_win",
         )
 
     def test_readme_keeps_xuantie_boundary_limited(self) -> None:

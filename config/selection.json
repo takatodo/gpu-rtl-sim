@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "commit_veer_el2_resident_patch_schedule_boundary",
+  "current_priority": "select_next_patch_schedule_breadth_after_veer_el2",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -66,7 +66,7 @@
   "current_resident_patch_schedule_report": "reports/tlul_fifo_sync_resident_patch_schedule.json",
   "current_cpu_exact_loop_resident_patch_schedule_gate": "config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json",
   "current_cpu_exact_loop_resident_patch_schedule_report": "reports/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json",
-  "resident_patch_schedule_boundary_status": "packaged_veer_el2_resident_patch_schedule_gpu_win",
+  "resident_patch_schedule_boundary_status": "committed_veer_el2_resident_patch_schedule_gpu_win",
   "current_second_seed_resident_patch_schedule_gate": "config/scaling_gates/tlul_sink_resident_patch_schedule.json",
   "current_second_seed_resident_patch_schedule_report": "reports/tlul_sink_resident_patch_schedule.json",
   "current_second_seed_cpu_exact_loop_resident_patch_schedule_gate": "config/scaling_gates/tlul_sink_cpu_exact_loop_resident_patch_schedule.json",
