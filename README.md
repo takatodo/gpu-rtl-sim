@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  package_xuantie_e902_program_image_delta_boundary
+  define_xuantie_e902_broader_memory_family_delta_gate
 
 policy:
   - upload init-state once
@@ -494,12 +494,12 @@ accepted_claim:
   xuantie_e902_program_image_delta:
     shape: nstates=128 logical_patch_steps=32
     gpu_over_cpu_throughput_ratio: 1.3826459191531113
-  boundary_status: program_image_delta_gpu_cpu_gates_passed
+  boundary_status: packaged_xuantie_e902_program_image_delta_gpu_win
 
 next_candidate_order:
-  - package_xuantie_e902_program_image_delta_boundary
-  - input_stream_delta
   - broader_memory_family_coverage
+  - input_stream_delta
+  - target_breadth
 
 non_claims:
   - not broad non-TL-UL resident patch schedule breadth

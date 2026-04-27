@@ -341,7 +341,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
 
     def test_selection_advances_after_two_seed_boundary_commit(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
-        self.assertEqual(selection["current_priority"], "package_xuantie_e902_program_image_delta_boundary")
+        self.assertEqual(selection["current_priority"], "define_xuantie_e902_broader_memory_family_delta_gate")
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
             "committed_veer_el2_resident_patch_schedule_gpu_win",
@@ -369,7 +369,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "packaged_xuantie_e902_named_mapping_gpu_win",
         )
         self.assertEqual(selection["next_application_like_semantics_axis"], "program_image_delta")
-        self.assertEqual(selection["program_image_delta_status"], "gpu_cpu_gates_passed")
+        self.assertEqual(selection["program_image_delta_status"], "packaged_gpu_win")
         self.assertEqual(
             selection["program_image_delta_gpu_report"],
             "reports/xuantie_e902_program_image_delta.json",
@@ -378,6 +378,8 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             selection["program_image_delta_cpu_report"],
             "reports/xuantie_e902_cpu_exact_loop_program_image_delta.json",
         )
+        self.assertEqual(selection["next_responsibility_expansion_axis"], "broader_memory_family_coverage")
+        self.assertEqual(selection["broader_memory_family_coverage_status"], "selected_next")
         self.assertEqual(
             selection["active_non_tlul_candidate_program_image_delta_gate"],
             "config/scaling_gates/xuantie_e902_program_image_delta.json",

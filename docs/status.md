@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  package_xuantie_e902_program_image_delta_boundary
+  define_xuantie_e902_broader_memory_family_delta_gate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1531,12 +1531,31 @@ package_xuantie_e902_program_image_delta_boundary:
   weakest_point: the result uses a small mutation to a loaded image and still does not prove executable program behavior; packaging must avoid upgrading it to ISA correctness.
   source_gpu_report: reports/xuantie_e902_program_image_delta.json
   source_cpu_report: reports/xuantie_e902_cpu_exact_loop_program_image_delta.json
+  packaged_claim:
+    xuantie_e902_program_image_delta_batch_128x32: 1.3826459191531113
+  selected_next_axis: broader_memory_family_coverage
+  selection_reason: x_smem/x_dmem candidate families are already identified, so broadening named memory-family coverage is a smaller responsibility expansion than introducing a new input-stream IO contract.
   acceptance:
     - summarize the program-image delta win and non-claims
     - keep reports generated-only
     - choose next axis: input_stream_delta, broader memory-family coverage, or target breadth
+  status: done
+  next_action: define_xuantie_e902_broader_memory_family_delta_gate
+
+define_xuantie_e902_broader_memory_family_delta_gate:
+  goal: define a bounded XuanTie-E902 gate that extends named memory-family coverage beyond IAHB instruction memory
+  weakest_point: x_smem/x_dmem were candidate fields, but their program/data semantics are not yet tied to a defensible memory-image source; the gate must avoid pretending they are equivalent to case.pat instruction memory.
+  source_program_image_boundary: package_xuantie_e902_program_image_delta_boundary
+  candidate_families:
+    - x_smem_ctrl.ram0..3.mem
+    - x_dmem_ctrl.ram0..3.mem
+  acceptance:
+    - choose one non-IAHB memory family or explicitly document why neither is source-defensible yet
+    - define GPU and CPU gate configs only if a memory-image/source contract exists
+    - preserve generated field offsets as lowering output, not hand-authored source
+    - keep non-claims for ISA correctness, full boot, and broad XuanTie support
   status: next
-  next_action: package_xuantie_e902_program_image_delta_boundary
+  next_action: define_xuantie_e902_broader_memory_family_delta_gate
 ```
 
 ## source_of_truth
