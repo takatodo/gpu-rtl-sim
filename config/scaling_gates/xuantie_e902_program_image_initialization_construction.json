@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "gate": "xuantie_e902_source_backed_program_image_initialization_construction",
+  "target": "xuantie_e902",
+  "boundary": "source_backed_program_image_initialization",
+  "source_program_image_delta_gate": "config/scaling_gates/xuantie_e902_program_image_delta.json",
+  "source_named_mapping_gate": "config/scaling_gates/xuantie_e902_named_rom_memory_mapping.json",
+  "purpose": "Define the next GPU-owned construction boundary after device-side init-state replication: construct the bounded XuanTie-E902 IAHB program-image bytes from the source-backed case.pat word/lane contract on device before resident eval.",
+  "weakest_point": "This is only a construction boundary definition for case.pat-backed IAHB instruction memory; it is not broad ROM initialization, not x_smem/x_dmem coverage, not ISA correctness, and not full software boot correctness.",
+  "source_contract": {
+    "program_image_source": "case.pat loaded through mem_inst_temp",
+    "selected_memory_family": "iahb_instruction_memory",
+    "word_index_mapping": "case.pat word index i maps to x_iahb_mem_ctrl.ram0..3.mem[i]",
+    "testbench_initialization_lane_mapping": {
+      "ram0": "word[31:24]",
+      "ram1": "word[23:16]",
+      "ram2": "word[15:8]",
+      "ram3": "word[7:0]"
+    },
+    "unselected_families": [
+      "x_smem_ctrl.ram0..3.mem",
+      "x_dmem_ctrl.ram0..3.mem"
+    ]
+  },
+  "construction_scope": {
+    "input": "source-backed case.pat words or equivalent word/lane records",
+    "device_side_output": "x_iahb_mem_ctrl.ram0..3.mem root storage bytes for each state",
+    "host_device_traffic_goal": "upload compact program-image records once, then construct per-state IAHB memory bytes on device",
+    "relationship_to_device_side_init_state_replication": "init-state replication remains the base full-state replication path; this boundary moves semantically meaningful program-image construction onto GPU for the selected IAHB memory family"
+  },
+  "runtime_support": {
+    "status": "not_implemented",
+    "required_kernel_family": "program_image_initialization_gpu",
+    "required_lowering": "reuse named case.pat word/lane lowering to generated root field offsets for x_iahb_mem_ctrl.ram0..3.mem",
+    "must_not_use": [
+      "hand-written root byte offsets as source of truth",
+      "broad x_smem_ctrl or x_dmem_ctrl initialization without a source image contract",
+      "per-state host-side full-state construction as the accepted final boundary"
+    ]
+  },
+  "acceptance": {
+    "definition_gate": [
+      "gate identifies the source-backed program image and selected memory family",
+      "gate names required runtime support before claiming implementation",
+      "gate states non-claims for broad ROM/memory and ISA/software correctness"
+    ],
+    "future_validation_gate": [
+      "CPU/source-backed construction and GPU/device-side construction produce matching final state under normalized_final_state_equivalence",
+      "construction input is derived from case.pat word/lane records or equivalent source-backed records",
+      "host-device upload traffic is measured separately from resident eval throughput"
+    ]
+  },
+  "artifacts": {
+    "future_report": "reports/xuantie_e902_program_image_initialization_construction.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_defined": "implement_xuantie_e902_program_image_initialization_construction"
+}

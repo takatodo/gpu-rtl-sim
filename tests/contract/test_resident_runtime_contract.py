@@ -60,6 +60,9 @@ XUANTIE_E902_PROGRAM_IMAGE_DELTA_GATE = (
 XUANTIE_E902_PROGRAM_IMAGE_DELTA_CPU_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_cpu_exact_loop_program_image_delta.json"
 )
+XUANTIE_E902_PROGRAM_IMAGE_INIT_CONSTRUCTION_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_program_image_initialization_construction.json"
+)
 TLUL_SINK_LARGER_ENVELOPE_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "tlul_sink_larger_resident_patch_schedule.json"
 )
@@ -377,11 +380,26 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertTrue(all("named_patch_delta_sequence" in run for run in cpu_gate["runs"]))
         self.assertIn("not ISA/program correctness", gpu_gate["correctness_policy"]["non_claims"])
 
+    def test_xuantie_e902_program_image_initialization_construction_gate_is_defined(self) -> None:
+        gate = json.loads(XUANTIE_E902_PROGRAM_IMAGE_INIT_CONSTRUCTION_GATE.read_text(encoding="utf-8"))
+        self.assertEqual(
+            gate["gate"],
+            "xuantie_e902_source_backed_program_image_initialization_construction",
+        )
+        self.assertEqual(gate["boundary"], "source_backed_program_image_initialization")
+        self.assertEqual(gate["source_contract"]["program_image_source"], "case.pat loaded through mem_inst_temp")
+        self.assertEqual(gate["source_contract"]["selected_memory_family"], "iahb_instruction_memory")
+        self.assertEqual(gate["runtime_support"]["status"], "not_implemented")
+        self.assertTrue(
+            any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
+        )
+        self.assertIn("not broad ROM initialization", gate["weakest_point"])
+
     def test_selection_advances_after_two_seed_boundary_commit(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "select_next_gpu_owned_state_construction_step",
+            "implement_xuantie_e902_program_image_initialization_construction",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -496,6 +514,22 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "config/scaling_gates/tlul_fifo_sync_init_state_replication.json",
         )
         self.assertEqual(selection["device_side_init_state_replication_upload_reduction_ratio"], 64.0)
+        self.assertEqual(
+            selection["next_gpu_owned_state_construction_step"],
+            "source_backed_program_image_initialization",
+        )
+        self.assertEqual(
+            selection["next_gpu_owned_state_construction_gate"],
+            "config/scaling_gates/xuantie_e902_program_image_initialization_construction.json",
+        )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_status"],
+            "gate_defined_runtime_not_implemented",
+        )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_next_action"],
+            "implement_xuantie_e902_program_image_initialization_construction",
+        )
         self.assertEqual(
             selection["larger_resident_schedule_envelope_gate"],
             "config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json",

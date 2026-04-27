@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  select_next_gpu_owned_state_construction_step
+  implement_xuantie_e902_program_image_initialization_construction
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1773,8 +1773,32 @@ select_next_gpu_owned_state_construction_step:
     - define ROM/program initialization construction boundary
     - stop construction expansion and package the current minimal boundary
   recommended_next: define_rom_or_program_initialization_construction_boundary
-  status: next
-  next_action: select_next_gpu_owned_state_construction_step
+  selected_next: source_backed_program_image_initialization
+  selected_gate: config/scaling_gates/xuantie_e902_program_image_initialization_construction.json
+  selection_reason: reuse the existing XuanTie-E902 case.pat / IAHB source contract instead of claiming broad ROM or memory initialization.
+  status: done_selected_source_backed_program_image_initialization
+  next_action: implement_xuantie_e902_program_image_initialization_construction
+
+define_xuantie_e902_program_image_initialization_construction_gate:
+  goal: define the source-backed program-image construction boundary for the next GPU-owned state-construction step
+  weakest_point: this is only a definition gate; runtime support for constructing IAHB program-image bytes on GPU is not implemented yet.
+  gate: config/scaling_gates/xuantie_e902_program_image_initialization_construction.json
+  source_contract:
+    target: xuantie_e902
+    program_image_source: case.pat loaded through mem_inst_temp
+    selected_family: iahb_instruction_memory
+    word_index_mapping: case.pat word index i maps to x_iahb_mem_ctrl.ram0..3.mem[i]
+  runtime_support:
+    status: not_implemented
+    required_kernel_family: program_image_initialization_gpu
+    required_lowering: named case.pat word/lane records to generated root field offsets
+  non_claims:
+    - not broad ROM initialization
+    - not x_smem_ctrl or x_dmem_ctrl coverage
+    - not ISA correctness
+    - not full software boot correctness
+  status: done_gate_defined
+  next_action: implement_xuantie_e902_program_image_initialization_construction
 ```
 
 ## source_of_truth

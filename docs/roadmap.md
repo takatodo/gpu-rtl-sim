@@ -179,7 +179,9 @@ phase_3:
   run_larger_resident_schedule_envelope_gate: done_gpu_cpu_pass
   select_next_runtime_depth_after_larger_resident_envelope: done_device_side_init_state_replication_selected
   define_device_side_init_state_replication_gate: done_gate_passed
-  select_next_gpu_owned_state_construction_step: next
+  select_next_gpu_owned_state_construction_step: done_source_backed_program_image_initialization_selected
+  define_xuantie_e902_program_image_initialization_construction_gate: done_gate_defined
+  implement_xuantie_e902_program_image_initialization_construction: next
 ```
 
 ## acceptance

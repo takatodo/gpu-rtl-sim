@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "select_next_gpu_owned_state_construction_step",
+  "current_priority": "implement_xuantie_e902_program_image_initialization_construction",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -184,5 +184,14 @@
   "device_side_init_state_replication_report": "reports/tlul_fifo_sync_init_state_replication_compare.json",
   "device_side_init_state_replication_shape": "tlul_fifo_sync 64x1",
   "device_side_init_state_replication_upload_reduction_ratio": 64.0,
-  "device_side_init_state_replication_next_action": "select_next_gpu_owned_state_construction_step"
+  "device_side_init_state_replication_next_action": "select_next_gpu_owned_state_construction_step",
+  "next_gpu_owned_state_construction_step": "source_backed_program_image_initialization",
+  "next_gpu_owned_state_construction_gate": "config/scaling_gates/xuantie_e902_program_image_initialization_construction.json",
+  "next_gpu_owned_state_construction_reason": "after raw init-state replication passed, the next useful GPU-owned construction responsibility is source-backed program-image construction for the existing XuanTie-E902 case.pat / IAHB contract",
+  "source_backed_program_image_initialization_status": "gate_defined_runtime_not_implemented",
+  "source_backed_program_image_initialization_target": "xuantie_e902",
+  "source_backed_program_image_initialization_source": "case.pat loaded through mem_inst_temp",
+  "source_backed_program_image_initialization_selected_family": "iahb_instruction_memory",
+  "source_backed_program_image_initialization_non_claim": "not broad ROM initialization, not x_smem/x_dmem coverage, not ISA correctness, and not full software boot correctness",
+  "source_backed_program_image_initialization_next_action": "implement_xuantie_e902_program_image_initialization_construction"
 }

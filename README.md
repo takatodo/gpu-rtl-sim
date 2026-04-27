@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  select_next_gpu_owned_state_construction_step
+  implement_xuantie_e902_program_image_initialization_construction
 
 latest_larger_envelope:
   tlul_sink_1024x64_gpu_over_cpu_ratio: 5.557127971950416
@@ -457,6 +457,15 @@ latest_init_state_replication_gate:
   strict_match: true
   normalized_final_state_equivalence: true
   upload_reduction_ratio: 64.0
+
+next_gpu_owned_state_construction_step:
+  boundary: source_backed_program_image_initialization
+  target: xuantie_e902
+  gate: config/scaling_gates/xuantie_e902_program_image_initialization_construction.json
+  source: case.pat loaded through mem_inst_temp
+  selected_family: iahb_instruction_memory
+  status: gate_defined_runtime_not_implemented
+  non_claim: not broad ROM initialization, not x_smem/x_dmem coverage, not ISA correctness, and not full software boot correctness
 
 policy:
   - upload init-state once
@@ -480,6 +489,7 @@ source_of_truth:
   - config/scaling_gates/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json
   - config/scaling_gates/xuantie_e902_program_image_delta.json
   - config/scaling_gates/xuantie_e902_cpu_exact_loop_program_image_delta.json
+  - config/scaling_gates/xuantie_e902_program_image_initialization_construction.json
 ```
 
 Current bounded resident changing-input result:
