@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_xuantie_e902_broader_memory_family_delta_gate
+  document_xuantie_e902_non_iahb_memory_family_contract_gap
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1549,13 +1549,31 @@ define_xuantie_e902_broader_memory_family_delta_gate:
   candidate_families:
     - x_smem_ctrl.ram0..3.mem
     - x_dmem_ctrl.ram0..3.mem
+  source_contract_findings:
+    x_smem_ctrl: AHB slave1 SYS MEM at 0x60000000..0x600fffff exists, but tb.v does not load a source image into x_smem_ctrl.ram0..3.mem.
+    x_dmem_ctrl: AHB slave5 DMEM at 0x20000000..0x207fffff exists and tb.v zero-fills x_dmem_ctrl.ram0..3.mem, but no external data-image source is present.
+    decision: do not define a broader memory-family throughput gate until a defensible source image or runtime write contract exists.
   acceptance:
     - choose one non-IAHB memory family or explicitly document why neither is source-defensible yet
     - define GPU and CPU gate configs only if a memory-image/source contract exists
     - preserve generated field offsets as lowering output, not hand-authored source
     - keep non-claims for ISA correctness, full boot, and broad XuanTie support
+  status: blocked_source_contract_gap
+  next_action: document_xuantie_e902_non_iahb_memory_family_contract_gap
+
+document_xuantie_e902_non_iahb_memory_family_contract_gap:
+  goal: package the non-IAHB memory-family source-contract gap and select a safer next responsibility expansion
+  weakest_point: without a source image or observed runtime-write contract, x_smem/x_dmem byte mutations would regress to arbitrary root-storage patch semantics.
+  source_files:
+    - third_party/rtlmeter/designs/XuanTie-E902/src/tb.v
+    - third_party/rtlmeter/designs/XuanTie-E902/src/ahb.v
+    - third_party/rtlmeter/designs/XuanTie-E902/src/soc.v
+  acceptance:
+    - record why x_smem/x_dmem are not source-defensible for a throughput gate yet
+    - avoid adding GPU/CPU gate configs for unsupported semantics
+    - choose next axis between input_stream_delta and target_breadth
   status: next
-  next_action: define_xuantie_e902_broader_memory_family_delta_gate
+  next_action: document_xuantie_e902_non_iahb_memory_family_contract_gap
 ```
 
 ## source_of_truth

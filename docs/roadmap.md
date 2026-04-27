@@ -167,7 +167,8 @@ phase_3:
   define_xuantie_e902_program_image_delta_gate: done_gates_defined
   run_xuantie_e902_program_image_delta_gate: done_gpu_cpu_pass
   package_xuantie_e902_program_image_delta_boundary: done
-  define_xuantie_e902_broader_memory_family_delta_gate: next
+  define_xuantie_e902_broader_memory_family_delta_gate: blocked_source_contract_gap
+  document_xuantie_e902_non_iahb_memory_family_contract_gap: next
 ```
 
 ## acceptance
