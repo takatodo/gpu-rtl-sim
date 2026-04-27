@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  commit_xuantie_e902_resident_patch_schedule_boundary
+  define_application_like_patch_schedule_semantics
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1292,8 +1292,25 @@ package_xuantie_e902_resident_patch_schedule_boundary:
 commit_xuantie_e902_resident_patch_schedule_boundary:
   goal: commit the packaged XuanTie-E902 resident patch schedule boundary before defining application-like patch semantics
   weakest_point: without a commit boundary, the measured XuanTie-E902 byte-patch claim can be mixed with the next semantic broadening step.
+  commit: 30e17bd
+  status: done
+  next_action: define_application_like_patch_schedule_semantics
+
+define_application_like_patch_schedule_semantics:
+  goal: define the first application-like resident patch schedule semantics after multi-seed byte-patch throughput wins
+  weakest_point: byte patches prove communication reduction mechanics, but not meaningful RTL stimulus semantics; the next gate must map patches to input, ROM, or program-delta changes.
+  source_contract: config/resident_patch_script_semantics.json
+  candidate_semantics:
+    - input_stream_delta
+    - rom_or_memory_init_delta
+    - program_image_delta
+  acceptance:
+    - selected semantic can be described without clone-local paths
+    - selected semantic reuses one-time schedule upload and forbids per-step host-device patch copies
+    - selected semantic has a matching CPU exact-loop baseline plan
+    - selected semantic does not claim ISA/program correctness from arbitrary byte offsets
   status: next
-  next_action: commit_xuantie_e902_resident_patch_schedule_boundary
+  next_action: define_application_like_patch_schedule_semantics
 ```
 
 ## source_of_truth

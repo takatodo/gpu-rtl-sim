@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "resident_patch_script_semantics",
-  "status": "packaged_bounded_tlul_fifo_sync_512x32_gpu_win",
+  "status": "packaged_bounded_multi_seed_gpu_wins",
   "purpose": "Define and implement resident-mode patch/script semantics before allowing changing-input workloads to claim throughput.",
   "weakest_point": "The resident changing-input GPU and matching CPU gates pass with a bounded 512x32 GPU win, but this does not imply broad target-breadth or full RTL application throughput.",
   "accepted_semantics": {
@@ -33,5 +33,19 @@
       "claiming resident changing-input throughput before a matching CPU baseline exists"
     ]
   },
-  "next_action": "select_next_resident_patch_schedule_breadth_or_commit"
+  "next_semantics_axis": {
+    "name": "application_like_patch_schedule_semantics",
+    "purpose": "Move beyond arbitrary root byte patches toward input, ROM, or program-delta changes that can be explained as design-level stimuli.",
+    "candidate_semantics": [
+      "input_stream_delta",
+      "rom_or_memory_init_delta",
+      "program_image_delta"
+    ],
+    "non_goals": [
+      "do not treat arbitrary root byte offsets as application semantics",
+      "do not claim ISA/program correctness from byte-patch throughput alone",
+      "do not reintroduce per-step host-device copies"
+    ]
+  },
+  "next_action": "define_application_like_patch_schedule_semantics"
 }

@@ -156,7 +156,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
     def test_resident_patch_script_semantics_are_implemented_before_validation(self) -> None:
         semantics = json.loads(RESIDENT_PATCH_SEMANTICS.read_text(encoding="utf-8"))
         self.assertEqual(semantics["name"], "resident_patch_script_semantics")
-        self.assertEqual(semantics["status"], "packaged_bounded_tlul_fifo_sync_512x32_gpu_win")
+        self.assertEqual(semantics["status"], "packaged_bounded_multi_seed_gpu_wins")
         self.assertEqual(
             semantics["accepted_semantics"]["per_step_host_copy"],
             "No cuMemcpyHtoD patch copy may occur inside the resident step loop.",
@@ -165,7 +165,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             semantics["implementation_policy"]["phase_1"],
             "Keep rejecting direct --patch with --resident-steps because it is still a host argv per-step patch interface.",
         )
-        self.assertEqual(semantics["next_action"], "select_next_resident_patch_schedule_breadth_or_commit")
+        self.assertEqual(semantics["next_action"], "define_application_like_patch_schedule_semantics")
 
     def test_resident_patch_schedule_kernel_contract_is_present(self) -> None:
         runtime = RUNTIME.read_text(encoding="utf-8")
@@ -258,15 +258,25 @@ class ResidentRuntimeContractTest(unittest.TestCase):
 
     def test_selection_advances_after_two_seed_boundary_commit(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
-        self.assertEqual(selection["current_priority"], "commit_xuantie_e902_resident_patch_schedule_boundary")
+        self.assertEqual(selection["current_priority"], "define_application_like_patch_schedule_semantics")
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
             "committed_veer_el2_resident_patch_schedule_gpu_win",
         )
         self.assertEqual(
             selection["xuantie_e902_resident_patch_schedule_boundary_status"],
-            "packaged_xuantie_e902_resident_patch_schedule_gpu_win",
+            "committed_xuantie_e902_resident_patch_schedule_gpu_win",
         )
+        self.assertEqual(
+            selection["next_patch_schedule_semantics_axis"],
+            "application_like_patch_schedule_semantics",
+        )
+
+    def test_resident_patch_semantics_names_application_like_next_axis(self) -> None:
+        semantics = json.loads(RESIDENT_PATCH_SEMANTICS.read_text(encoding="utf-8"))
+        self.assertEqual(semantics["next_action"], "define_application_like_patch_schedule_semantics")
+        self.assertEqual(semantics["next_semantics_axis"]["name"], "application_like_patch_schedule_semantics")
+        self.assertIn("rom_or_memory_init_delta", semantics["next_semantics_axis"]["candidate_semantics"])
 
     def test_readme_keeps_xuantie_boundary_limited(self) -> None:
         readme = README.read_text(encoding="utf-8")
