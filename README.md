@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  commit_rom_memory_delta_patch_schedule_boundary
+  define_named_rom_memory_symbol_mapping_gate
 
 policy:
   - upload init-state once
@@ -484,10 +484,10 @@ accepted_claim:
   xuantie_e902_rom_memory_delta:
     shape: nstates=128 logical_patch_steps=32
     gpu_over_cpu_throughput_ratio: 1.442536802751107
-  boundary_status: packaged_xuantie_e902_rom_memory_delta_patch_schedule_gpu_win
+  boundary_status: committed_xuantie_e902_rom_memory_delta_patch_schedule_gpu_win
 
 next_candidate_order:
-  - xuantie_e902_rom_memory_delta_patch_schedule
+  - named_rom_memory_symbol_mapping
   - input_stream_delta
   - program_image_delta
 

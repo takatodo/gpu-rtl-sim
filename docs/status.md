@@ -1375,8 +1375,22 @@ package_rom_memory_delta_patch_schedule_boundary:
 commit_rom_memory_delta_patch_schedule_boundary:
   goal: commit the packaged ROM/memory delta proxy boundary before increasing semantic precision
   weakest_point: without a commit boundary, the proxy mapping claim can be mixed with later named-symbol ROM mapping work.
+  commit: 010fb86
+  status: done
+  next_action: define_named_rom_memory_symbol_mapping_gate
+
+define_named_rom_memory_symbol_mapping_gate:
+  goal: define a gate that maps ROM or memory init deltas to named generated symbols or documented memory image regions instead of raw root offsets
+  weakest_point: the existing ROM/memory delta result is still a root-storage proxy; named mapping may require target-specific symbol discovery in generated Verilator root storage.
+  source_contract: config/resident_patch_script_semantics.json
+  candidate_target: xuantie_e902
+  acceptance:
+    - identify candidate ROM/memory storage fields or document why only proxy offsets are currently available
+    - define GPU gate and CPU exact-loop baseline using the same named mapping or a documented unresolved mapping fallback
+    - preserve one-time schedule upload and no per-step host-device copies
+    - keep non-claims for ISA/program correctness and full software boot
   status: next
-  next_action: commit_rom_memory_delta_patch_schedule_boundary
+  next_action: define_named_rom_memory_symbol_mapping_gate
 ```
 
 ## source_of_truth

@@ -158,7 +158,8 @@ phase_3:
   run_xuantie_e902_rom_memory_delta_patch_schedule_gate: done_gpu_pass
   run_xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule_gate: done_gpu_win_at_128x32
   package_rom_memory_delta_patch_schedule_boundary: done
-  commit_rom_memory_delta_patch_schedule_boundary: next
+  commit_rom_memory_delta_patch_schedule_boundary: done_010fb86
+  define_named_rom_memory_symbol_mapping_gate: next
 ```
 
 ## acceptance
