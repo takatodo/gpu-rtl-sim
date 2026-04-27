@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  implement_xuantie_e902_program_image_initialization_construction
+  define_program_image_initialization_record_format
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1819,14 +1819,37 @@ implement_xuantie_e902_program_image_initialization_construction:
     - measure_program_image_initialization_upload_reduction:
         purpose: separate construction upload traffic from resident eval throughput
         output: bounded communication-reduction claim for the selected XuanTie-E902 IAHB family
-  current_blocker: runtime does not yet have compact case.pat word/lane input records or a GPU kernel that writes x_iahb_mem_ctrl.ram0..3.mem before resident eval.
+  current_blocker: runtime does not yet have a concrete host/GPU ABI for compact program-image initialization records or a GPU kernel that writes x_iahb_mem_ctrl.ram0..3.mem before resident eval.
   non_claims:
     - not broad ROM initialization
     - not x_smem_ctrl or x_dmem_ctrl coverage
     - not ISA correctness
     - not full software boot correctness
   status: planned_task_ladder_defined
-  next_action: extract_xuantie_e902_program_image_initialization_inputs
+  next_action: define_program_image_initialization_record_format
+
+extract_xuantie_e902_program_image_initialization_inputs:
+  goal: identify the smallest source-backed input records needed for XuanTie-E902 IAHB program-image construction
+  weakest_point: the source contract is bounded to case.pat / IAHB, so the extracted inputs must not become another full root-image upload or broad ROM-memory abstraction.
+  selected_input_source: case.pat words or equivalent word/lane records
+  record_fields:
+    - word_index
+    - lane
+    - byte_value
+    - target_root_offset
+  target_root_offset_source: generated root layout resolved by named_patch_lowering._named_rom_lane_offsets
+  lane_to_byte_mapping:
+    ram0: word[31:24]
+    ram1: word[23:16]
+    ram2: word[15:8]
+    ram3: word[7:0]
+  non_sources:
+    - x_smem_ctrl.ram0..3.mem
+    - x_dmem_ctrl.ram0..3.mem
+    - hand-written root byte offsets
+    - full per-state root storage images
+  status: done_contract_defined
+  next_action: define_program_image_initialization_record_format
 ```
 
 ## source_of_truth

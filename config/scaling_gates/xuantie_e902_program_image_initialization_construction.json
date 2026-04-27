@@ -28,6 +28,31 @@
     "host_device_traffic_goal": "upload compact program-image records once, then construct per-state IAHB memory bytes on device",
     "relationship_to_device_side_init_state_replication": "init-state replication remains the base full-state replication path; this boundary moves semantically meaningful program-image construction onto GPU for the selected IAHB memory family"
   },
+  "program_image_initialization_inputs": {
+    "status": "extraction_contract_defined",
+    "source": "case.pat words or equivalent word/lane records",
+    "record_fields": [
+      "word_index",
+      "lane",
+      "byte_value",
+      "target_root_offset"
+    ],
+    "lane_to_byte_mapping": {
+      "ram0": "word[31:24]",
+      "ram1": "word[23:16]",
+      "ram2": "word[15:8]",
+      "ram3": "word[7:0]"
+    },
+    "target_root_offset_source": "generated root layout resolved by named_patch_lowering._named_rom_lane_offsets",
+    "minimal_record_policy": "only upload records for source-backed IAHB program-image bytes that differ from the replicated base init-state or are required to materialize the selected program image",
+    "batch_semantics": "records are uploaded once and applied for each GPU state before resident eval",
+    "non_sources": [
+      "x_smem_ctrl.ram0..3.mem",
+      "x_dmem_ctrl.ram0..3.mem",
+      "hand-written root byte offsets",
+      "full per-state root storage images"
+    ]
+  },
   "runtime_support": {
     "status": "not_implemented",
     "required_kernel_family": "program_image_initialization_gpu",

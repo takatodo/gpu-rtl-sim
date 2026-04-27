@@ -389,6 +389,15 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(gate["boundary"], "source_backed_program_image_initialization")
         self.assertEqual(gate["source_contract"]["program_image_source"], "case.pat loaded through mem_inst_temp")
         self.assertEqual(gate["source_contract"]["selected_memory_family"], "iahb_instruction_memory")
+        self.assertEqual(gate["program_image_initialization_inputs"]["status"], "extraction_contract_defined")
+        self.assertEqual(
+            gate["program_image_initialization_inputs"]["record_fields"],
+            ["word_index", "lane", "byte_value", "target_root_offset"],
+        )
+        self.assertIn(
+            "full per-state root storage images",
+            gate["program_image_initialization_inputs"]["non_sources"],
+        )
         self.assertEqual(gate["runtime_support"]["status"], "not_implemented")
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
@@ -399,7 +408,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "implement_xuantie_e902_program_image_initialization_construction",
+            "define_program_image_initialization_record_format",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -524,11 +533,19 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_status"],
-            "gate_defined_runtime_not_implemented",
+            "planned_task_ladder_defined",
+        )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_input_extraction_status"],
+            "contract_defined",
+        )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_input_record_fields"],
+            ["word_index", "lane", "byte_value", "target_root_offset"],
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "extract_xuantie_e902_program_image_initialization_inputs",
+            "define_program_image_initialization_record_format",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_task_ladder"][0],
@@ -538,7 +555,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             selection["source_backed_program_image_initialization_task_ladder"][-1],
             "measure_program_image_initialization_upload_reduction",
         )
-        self.assertIn("compact case.pat", selection["source_backed_program_image_initialization_current_blocker"])
+        self.assertIn("host/GPU ABI", selection["source_backed_program_image_initialization_current_blocker"])
         self.assertEqual(
             selection["larger_resident_schedule_envelope_gate"],
             "config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json",
