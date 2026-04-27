@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  document_xuantie_e902_non_iahb_memory_family_contract_gap
+  select_post_xuantie_memory_gap_responsibility_axis
 
 policy:
   - upload init-state once
@@ -497,7 +497,6 @@ accepted_claim:
   boundary_status: blocked_broader_memory_family_source_contract_gap
 
 next_candidate_order:
-  - document_xuantie_e902_non_iahb_memory_family_contract_gap
   - input_stream_delta
   - target_breadth
 

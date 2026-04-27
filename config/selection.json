@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "document_xuantie_e902_non_iahb_memory_family_contract_gap",
+  "current_priority": "select_post_xuantie_memory_gap_responsibility_axis",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -97,6 +97,11 @@
     "x_dmem_ctrl": "AHB slave5 DMEM at 0x20000000..0x207fffff exists and tb.v zero-fills x_dmem_ctrl.ram0..3.mem, but no external data-image source is present",
     "decision": "do not define a broader memory-family throughput gate until a defensible source image or runtime write contract exists"
   },
+  "post_xuantie_memory_gap_next_axis_options": [
+    "input_stream_delta",
+    "target_breadth"
+  ],
+  "post_xuantie_memory_gap_selection_rule": "prefer input_stream_delta if it can reuse the existing XuanTie-E902 program-image source contract; prefer target_breadth if the next target has a clearer source-backed memory/input contract",
   "named_rom_memory_symbol_mapping_contract": {
     "selected_family": "iahb_instruction_memory",
     "source_rtl": "third_party/rtlmeter/designs/XuanTie-E902/src/tb.v",

@@ -343,7 +343,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "document_xuantie_e902_non_iahb_memory_family_contract_gap",
+            "select_post_xuantie_memory_gap_responsibility_axis",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -385,6 +385,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(selection["broader_memory_family_coverage_status"], "source_contract_gap_found")
         self.assertIn("zero-fills", selection["broader_memory_family_coverage_gap"]["x_dmem_ctrl"])
         self.assertIn("does not load", selection["broader_memory_family_coverage_gap"]["x_smem_ctrl"])
+        self.assertEqual(
+            selection["post_xuantie_memory_gap_next_axis_options"],
+            ["input_stream_delta", "target_breadth"],
+        )
         self.assertEqual(
             selection["active_non_tlul_candidate_program_image_delta_gate"],
             "config/scaling_gates/xuantie_e902_program_image_delta.json",

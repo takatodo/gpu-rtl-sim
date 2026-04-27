@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  document_xuantie_e902_non_iahb_memory_family_contract_gap
+  select_post_xuantie_memory_gap_responsibility_axis
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1572,8 +1572,21 @@ document_xuantie_e902_non_iahb_memory_family_contract_gap:
     - record why x_smem/x_dmem are not source-defensible for a throughput gate yet
     - avoid adding GPU/CPU gate configs for unsupported semantics
     - choose next axis between input_stream_delta and target_breadth
+  status: done
+  next_action: select_post_xuantie_memory_gap_responsibility_axis
+
+select_post_xuantie_memory_gap_responsibility_axis:
+  goal: choose the next responsibility-expansion axis after blocking broader non-IAHB memory-family coverage
+  weakest_point: choosing target breadth too early may dodge input semantics, while choosing input_stream_delta without a defensible source contract may recreate arbitrary byte-patch claims.
+  candidate_axes:
+    input_stream_delta: reuse the existing XuanTie-E902 program-image source contract if an externally meaningful input/stimulus delta can be represented without inventing a new unsupported memory image.
+    target_breadth: move to another target only if its memory/input contract is clearer than XuanTie-E902 x_smem/x_dmem.
+  acceptance:
+    - select exactly one next axis
+    - record why the rejected axis is deferred
+    - do not add new GPU/CPU gate configs until the selected axis has a source-backed contract
   status: next
-  next_action: document_xuantie_e902_non_iahb_memory_family_contract_gap
+  next_action: select_post_xuantie_memory_gap_responsibility_axis
 ```
 
 ## source_of_truth
