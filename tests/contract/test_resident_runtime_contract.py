@@ -171,7 +171,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             semantics["implementation_policy"]["phase_1"],
             "Keep rejecting direct --patch with --resident-steps because it is still a host argv per-step patch interface.",
         )
-        self.assertEqual(semantics["next_action"], "define_named_rom_memory_symbol_mapping_gate")
+        self.assertEqual(semantics["next_action"], "define_xuantie_e902_named_rom_memory_mapping_contract")
 
     def test_resident_patch_schedule_kernel_contract_is_present(self) -> None:
         runtime = RUNTIME.read_text(encoding="utf-8")
@@ -280,7 +280,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
 
     def test_selection_advances_after_two_seed_boundary_commit(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
-        self.assertEqual(selection["current_priority"], "define_named_rom_memory_symbol_mapping_gate")
+        self.assertEqual(selection["current_priority"], "define_xuantie_e902_named_rom_memory_mapping_contract")
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
             "committed_veer_el2_resident_patch_schedule_gpu_win",
@@ -302,10 +302,15 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "committed_xuantie_e902_rom_memory_delta_patch_schedule_gpu_win",
         )
         self.assertEqual(selection["next_rom_memory_precision_axis"], "named_rom_memory_symbol_mapping")
+        self.assertEqual(selection["named_rom_memory_symbol_mapping_status"], "candidate_fields_inspected")
+        self.assertIn(
+            "xuantie_e902_gpu_cov_tb.dut.x_soc.x_cpu_sub_system_ahb.x_iahb_mem_ctrl.ram0..3.mem",
+            selection["named_rom_memory_symbol_mapping_candidate_fields"],
+        )
 
     def test_resident_patch_semantics_names_application_like_next_axis(self) -> None:
         semantics = json.loads(RESIDENT_PATCH_SEMANTICS.read_text(encoding="utf-8"))
-        self.assertEqual(semantics["next_action"], "define_named_rom_memory_symbol_mapping_gate")
+        self.assertEqual(semantics["next_action"], "define_xuantie_e902_named_rom_memory_mapping_contract")
         self.assertEqual(semantics["next_semantics_axis"]["name"], "application_like_patch_schedule_semantics")
         self.assertEqual(semantics["next_semantics_axis"]["selected_first_semantic"], "rom_or_memory_init_delta")
         self.assertIn("rom_or_memory_init_delta", semantics["next_semantics_axis"]["candidate_semantics"])
@@ -315,7 +320,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             semantics["next_semantics_axis"]["selected_semantic_contract"]["next_precision_step"],
-            "define_named_rom_memory_symbol_mapping_gate",
+            "define_xuantie_e902_named_rom_memory_mapping_contract",
         )
 
     def test_readme_keeps_xuantie_boundary_limited(self) -> None:

@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  commit_rom_memory_delta_patch_schedule_boundary
+  define_xuantie_e902_named_rom_memory_mapping_contract
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1384,13 +1384,30 @@ define_named_rom_memory_symbol_mapping_gate:
   weakest_point: the existing ROM/memory delta result is still a root-storage proxy; named mapping may require target-specific symbol discovery in generated Verilator root storage.
   source_contract: config/resident_patch_script_semantics.json
   candidate_target: xuantie_e902
+  candidate_fields:
+    - xuantie_e902_gpu_cov_tb.dut.x_soc.x_cpu_sub_system_ahb.x_iahb_mem_ctrl.ram0..3.mem
+    - xuantie_e902_gpu_cov_tb.dut.x_soc.x_smem_ctrl.ram0..3.mem
+    - xuantie_e902_gpu_cov_tb.dut.x_soc.x_dmem_ctrl.ram0..3.mem
   acceptance:
     - identify candidate ROM/memory storage fields or document why only proxy offsets are currently available
     - define GPU gate and CPU exact-loop baseline using the same named mapping or a documented unresolved mapping fallback
     - preserve one-time schedule upload and no per-step host-device copies
     - keep non-claims for ISA/program correctness and full software boot
+  status: done_candidate_fields_inspected
+  next_action: define_xuantie_e902_named_rom_memory_mapping_contract
+
+define_xuantie_e902_named_rom_memory_mapping_contract:
+  goal: turn the inspected XuanTie-E902 RAM field candidates into an explicit mapping contract before adding or running another throughput gate
+  weakest_point: the candidate field names are generated Verilator storage names; without an address/byte-lane contract, a patch against them can still be a renamed proxy rather than a defensible ROM/memory-image delta.
+  source_contract: config/resident_patch_script_semantics.json
+  candidate_target: xuantie_e902
+  acceptance:
+    - document which candidate family is instruction memory, scratch/shared memory, or data memory for this target
+    - define byte-lane mapping from memory-image deltas to ram0..3.mem indices
+    - define unresolved fallback if a named family cannot be tied to a memory-image region
+    - keep GPU and CPU baselines on the same named mapping
   status: next
-  next_action: define_named_rom_memory_symbol_mapping_gate
+  next_action: define_xuantie_e902_named_rom_memory_mapping_contract
 ```
 
 ## source_of_truth
