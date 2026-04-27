@@ -162,6 +162,38 @@ def generate_gpu_ll(merged_ll_path: Path, storage_size: int) -> str:
     lines.append('}')
     lines.append('')
 
+    # Device-resident patch application kernel.
+    #
+    # The host runtime uploads compact patch offset/value arrays once before a
+    # resident loop. For each logical step it launches this kernel with pointers
+    # already advanced to that step's record slice, avoiding per-step HtoD patch
+    # copies while keeping the existing --patch-script grammar.
+    lines.append('; === GPU kernel: resident patch schedule ===')
+    lines.append('define void @vl_apply_patch_schedule_gpu(ptr %storage_base, ptr %patch_offsets, ptr %patch_values, i32 %patch_count) {')
+    lines.append('entry:')
+    lines.append('  %tid  = call i32 @llvm.nvvm.read.ptx.sreg.tid.x()')
+    lines.append('  %bid  = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x()')
+    lines.append('  %bdim = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x()')
+    lines.append('  %gid_mul = mul i32 %bid, %bdim')
+    lines.append('  %gid32   = add i32 %gid_mul, %tid')
+    lines.append('  %in_range = icmp ult i32 %gid32, %patch_count')
+    lines.append('  br i1 %in_range, label %body, label %exit')
+    lines.append('')
+    lines.append('body:')
+    lines.append('  %gid = zext i32 %gid32 to i64')
+    lines.append('  %offset_ptr = getelementptr inbounds i64, ptr %patch_offsets, i64 %gid')
+    lines.append('  %off = load i64, ptr %offset_ptr, align 8')
+    lines.append('  %value_ptr = getelementptr inbounds i8, ptr %patch_values, i64 %gid')
+    lines.append('  %value = load i8, ptr %value_ptr, align 1')
+    lines.append('  %dst = getelementptr inbounds i8, ptr %storage_base, i64 %off')
+    lines.append('  store i8 %value, ptr %dst, align 1')
+    lines.append('  br label %exit')
+    lines.append('')
+    lines.append('exit:')
+    lines.append('  ret void')
+    lines.append('}')
+    lines.append('')
+
     # TBAA / prof メタデータ
     meta_lines = []
     max_id = -1
@@ -174,8 +206,10 @@ def generate_gpu_ll(merged_ll_path: Path, storage_size: int) -> str:
     lines.append('')
 
     kernel_id = max_id + 1
+    patch_kernel_id = kernel_id + 1
     lines.append(f'!{kernel_id} = !{{ptr @vl_eval_batch_gpu, !"kernel", i32 1}}')
-    lines.append(f'!nvvm.annotations = !{{!{kernel_id}}}')
+    lines.append(f'!{patch_kernel_id} = !{{ptr @vl_apply_patch_schedule_gpu, !"kernel", i32 1}}')
+    lines.append(f'!nvvm.annotations = !{{!{kernel_id}, !{patch_kernel_id}}}')
 
     return '\n'.join(lines)
 

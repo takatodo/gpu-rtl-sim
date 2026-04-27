@@ -42,7 +42,7 @@
 #define ENV_INIT_STATE "RUN_VL_HYBRID_INIT_STATE"
 /* Optional per-step patch script file; each non-comment line is one step of patch tokens. */
 #define ENV_PATCH_SCRIPT "RUN_VL_HYBRID_PATCH_SCRIPT"
-/* Explicit resident repeated-step mode; keeps state on device and rejects per-step host patches. */
+/* Explicit resident repeated-step mode; keeps state on device across eval steps. */
 #define ENV_RESIDENT_STEPS "RUN_VL_HYBRID_RESIDENT_STEPS"
 
 /* Set to force one cuCtxSynchronize per step (slower wall clock; old behavior). */
@@ -100,6 +100,16 @@ typedef struct {
   unsigned repeat_count;
 } StepPatchBlock;
 
+typedef struct {
+  size_t *offsets;
+  unsigned char *values;
+  unsigned *step_offsets;
+  unsigned logical_steps;
+  unsigned record_count;
+  CUdeviceptr d_offsets;
+  CUdeviceptr d_values;
+} ResidentPatchSchedule;
+
 static int parse_byte(const char *s, unsigned char *out) {
   if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))
     return sscanf(s + 2, "%hhx", out) == 1 ? 0 : -1;
@@ -151,6 +161,94 @@ static void free_step_patch_blocks(StepPatchBlock *blocks, unsigned block_count)
     free(block->steps);
   }
   free(blocks);
+}
+
+static void free_resident_patch_schedule(ResidentPatchSchedule *schedule) {
+  if (!schedule)
+    return;
+  if (schedule->d_offsets)
+    CUDA_CHECK(cuMemFree(schedule->d_offsets));
+  if (schedule->d_values)
+    CUDA_CHECK(cuMemFree(schedule->d_values));
+  free(schedule->offsets);
+  free(schedule->values);
+  free(schedule->step_offsets);
+  memset(schedule, 0, sizeof(*schedule));
+}
+
+static int append_resident_patch_record(ResidentPatchSchedule *schedule,
+                                        unsigned *capacity,
+                                        size_t total,
+                                        const Patch *patch) {
+  if (patch->global_off >= total) {
+    fprintf(stderr, "resident patch offset %zu >= total %zu\n",
+            patch->global_off, total);
+    return -1;
+  }
+  if (schedule->record_count == *capacity) {
+    unsigned new_capacity = *capacity ? (*capacity * 2U) : 64U;
+    size_t *grown_offsets =
+        (size_t *)realloc(schedule->offsets, new_capacity * sizeof(*schedule->offsets));
+    if (!grown_offsets)
+      return -1;
+    schedule->offsets = grown_offsets;
+    unsigned char *grown_values = (unsigned char *)realloc(
+        schedule->values, new_capacity * sizeof(*schedule->values));
+    if (!grown_values)
+      return -1;
+    schedule->values = grown_values;
+    *capacity = new_capacity;
+  }
+  schedule->offsets[schedule->record_count] = patch->global_off;
+  schedule->values[schedule->record_count] = patch->val;
+  schedule->record_count++;
+  return 0;
+}
+
+static int build_resident_patch_schedule(StepPatchBlock *blocks,
+                                         unsigned block_count,
+                                         unsigned logical_steps,
+                                         size_t total,
+                                         ResidentPatchSchedule *out) {
+  unsigned record_capacity = 0U;
+  unsigned logical_step = 0U;
+  memset(out, 0, sizeof(*out));
+  out->logical_steps = logical_steps;
+  out->step_offsets =
+      (unsigned *)calloc((size_t)logical_steps + 1U, sizeof(*out->step_offsets));
+  if (!out->step_offsets) {
+    fprintf(stderr, "calloc failed for resident patch step offsets\n");
+    return -1;
+  }
+  for (unsigned block_idx = 0; block_idx < block_count; block_idx++) {
+    StepPatchBlock *block_desc = &blocks[block_idx];
+    for (unsigned repeat_idx = 0; repeat_idx < block_desc->repeat_count; repeat_idx++) {
+      for (unsigned step_idx = 0; step_idx < block_desc->step_count; step_idx++, logical_step++) {
+        if (logical_step >= logical_steps) {
+          fprintf(stderr, "resident patch schedule step overflow\n");
+          free_resident_patch_schedule(out);
+          return -1;
+        }
+        out->step_offsets[logical_step] = out->record_count;
+        StepPatchList *step = &block_desc->steps[step_idx];
+        for (int patch_idx = 0; patch_idx < step->count; patch_idx++) {
+          if (append_resident_patch_record(out, &record_capacity, total,
+                                           &step->items[patch_idx]) != 0) {
+            free_resident_patch_schedule(out);
+            return -1;
+          }
+        }
+      }
+    }
+  }
+  if (logical_step != logical_steps) {
+    fprintf(stderr, "resident patch schedule expected %u steps, built %u\n",
+            logical_steps, logical_step);
+    free_resident_patch_schedule(out);
+    return -1;
+  }
+  out->step_offsets[logical_steps] = out->record_count;
+  return 0;
 }
 
 static int append_script_block(StepPatchBlock **blocks, unsigned *block_count,
@@ -517,6 +615,30 @@ static void trace_kernel_launch(const char *kernel_name, unsigned step,
           step, kernel_index, kernel_name);
 }
 
+static int launch_resident_patch_step(CUfunction patch_kfn,
+                                      ResidentPatchSchedule *schedule,
+                                      CUdeviceptr d_storage,
+                                      unsigned step) {
+  if (!schedule || !schedule->step_offsets || step >= schedule->logical_steps)
+    return 0;
+  unsigned start = schedule->step_offsets[step];
+  unsigned end = schedule->step_offsets[step + 1U];
+  unsigned count = end - start;
+  if (count == 0U)
+    return 0;
+  CUdeviceptr d_step_offsets =
+      schedule->d_offsets + ((CUdeviceptr)start * (CUdeviceptr)sizeof(size_t));
+  CUdeviceptr d_step_values = schedule->d_values + (CUdeviceptr)start;
+  int count_i = (int)count;
+  unsigned patch_block = 256U;
+  unsigned patch_grid = (count + patch_block - 1U) / patch_block;
+  void *patch_params[] = {&d_storage, &d_step_offsets, &d_step_values, &count_i};
+  trace_kernel_launch("vl_apply_patch_schedule_gpu", step, -1);
+  CUDA_CHECK(cuLaunchKernel(patch_kfn, patch_grid, 1, 1, patch_block, 1, 1, 0,
+                            0, patch_params, NULL));
+  return 0;
+}
+
 static size_t kernel_local_size_bytes(CUfunction fn) {
   int value = 0;
   CUresult err =
@@ -765,6 +887,10 @@ int main(int argc, char **argv) {
   unsigned script_block_count = 0U;
   unsigned script_logical_step_count = 0U;
   unsigned script_record_count = 0U;
+  unsigned resident_patch_script_block_count = 0U;
+  ResidentPatchSchedule resident_patch_schedule;
+  memset(&resident_patch_schedule, 0, sizeof(resident_patch_schedule));
+  CUfunction resident_patch_kfn = NULL;
 
   int pi = 4;
   if (argc > 4 && strchr(argv[4], ':') == NULL && strlen(argv[4]) > 0) {
@@ -803,9 +929,9 @@ int main(int argc, char **argv) {
       steps = script_logical_step_count;
     }
   }
-  if (resident_steps && (npatch > 0 || script_blocks != NULL)) {
+  if (resident_steps && npatch > 0) {
     fprintf(stderr,
-            "%s=1 rejects per-step host patches; omit argv patches and %s\n",
+            "%s=1 rejects argv per-step host patches; use %s for a device-resident schedule\n",
             ENV_RESIDENT_STEPS, ENV_PATCH_SCRIPT);
     free_step_patch_blocks(script_blocks, script_block_count);
     return 1;
@@ -902,6 +1028,17 @@ int main(int argc, char **argv) {
     fprintf(stderr, "no kernels to launch\n");
     return 1;
   }
+  if (resident_steps && script_blocks) {
+    if (resolve_function_across_modules(&resident_patch_kfn, mods, nmods,
+                                        "vl_apply_patch_schedule_gpu") != 0) {
+      fprintf(stderr,
+              "resident %s requires a cubin regenerated with vl_apply_patch_schedule_gpu\n",
+              ENV_PATCH_SCRIPT);
+      free_step_patch_blocks(script_blocks, script_block_count);
+      return 1;
+    }
+    trace_function_attrs(resident_patch_kfn, "vl_apply_patch_schedule_gpu");
+  }
   {
     int stack_limit_status = maybe_raise_stack_limit_for_kernels(kfns, nk);
     if (env_flag_enabled(ENV_STACK_LIMIT_PROBE_ONLY))
@@ -983,6 +1120,35 @@ int main(int argc, char **argv) {
     }
   }
 
+  if (resident_steps && script_blocks) {
+    if (build_resident_patch_schedule(script_blocks, script_block_count,
+                                      script_logical_step_count, total,
+                                      &resident_patch_schedule) != 0) {
+      free_step_patch_blocks(script_blocks, script_block_count);
+      return 1;
+    }
+    resident_patch_script_block_count = script_block_count;
+    if (resident_patch_schedule.record_count > 0U) {
+      CUDA_CHECK(cuMemAlloc(&resident_patch_schedule.d_offsets,
+                            (size_t)resident_patch_schedule.record_count *
+                                sizeof(*resident_patch_schedule.offsets)));
+      CUDA_CHECK(cuMemAlloc(&resident_patch_schedule.d_values,
+                            (size_t)resident_patch_schedule.record_count *
+                                sizeof(*resident_patch_schedule.values)));
+      CUDA_CHECK(cuMemcpyHtoD(resident_patch_schedule.d_offsets,
+                              resident_patch_schedule.offsets,
+                              (size_t)resident_patch_schedule.record_count *
+                                  sizeof(*resident_patch_schedule.offsets)));
+      CUDA_CHECK(cuMemcpyHtoD(resident_patch_schedule.d_values,
+                              resident_patch_schedule.values,
+                              (size_t)resident_patch_schedule.record_count *
+                                  sizeof(*resident_patch_schedule.values)));
+    }
+    free_step_patch_blocks(script_blocks, script_block_count);
+    script_blocks = NULL;
+    script_block_count = 0U;
+  }
+
   int nstates_i = (int)nstates;
   void *params[] = {&d_storage, &nstates_i};
   unsigned grid = (nstates + block - 1) / block;
@@ -1051,9 +1217,15 @@ int main(int argc, char **argv) {
       for (unsigned step = 0; step < steps; step++) {
         if (apply_patch_array(d_storage, total, patches, npatch) != 0) {
           free_step_patch_blocks(script_blocks, script_block_count);
+          free_resident_patch_schedule(&resident_patch_schedule);
           return 1;
         }
         CUDA_CHECK(cuEventRecord(ev_start, 0));
+        if (launch_resident_patch_step(resident_patch_kfn, &resident_patch_schedule,
+                                       d_storage, step) != 0) {
+          free_resident_patch_schedule(&resident_patch_schedule);
+          return 1;
+        }
         if (step == 0U)
           trace_stage("before_first_kernel_launch");
         for (int k = 0; k < nk; k++) {
@@ -1114,11 +1286,17 @@ int main(int argc, char **argv) {
       for (unsigned step = 0; step < steps; step++) {
         if (apply_patch_array(d_storage, total, patches, npatch) != 0) {
           free_step_patch_blocks(script_blocks, script_block_count);
+          free_resident_patch_schedule(&resident_patch_schedule);
           return 1;
         }
         if (!recorded_start) {
           CUDA_CHECK(cuEventRecord(ev_start, 0));
           recorded_start = 1;
+        }
+        if (launch_resident_patch_step(resident_patch_kfn, &resident_patch_schedule,
+                                       d_storage, step) != 0) {
+          free_resident_patch_schedule(&resident_patch_schedule);
+          return 1;
         }
         if (step == 0U)
           trace_stage("before_first_kernel_launch");
@@ -1158,6 +1336,10 @@ int main(int argc, char **argv) {
   if (script_blocks) {
     printf("patch_script_steps: logical=%u records=%u blocks=%u\n",
            script_logical_step_count, script_record_count, script_block_count);
+  } else if (resident_patch_schedule.step_offsets) {
+    printf("resident_patch_schedule: logical=%u records=%u blocks=%u\n",
+           resident_patch_schedule.logical_steps,
+           resident_patch_schedule.record_count, resident_patch_script_block_count);
   }
   if (sync_each_step) {
     printf("gpu_kernel_time_ms: total=%.6f  per_launch=%.6f  (per-step CUDA "
@@ -1191,6 +1373,7 @@ int main(int argc, char **argv) {
     if (!host) {
       fprintf(stderr, "malloc failed for %zu-byte state dump\n", total);
       free_step_patch_blocks(script_blocks, script_block_count);
+      free_resident_patch_schedule(&resident_patch_schedule);
       return 1;
     }
     CUDA_CHECK(cuMemcpyDtoH(host, d_storage, total));
@@ -1199,6 +1382,7 @@ int main(int argc, char **argv) {
       fprintf(stderr, "fopen(%s) failed\n", dump_path);
       free(host);
       free_step_patch_blocks(script_blocks, script_block_count);
+      free_resident_patch_schedule(&resident_patch_schedule);
       return 1;
     }
     size_t nw = fwrite(host, 1, total, fp);
@@ -1208,6 +1392,7 @@ int main(int argc, char **argv) {
       fprintf(stderr, "short write to %s: wrote %zu / %zu bytes\n", dump_path,
               nw, total);
       free_step_patch_blocks(script_blocks, script_block_count);
+      free_resident_patch_schedule(&resident_patch_schedule);
       return 1;
     }
     printf("state_dump: %s (%zu bytes)\n", dump_path, total);
@@ -1220,6 +1405,7 @@ int main(int argc, char **argv) {
       trace_stage("before_dump_globals");
       if (dump_device_global_specs(mods, nmods, dump_globals) != 0) {
         free_step_patch_blocks(script_blocks, script_block_count);
+        free_resident_patch_schedule(&resident_patch_schedule);
         return 1;
       }
       trace_stage("after_dump_globals");
@@ -1227,6 +1413,7 @@ int main(int argc, char **argv) {
   }
 
   trace_stage("before_cleanup");
+  free_resident_patch_schedule(&resident_patch_schedule);
   CUDA_CHECK(cuMemFree(d_storage));
   CUDA_CHECK(cuCtxDestroy(ctx));
   free_step_patch_blocks(script_blocks, script_block_count);

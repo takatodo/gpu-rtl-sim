@@ -130,7 +130,14 @@ phase_3:
   package_veer_el2_larger_resident_boundary: done
   commit_veer_el2_larger_resident_boundary: done_620cf74
   define_resident_patch_script_semantics: done
-  implement_resident_patch_schedule_upload: next
+  implement_resident_patch_schedule_upload: done_smoke_pass
+  validate_resident_patch_schedule_upload: done_smoke_pass
+  define_resident_patch_schedule_validation_gate: done
+  run_resident_patch_schedule_validation_gate: done
+  define_matching_cpu_changing_input_patch_baseline: done
+  run_matching_cpu_changing_input_patch_baseline: done
+  package_resident_patch_schedule_boundary: done
+  select_next_resident_patch_schedule_breadth_or_commit: next
 ```
 
 ## acceptance
@@ -294,7 +301,7 @@ non_tlul_breadth_seed_candidate:
     c_runtime: src/hybrid/run_vl_hybrid.c
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: implement_resident_patch_schedule_upload
+  next_task: select_next_resident_patch_schedule_breadth_or_commit
 
 veer_el2_resident_breadth_candidate:
   selected: true
@@ -362,14 +369,27 @@ veer_el2_resident_breadth_candidate:
   non_claim: broad VeeR family support and full RTL application throughput are not proven
 
 resident_patch_script_semantics:
-  status: defined_before_runtime_implementation
+  status: runtime_schedule_upload_smoke_passed
   contract: config/resident_patch_script_semantics.json
-  reason: bounded non-TL-UL resident breadth now exists for XuanTie-E902 and VeeR-EL2, but resident mode still rejects --patch and --patch-script
+  reason: bounded non-TL-UL resident breadth now exists for XuanTie-E902 and VeeR-EL2, and resident mode now has a device-side --patch-script schedule path
   initial_policy:
     - keep full state resident across repeated eval steps
     - upload init-state once
     - represent changing inputs as a compact device-side patch schedule
     - forbid per-step host-device patch copies in resident mode
     - dump final state only at the boundary when requested
-  next_task: implement_resident_patch_schedule_upload
+  validation_gate: config/scaling_gates/tlul_fifo_sync_resident_patch_schedule.json
+  validation_runner: src/tools/run_tlul_fifo_sync_scaling_validation.py
+  validation_report: reports/tlul_fifo_sync_resident_patch_schedule.json
+  validation_status: pass
+  cpu_baseline_gate: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json
+  cpu_baseline_report: reports/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json
+  cpu_baseline_status: pass
+  accepted_bounded_ratio:
+    target: tlul_fifo_sync
+    nstates: 512
+    logical_patch_steps: 32
+    gpu_over_cpu_throughput_ratio: 3.1160088024052413
+  boundary_status: packaged_bounded_tlul_fifo_sync_512x32_gpu_win
+  next_task: select_next_resident_patch_schedule_breadth_or_commit
 ```

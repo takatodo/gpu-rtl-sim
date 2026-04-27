@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_fifo_sync_resident_patch_schedule_validation",
+  "target": "tlul_fifo_sync",
+  "source_contract": "config/resident_patch_script_semantics.json",
+  "purpose": "Validate the first changing-input resident patch schedule path without per-step host-device patch copies.",
+  "preconditions": [
+    "src/passes/vlgpugen emits vl_apply_patch_schedule_gpu",
+    "src/hybrid/run_vl_hybrid accepts --resident-steps with --patch-script",
+    "artifacts/ and reports/ are ignored generated outputs"
+  ],
+  "runs": [
+    {
+      "name": "resident_patch_schedule_smoke_1x6",
+      "nstates": 1,
+      "steps": 1,
+      "resident_steps": true,
+      "required": true,
+      "patch_script_lines": [
+        "0:1",
+        "-",
+        "@repeat-seq 2",
+        "1:2",
+        "-",
+        "@end-repeat-seq"
+      ]
+    },
+    {
+      "name": "resident_patch_schedule_batch_512x32",
+      "nstates": 512,
+      "steps": 1,
+      "resident_steps": true,
+      "required": true,
+      "patch_script_lines": [
+        "0:1",
+        "-",
+        "@repeat-seq 15",
+        "1:2",
+        "-",
+        "@end-repeat-seq"
+      ]
+    }
+  ],
+  "correctness_policy": {
+    "resident_gpu_runs": [
+      "run exits with status 0",
+      "stdout reports resident_mode: true",
+      "stdout reports resident_patch_schedule",
+      "dumped state byte size equals storage_size * nstates when dump is requested"
+    ],
+    "non_claims": [
+      "no CPU/GPU equality claim for changing-input patch schedules yet",
+      "no speedup claim until a matching CPU changing-input baseline is defined"
+    ]
+  },
+  "performance_policy": {
+    "record": [
+      "nstates",
+      "logical patch-script steps",
+      "elapsed_ms",
+      "state_steps_per_second"
+    ],
+    "non_claims": [
+      "the 1x6 smoke only proves runtime wiring",
+      "the 512x32 run is a validation shape, not an accepted speedup claim"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/tlul_fifo_sync_resident_patch_schedule.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "define_matching_cpu_changing_input_patch_baseline",
+  "next_action_on_fail": "diagnose_resident_patch_schedule_validation_failure"
+}

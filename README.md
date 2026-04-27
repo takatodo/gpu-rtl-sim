@@ -421,18 +421,20 @@ The `memory_resident_workload_*` gates now use explicit resident mode:
 `RUN_VL_HYBRID_RESIDENT_STEPS=1` into `src/hybrid/run_vl_hybrid.c`. This keeps
 batched state on device across repeated eval steps, preserves the existing
 non-resident path for comparison, and only dumps final state at the boundary.
-The first resident mode rejects per-step `--patch` / `--patch-script` inputs
-until their semantics are defined.
+The resident mode still rejects direct argv `--patch`, but `--patch-script`
+is now the intended changing-input path: the runtime uploads a compact patch
+schedule once and applies step records on the GPU with
+`vl_apply_patch_schedule_gpu`.
 
 Next resident communication-reduction task:
 
 ```text
 weakest_point:
-  resident mode keeps state on device, but changing-input workloads still lack
-  defined patch/script semantics.
+  resident --patch-script GPU and CPU gates pass, but the positive speedup
+  result is bounded to `tlul_fifo_sync` batch 512 with 32 logical patch steps.
 
 next:
-  implement_resident_patch_schedule_upload
+  select_next_resident_patch_schedule_breadth_or_commit
 
 policy:
   - upload init-state once
@@ -442,6 +444,23 @@ policy:
 
 source_of_truth:
   - config/resident_patch_script_semantics.json
+  - config/scaling_gates/tlul_fifo_sync_resident_patch_schedule.json
+  - config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json
+```
+
+Current bounded resident changing-input result:
+
+```text
+accepted_claim:
+  target: tlul_fifo_sync
+  shape: nstates=512 logical_patch_steps=32
+  gpu_over_cpu_throughput_ratio: 3.1160088024052413
+  boundary_status: packaged_bounded_tlul_fifo_sync_512x32_gpu_win
+
+non_claims:
+  - not broad target-breadth evidence
+  - not full RTL application throughput
+  - small 1x6 smoke remains CPU-favorable
 ```
 
 The host probe reuses `src/hybrid/tlul_slice_host_probe.cpp` with XuanTie

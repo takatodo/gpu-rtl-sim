@@ -7,6 +7,7 @@ import argparse
 import json
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -28,6 +29,39 @@ def _require_file(path: Path, message: str) -> None:
         raise SystemExit(f"error: {message}: {path}")
 
 
+def _patch_script_logical_steps(lines: list[str]) -> int:
+    total = 0
+    repeat_stack: list[tuple[int, int]] = []
+    for raw in lines:
+        line = raw.split("#", 1)[0].strip()
+        if not line:
+            continue
+        parts = line.split()
+        if parts[0] == "@repeat-seq":
+            if len(parts) != 2:
+                raise SystemExit("error: @repeat-seq requires exactly one count")
+            repeat_stack.append((int(parts[1], 0), 0))
+        elif parts[0] == "@end-repeat-seq":
+            if not repeat_stack:
+                raise SystemExit("error: @end-repeat-seq without @repeat-seq")
+            repeat_count, body_steps = repeat_stack.pop()
+            expanded = repeat_count * body_steps
+            if repeat_stack:
+                parent_count, parent_steps = repeat_stack.pop()
+                repeat_stack.append((parent_count, parent_steps + expanded))
+            else:
+                total += expanded
+        else:
+            if repeat_stack:
+                repeat_count, body_steps = repeat_stack.pop()
+                repeat_stack.append((repeat_count, body_steps + 1))
+            else:
+                total += 1
+    if repeat_stack:
+        raise SystemExit("error: unterminated @repeat-seq")
+    return total
+
+
 def _run_case(
     *,
     mdir: Path,
@@ -39,6 +73,7 @@ def _run_case(
     nstates = int(run["nstates"])
     steps = int(run["steps"])
     resident_steps = bool(run.get("resident_steps", False))
+    patch_script_lines = run.get("patch_script_lines")
     dump_state = dump_dir / f"{name}_state.bin"
     cmd = [
         sys.executable,
@@ -54,18 +89,40 @@ def _run_case(
     ]
     if resident_steps:
         cmd.append("--resident-steps")
-    started = time.perf_counter()
-    completed = subprocess.run(cmd, text=True, capture_output=True)
-    elapsed_ms = (time.perf_counter() - started) * 1000.0
+    effective_steps = steps
+    patch_script_tmp: Path | None = None
+    if patch_script_lines is not None:
+        if not isinstance(patch_script_lines, list) or not all(
+            isinstance(line, str) for line in patch_script_lines
+        ):
+            raise SystemExit(f"error: {name} patch_script_lines must be a list of strings")
+        effective_steps = _patch_script_logical_steps(patch_script_lines)
+        fd, tmp_name = tempfile.mkstemp(prefix=f"{name}_", suffix=".patch_script")
+        patch_script_tmp = Path(tmp_name)
+        with open(fd, "w", encoding="utf-8") as fp:
+            fp.write("\n".join(patch_script_lines))
+            fp.write("\n")
+        cmd.extend(["--patch-script", str(patch_script_tmp)])
+    try:
+        started = time.perf_counter()
+        completed = subprocess.run(cmd, text=True, capture_output=True)
+        elapsed_ms = (time.perf_counter() - started) * 1000.0
+    finally:
+        if patch_script_tmp is not None:
+            patch_script_tmp.unlink(missing_ok=True)
     expected_dump_bytes = storage_size * nstates
     dump_bytes = dump_state.stat().st_size if dump_state.is_file() else 0
     passed = completed.returncode == 0 and dump_bytes == expected_dump_bytes
-    states_per_second = (nstates * steps) / (elapsed_ms / 1000.0) if elapsed_ms > 0 else None
+    states_per_second = (
+        (nstates * effective_steps) / (elapsed_ms / 1000.0) if elapsed_ms > 0 else None
+    )
     return {
         "name": name,
         "nstates": nstates,
-        "steps": steps,
+        "steps": effective_steps,
+        "requested_steps": steps,
         "resident_steps": resident_steps,
+        "patch_script_line_count": len(patch_script_lines) if isinstance(patch_script_lines, list) else 0,
         "returncode": completed.returncode,
         "elapsed_ms": elapsed_ms,
         "states_per_second": states_per_second,

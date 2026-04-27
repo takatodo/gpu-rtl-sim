@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  implement_resident_patch_schedule_upload
+  select_next_resident_patch_schedule_breadth_or_commit
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -723,7 +723,7 @@ implement_true_resident_gpu_runtime_flag:
   behavior:
     - --resident-steps forwards RUN_VL_HYBRID_RESIDENT_STEPS=1
     - resident mode reports resident_mode=true in stdout/report
-    - resident mode rejects --patch and --patch-script for now
+    - resident mode initially rejected --patch and --patch-script before schedule semantics existed
     - final dump remains allowed
   status: done
   result:
@@ -747,7 +747,7 @@ package_xuantie_true_resident_runtime_boundary:
 define_resident_runtime_regression_contract:
   goal: prevent resident-mode regressions before broadening to another non-TL-UL target
   include:
-    - run_vl_hybrid.py --resident-steps rejects --patch and --patch-script
+    - run_vl_hybrid.py --resident-steps guards host patch behavior
     - resident gate report records resident_steps=true
     - stdout tail includes resident_mode: true
     - README boundary remains limited to XuanTie-E902 nstates=128 steps=64
@@ -985,7 +985,7 @@ commit_veer_el2_larger_resident_boundary:
 
 define_resident_patch_script_semantics:
   goal: define how resident mode should handle per-step input changes without falling back to host-device copies on every step
-  weakest_point: resident mode currently rejects --patch and --patch-script, so workloads needing changing inputs cannot use the fastest resident path yet.
+  weakest_point: resident mode initially rejected --patch and --patch-script, so workloads needing changing inputs needed a device-resident schedule path.
   reason_for_priority:
     - XuanTie-E902 and VeeR-EL2 already provide bounded non-TL-UL resident breadth
     - the remaining practical gap is communication reduction with changing inputs
@@ -998,25 +998,111 @@ define_resident_patch_script_semantics:
     - final DtoH remains optional and occurs only at the boundary when --dump-state is requested
   contract:
     file: config/resident_patch_script_semantics.json
-    status: defined_before_runtime_implementation
-    next_action: implement_resident_patch_schedule_upload
+    status: runtime_schedule_upload_smoke_passed
+    next_action: define_resident_patch_schedule_validation_gate
   first_contract:
-    - reject current --patch / --patch-script remains valid until a resident patch buffer ABI is defined
-    - add config/test/docs describing the resident patch buffer ABI before C runtime implementation
-  status: done_defined_before_runtime_implementation
-  next_action: implement_resident_patch_schedule_upload
+    - reject direct --patch until it is deliberately mapped to a one-step schedule shorthand
+    - describe the resident patch buffer ABI before claiming changing-input throughput
+  status: done_runtime_schedule_upload_implemented_contract_pending
+  next_action: define_resident_patch_schedule_validation_gate
 
 implement_resident_patch_schedule_upload:
   goal: implement the resident patch schedule upload path without reintroducing per-step host-device copies
-  weakest_point: semantics are now defined, but runtime still rejects resident --patch-script and has no device-side schedule upload path.
+  weakest_point: runtime schedule upload has a regenerated-cubin smoke pass, but no accepted changing-input throughput gate exists yet.
   source_contract: config/resident_patch_script_semantics.json
   implementation_scope:
     - preserve existing non-resident --patch and --patch-script behavior
     - upload resident patch schedule once before the resident launch loop
     - keep per-step cuMemcpyHtoD out of resident mode
     - retain final DtoH only at --dump-state boundary
+  status: done_smoke_pass
+  next_action: validate_resident_patch_schedule_upload
+
+validate_resident_patch_schedule_upload:
+  goal: regenerate a cubin with vl_apply_patch_schedule_gpu and prove resident --patch-script changes inputs without per-step HtoD patches
+  weakest_point: smoke proves runtime wiring, but throughput/correctness cannot be claimed until a gate defines workload shape and CPU baseline.
+  source_contract: config/resident_patch_script_semantics.json
+  smoke:
+    target: tlul_fifo_sync
+    cubin: artifacts/tlul_fifo_sync_obj_dir/vl_batch_gpu.cubin
+    patch_kernel: vl_apply_patch_schedule_gpu
+    result: pass
+    resident_patch_schedule:
+      logical_steps: 6
+      records: 3
+      blocks: 3
+  status: done_smoke_pass
+  next_action: define_resident_patch_schedule_validation_gate
+
+define_resident_patch_schedule_validation_gate:
+  goal: define the first accepted changing-input resident patch schedule gate and matching CPU comparison surface
+  weakest_point: a one-state smoke can hide overhead shape; gate must include enough steps/states to test communication reduction rather than just function resolution.
+  gate: config/scaling_gates/tlul_fifo_sync_resident_patch_schedule.json
+  runner: src/tools/run_tlul_fifo_sync_scaling_validation.py
+  report: reports/tlul_fifo_sync_resident_patch_schedule.json
+  status: done
+  next_action: run_resident_patch_schedule_validation_gate
+
+run_resident_patch_schedule_validation_gate:
+  goal: run resident changing-input schedule validation on tlul_fifo_sync using a regenerated cubin
+  weakest_point: this gate can validate resident schedule mechanics, but CPU changing-input baseline is still a follow-up.
+  gate: config/scaling_gates/tlul_fifo_sync_resident_patch_schedule.json
+  report: reports/tlul_fifo_sync_resident_patch_schedule.json
+  result:
+    status: pass
+    runs:
+      - resident_patch_schedule_smoke_1x6
+      - resident_patch_schedule_batch_512x32
+  status: done
+  next_action: define_matching_cpu_changing_input_patch_baseline
+
+define_matching_cpu_changing_input_patch_baseline:
+  goal: define how CPU exact-loop baseline should model per-step changing inputs before speedup claims
+  weakest_point: the existing CPU exact-loop probe repeats eval steps, but it does not consume the same patch script semantics as the resident GPU path.
+  gate: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json
+  runner: src/tools/run_tlul_fifo_sync_cpu_baseline.py --exact-loop
+  report: reports/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json
+  status: done
+  next_action: run_matching_cpu_changing_input_patch_baseline
+
+run_matching_cpu_changing_input_patch_baseline:
+  goal: run CPU exact-loop baseline with the same patch script shapes as the resident GPU validation gate
+  weakest_point: CPU byte patches assume root storage offsets match the GPU storage layout; this is acceptable for the current copied root image contract but must remain a bounded claim.
+  gate: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json
+  source_gpu_report: reports/tlul_fifo_sync_resident_patch_schedule.json
+  report: reports/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json
+  result:
+    status: pass
+    gpu_over_cpu_throughput_ratio:
+      resident_patch_schedule_smoke_1x6: 0.005627988093961567
+      resident_patch_schedule_batch_512x32: 3.1160088024052413
+  status: done
+  next_action: package_resident_patch_schedule_boundary
+
+package_resident_patch_schedule_boundary:
+  goal: document the bounded resident changing-input claim and non-claims after GPU and CPU gates pass
+  weakest_point: the positive result is shape-specific; small smoke is CPU-favorable and broad RTL coverage is not proven.
+  accepted_claim:
+    target: tlul_fifo_sync
+    shape: nstates=512 logical_patch_steps=32
+    gpu_over_cpu_throughput_ratio: 3.1160088024052413
+  non_claims:
+    - no broad target-breadth claim
+    - no full RTL application throughput claim
+    - CPU patch baseline relies on matching root storage byte offsets
+  status: done
+  next_action: select_next_resident_patch_schedule_breadth_or_commit
+
+select_next_resident_patch_schedule_breadth_or_commit:
+  goal: decide whether to commit the bounded tlul_fifo_sync resident patch schedule boundary or broaden it to a second seed first
+  weakest_point: broadening before committing risks mixing the validated boundary with the next experiment; committing now preserves a clean checkpoint.
+  options:
+    - commit_current_boundary
+    - port_patch_schedule_gate_to_tlul_sink
+    - port_patch_schedule_gate_to_non_tlul_resident_target
+  recommended_next: commit_current_boundary
   status: next
-  next_action: implement_resident_patch_schedule_upload
+  next_action: commit_current_boundary_if_requested
 ```
 
 ## source_of_truth

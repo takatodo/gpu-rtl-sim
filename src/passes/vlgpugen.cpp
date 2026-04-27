@@ -10,7 +10,7 @@
  * Generation layer (activated by --out <path> --storage-size=N):
  *   - stub runtime functions and extern calls
  *   - remove host-only globals (vtable, typeinfo, annotations)
- *   - inject @fake_syms_buf and @vl_eval_batch_gpu kernel
+ *   - inject @fake_syms_buf, @vl_eval_batch_gpu, and resident patch schedule kernels
  *   - retarget module to NVPTX and write output .ll
  *
  * Usage:
@@ -1292,6 +1292,62 @@ static void injectBatchKernel(Module &M, StringRef KernelName, ArrayRef<Function
                           ConstantAsMetadata::get(ConstantInt::get(I32Ty, 1))}));
 }
 
+static void injectResidentPatchScheduleKernel(Module &M) {
+    LLVMContext &Ctx = M.getContext();
+    Type *I8Ty = Type::getInt8Ty(Ctx);
+    Type *I32Ty = Type::getInt32Ty(Ctx);
+    Type *I64Ty = Type::getInt64Ty(Ctx);
+    auto *PtrTy = PointerType::get(Ctx, 0);
+    auto *IntrTy = FunctionType::get(I32Ty, {}, false);
+
+    auto *TidX = cast<Function>(
+        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.tid.x", IntrTy).getCallee());
+    auto *CtaidX = cast<Function>(
+        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ctaid.x", IntrTy).getCallee());
+    auto *NtidX = cast<Function>(
+        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ntid.x", IntrTy).getCallee());
+
+    auto *Kernel = Function::Create(
+        FunctionType::get(Type::getVoidTy(Ctx), {PtrTy, PtrTy, PtrTy, I32Ty}, false),
+        GlobalValue::ExternalLinkage, "vl_apply_patch_schedule_gpu", &M);
+    Kernel->getArg(0)->setName("storage_base");
+    Kernel->getArg(1)->setName("patch_offsets");
+    Kernel->getArg(2)->setName("patch_values");
+    Kernel->getArg(3)->setName("patch_count");
+
+    auto *EntryBB = BasicBlock::Create(Ctx, "entry", Kernel);
+    auto *BodyBB = BasicBlock::Create(Ctx, "body", Kernel);
+    auto *ExitBB = BasicBlock::Create(Ctx, "exit", Kernel);
+
+    IRBuilder<> B(EntryBB);
+    auto *Gid32 = B.CreateAdd(
+        B.CreateMul(B.CreateCall(CtaidX, {}, "bid"),
+                    B.CreateCall(NtidX, {}, "bdim"), "gid_mul"),
+        B.CreateCall(TidX, {}, "tid"), "gid32");
+    B.CreateCondBr(B.CreateICmpULT(Gid32, Kernel->getArg(3), "in_range"), BodyBB,
+                   ExitBB);
+
+    B.SetInsertPoint(BodyBB);
+    auto *Gid64 = B.CreateZExt(Gid32, I64Ty, "gid");
+    auto *OffsetPtr =
+        B.CreateGEP(I64Ty, Kernel->getArg(1), {Gid64}, "offset_ptr", true);
+    auto *Offset = B.CreateAlignedLoad(I64Ty, OffsetPtr, Align(8), "off");
+    auto *ValuePtr =
+        B.CreateGEP(I8Ty, Kernel->getArg(2), {Gid64}, "value_ptr", true);
+    auto *Value = B.CreateAlignedLoad(I8Ty, ValuePtr, Align(1), "value");
+    auto *Dst = B.CreateGEP(I8Ty, Kernel->getArg(0), {Offset}, "dst", true);
+    B.CreateAlignedStore(Value, Dst, Align(1));
+    B.CreateBr(ExitBB);
+
+    B.SetInsertPoint(ExitBB);
+    B.CreateRetVoid();
+
+    M.getOrInsertNamedMetadata("nvvm.annotations")->addOperand(
+        MDNode::get(Ctx, {ValueAsMetadata::get(Kernel),
+                          MDString::get(Ctx, "kernel"),
+                          ConstantAsMetadata::get(ConstantInt::get(I32Ty, 1))}));
+}
+
 static Function *createPhaseLoopWrapper(Module &M, StringRef WrapperName, Function *PhaseFn,
                                         unsigned MaxIters = 100) {
     if (!PhaseFn || PhaseFn->arg_size() != 1)
@@ -1565,6 +1621,7 @@ int main(int argc, char **argv) {
 
     injectBatchKernel(*M, "vl_eval_batch_gpu", ArrayRef(&EvalFn, 1), StorageSize, VlOff,
                       FakeSymsBuf);
+    injectResidentPatchScheduleKernel(*M);
 
     if (KernelSplit == "phases") {
         SmallVector<KernelManifestEntry, 8> Manifest;

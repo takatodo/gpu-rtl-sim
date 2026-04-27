@@ -286,12 +286,12 @@ def main() -> None:
         action="store_true",
         help=(
             "Keep batched state resident on device across repeated eval steps. "
-            "Rejects --patch and --patch-script until resident patch semantics are defined."
+            "Rejects argv --patch; --patch-script is uploaded once as a device-resident schedule."
         ),
     )
     args = p.parse_args()
-    if args.resident_steps and (args.patch or args.patch_script):
-        p.error("--resident-steps rejects --patch and --patch-script")
+    if args.resident_steps and args.patch:
+        p.error("--resident-steps rejects --patch; use --patch-script for a resident schedule")
     launch_sequence = None
     cubin_override = _parse_path_list(args.cubins)
     cubin_paths: list[Path]

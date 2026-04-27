@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "name": "resident_patch_script_semantics",
-  "status": "defined_before_runtime_implementation",
-  "purpose": "Define resident-mode patch/script semantics before allowing changing-input workloads to use --resident-steps.",
-  "weakest_point": "The current resident mode keeps state on device across eval steps, but it rejects --patch and --patch-script because the existing patch path performs per-step host-device copies.",
+  "status": "packaged_bounded_tlul_fifo_sync_512x32_gpu_win",
+  "purpose": "Define and implement resident-mode patch/script semantics before allowing changing-input workloads to claim throughput.",
+  "weakest_point": "The resident changing-input GPU and matching CPU gates pass with a bounded 512x32 GPU win, but this does not imply broad target-breadth or full RTL application throughput.",
   "accepted_semantics": {
     "state_residency": "The full state array remains device-resident across all resident eval steps.",
     "initial_state_upload": "The optional init-state upload is performed once before the resident loop begins.",
@@ -24,8 +24,8 @@
     "offset_scope": "global_byte_offset is relative to the full device storage buffer, matching the current --patch syntax."
   },
   "implementation_policy": {
-    "phase_1": "Keep rejecting --patch and --patch-script with --resident-steps until the device schedule ABI is implemented.",
-    "phase_2": "Allow --resident-steps with --patch-script only after the schedule is uploaded once before launch.",
+    "phase_1": "Keep rejecting direct --patch with --resident-steps because it is still a host argv per-step patch interface.",
+    "phase_2": "Allow --resident-steps with --patch-script by uploading the schedule once before launch and applying records with vl_apply_patch_schedule_gpu.",
     "phase_3": "Consider direct --patch with --resident-steps only as a one-step schedule shorthand.",
     "forbidden": [
       "per-step host-device patch copies in resident mode",
@@ -33,5 +33,5 @@
       "claiming resident changing-input throughput before a matching CPU baseline exists"
     ]
   },
-  "next_action": "implement_resident_patch_schedule_upload"
+  "next_action": "select_next_resident_patch_schedule_breadth_or_commit"
 }

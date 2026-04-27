@@ -14,11 +14,13 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <exception>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <chrono>
@@ -105,8 +107,16 @@ struct ProbeConfig {
   std::string edge_state_dir;
   uint32_t raw_root_eval_steps = 0;
   std::string raw_root_eval_state_out;
+  std::string patch_script;
   std::vector<std::pair<std::string, uint32_t>> sets;
 };
+
+struct BytePatch {
+  size_t global_offset = 0;
+  uint8_t value = 0;
+};
+
+using PatchStep = std::vector<BytePatch>;
 
 struct EdgeSummary {
   uint32_t index = 0;
@@ -199,6 +209,88 @@ std::vector<uint32_t> parse_clock_sequence(const std::string& raw) {
   return sequence;
 }
 
+BytePatch parse_byte_patch(const std::string& token) {
+  const size_t colon = token.find(':');
+  if (colon == std::string::npos || colon == 0 || colon + 1 >= token.size()) {
+    fail("bad patch token: " + token + " (want global_offset:byte)");
+  }
+  char* end = nullptr;
+  const unsigned long long offset = std::strtoull(token.substr(0, colon).c_str(), &end, 0);
+  if (end == nullptr || *end != '\0') {
+    fail("bad patch offset: " + token);
+  }
+  end = nullptr;
+  const unsigned long value = std::strtoul(token.substr(colon + 1).c_str(), &end, 0);
+  if (end == nullptr || *end != '\0' || value > 255UL) {
+    fail("bad patch byte: " + token);
+  }
+  return BytePatch{static_cast<size_t>(offset), static_cast<uint8_t>(value)};
+}
+
+std::vector<PatchStep> load_patch_script(const std::string& path) {
+  std::ifstream fp(path);
+  if (!fp) fail("failed to open --patch-script " + path);
+  std::vector<PatchStep> steps;
+  std::vector<PatchStep> repeat_body;
+  bool in_repeat = false;
+  uint32_t repeat_count = 0;
+  std::string line;
+  while (std::getline(fp, line)) {
+    const size_t comment = line.find('#');
+    if (comment != std::string::npos) line.resize(comment);
+    std::istringstream iss(line);
+    std::string token;
+    if (!(iss >> token)) continue;
+    if (token == "@repeat-seq") {
+      if (in_repeat) fail("nested @repeat-seq is not supported");
+      if (!(iss >> repeat_count) || repeat_count == 0U) {
+        fail("@repeat-seq requires a positive count");
+      }
+      std::string extra;
+      if (iss >> extra) fail("@repeat-seq accepts exactly one count");
+      in_repeat = true;
+      repeat_body.clear();
+      continue;
+    }
+    if (token == "@end-repeat-seq") {
+      if (!in_repeat) fail("@end-repeat-seq without @repeat-seq");
+      for (uint32_t repeat = 0; repeat < repeat_count; ++repeat) {
+        steps.insert(steps.end(), repeat_body.begin(), repeat_body.end());
+      }
+      in_repeat = false;
+      repeat_count = 0;
+      repeat_body.clear();
+      continue;
+    }
+    PatchStep step;
+    if (token != "-") {
+      step.push_back(parse_byte_patch(token));
+      while (iss >> token) {
+        step.push_back(parse_byte_patch(token));
+      }
+    }
+    if (in_repeat) {
+      repeat_body.push_back(step);
+    } else {
+      steps.push_back(step);
+    }
+  }
+  if (in_repeat) fail("unterminated @repeat-seq in --patch-script");
+  if (steps.empty()) fail("--patch-script produced zero logical steps");
+  return steps;
+}
+
+void apply_patch_step(Root* root, const PatchStep& step) {
+  auto* storage = reinterpret_cast<uint8_t*>(root);
+  const size_t total = sizeof(Root);
+  for (const auto& patch : step) {
+    if (patch.global_offset >= total) {
+      fail("patch offset exceeds CPU root storage size");
+    }
+    storage[patch.global_offset] = patch.value;
+  }
+}
+
 ProbeConfig parse_args(int argc, char** argv) {
   ProbeConfig cfg;
   for (int i = 1; i < argc; ++i) {
@@ -261,6 +353,11 @@ ProbeConfig parse_args(int argc, char** argv) {
       if (cfg.raw_root_eval_state_out.empty()) fail("missing value for --raw-root-eval-state-out");
       continue;
     }
+    if (arg == "--patch-script") {
+      cfg.patch_script = (i + 1) < argc ? argv[++i] : "";
+      if (cfg.patch_script.empty()) fail("missing value for --patch-script");
+      continue;
+    }
     if (arg == "--set") {
       if ((i + 1) >= argc) fail("missing value for --set");
       cfg.sets.push_back(parse_setting(argv[++i]));
@@ -276,6 +373,7 @@ ProbeConfig parse_args(int argc, char** argv) {
           << "                             [--memory-image path]\n"
           << "                             [--clock-sequence 1,0,...] [--edge-state-dir path]\n"
           << "                             [--raw-root-eval-steps N]\n"
+          << "                             [--patch-script path]\n"
           << "                             [--raw-root-eval-state-out path]\n";
       std::exit(0);
     }
@@ -293,6 +391,9 @@ ProbeConfig parse_args(int argc, char** argv) {
   }
   if (!cfg.repeat_states_requested && cfg.repeat_eval_steps > 1U) {
     fail("--repeat-eval-steps requires --repeat-states");
+  }
+  if (!cfg.patch_script.empty() && !cfg.repeat_states_requested) {
+    fail("--patch-script requires --repeat-states");
   }
   if (cfg.raw_root_eval_steps != 0U && cfg.raw_root_eval_state_out.empty()) {
     fail("--raw-root-eval-steps requires --raw-root-eval-state-out");
@@ -789,6 +890,11 @@ ProbeSummary run_one_probe_state(const ProbeConfig& cfg, int argc, char** argv) 
   if (!cfg.memory_image.empty()) {
     preload_memory_image(root, cfg.memory_image);
   }
+  const std::vector<PatchStep> patch_steps =
+      cfg.patch_script.empty() ? std::vector<PatchStep>() : load_patch_script(cfg.patch_script);
+  if (!patch_steps.empty() && patch_steps.size() != cfg.repeat_eval_steps) {
+    fail("--patch-script logical step count must match --repeat-eval-steps");
+  }
 
   root->ROOT_CLK_FIELD = 0U;
   root->ROOT_RST_FIELD = HOST_RESET_CONTROL ? ROOT_RST_ASSERTED_VALUE : ROOT_RST_DEASSERTED_VALUE;
@@ -814,9 +920,17 @@ ProbeSummary run_one_probe_state(const ProbeConfig& cfg, int argc, char** argv) 
         static_cast<int>(cfg.post_reset_cycles * 2U));
   }
 
-  for (uint32_t step = 1; step < cfg.repeat_eval_steps; ++step) {
-    model.eval_step();
-    summary.drained_events += 1;
+  if (!patch_steps.empty()) {
+    for (const auto& step : patch_steps) {
+      apply_patch_step(root, step);
+      model.eval_step();
+      summary.drained_events += 1;
+    }
+  } else {
+    for (uint32_t step = 1; step < cfg.repeat_eval_steps; ++step) {
+      model.eval_step();
+      summary.drained_events += 1;
+    }
   }
 
   summary.sim_time = context.time();

@@ -21,6 +21,10 @@ VEER_EL2_LARGER_CPU_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_cp
 VEER_EL2_TEMPLATE = REPO_ROOT / "config" / "slice_launch_templates" / "veer_el2.json"
 VEER_EL2_ASSETS = REPO_ROOT / "third_party" / "rtlmeter" / "designs" / "VeeR-EL2"
 RESIDENT_PATCH_SEMANTICS = REPO_ROOT / "config" / "resident_patch_script_semantics.json"
+RESIDENT_PATCH_GATE = REPO_ROOT / "config" / "scaling_gates" / "tlul_fifo_sync_resident_patch_schedule.json"
+RESIDENT_PATCH_CPU_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json"
+)
 TARGETS = REPO_ROOT / "config" / "targets.json"
 README = REPO_ROOT / "README.md"
 RUNTIME = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid.c"
@@ -45,7 +49,27 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             capture_output=True,
         )
         self.assertEqual(completed.returncode, 2)
-        self.assertIn("--resident-steps rejects --patch and --patch-script", completed.stderr)
+        self.assertIn("--resident-steps rejects --patch", completed.stderr)
+
+    def test_resident_steps_allows_patch_script_past_argparse(self) -> None:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(RUN_VL_HYBRID),
+                "--resident-steps",
+                "--patch-script",
+                "/no/such/script",
+                "--storage-size",
+                "1",
+                "--cubin",
+                "/no/such/file",
+            ],
+            cwd=REPO_ROOT,
+            text=True,
+            capture_output=True,
+        )
+        self.assertNotEqual(completed.returncode, 2)
+        self.assertIn("error: cubin not found", completed.stderr)
 
     def test_resident_gate_requires_resident_steps_for_every_run(self) -> None:
         gate = json.loads(RESIDENT_GATE.read_text(encoding="utf-8"))
@@ -115,19 +139,65 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("RUN_VL_HYBRID_RESIDENT_STEPS", runtime)
         self.assertIn('printf("resident_mode: %s\\n"', runtime)
 
-    def test_resident_patch_script_semantics_are_defined_before_implementation(self) -> None:
+    def test_resident_patch_script_semantics_are_implemented_before_validation(self) -> None:
         semantics = json.loads(RESIDENT_PATCH_SEMANTICS.read_text(encoding="utf-8"))
         self.assertEqual(semantics["name"], "resident_patch_script_semantics")
-        self.assertEqual(semantics["status"], "defined_before_runtime_implementation")
+        self.assertEqual(semantics["status"], "packaged_bounded_tlul_fifo_sync_512x32_gpu_win")
         self.assertEqual(
             semantics["accepted_semantics"]["per_step_host_copy"],
             "No cuMemcpyHtoD patch copy may occur inside the resident step loop.",
         )
         self.assertEqual(
             semantics["implementation_policy"]["phase_1"],
-            "Keep rejecting --patch and --patch-script with --resident-steps until the device schedule ABI is implemented.",
+            "Keep rejecting direct --patch with --resident-steps because it is still a host argv per-step patch interface.",
         )
-        self.assertEqual(semantics["next_action"], "implement_resident_patch_schedule_upload")
+        self.assertEqual(semantics["next_action"], "select_next_resident_patch_schedule_breadth_or_commit")
+
+    def test_resident_patch_schedule_kernel_contract_is_present(self) -> None:
+        runtime = RUNTIME.read_text(encoding="utf-8")
+        generator = (REPO_ROOT / "src" / "tools" / "gen_vl_gpu_kernel.py").read_text(
+            encoding="utf-8"
+        )
+        cpp_generator = (REPO_ROOT / "src" / "passes" / "vlgpugen.cpp").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("vl_apply_patch_schedule_gpu", generator)
+        self.assertIn("vl_apply_patch_schedule_gpu", cpp_generator)
+        self.assertIn("resident_patch_schedule", runtime)
+        self.assertIn("cuMemcpyHtoD(resident_patch_schedule.d_offsets", runtime)
+        self.assertIn("launch_resident_patch_step", runtime)
+
+    def test_resident_patch_schedule_gate_is_defined(self) -> None:
+        gate = json.loads(RESIDENT_PATCH_GATE.read_text(encoding="utf-8"))
+        self.assertEqual(gate["gate"], "tlul_fifo_sync_resident_patch_schedule_validation")
+        self.assertEqual(gate["target"], "tlul_fifo_sync")
+        self.assertGreaterEqual(len(gate["runs"]), 2)
+        self.assertTrue(all(run.get("resident_steps") is True for run in gate["runs"]))
+        self.assertTrue(all("patch_script_lines" in run for run in gate["runs"]))
+
+    def test_scaling_runner_supports_inline_patch_script_gate_lines(self) -> None:
+        runner = (REPO_ROOT / "src" / "tools" / "run_tlul_fifo_sync_scaling_validation.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("patch_script_lines", runner)
+        self.assertIn("_patch_script_logical_steps", runner)
+        self.assertIn("--patch-script", runner)
+
+    def test_cpu_patch_schedule_baseline_gate_is_defined(self) -> None:
+        gate = json.loads(RESIDENT_PATCH_CPU_GATE.read_text(encoding="utf-8"))
+        self.assertEqual(gate["gate"], "tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule")
+        self.assertEqual(
+            gate["source_gpu_gate"], "config/scaling_gates/tlul_fifo_sync_resident_patch_schedule.json"
+        )
+        self.assertTrue(all("patch_script_lines" in run for run in gate["runs"]))
+        runner = (REPO_ROOT / "src" / "tools" / "run_tlul_fifo_sync_cpu_baseline.py").read_text(
+            encoding="utf-8"
+        )
+        probe = (REPO_ROOT / "src" / "hybrid" / "tlul_slice_host_probe.cpp").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("--patch-script", runner)
+        self.assertIn("--patch-script", probe)
 
     def test_readme_keeps_xuantie_boundary_limited(self) -> None:
         readme = README.read_text(encoding="utf-8")

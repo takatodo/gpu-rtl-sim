@@ -8,6 +8,7 @@ import json
 import statistics
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -131,6 +132,7 @@ def _run_exact_loop_case(
     steps = int(run_cfg["steps"])
     reset_cycles = int(run_cfg["reset_cycles"])
     post_reset_cycles = int(run_cfg["post_reset_cycles"])
+    patch_script_lines = run_cfg.get("patch_script_lines")
     cmd = [
         str(probe),
         "--reset-cycles",
@@ -142,7 +144,23 @@ def _run_exact_loop_case(
         "--repeat-eval-steps",
         str(steps),
     ]
-    completed = subprocess.run(cmd, text=True, capture_output=True)
+    patch_script_tmp: Path | None = None
+    if patch_script_lines is not None:
+        if not isinstance(patch_script_lines, list) or not all(
+            isinstance(line, str) for line in patch_script_lines
+        ):
+            raise SystemExit(f"error: {run_cfg['name']} patch_script_lines must be a list of strings")
+        fd, tmp_name = tempfile.mkstemp(prefix=f"{run_cfg['name']}_", suffix=".patch_script")
+        patch_script_tmp = Path(tmp_name)
+        with open(fd, "w", encoding="utf-8") as fp:
+            fp.write("\n".join(patch_script_lines))
+            fp.write("\n")
+        cmd.extend(["--patch-script", str(patch_script_tmp)])
+    try:
+        completed = subprocess.run(cmd, text=True, capture_output=True)
+    finally:
+        if patch_script_tmp is not None:
+            patch_script_tmp.unlink(missing_ok=True)
     parsed = _parse_probe_json(completed.stdout)
     elapsed_ms = float(parsed.get("elapsed_ms", 0.0)) if parsed else 0.0
     states_per_second = (
@@ -160,6 +178,7 @@ def _run_exact_loop_case(
         "reset_cycles": reset_cycles,
         "post_reset_cycles": post_reset_cycles,
         "returncode": completed.returncode,
+        "patch_script_line_count": len(patch_script_lines) if isinstance(patch_script_lines, list) else 0,
         "elapsed_ms": elapsed_ms,
         "states_per_second": states_per_second,
         "constructor_ok": constructor_ok,
