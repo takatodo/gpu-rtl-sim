@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  package_veer_el2_resident_patch_schedule_boundary
+  commit_veer_el2_resident_patch_schedule_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1190,6 +1190,28 @@ run_veer_el2_cpu_exact_loop_resident_patch_schedule_gate:
 package_veer_el2_resident_patch_schedule_boundary:
   goal: package the first non-TL-UL resident patch schedule boundary before broadening further
   weakest_point: the measured VeeR-EL2 win proves one non-TL-UL generated design shape, not broad target coverage.
+  accepted_claims:
+    - target: tlul_fifo_sync
+      shape: nstates=512 logical_patch_steps=32
+      gpu_over_cpu_throughput_ratio: 3.1160088024052413
+    - target: tlul_sink
+      shape: nstates=512 logical_patch_steps=32
+      gpu_over_cpu_throughput_ratio: 2.002480966457029
+    - target: veer_el2
+      shape: nstates=512 logical_patch_steps=32
+      gpu_over_cpu_throughput_ratio: 2.8489279680483475
+  non_claims:
+    - no broad non-TL-UL resident patch schedule breadth
+    - no broad VeeR family support
+    - no full RTL application throughput claim
+    - byte patch offsets are validation stimuli, not target program semantics
+    - small 1x6 smoke remains CPU-favorable on all measured patch-schedule seeds
+  status: done
+  next_action: commit_veer_el2_resident_patch_schedule_boundary
+
+commit_veer_el2_resident_patch_schedule_boundary:
+  goal: commit the packaged VeeR-EL2 resident patch schedule boundary before the next breadth experiment
+  weakest_point: without a commit boundary, the first non-TL-UL patch schedule claim can be mixed with later target-breadth attempts.
   status: next
   next_action: commit_veer_el2_resident_patch_schedule_boundary
 ```

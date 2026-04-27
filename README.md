@@ -39,13 +39,22 @@ See:
 ## Two-Seed Claim Boundary
 
 weakest_point:
-  the current evidence covers two OpenTitan TL-UL seeds only. It does not prove
-  full RTL application throughput, non-TL-UL generality, or raw byte equality.
+  resident patch schedule evidence now includes one non-TL-UL seed, but it does
+  not prove broad target-breadth, full RTL application throughput, or raw byte
+  equality.
 
 | Seed | Status | Accepted claim | Key ratio | Non-claim |
 | --- | --- | --- | --- | --- |
 | `tlul_fifo_sync` | CPU/GPU repeated-step comparison passes | GPU beats a single-process CPU repeated-`eval_step` loop for `nstates=512`, `steps=[1,8,32]` | `2.56x`, `5.30x`, `2.72x` | Not full timed-cycle equivalence or non-TL-UL generality |
 | `tlul_sink` | CPU/GPU repeated-step comparison passes | GPU beats a single-process CPU repeated-`eval_step` loop for `nstates=512`, `steps=[1,8,32]` | `5.22x`, `2.70x`, `6.09x` | Not full timed-cycle equivalence or non-TL-UL generality |
+
+Resident changing-input patch schedule boundary:
+
+| Seed | Status | Accepted claim | Key ratio | Non-claim |
+| --- | --- | --- | --- | --- |
+| `tlul_fifo_sync` | Patch schedule GPU/CPU gate passes | GPU resident patch schedule beats a single-process CPU changing-input loop for `nstates=512`, `logical_patch_steps=32` | `3.116x` | Not non-TL-UL breadth |
+| `tlul_sink` | Patch schedule GPU/CPU gate passes | GPU resident patch schedule beats a single-process CPU changing-input loop for `nstates=512`, `logical_patch_steps=32` | `2.002x` | Not non-TL-UL breadth |
+| `veer_el2` | Patch schedule GPU/CPU gate passes | GPU resident patch schedule beats a single-process CPU changing-input loop for `nstates=512`, `logical_patch_steps=32` | `2.849x` | Not broad VeeR family support or full RTL application throughput |
 
 ## XuanTie-E902 Resident Runtime Boundary
 
@@ -434,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  package_veer_el2_resident_patch_schedule_boundary
+  commit_veer_el2_resident_patch_schedule_boundary
 
 policy:
   - upload init-state once
@@ -465,7 +474,7 @@ accepted_claim:
   veer_el2:
     shape: nstates=512 logical_patch_steps=32
     gpu_over_cpu_throughput_ratio: 2.8489279680483475
-  boundary_status: measured_veer_el2_resident_patch_schedule_gpu_win
+  boundary_status: packaged_veer_el2_resident_patch_schedule_gpu_win
 
 next_candidate_order:
   - veer_el2

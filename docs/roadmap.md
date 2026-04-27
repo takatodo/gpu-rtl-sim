@@ -145,7 +145,8 @@ phase_3:
   define_veer_el2_resident_patch_schedule_gate: done
   run_veer_el2_resident_patch_schedule_gate: done_gpu_pass
   run_veer_el2_cpu_exact_loop_resident_patch_schedule_gate: done_gpu_win_at_512x32
-  package_veer_el2_resident_patch_schedule_boundary: next
+  package_veer_el2_resident_patch_schedule_boundary: done
+  commit_veer_el2_resident_patch_schedule_boundary: next
 ```
 
 ## acceptance
