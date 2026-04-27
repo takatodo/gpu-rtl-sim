@@ -170,7 +170,8 @@ phase_3:
   define_xuantie_e902_broader_memory_family_delta_gate: blocked_source_contract_gap
   document_xuantie_e902_non_iahb_memory_family_contract_gap: done
   select_post_xuantie_memory_gap_responsibility_axis: done_input_stream_delta_selected
-  define_xuantie_e902_input_stream_delta_contract: next
+  define_xuantie_e902_input_stream_delta_contract: rejected_no_distinct_source_contract
+  select_next_target_breadth_source_backed_contract: next
 ```
 
 ## acceptance

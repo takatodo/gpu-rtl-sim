@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_xuantie_e902_input_stream_delta_contract
+  select_next_target_breadth_source_backed_contract
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1597,12 +1597,28 @@ define_xuantie_e902_input_stream_delta_contract:
   source_boundary:
     reusable_contract: case.pat loaded through mem_inst_temp into x_iahb_mem_ctrl.ram0..3.mem
     forbidden_shortcut: hand-written generated root byte offsets without a program-image or stimulus-level source meaning
+  finding:
+    exposed_source_backed_input: case.pat program image only
+    rejection_reason: no distinct input/stimulus source was found beyond the existing program-image contract; adding another input_stream_delta gate would collapse into a renamed program-image byte mutation.
   acceptance:
     - define what input/stimulus source is being varied
     - prove the delta lowers through the existing named program-image mapping or explicitly reject the axis
     - only then add matching GPU and CPU exact-loop gate configs
+  status: rejected_no_distinct_source_contract
+  next_action: select_next_target_breadth_source_backed_contract
+
+select_next_target_breadth_source_backed_contract:
+  goal: select the next target only if it has a clearer source-backed input or memory contract than the blocked XuanTie-E902 followups
+  weakest_point: target breadth can become another target-count exercise unless the selected target has a source contract strong enough to support a meaningful GPU/CPU gate.
+  candidate_policy:
+    required: source-backed input/memory image or stimulus contract visible from checked-in RTL/test assets
+    reject: targets that only offer arbitrary generated root storage mutation
+  acceptance:
+    - name one next target candidate
+    - cite the source artifact that defines its input/memory/stimulus contract
+    - defer gate config creation until that contract is documented
   status: next
-  next_action: define_xuantie_e902_input_stream_delta_contract
+  next_action: select_next_target_breadth_source_backed_contract
 ```
 
 ## source_of_truth

@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  define_xuantie_e902_input_stream_delta_contract
+  select_next_target_breadth_source_backed_contract
 
 policy:
   - upload init-state once
@@ -500,7 +500,7 @@ next_candidate_order:
   - input_stream_delta
   - target_breadth
 selected_next_axis:
-  input_stream_delta
+  target_breadth
 
 non_claims:
   - not broad non-TL-UL resident patch schedule breadth
