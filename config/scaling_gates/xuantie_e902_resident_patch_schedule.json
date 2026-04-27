@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "gate": "xuantie_e902_resident_patch_schedule_validation",
+  "target": "xuantie_e902",
+  "source_contract": "config/resident_patch_script_semantics.json",
+  "source_launch_template": "config/slice_launch_templates/xuantie_e902.json",
+  "purpose": "Validate a second non-TL-UL changing-input resident patch schedule path without per-step host-device patch copies.",
+  "preconditions": [
+    "config/scaling_gates/xuantie_e902_memory_resident_workload.json passes",
+    "src/passes/vlgpugen emits vl_apply_patch_schedule_gpu",
+    "src/hybrid/run_vl_hybrid accepts --resident-steps with --patch-script",
+    "artifacts/xuantie_e902_obj_dir/vl_batch_gpu.cubin exists",
+    "artifacts/ and reports/ are ignored generated outputs"
+  ],
+  "runs": [
+    {
+      "name": "xuantie_e902_resident_patch_schedule_smoke_1x6",
+      "nstates": 1,
+      "steps": 1,
+      "resident_steps": true,
+      "required": true,
+      "patch_script_lines": [
+        "0:1",
+        "-",
+        "@repeat-seq 2",
+        "1:2",
+        "-",
+        "@end-repeat-seq"
+      ]
+    },
+    {
+      "name": "xuantie_e902_resident_patch_schedule_batch_128x32",
+      "nstates": 128,
+      "steps": 1,
+      "resident_steps": true,
+      "required": true,
+      "patch_script_lines": [
+        "0:1",
+        "-",
+        "@repeat-seq 15",
+        "1:2",
+        "-",
+        "@end-repeat-seq"
+      ]
+    }
+  ],
+  "correctness_policy": {
+    "resident_gpu_runs": [
+      "run exits with status 0",
+      "stdout reports resident_mode: true",
+      "stdout reports resident_patch_schedule",
+      "dumped state byte size equals storage_size * nstates when dump is requested"
+    ],
+    "non_claims": [
+      "no CPU/GPU equality claim for changing-input patch schedules yet",
+      "no speedup claim until a matching CPU changing-input baseline is defined",
+      "byte patch offsets are validation stimuli and not XuanTie ISA/program semantics"
+    ]
+  },
+  "performance_policy": {
+    "record": [
+      "nstates",
+      "logical patch-script steps",
+      "elapsed_ms",
+      "state_steps_per_second"
+    ],
+    "non_claims": [
+      "the 1x6 smoke only proves runtime wiring",
+      "the 128x32 run is a bounded validation shape, not an accepted speedup claim",
+      "not proof of broad XuanTie family support",
+      "not a full RTL application throughput claim"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/xuantie_e902_resident_patch_schedule.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "define_xuantie_e902_cpu_exact_loop_resident_patch_schedule_gate",
+  "next_action_on_fail": "diagnose_xuantie_e902_resident_patch_schedule_failure"
+}

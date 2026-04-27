@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  select_next_patch_schedule_breadth_after_veer_el2
+  run_xuantie_e902_resident_patch_schedule_gate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1227,8 +1227,25 @@ select_next_patch_schedule_breadth_after_veer_el2:
       reason: move beyond arbitrary root byte patches toward meaningful input/ROM/program-driven state changes
       next_action: define_application_like_patch_schedule_semantics
   recommended_next: define_xuantie_e902_resident_patch_schedule_gate
-  status: next
+  selected: xuantie_e902
+  status: done
   next_action: define_xuantie_e902_resident_patch_schedule_gate
+
+define_xuantie_e902_resident_patch_schedule_gate:
+  goal: define XuanTie-E902 GPU and matching CPU exact-loop resident patch schedule gates without adding new runner logic
+  weakest_point: the gate uses byte-offset patch stimuli; it has not yet run and does not prove XuanTie program semantics.
+  gpu_gate: config/scaling_gates/xuantie_e902_resident_patch_schedule.json
+  cpu_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_resident_patch_schedule.json
+  gpu_report: reports/xuantie_e902_resident_patch_schedule.json
+  cpu_report: reports/xuantie_e902_cpu_exact_loop_resident_patch_schedule.json
+  status: done
+  next_action: run_xuantie_e902_resident_patch_schedule_gate
+
+run_xuantie_e902_resident_patch_schedule_gate:
+  goal: run the second non-TL-UL resident changing-input patch schedule GPU gate on XuanTie-E902
+  weakest_point: until the XuanTie-E902 gate runs, the third design-family patch schedule breadth point is only defined, not measured.
+  status: next
+  next_action: run_xuantie_e902_resident_patch_schedule_gate
 ```
 
 ## source_of_truth

@@ -147,7 +147,9 @@ phase_3:
   run_veer_el2_cpu_exact_loop_resident_patch_schedule_gate: done_gpu_win_at_512x32
   package_veer_el2_resident_patch_schedule_boundary: done
   commit_veer_el2_resident_patch_schedule_boundary: done_5697daa
-  select_next_patch_schedule_breadth_after_veer_el2: next
+  select_next_patch_schedule_breadth_after_veer_el2: done_xuantie_e902
+  define_xuantie_e902_resident_patch_schedule_gate: done
+  run_xuantie_e902_resident_patch_schedule_gate: next
 ```
 
 ## acceptance

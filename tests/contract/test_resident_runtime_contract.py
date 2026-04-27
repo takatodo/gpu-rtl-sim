@@ -35,6 +35,10 @@ TLUL_SINK_RESIDENT_PATCH_GATE = (
 TLUL_SINK_RESIDENT_PATCH_CPU_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "tlul_sink_cpu_exact_loop_resident_patch_schedule.json"
 )
+XUANTIE_E902_PATCH_GATE = REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_resident_patch_schedule.json"
+XUANTIE_E902_PATCH_CPU_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_cpu_exact_loop_resident_patch_schedule.json"
+)
 TARGETS = REPO_ROOT / "config" / "targets.json"
 README = REPO_ROOT / "README.md"
 RUNTIME = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid.c"
@@ -234,9 +238,27 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertTrue(all("patch_script_lines" in run for run in gpu_gate["runs"]))
         self.assertTrue(all("patch_script_lines" in run for run in cpu_gate["runs"]))
 
+    def test_xuantie_e902_resident_patch_schedule_gate_is_defined(self) -> None:
+        gpu_gate = json.loads(XUANTIE_E902_PATCH_GATE.read_text(encoding="utf-8"))
+        cpu_gate = json.loads(XUANTIE_E902_PATCH_CPU_GATE.read_text(encoding="utf-8"))
+        self.assertEqual(gpu_gate["gate"], "xuantie_e902_resident_patch_schedule_validation")
+        self.assertEqual(gpu_gate["target"], "xuantie_e902")
+        self.assertEqual(
+            cpu_gate["source_gpu_gate"],
+            "config/scaling_gates/xuantie_e902_resident_patch_schedule.json",
+        )
+        self.assertEqual(gpu_gate["artifacts"]["report"], "reports/xuantie_e902_resident_patch_schedule.json")
+        self.assertEqual(
+            cpu_gate["artifacts"]["report"],
+            "reports/xuantie_e902_cpu_exact_loop_resident_patch_schedule.json",
+        )
+        self.assertTrue(all(run.get("resident_steps") is True for run in gpu_gate["runs"]))
+        self.assertTrue(all("patch_script_lines" in run for run in gpu_gate["runs"]))
+        self.assertTrue(all("patch_script_lines" in run for run in cpu_gate["runs"]))
+
     def test_selection_advances_after_two_seed_boundary_commit(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
-        self.assertEqual(selection["current_priority"], "select_next_patch_schedule_breadth_after_veer_el2")
+        self.assertEqual(selection["current_priority"], "run_xuantie_e902_resident_patch_schedule_gate")
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
             "committed_veer_el2_resident_patch_schedule_gpu_win",

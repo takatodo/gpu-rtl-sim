@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  select_next_patch_schedule_breadth_after_veer_el2
+  run_xuantie_e902_resident_patch_schedule_gate
 
 policy:
   - upload init-state once
@@ -459,6 +459,8 @@ source_of_truth:
   - config/scaling_gates/tlul_sink_cpu_exact_loop_resident_patch_schedule.json
   - config/scaling_gates/veer_el2_resident_patch_schedule.json
   - config/scaling_gates/veer_el2_cpu_exact_loop_resident_patch_schedule.json
+  - config/scaling_gates/xuantie_e902_resident_patch_schedule.json
+  - config/scaling_gates/xuantie_e902_cpu_exact_loop_resident_patch_schedule.json
 ```
 
 Current bounded resident changing-input result:
@@ -477,7 +479,6 @@ accepted_claim:
   boundary_status: committed_veer_el2_resident_patch_schedule_gpu_win
 
 next_candidate_order:
-  - xuantie_e902
   - application_like_patch_semantics
 
 non_claims:
