@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "package_xuantie_e902_named_rom_memory_mapping_boundary",
+  "current_priority": "define_xuantie_e902_program_image_delta_gate",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -82,6 +82,9 @@
   "named_rom_memory_symbol_mapping_gpu_report": "reports/xuantie_e902_named_rom_memory_mapping.json",
   "named_rom_memory_symbol_mapping_cpu_report": "reports/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json",
   "named_rom_memory_symbol_mapping_batch_128x32_gpu_over_cpu_ratio": 2.0903639153360194,
+  "named_rom_memory_symbol_mapping_boundary_status": "packaged_xuantie_e902_named_mapping_gpu_win",
+  "next_application_like_semantics_axis": "program_image_delta",
+  "program_image_delta_status": "selected_next",
   "named_rom_memory_symbol_mapping_contract": {
     "selected_family": "iahb_instruction_memory",
     "source_rtl": "third_party/rtlmeter/designs/XuanTie-E902/src/tb.v",

@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  package_xuantie_e902_named_rom_memory_mapping_boundary
+  define_xuantie_e902_program_image_delta_gate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1476,12 +1476,30 @@ package_xuantie_e902_named_rom_memory_mapping_boundary:
   weakest_point: the result is still one target and one instruction-memory family, so it should not be generalized to all XuanTie memory regions.
   source_gpu_report: reports/xuantie_e902_named_rom_memory_mapping.json
   source_cpu_report: reports/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json
+  packaged_claim:
+    xuantie_e902_named_rom_memory_mapping_batch_128x32: 2.0903639153360194
+  selected_next_axis: program_image_delta
+  selection_reason: program-image deltas are the smallest semantic step after case.pat IAHB instruction-memory mapping; input-stream deltas would require a different target IO contract first.
   acceptance:
     - summarize the named mapping win and non-claims
     - keep the generated reports as artifacts, not source of truth
     - choose whether the next axis is input_stream_delta, program_image_delta, or broader target/memory-family coverage
+  status: done
+  next_action: define_xuantie_e902_program_image_delta_gate
+
+define_xuantie_e902_program_image_delta_gate:
+  goal: define the next application-like resident schedule gate as a bounded XuanTie-E902 program-image delta workload
+  weakest_point: a program-image delta can still be only a memory-image mutation unless the gate states how bytes map to an executable program image and keeps ISA/program-correctness as a non-claim.
+  source_mapping_boundary: package_xuantie_e902_named_rom_memory_mapping_boundary
+  source_gpu_report: reports/xuantie_e902_named_rom_memory_mapping.json
+  source_cpu_report: reports/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json
+  acceptance:
+    - define GPU and CPU gate configs from program-image deltas, not raw root byte offsets
+    - preserve generated root field offsets as lowering output, not hand-authored source
+    - keep one-time schedule upload and no per-step host-device patch copies
+    - state non-claims for ISA correctness, full software boot, and broad XuanTie coverage
   status: next
-  next_action: package_xuantie_e902_named_rom_memory_mapping_boundary
+  next_action: define_xuantie_e902_program_image_delta_gate
 ```
 
 ## source_of_truth
