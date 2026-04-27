@@ -193,5 +193,13 @@
   "source_backed_program_image_initialization_source": "case.pat loaded through mem_inst_temp",
   "source_backed_program_image_initialization_selected_family": "iahb_instruction_memory",
   "source_backed_program_image_initialization_non_claim": "not broad ROM initialization, not x_smem/x_dmem coverage, not ISA correctness, and not full software boot correctness",
-  "source_backed_program_image_initialization_next_action": "implement_xuantie_e902_program_image_initialization_construction"
+  "source_backed_program_image_initialization_next_action": "extract_xuantie_e902_program_image_initialization_inputs",
+  "source_backed_program_image_initialization_task_ladder": [
+    "extract_xuantie_e902_program_image_initialization_inputs",
+    "define_program_image_initialization_record_format",
+    "implement_program_image_initialization_kernel_and_host_flag",
+    "validate_program_image_initialization_against_cpu_constructed_state",
+    "measure_program_image_initialization_upload_reduction"
+  ],
+  "source_backed_program_image_initialization_current_blocker": "runtime does not yet have compact case.pat word/lane input records or a GPU kernel that writes x_iahb_mem_ctrl.ram0..3.mem before resident eval"
 }

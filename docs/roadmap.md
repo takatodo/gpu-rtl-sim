@@ -181,7 +181,12 @@ phase_3:
   define_device_side_init_state_replication_gate: done_gate_passed
   select_next_gpu_owned_state_construction_step: done_source_backed_program_image_initialization_selected
   define_xuantie_e902_program_image_initialization_construction_gate: done_gate_defined
-  implement_xuantie_e902_program_image_initialization_construction: next
+  implement_xuantie_e902_program_image_initialization_construction: planned_task_ladder_defined
+  extract_xuantie_e902_program_image_initialization_inputs: next
+  define_program_image_initialization_record_format: pending
+  implement_program_image_initialization_kernel_and_host_flag: pending
+  validate_program_image_initialization_against_cpu_constructed_state: pending
+  measure_program_image_initialization_upload_reduction: pending
 ```
 
 ## acceptance

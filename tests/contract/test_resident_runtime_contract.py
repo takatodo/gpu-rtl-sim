@@ -528,8 +528,17 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "implement_xuantie_e902_program_image_initialization_construction",
+            "extract_xuantie_e902_program_image_initialization_inputs",
         )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_task_ladder"][0],
+            "extract_xuantie_e902_program_image_initialization_inputs",
+        )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_task_ladder"][-1],
+            "measure_program_image_initialization_upload_reduction",
+        )
+        self.assertIn("compact case.pat", selection["source_backed_program_image_initialization_current_blocker"])
         self.assertEqual(
             selection["larger_resident_schedule_envelope_gate"],
             "config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json",

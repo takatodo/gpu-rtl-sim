@@ -464,7 +464,14 @@ next_gpu_owned_state_construction_step:
   gate: config/scaling_gates/xuantie_e902_program_image_initialization_construction.json
   source: case.pat loaded through mem_inst_temp
   selected_family: iahb_instruction_memory
-  status: gate_defined_runtime_not_implemented
+  status: planned_task_ladder_defined
+  next: extract_xuantie_e902_program_image_initialization_inputs
+  task_ladder:
+    - extract_xuantie_e902_program_image_initialization_inputs
+    - define_program_image_initialization_record_format
+    - implement_program_image_initialization_kernel_and_host_flag
+    - validate_program_image_initialization_against_cpu_constructed_state
+    - measure_program_image_initialization_upload_reduction
   non_claim: not broad ROM initialization, not x_smem/x_dmem coverage, not ISA correctness, and not full software boot correctness
 
 policy:

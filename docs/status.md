@@ -1798,7 +1798,35 @@ define_xuantie_e902_program_image_initialization_construction_gate:
     - not ISA correctness
     - not full software boot correctness
   status: done_gate_defined
-  next_action: implement_xuantie_e902_program_image_initialization_construction
+  next_action: extract_xuantie_e902_program_image_initialization_inputs
+
+implement_xuantie_e902_program_image_initialization_construction:
+  goal: implement source-backed XuanTie-E902 case.pat / IAHB program-image construction on GPU before resident eval
+  weakest_point: the boundary is scoped, but the runtime still lacks compact program-image input records and a kernel that materializes x_iahb_mem_ctrl.ram0..3.mem from those records.
+  task_ladder:
+    - extract_xuantie_e902_program_image_initialization_inputs:
+        purpose: identify the smallest source-backed record set from case.pat word/lane data and generated root field offsets
+        output: a contract for compact records, not another raw full-state image
+    - define_program_image_initialization_record_format:
+        purpose: specify word_index, lane, byte_value, target root offset, and batch/state replication semantics
+        output: reusable host/GPU ABI shape for this construction boundary
+    - implement_program_image_initialization_kernel_and_host_flag:
+        purpose: add GPU-side materialization before resident eval without broad ROM/memory claims
+        output: runtime path guarded by an explicit flag
+    - validate_program_image_initialization_against_cpu_constructed_state:
+        purpose: compare CPU/source-backed construction and GPU/device-side construction under normalized_final_state_equivalence
+        output: reports/xuantie_e902_program_image_initialization_construction.json
+    - measure_program_image_initialization_upload_reduction:
+        purpose: separate construction upload traffic from resident eval throughput
+        output: bounded communication-reduction claim for the selected XuanTie-E902 IAHB family
+  current_blocker: runtime does not yet have compact case.pat word/lane input records or a GPU kernel that writes x_iahb_mem_ctrl.ram0..3.mem before resident eval.
+  non_claims:
+    - not broad ROM initialization
+    - not x_smem_ctrl or x_dmem_ctrl coverage
+    - not ISA correctness
+    - not full software boot correctness
+  status: planned_task_ladder_defined
+  next_action: extract_xuantie_e902_program_image_initialization_inputs
 ```
 
 ## source_of_truth
