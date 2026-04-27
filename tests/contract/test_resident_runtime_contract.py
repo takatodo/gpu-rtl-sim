@@ -13,6 +13,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RUN_VL_HYBRID = REPO_ROOT / "src" / "tools" / "run_vl_hybrid.py"
+GPU_SCALING_RUNNER = REPO_ROOT / "src" / "tools" / "run_tlul_fifo_sync_scaling_validation.py"
+CPU_BASELINE_RUNNER = REPO_ROOT / "src" / "tools" / "run_tlul_fifo_sync_cpu_baseline.py"
+NAMED_PATCH_LOWERING = REPO_ROOT / "src" / "tools" / "named_patch_lowering.py"
 RESIDENT_GATE = REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_memory_resident_workload.json"
 VEER_EL2_RESIDENT_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_resident_workload.json"
 VEER_EL2_CPU_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_cpu_exact_loop_resident_workload.json"
@@ -299,9 +302,22 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertTrue(all("named_patch_delta_sequence" in run for run in gpu_gate["runs"]))
         self.assertTrue(all("named_patch_delta_sequence" in run for run in cpu_gate["runs"]))
 
+    def test_named_rom_memory_mapping_lowering_is_wired_into_runners(self) -> None:
+        lowering = NAMED_PATCH_LOWERING.read_text(encoding="utf-8")
+        gpu_runner = GPU_SCALING_RUNNER.read_text(encoding="utf-8")
+        cpu_runner = CPU_BASELINE_RUNNER.read_text(encoding="utf-8")
+        self.assertIn("probe_root_layout", lowering)
+        self.assertIn("named_patch_delta_sequence", lowering)
+        self.assertIn("x_iahb_mem_ctrl__DOT__{lane}__DOT__mem", lowering)
+        self.assertIn("_repeated_to_(?P<steps>\\d+)_logical_steps", lowering)
+        self.assertIn("resolve_patch_script_lines", gpu_runner)
+        self.assertIn("patch_script_lowering", gpu_runner)
+        self.assertIn("resolve_patch_script_lines", cpu_runner)
+        self.assertIn("patch_script_lowering", cpu_runner)
+
     def test_selection_advances_after_two_seed_boundary_commit(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
-        self.assertEqual(selection["current_priority"], "implement_xuantie_e902_named_rom_memory_mapping_lowering")
+        self.assertEqual(selection["current_priority"], "package_xuantie_e902_named_rom_memory_mapping_boundary")
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
             "committed_veer_el2_resident_patch_schedule_gpu_win",
@@ -323,7 +339,15 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "committed_xuantie_e902_rom_memory_delta_patch_schedule_gpu_win",
         )
         self.assertEqual(selection["next_rom_memory_precision_axis"], "named_rom_memory_symbol_mapping")
-        self.assertEqual(selection["named_rom_memory_symbol_mapping_status"], "gates_defined_lowering_required")
+        self.assertEqual(selection["named_rom_memory_symbol_mapping_status"], "gpu_cpu_named_mapping_gates_passed")
+        self.assertEqual(
+            selection["named_rom_memory_symbol_mapping_gpu_report"],
+            "reports/xuantie_e902_named_rom_memory_mapping.json",
+        )
+        self.assertEqual(
+            selection["named_rom_memory_symbol_mapping_cpu_report"],
+            "reports/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json",
+        )
         self.assertEqual(
             selection["named_rom_memory_symbol_mapping_contract"]["selected_family"],
             "iahb_instruction_memory",

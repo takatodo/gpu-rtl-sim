@@ -162,7 +162,8 @@ phase_3:
   define_named_rom_memory_symbol_mapping_gate: done_candidate_fields_inspected
   define_xuantie_e902_named_rom_memory_mapping_contract: done_contract_defined
   define_xuantie_e902_named_rom_memory_mapping_gate: done_gates_defined
-  implement_xuantie_e902_named_rom_memory_mapping_lowering: next
+  implement_xuantie_e902_named_rom_memory_mapping_lowering: done_gpu_cpu_pass
+  package_xuantie_e902_named_rom_memory_mapping_boundary: next
 ```
 
 ## acceptance

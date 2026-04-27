@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  implement_xuantie_e902_named_rom_memory_mapping_lowering
+  package_xuantie_e902_named_rom_memory_mapping_boundary
 
 policy:
   - upload init-state once
@@ -486,11 +486,13 @@ accepted_claim:
   xuantie_e902_rom_memory_delta:
     shape: nstates=128 logical_patch_steps=32
     gpu_over_cpu_throughput_ratio: 1.442536802751107
+  xuantie_e902_named_rom_memory_mapping:
+    shape: nstates=128 logical_patch_steps=32
+    gpu_over_cpu_throughput_ratio: 2.0903639153360194
   boundary_status: committed_xuantie_e902_rom_memory_delta_patch_schedule_gpu_win
 
 next_candidate_order:
-  - implement_xuantie_e902_named_rom_memory_mapping_lowering
-  - run_xuantie_e902_named_rom_memory_mapping_gate
+  - package_xuantie_e902_named_rom_memory_mapping_boundary
   - input_stream_delta
   - program_image_delta
 

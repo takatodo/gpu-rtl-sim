@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  implement_xuantie_e902_named_rom_memory_mapping_lowering
+  package_xuantie_e902_named_rom_memory_mapping_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1445,16 +1445,43 @@ define_xuantie_e902_named_rom_memory_mapping_gate:
 
 implement_xuantie_e902_named_rom_memory_mapping_lowering:
   goal: lower XuanTie-E902 named case.pat word/lane deltas to resident patch records using generated root field offsets for x_iahb_mem_ctrl.ram0..3.mem
-  weakest_point: until lowering exists, the named gate is a contract artifact and cannot be run by the current patch-script runner without reintroducing hand-written root offsets.
+  weakest_point: the lowering proves generated-symbol patch schedule execution, but it is still a bounded memory-image delta throughput claim rather than ISA/program correctness.
   source_gpu_gate: config/scaling_gates/xuantie_e902_named_rom_memory_mapping.json
   source_cpu_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json
+  gpu_report: reports/xuantie_e902_named_rom_memory_mapping.json
+  cpu_report: reports/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json
+  resolved_lane_offsets:
+    ram0: 269904
+    ram1: 400976
+    ram2: 532048
+    ram3: 663120
+  accepted_claim:
+    xuantie_e902_named_rom_memory_mapping_batch_128x32: 2.0903639153360194
+  non_claims:
+    - smoke 1x6 remains CPU-favorable with ratio 0.009975536442199584
+    - not ISA/program correctness
+    - not full software boot correctness
+    - not broad XuanTie family support
+    - not full RTL application throughput
   acceptance:
     - derive global storage offsets from generated root fields rather than hard-coded raw offsets
     - preserve the named_patch_deltas as source of truth
     - generate patch_script_lines or equivalent resident records for both GPU and CPU runners
     - keep artifacts generated-only under reports/ or work/
+  status: done_gpu_cpu_pass
+  next_action: package_xuantie_e902_named_rom_memory_mapping_boundary
+
+package_xuantie_e902_named_rom_memory_mapping_boundary:
+  goal: package the named XuanTie-E902 ROM/memory delta boundary and decide the next semantic axis
+  weakest_point: the result is still one target and one instruction-memory family, so it should not be generalized to all XuanTie memory regions.
+  source_gpu_report: reports/xuantie_e902_named_rom_memory_mapping.json
+  source_cpu_report: reports/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json
+  acceptance:
+    - summarize the named mapping win and non-claims
+    - keep the generated reports as artifacts, not source of truth
+    - choose whether the next axis is input_stream_delta, program_image_delta, or broader target/memory-family coverage
   status: next
-  next_action: implement_xuantie_e902_named_rom_memory_mapping_lowering
+  next_action: package_xuantie_e902_named_rom_memory_mapping_boundary
 ```
 
 ## source_of_truth

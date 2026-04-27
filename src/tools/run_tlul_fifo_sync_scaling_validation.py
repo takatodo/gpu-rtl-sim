@@ -11,6 +11,8 @@ import tempfile
 import time
 from pathlib import Path
 
+from named_patch_lowering import resolve_patch_script_lines
+
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent.parent
@@ -64,6 +66,7 @@ def _patch_script_logical_steps(lines: list[str]) -> int:
 
 def _run_case(
     *,
+    gate: dict[str, object],
     mdir: Path,
     run: dict[str, object],
     storage_size: int,
@@ -73,7 +76,7 @@ def _run_case(
     nstates = int(run["nstates"])
     steps = int(run["steps"])
     resident_steps = bool(run.get("resident_steps", False))
-    patch_script_lines = run.get("patch_script_lines")
+    patch_script_lines, lowering = resolve_patch_script_lines(gate=gate, run_cfg=run, mdir=mdir)
     dump_state = dump_dir / f"{name}_state.bin"
     cmd = [
         sys.executable,
@@ -123,6 +126,7 @@ def _run_case(
         "requested_steps": steps,
         "resident_steps": resident_steps,
         "patch_script_line_count": len(patch_script_lines) if isinstance(patch_script_lines, list) else 0,
+        "patch_script_lowering": lowering,
         "returncode": completed.returncode,
         "elapsed_ms": elapsed_ms,
         "states_per_second": states_per_second,
@@ -158,7 +162,7 @@ def main() -> None:
     json_out.parent.mkdir(parents=True, exist_ok=True)
 
     results = [
-        _run_case(mdir=mdir, run=run, storage_size=storage_size, dump_dir=dump_dir)
+        _run_case(gate=gate, mdir=mdir, run=run, storage_size=storage_size, dump_dir=dump_dir)
         for run in gate["runs"]
     ]
     passed = all(bool(result["passed"]) for result in results)
@@ -172,10 +176,12 @@ def main() -> None:
         "runs": results,
         "acceptance": {
             "all_required_runs_passed": passed,
-            "correctness_policy": gate["correctness_policy"],
-            "performance_policy": gate["performance_policy"],
+            "correctness_policy": gate.get("correctness_policy"),
+            "performance_policy": gate.get("performance_policy"),
         },
-        "non_claims": gate["performance_policy"]["non_claims"],
+        "non_claims": gate.get("performance_policy", gate.get("correctness_policy", {})).get(
+            "non_claims", []
+        ),
     }
     json_out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(f"wrote: {json_out.relative_to(REPO_ROOT)}")

@@ -56,7 +56,7 @@
     {
       "name": "xuantie_e902_named_rom_memory_mapping_smoke_1x6",
       "nstates": 1,
-      "steps": 1,
+      "steps": 6,
       "resident_steps": true,
       "required": true,
       "named_patch_delta_sequence": "named_patch_deltas"
@@ -64,7 +64,7 @@
     {
       "name": "xuantie_e902_named_rom_memory_mapping_batch_128x32",
       "nstates": 128,
-      "steps": 1,
+      "steps": 32,
       "resident_steps": true,
       "required": true,
       "named_patch_delta_sequence": "named_patch_deltas_repeated_to_32_logical_steps"

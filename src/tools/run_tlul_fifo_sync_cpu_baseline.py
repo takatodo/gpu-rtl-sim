@@ -12,6 +12,8 @@ import tempfile
 import time
 from pathlib import Path
 
+from named_patch_lowering import resolve_patch_script_lines
+
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent.parent
@@ -124,6 +126,8 @@ def _run_multistate_case(
 
 def _run_exact_loop_case(
     *,
+    gate: dict[str, object],
+    mdir: Path,
     probe: Path,
     run_cfg: dict[str, object],
     storage_size: int,
@@ -132,7 +136,7 @@ def _run_exact_loop_case(
     steps = int(run_cfg["steps"])
     reset_cycles = int(run_cfg["reset_cycles"])
     post_reset_cycles = int(run_cfg["post_reset_cycles"])
-    patch_script_lines = run_cfg.get("patch_script_lines")
+    patch_script_lines, lowering = resolve_patch_script_lines(gate=gate, run_cfg=run_cfg, mdir=mdir)
     cmd = [
         str(probe),
         "--reset-cycles",
@@ -179,6 +183,7 @@ def _run_exact_loop_case(
         "post_reset_cycles": post_reset_cycles,
         "returncode": completed.returncode,
         "patch_script_line_count": len(patch_script_lines) if isinstance(patch_script_lines, list) else 0,
+        "patch_script_lowering": lowering,
         "elapsed_ms": elapsed_ms,
         "states_per_second": states_per_second,
         "constructor_ok": constructor_ok,
@@ -312,12 +317,13 @@ def _run_multistate_gate(
 def _run_exact_loop_gate(
     *,
     gate: dict[str, object],
+    mdir: Path,
     probe: Path,
     storage_size: int,
     gpu_scaling_report: Path,
 ) -> dict[str, object]:
     results = [
-        _run_exact_loop_case(probe=probe, run_cfg=run, storage_size=storage_size)
+        _run_exact_loop_case(gate=gate, mdir=mdir, probe=probe, run_cfg=run, storage_size=storage_size)
         for run in gate["runs"]
     ]
     results = _attach_gpu_comparison(cpu_results=results, gpu_scaling_report=gpu_scaling_report)
@@ -385,6 +391,7 @@ def main() -> None:
     if args.exact_loop:
         report = _run_exact_loop_gate(
             gate=gate,
+            mdir=mdir,
             probe=probe,
             storage_size=storage_size,
             gpu_scaling_report=gpu_scaling_report,
