@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  run_xuantie_e902_resident_patch_schedule_gate
+  package_xuantie_e902_resident_patch_schedule_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1244,8 +1244,31 @@ define_xuantie_e902_resident_patch_schedule_gate:
 run_xuantie_e902_resident_patch_schedule_gate:
   goal: run the second non-TL-UL resident changing-input patch schedule GPU gate on XuanTie-E902
   weakest_point: until the XuanTie-E902 gate runs, the third design-family patch schedule breadth point is only defined, not measured.
+  gate: config/scaling_gates/xuantie_e902_resident_patch_schedule.json
+  report: reports/xuantie_e902_resident_patch_schedule.json
+  status: done
+  next_action: run_xuantie_e902_cpu_exact_loop_resident_patch_schedule_gate
+
+run_xuantie_e902_cpu_exact_loop_resident_patch_schedule_gate:
+  goal: run the matching XuanTie-E902 CPU exact-loop patch schedule baseline and compare against the GPU report
+  weakest_point: the win is modest and bounded to 128x32; byte patches are validation stimuli, not XuanTie program semantics.
+  gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_resident_patch_schedule.json
+  report: reports/xuantie_e902_cpu_exact_loop_resident_patch_schedule.json
+  accepted_claim:
+    xuantie_e902_resident_patch_schedule_batch_128x32: 1.1724144754038845
+  non_claims:
+    - xuantie_e902_resident_patch_schedule_smoke_1x6 remains CPU-favorable with ratio 0.01038989322830183
+    - not broad XuanTie family support
+    - not full RTL application throughput
+    - byte patch offsets are validation stimuli, not XuanTie ISA/program semantics
+  status: done
+  next_action: package_xuantie_e902_resident_patch_schedule_boundary
+
+package_xuantie_e902_resident_patch_schedule_boundary:
+  goal: package the second non-TL-UL resident patch schedule boundary before moving toward application-like patch semantics
+  weakest_point: XuanTie-E902 adds breadth but still relies on arbitrary root byte patches rather than application-level input or ROM semantics.
   status: next
-  next_action: run_xuantie_e902_resident_patch_schedule_gate
+  next_action: commit_xuantie_e902_resident_patch_schedule_boundary
 ```
 
 ## source_of_truth

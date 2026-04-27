@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "run_xuantie_e902_resident_patch_schedule_gate",
+  "current_priority": "package_xuantie_e902_resident_patch_schedule_boundary",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -69,7 +69,7 @@
   "current_cpu_exact_loop_resident_patch_schedule_gate": "config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json",
   "current_cpu_exact_loop_resident_patch_schedule_report": "reports/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json",
   "resident_patch_schedule_boundary_status": "committed_veer_el2_resident_patch_schedule_gpu_win",
-  "xuantie_e902_resident_patch_schedule_boundary_status": "defined_xuantie_e902_resident_patch_schedule_gate",
+  "xuantie_e902_resident_patch_schedule_boundary_status": "measured_xuantie_e902_resident_patch_schedule_gpu_win",
   "current_second_seed_resident_patch_schedule_gate": "config/scaling_gates/tlul_sink_resident_patch_schedule.json",
   "current_second_seed_resident_patch_schedule_report": "reports/tlul_sink_resident_patch_schedule.json",
   "current_second_seed_cpu_exact_loop_resident_patch_schedule_gate": "config/scaling_gates/tlul_sink_cpu_exact_loop_resident_patch_schedule.json",
