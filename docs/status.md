@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  run_xuantie_e902_rom_memory_delta_patch_schedule_gate
+  package_rom_memory_delta_patch_schedule_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1334,8 +1334,32 @@ define_rom_or_memory_init_delta_patch_gate:
 run_xuantie_e902_rom_memory_delta_patch_schedule_gate:
   goal: run the first ROM or memory initialization delta resident patch schedule GPU gate on XuanTie-E902
   weakest_point: this first gate still uses explicit root-storage offsets as a proxy mapping; named ROM/memory symbol mapping remains a later precision step.
+  gate: config/scaling_gates/xuantie_e902_rom_memory_delta_patch_schedule.json
+  report: reports/xuantie_e902_rom_memory_delta_patch_schedule.json
+  status: done
+  next_action: run_xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule_gate
+
+run_xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule_gate:
+  goal: run the matching XuanTie-E902 CPU exact-loop ROM/memory delta baseline and compare against the GPU report
+  weakest_point: the win is bounded to a proxy root-storage mapping; named ROM or memory symbol mapping is not proven.
+  gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule.json
+  report: reports/xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule.json
+  accepted_claim:
+    xuantie_e902_rom_memory_delta_batch_128x32: 1.442536802751107
+  non_claims:
+    - xuantie_e902_rom_memory_delta_smoke_1x6 remains CPU-favorable with ratio 0.024056822624438708
+    - not broad XuanTie family support
+    - not full RTL application throughput
+    - not named-symbol ROM/memory mapping
+    - not ISA/program correctness
+  status: done
+  next_action: package_rom_memory_delta_patch_schedule_boundary
+
+package_rom_memory_delta_patch_schedule_boundary:
+  goal: package the first ROM/memory delta proxy resident patch schedule boundary
+  weakest_point: the result proves the selected communication-reduction semantics as a proxy mapping, not a named ROM symbol or program correctness claim.
   status: next
-  next_action: run_xuantie_e902_rom_memory_delta_patch_schedule_gate
+  next_action: commit_rom_memory_delta_patch_schedule_boundary
 ```
 
 ## source_of_truth
