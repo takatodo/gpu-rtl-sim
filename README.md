@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  define_application_like_patch_schedule_semantics
+  define_rom_or_memory_init_delta_patch_gate
 
 policy:
   - upload init-state once
@@ -482,7 +482,9 @@ accepted_claim:
   boundary_status: committed_xuantie_e902_resident_patch_schedule_gpu_win
 
 next_candidate_order:
-  - application_like_patch_semantics
+  - rom_or_memory_init_delta
+  - input_stream_delta
+  - program_image_delta
 
 non_claims:
   - not broad non-TL-UL resident patch schedule breadth

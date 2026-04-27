@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_application_like_patch_schedule_semantics
+  define_rom_or_memory_init_delta_patch_gate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1304,13 +1304,27 @@ define_application_like_patch_schedule_semantics:
     - input_stream_delta
     - rom_or_memory_init_delta
     - program_image_delta
+  selected_semantic: rom_or_memory_init_delta
+  selection_reason: ROM or memory init deltas are closer to design-level stimuli than arbitrary root byte offsets while still fitting the one-time schedule upload model.
   acceptance:
     - selected semantic can be described without clone-local paths
     - selected semantic reuses one-time schedule upload and forbids per-step host-device patch copies
     - selected semantic has a matching CPU exact-loop baseline plan
     - selected semantic does not claim ISA/program correctness from arbitrary byte offsets
+  status: done
+  next_action: define_rom_or_memory_init_delta_patch_gate
+
+define_rom_or_memory_init_delta_patch_gate:
+  goal: define the first ROM or memory initialization delta resident patch schedule gate
+  weakest_point: selecting ROM/memory delta improves semantic clarity, but the gate still needs target-specific mapping from memory image bytes to the generated root storage layout.
+  source_contract: config/resident_patch_script_semantics.json
+  acceptance:
+    - gate identifies a target with existing generated artifacts and CPU host probe
+    - gate explains how memory-image deltas map to resident patch schedule records
+    - gate preserves one-time schedule upload and no per-step host-device copies
+    - matching CPU exact-loop baseline is defined with the same delta sequence
   status: next
-  next_action: define_application_like_patch_schedule_semantics
+  next_action: define_rom_or_memory_init_delta_patch_gate
 ```
 
 ## source_of_truth

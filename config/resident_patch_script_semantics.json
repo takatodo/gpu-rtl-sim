@@ -36,16 +36,26 @@
   "next_semantics_axis": {
     "name": "application_like_patch_schedule_semantics",
     "purpose": "Move beyond arbitrary root byte patches toward input, ROM, or program-delta changes that can be explained as design-level stimuli.",
+    "selected_first_semantic": "rom_or_memory_init_delta",
+    "selection_reason": "ROM or memory init deltas are closer to design-level stimuli than arbitrary root byte offsets while still fitting the one-time resident schedule upload model.",
     "candidate_semantics": [
       "input_stream_delta",
       "rom_or_memory_init_delta",
       "program_image_delta"
     ],
+    "selected_semantic_contract": {
+      "name": "rom_or_memory_init_delta",
+      "host_source": "a bounded list of memory-image byte deltas derived before resident execution",
+      "device_behavior": "upload the delta schedule once, apply deltas on device before or during the resident loop, and avoid per-step host-device copies",
+      "cpu_baseline": "matching single-process CPU exact-loop applies the same memory-image deltas before each corresponding eval step",
+      "allowed_claim": "communication-reduced resident execution for a bounded ROM or memory initialization delta workload",
+      "non_claim": "not ISA/program correctness, not full software boot correctness, and not arbitrary root-byte patch semantics"
+    },
     "non_goals": [
       "do not treat arbitrary root byte offsets as application semantics",
       "do not claim ISA/program correctness from byte-patch throughput alone",
       "do not reintroduce per-step host-device copies"
     ]
   },
-  "next_action": "define_application_like_patch_schedule_semantics"
+  "next_action": "define_rom_or_memory_init_delta_patch_gate"
 }
