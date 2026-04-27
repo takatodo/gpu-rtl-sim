@@ -208,6 +208,21 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("cuMemcpyHtoD(resident_patch_schedule.d_offsets", runtime)
         self.assertIn("launch_resident_patch_step", runtime)
 
+    def test_device_side_init_state_replication_contract_is_present(self) -> None:
+        runtime = RUNTIME.read_text(encoding="utf-8")
+        wrapper = RUN_VL_HYBRID.read_text(encoding="utf-8")
+        generator = (REPO_ROOT / "src" / "tools" / "gen_vl_gpu_kernel.py").read_text(
+            encoding="utf-8"
+        )
+        cpp_generator = (REPO_ROOT / "src" / "passes" / "vlgpugen.cpp").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("RUN_VL_HYBRID_GPU_REPLICATE_INIT_STATE", runtime)
+        self.assertIn("vl_replicate_init_state_gpu", runtime)
+        self.assertIn("vl_replicate_init_state_gpu", generator)
+        self.assertIn("vl_replicate_init_state_gpu", cpp_generator)
+        self.assertIn("--gpu-replicate-init-state", wrapper)
+
     def test_resident_patch_schedule_gate_is_defined(self) -> None:
         gate = json.loads(RESIDENT_PATCH_GATE.read_text(encoding="utf-8"))
         self.assertEqual(gate["gate"], "tlul_fifo_sync_resident_patch_schedule_validation")
@@ -349,7 +364,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "select_next_runtime_depth_after_larger_resident_envelope",
+            "define_device_side_init_state_replication_gate",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -446,6 +461,18 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(
             selection["larger_resident_schedule_envelope_2048x64_gpu_over_cpu_ratio"],
             6.685046741041471,
+        )
+        self.assertEqual(
+            selection["gpu_owned_state_construction_boundary"],
+            "device_side_init_state_replication",
+        )
+        self.assertEqual(
+            selection["device_side_init_state_replication_status"],
+            "runtime_support_implemented",
+        )
+        self.assertEqual(
+            selection["device_side_init_state_replication_next_action"],
+            "define_device_side_init_state_replication_gate",
         )
         self.assertEqual(
             selection["larger_resident_schedule_envelope_gate"],

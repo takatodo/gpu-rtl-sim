@@ -443,11 +443,14 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  select_next_runtime_depth_after_larger_resident_envelope
+  define_device_side_init_state_replication_gate
 
 latest_larger_envelope:
   tlul_sink_1024x64_gpu_over_cpu_ratio: 5.557127971950416
   tlul_sink_2048x64_gpu_over_cpu_ratio: 6.685046741041471
+
+selected_gpu_owned_state_construction_boundary:
+  device_side_init_state_replication
 
 policy:
   - upload init-state once

@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  select_next_runtime_depth_after_larger_resident_envelope
+  define_device_side_init_state_replication_gate
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1737,8 +1737,26 @@ select_next_runtime_depth_after_larger_resident_envelope:
     - start_gpu_owned_state_construction_boundary
     - define_one_more_construction_readiness_gate
   recommended_next: start_gpu_owned_state_construction_boundary
+  selected_boundary: device_side_init_state_replication
+  selection_reason: existing single-state init upload still repeats host-to-device copies once per state; device-side replication is the smallest construction boundary that reduces communication without broadening target or ROM semantics.
+  status: done_selected_device_side_init_state_replication
+  next_action: define_device_side_init_state_replication_gate
+
+define_device_side_init_state_replication_gate:
+  goal: define the first GPU-owned state construction validation gate around single init-state replication
+  weakest_point: runtime support now exists, but no measured gate proves the device-side replication path matches the previous CPU host-copy initialization path.
+  implemented_support:
+    - runtime flag: RUN_VL_HYBRID_GPU_REPLICATE_INIT_STATE
+    - wrapper flag: --gpu-replicate-init-state
+    - kernel: vl_replicate_init_state_gpu
+    - construction scope: one storage-sized init image is uploaded once, then replicated across nstates on device
+  acceptance:
+    - generate one GPU run with normal CPU repeated init upload
+    - generate one GPU run with device-side init-state replication
+    - compare final state dumps under the existing normalized compare policy
+    - record whether host-device initialization traffic is reduced from O(nstates * storage) to O(storage)
   status: next
-  next_action: select_next_runtime_depth_after_larger_resident_envelope
+  next_action: define_device_side_init_state_replication_gate
 ```
 
 ## source_of_truth

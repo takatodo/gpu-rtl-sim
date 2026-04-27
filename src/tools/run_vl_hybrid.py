@@ -43,6 +43,7 @@ REPO_ROOT = SCRIPT_DIR.parent.parent
 HYBRID_BIN = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid"
 _CUBIN_CHAIN_ENV = "RUN_VL_HYBRID_CUBINS"
 _RESIDENT_STEPS_ENV = "RUN_VL_HYBRID_RESIDENT_STEPS"
+_GPU_REPLICATE_INIT_STATE_ENV = "RUN_VL_HYBRID_GPU_REPLICATE_INIT_STATE"
 _POINTER_SIZED_HOST_ONLY_FIELDS = {"__VdlySched"}
 _FULLY_ZEROED_HOST_ONLY_FIELDS = {"vlNamep"}
 _TRANSIENT_VERILATOR_RUNTIME_FIELDS = {
@@ -289,6 +290,14 @@ def main() -> None:
             "Rejects argv --patch; --patch-script is uploaded once as a device-resident schedule."
         ),
     )
+    p.add_argument(
+        "--gpu-replicate-init-state",
+        action="store_true",
+        help=(
+            "When --init-state is one storage image and nstates > 1, upload it once "
+            "and replicate it across device state storage with vl_replicate_init_state_gpu."
+        ),
+    )
     args = p.parse_args()
     if args.resident_steps and args.patch:
         p.error("--resident-steps rejects --patch; use --patch-script for a resident schedule")
@@ -378,6 +387,10 @@ def main() -> None:
         env[_RESIDENT_STEPS_ENV] = "1"
     else:
         env.pop(_RESIDENT_STEPS_ENV, None)
+    if args.gpu_replicate_init_state:
+        env[_GPU_REPLICATE_INIT_STATE_ENV] = "1"
+    else:
+        env.pop(_GPU_REPLICATE_INIT_STATE_ENV, None)
     sanitized_init_tmp: Path | None = None
     if args.init_state:
         init_state = args.init_state.resolve()

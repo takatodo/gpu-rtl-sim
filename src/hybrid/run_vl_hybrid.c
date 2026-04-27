@@ -40,6 +40,8 @@
 #define ENV_DUMP_GLOBALS "RUN_VL_HYBRID_DUMP_GLOBALS"
 /* Optional raw state image copied into device storage before patches/launches. */
 #define ENV_INIT_STATE "RUN_VL_HYBRID_INIT_STATE"
+/* Optional device-side replication for a single-state init image. */
+#define ENV_GPU_REPLICATE_INIT_STATE "RUN_VL_HYBRID_GPU_REPLICATE_INIT_STATE"
 /* Optional per-step patch script file; each non-comment line is one step of patch tokens. */
 #define ENV_PATCH_SCRIPT "RUN_VL_HYBRID_PATCH_SCRIPT"
 /* Explicit resident repeated-step mode; keeps state on device across eval steps. */
@@ -639,6 +641,29 @@ static int launch_resident_patch_step(CUfunction patch_kfn,
   return 0;
 }
 
+static int launch_init_state_replication(CUfunction init_kfn,
+                                         CUdeviceptr d_storage,
+                                         CUdeviceptr d_init_state,
+                                         size_t storage,
+                                         size_t total) {
+  int block = 256;
+  unsigned long long grid_ull =
+      ((unsigned long long)total + (unsigned long long)block - 1ULL) /
+      (unsigned long long)block;
+  if (grid_ull == 0ULL || grid_ull > 2147483647ULL) {
+    fprintf(stderr, "init-state replication grid out of range: %llu\n", grid_ull);
+    return -1;
+  }
+  unsigned grid = (unsigned)grid_ull;
+  unsigned long long storage_arg = (unsigned long long)storage;
+  unsigned long long total_arg = (unsigned long long)total;
+  void *params[] = {&d_storage, &d_init_state, &storage_arg, &total_arg};
+  trace_kernel_launch("vl_replicate_init_state_gpu", 0, -1);
+  CUDA_CHECK(cuLaunchKernel(init_kfn, grid, 1, 1, (unsigned)block, 1, 1, 0, 0,
+                            params, NULL));
+  return 0;
+}
+
 static size_t kernel_local_size_bytes(CUfunction fn) {
   int value = 0;
   CUresult err =
@@ -891,6 +916,7 @@ int main(int argc, char **argv) {
   ResidentPatchSchedule resident_patch_schedule;
   memset(&resident_patch_schedule, 0, sizeof(resident_patch_schedule));
   CUfunction resident_patch_kfn = NULL;
+  CUfunction init_replication_kfn = NULL;
 
   int pi = 4;
   if (argc > 4 && strchr(argv[4], ':') == NULL && strlen(argv[4]) > 0) {
@@ -918,6 +944,7 @@ int main(int argc, char **argv) {
   }
 
   const int resident_steps = getenv(ENV_RESIDENT_STEPS) != NULL;
+  const int gpu_replicate_init_state = getenv(ENV_GPU_REPLICATE_INIT_STATE) != NULL;
 
   {
     const char *patch_script_path = getenv(ENV_PATCH_SCRIPT);
@@ -1039,6 +1066,17 @@ int main(int argc, char **argv) {
     }
     trace_function_attrs(resident_patch_kfn, "vl_apply_patch_schedule_gpu");
   }
+  if (gpu_replicate_init_state) {
+    if (resolve_function_across_modules(&init_replication_kfn, mods, nmods,
+                                        "vl_replicate_init_state_gpu") != 0) {
+      fprintf(stderr,
+              "%s=1 requires a cubin regenerated with vl_replicate_init_state_gpu\n",
+              ENV_GPU_REPLICATE_INIT_STATE);
+      free_step_patch_blocks(script_blocks, script_block_count);
+      return 1;
+    }
+    trace_function_attrs(init_replication_kfn, "vl_replicate_init_state_gpu");
+  }
   {
     int stack_limit_status = maybe_raise_stack_limit_for_kernels(kfns, nk);
     if (env_flag_enabled(ENV_STACK_LIMIT_PROBE_ONLY))
@@ -1110,6 +1148,19 @@ int main(int argc, char **argv) {
       fclose(fp);
       if (file_size == total) {
         CUDA_CHECK(cuMemcpyHtoD(d_storage, buf, total));
+      } else if (gpu_replicate_init_state && nstates > 1U) {
+        CUdeviceptr d_init_state = 0;
+        CUDA_CHECK(cuMemAlloc(&d_init_state, storage));
+        CUDA_CHECK(cuMemcpyHtoD(d_init_state, buf, storage));
+        if (launch_init_state_replication(init_replication_kfn, d_storage,
+                                          d_init_state, storage, total) != 0) {
+          CUDA_CHECK(cuMemFree(d_init_state));
+          free(buf);
+          free_step_patch_blocks(script_blocks, script_block_count);
+          return 1;
+        }
+        CUDA_CHECK(cuCtxSynchronize());
+        CUDA_CHECK(cuMemFree(d_init_state));
       } else {
         for (unsigned state = 0; state < nstates; state++) {
           CUDA_CHECK(cuMemcpyHtoD(d_storage + ((size_t)state * storage), buf, storage));
@@ -1333,6 +1384,8 @@ int main(int argc, char **argv) {
          "nstates=%u storage=%zu B\n",
          steps, nk, npatch, grid, block, nstates, storage);
   printf("resident_mode: %s\n", resident_steps ? "true" : "false");
+  printf("gpu_init_state_replication: %s\n",
+         gpu_replicate_init_state ? "true" : "false");
   if (script_blocks) {
     printf("patch_script_steps: logical=%u records=%u blocks=%u\n",
            script_logical_step_count, script_record_count, script_block_count);

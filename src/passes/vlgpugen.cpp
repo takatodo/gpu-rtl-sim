@@ -1348,6 +1348,59 @@ static void injectResidentPatchScheduleKernel(Module &M) {
                           ConstantAsMetadata::get(ConstantInt::get(I32Ty, 1))}));
 }
 
+static void injectInitStateReplicationKernel(Module &M) {
+    LLVMContext &Ctx = M.getContext();
+    Type *I8Ty = Type::getInt8Ty(Ctx);
+    Type *I32Ty = Type::getInt32Ty(Ctx);
+    Type *I64Ty = Type::getInt64Ty(Ctx);
+    auto *PtrTy = PointerType::get(Ctx, 0);
+    auto *IntrTy = FunctionType::get(I32Ty, {}, false);
+
+    auto *TidX = cast<Function>(
+        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.tid.x", IntrTy).getCallee());
+    auto *CtaidX = cast<Function>(
+        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ctaid.x", IntrTy).getCallee());
+    auto *NtidX = cast<Function>(
+        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ntid.x", IntrTy).getCallee());
+
+    auto *Kernel = Function::Create(
+        FunctionType::get(Type::getVoidTy(Ctx), {PtrTy, PtrTy, I64Ty, I64Ty}, false),
+        GlobalValue::ExternalLinkage, "vl_replicate_init_state_gpu", &M);
+    Kernel->getArg(0)->setName("storage_base");
+    Kernel->getArg(1)->setName("init_state");
+    Kernel->getArg(2)->setName("storage_bytes");
+    Kernel->getArg(3)->setName("total_bytes");
+
+    auto *EntryBB = BasicBlock::Create(Ctx, "entry", Kernel);
+    auto *BodyBB = BasicBlock::Create(Ctx, "body", Kernel);
+    auto *ExitBB = BasicBlock::Create(Ctx, "exit", Kernel);
+
+    IRBuilder<> B(EntryBB);
+    auto *Gid32 = B.CreateAdd(
+        B.CreateMul(B.CreateCall(CtaidX, {}, "bid"),
+                    B.CreateCall(NtidX, {}, "bdim"), "gid_mul"),
+        B.CreateCall(TidX, {}, "tid"), "gid32");
+    auto *Gid64 = B.CreateZExt(Gid32, I64Ty, "gid");
+    B.CreateCondBr(B.CreateICmpULT(Gid64, Kernel->getArg(3), "in_range"), BodyBB,
+                   ExitBB);
+
+    B.SetInsertPoint(BodyBB);
+    auto *SrcOff = B.CreateURem(Gid64, Kernel->getArg(2), "src_off");
+    auto *Src = B.CreateGEP(I8Ty, Kernel->getArg(1), {SrcOff}, "src", true);
+    auto *Value = B.CreateAlignedLoad(I8Ty, Src, Align(1), "value");
+    auto *Dst = B.CreateGEP(I8Ty, Kernel->getArg(0), {Gid64}, "dst", true);
+    B.CreateAlignedStore(Value, Dst, Align(1));
+    B.CreateBr(ExitBB);
+
+    B.SetInsertPoint(ExitBB);
+    B.CreateRetVoid();
+
+    M.getOrInsertNamedMetadata("nvvm.annotations")->addOperand(
+        MDNode::get(Ctx, {ValueAsMetadata::get(Kernel),
+                          MDString::get(Ctx, "kernel"),
+                          ConstantAsMetadata::get(ConstantInt::get(I32Ty, 1))}));
+}
+
 static Function *createPhaseLoopWrapper(Module &M, StringRef WrapperName, Function *PhaseFn,
                                         unsigned MaxIters = 100) {
     if (!PhaseFn || PhaseFn->arg_size() != 1)
@@ -1622,6 +1675,7 @@ int main(int argc, char **argv) {
     injectBatchKernel(*M, "vl_eval_batch_gpu", ArrayRef(&EvalFn, 1), StorageSize, VlOff,
                       FakeSymsBuf);
     injectResidentPatchScheduleKernel(*M);
+    injectInitStateReplicationKernel(*M);
 
     if (KernelSplit == "phases") {
         SmallVector<KernelManifestEntry, 8> Manifest;

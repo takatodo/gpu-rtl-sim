@@ -124,6 +124,31 @@ def generate_gpu_ll(merged_ll_path: Path, storage_size: int) -> str:
     lines.append('declare i32 @__gxx_personality_v0(...)')
     lines.append('')
 
+    lines.append('; === GPU kernel: init-state replication ===')
+    lines.append('define void @vl_replicate_init_state_gpu(ptr %storage_base, ptr %init_state, i64 %storage_bytes, i64 %total_bytes) {')
+    lines.append('entry:')
+    lines.append('  %tid  = call i32 @llvm.nvvm.read.ptx.sreg.tid.x()')
+    lines.append('  %bid  = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x()')
+    lines.append('  %bdim = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x()')
+    lines.append('  %gid_mul = mul i32 %bid, %bdim')
+    lines.append('  %gid32   = add i32 %gid_mul, %tid')
+    lines.append('  %gid = zext i32 %gid32 to i64')
+    lines.append('  %in_range = icmp ult i64 %gid, %total_bytes')
+    lines.append('  br i1 %in_range, label %body, label %exit')
+    lines.append('')
+    lines.append('body:')
+    lines.append('  %src_off = urem i64 %gid, %storage_bytes')
+    lines.append('  %src = getelementptr inbounds i8, ptr %init_state, i64 %src_off')
+    lines.append('  %value = load i8, ptr %src, align 1')
+    lines.append('  %dst = getelementptr inbounds i8, ptr %storage_base, i64 %gid')
+    lines.append('  store i8 %value, ptr %dst, align 1')
+    lines.append('  br label %exit')
+    lines.append('')
+    lines.append('exit:')
+    lines.append('  ret void')
+    lines.append('}')
+    lines.append('')
+
     # no-op stub
     for ext_fn in sorted(ext):
         lines.append(f'; stub: {ext_fn}')
@@ -207,9 +232,11 @@ def generate_gpu_ll(merged_ll_path: Path, storage_size: int) -> str:
 
     kernel_id = max_id + 1
     patch_kernel_id = kernel_id + 1
+    init_replication_kernel_id = kernel_id + 2
     lines.append(f'!{kernel_id} = !{{ptr @vl_eval_batch_gpu, !"kernel", i32 1}}')
     lines.append(f'!{patch_kernel_id} = !{{ptr @vl_apply_patch_schedule_gpu, !"kernel", i32 1}}')
-    lines.append(f'!nvvm.annotations = !{{!{kernel_id}, !{patch_kernel_id}}}')
+    lines.append(f'!{init_replication_kernel_id} = !{{ptr @vl_replicate_init_state_gpu, !"kernel", i32 1}}')
+    lines.append(f'!nvvm.annotations = !{{!{kernel_id}, !{patch_kernel_id}, !{init_replication_kernel_id}}}')
 
     return '\n'.join(lines)
 
