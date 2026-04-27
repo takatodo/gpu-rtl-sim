@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  package_rom_memory_delta_patch_schedule_boundary
+  commit_rom_memory_delta_patch_schedule_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1358,6 +1358,23 @@ run_xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule_gate:
 package_rom_memory_delta_patch_schedule_boundary:
   goal: package the first ROM/memory delta proxy resident patch schedule boundary
   weakest_point: the result proves the selected communication-reduction semantics as a proxy mapping, not a named ROM symbol or program correctness claim.
+  accepted_claim:
+    target: xuantie_e902
+    semantic: rom_or_memory_init_delta
+    shape: nstates=128 logical_patch_steps=32
+    gpu_over_cpu_throughput_ratio: 1.442536802751107
+  non_claims:
+    - not named-symbol ROM/memory mapping
+    - not ISA/program correctness
+    - not full software boot correctness
+    - not full RTL application throughput
+    - small 1x6 smoke remains CPU-favorable with ratio 0.024056822624438708
+  status: done
+  next_action: commit_rom_memory_delta_patch_schedule_boundary
+
+commit_rom_memory_delta_patch_schedule_boundary:
+  goal: commit the packaged ROM/memory delta proxy boundary before increasing semantic precision
+  weakest_point: without a commit boundary, the proxy mapping claim can be mixed with later named-symbol ROM mapping work.
   status: next
   next_action: commit_rom_memory_delta_patch_schedule_boundary
 ```

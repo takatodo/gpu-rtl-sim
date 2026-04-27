@@ -280,7 +280,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
 
     def test_selection_advances_after_two_seed_boundary_commit(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
-        self.assertEqual(selection["current_priority"], "package_rom_memory_delta_patch_schedule_boundary")
+        self.assertEqual(selection["current_priority"], "commit_rom_memory_delta_patch_schedule_boundary")
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
             "committed_veer_el2_resident_patch_schedule_gpu_win",
@@ -299,7 +299,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["rom_or_memory_init_delta_boundary_status"],
-            "measured_xuantie_e902_rom_memory_delta_patch_schedule_gpu_win",
+            "packaged_xuantie_e902_rom_memory_delta_patch_schedule_gpu_win",
         )
 
     def test_resident_patch_semantics_names_application_like_next_axis(self) -> None:
