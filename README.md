@@ -76,7 +76,7 @@ selected:
     - output/design_scope_expansion_packet.json
 
 next:
-  run_veer_el2_gpu_smoke
+  define_veer_el2_cpu_reference_contract
 ```
 
 Resident boundary:

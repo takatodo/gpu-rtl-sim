@@ -122,7 +122,8 @@ phase_3:
   validate_veer_el2_asset_boundary: done
   generate_veer_el2_verilator_obj_dir: done_pass_with_warnings
   build_veer_el2_gpu_cubin: done
-  run_veer_el2_gpu_smoke: next
+  run_veer_el2_gpu_smoke: done
+  define_veer_el2_cpu_reference_contract: next
 ```
 
 ## acceptance
@@ -268,7 +269,7 @@ non_tlul_breadth_seed_candidate:
   resident_runtime_regression_status: pass
   next_resident_breadth_policy: select bounded non-TL-UL candidate before copying assets
   next_resident_breadth_candidate: veer_el2
-  next_resident_breadth_candidate_status: gpu_cubin_built
+  next_resident_breadth_candidate_status: gpu_smoke_pass
   next_resident_breadth_candidate_evidence:
     - old_repo:output/family_readiness/veer_el2_gpu_toggle_readiness.md
     - old_repo:output/design_scope_expansion_packet.json
@@ -279,17 +280,18 @@ non_tlul_breadth_seed_candidate:
   next_resident_breadth_candidate_asset_boundary: third_party/rtlmeter/designs/VeeR-EL2
   next_resident_breadth_candidate_mdir: artifacts/veer_el2_obj_dir
   next_resident_breadth_candidate_cubin: artifacts/veer_el2_obj_dir/vl_batch_gpu.cubin
+  next_resident_breadth_candidate_gpu_smoke_state: artifacts/veer_el2_obj_dir/veer_el2_gpu_smoke_state.bin
   true_resident_runtime_interface:
     cli_flag: src/tools/run_vl_hybrid.py --resident-steps
     runtime_env: RUN_VL_HYBRID_RESIDENT_STEPS=1
     c_runtime: src/hybrid/run_vl_hybrid.c
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: run_veer_el2_gpu_smoke
+  next_task: define_veer_el2_cpu_reference_contract
 
 veer_el2_resident_breadth_candidate:
   selected: true
-  selection_status: gpu_cubin_built
+  selection_status: gpu_smoke_pass
   role: next non-TL-UL resident runtime breadth candidate
   old_repo_launch_template: config/slice_launch_templates/veer_el2.json
   old_repo_gate_evidence: output/family_readiness/veer_el2_gpu_toggle_readiness.md
@@ -305,6 +307,9 @@ veer_el2_resident_breadth_candidate:
   obj_dir_status: pass_with_warnings
   cubin: artifacts/veer_el2_obj_dir/vl_batch_gpu.cubin
   storage_size: 431808
+  gpu_smoke_status: pass
+  gpu_smoke_shape: nstates=1 steps=1
+  gpu_smoke_state: artifacts/veer_el2_obj_dir/veer_el2_gpu_smoke_state.bin
   copied_assets:
     - descriptor.yaml
     - LICENSE-VeeR-EL2
@@ -316,6 +321,6 @@ veer_el2_resident_breadth_candidate:
     - tests/veer_el2_coverage_regions.json
     - tests/veer_el2_program_hex_target_config.json
   asset_validation_status: pass_contract
-  required_next_step: run one-state GPU smoke
+  required_next_step: define CPU reference contract and normalized compare
   non_claim: no VeeR-EL2 resident-mode result exists in the minimal repo yet
 ```

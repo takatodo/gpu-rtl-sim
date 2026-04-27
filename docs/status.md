@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  run_veer_el2_gpu_smoke
+  define_veer_el2_cpu_reference_contract
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -874,7 +874,19 @@ run_veer_el2_gpu_smoke:
   weakest_point: cubin builds, but no VeeR-EL2 runtime execution result exists yet.
   mdir: artifacts/veer_el2_obj_dir
   smoke_shape: nstates=1 steps=1
-  next_action: run_veer_el2_gpu_smoke
+  state_dump: artifacts/veer_el2_obj_dir/veer_el2_gpu_smoke_state.bin
+  dump_bytes: 431808
+  status: pass
+  next_action: define_veer_el2_cpu_reference_contract
+
+define_veer_el2_cpu_reference_contract:
+  goal: define how to obtain a CPU reference state and normalized compare for VeeR-EL2 before resident throughput gates
+  weakest_point: the GPU smoke runs from zero/default state, but no CPU reference state or CPU/GPU correctness comparison exists for VeeR-EL2 yet.
+  expected_scope:
+    - reuse or generalize existing host probe machinery if possible
+    - avoid adding a public CLI until the CPU reference seam is known
+    - define normalized final-state equivalence before resident scaling claims
+  next_action: define_veer_el2_cpu_reference_contract
 ```
 
 ## source_of_truth
