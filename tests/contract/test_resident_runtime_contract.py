@@ -54,6 +54,12 @@ XUANTIE_E902_NAMED_ROM_GATE = (
 XUANTIE_E902_NAMED_ROM_CPU_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json"
 )
+XUANTIE_E902_PROGRAM_IMAGE_DELTA_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_program_image_delta.json"
+)
+XUANTIE_E902_PROGRAM_IMAGE_DELTA_CPU_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_cpu_exact_loop_program_image_delta.json"
+)
 TARGETS = REPO_ROOT / "config" / "targets.json"
 README = REPO_ROOT / "README.md"
 RUNTIME = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid.c"
@@ -315,9 +321,27 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("resolve_patch_script_lines", cpu_runner)
         self.assertIn("patch_script_lowering", cpu_runner)
 
+    def test_xuantie_e902_program_image_delta_gates_are_defined(self) -> None:
+        gpu_gate = json.loads(XUANTIE_E902_PROGRAM_IMAGE_DELTA_GATE.read_text(encoding="utf-8"))
+        cpu_gate = json.loads(XUANTIE_E902_PROGRAM_IMAGE_DELTA_CPU_GATE.read_text(encoding="utf-8"))
+        self.assertEqual(gpu_gate["semantic"], "program_image_delta")
+        self.assertEqual(gpu_gate["mapping_semantic"], "named_rom_memory_symbol_mapping")
+        self.assertEqual(
+            gpu_gate["program_image_delta_contract"]["program_image_source"],
+            "case.pat loaded through mem_inst_temp",
+        )
+        self.assertEqual(
+            cpu_gate["source_gpu_gate"],
+            "config/scaling_gates/xuantie_e902_program_image_delta.json",
+        )
+        self.assertTrue(gpu_gate["runtime_support"]["current_patch_script_lines_are_not_source_of_truth"])
+        self.assertTrue(all("named_patch_delta_sequence" in run for run in gpu_gate["runs"]))
+        self.assertTrue(all("named_patch_delta_sequence" in run for run in cpu_gate["runs"]))
+        self.assertIn("not ISA/program correctness", gpu_gate["correctness_policy"]["non_claims"])
+
     def test_selection_advances_after_two_seed_boundary_commit(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
-        self.assertEqual(selection["current_priority"], "define_xuantie_e902_program_image_delta_gate")
+        self.assertEqual(selection["current_priority"], "package_xuantie_e902_program_image_delta_boundary")
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
             "committed_veer_el2_resident_patch_schedule_gpu_win",
@@ -345,7 +369,23 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "packaged_xuantie_e902_named_mapping_gpu_win",
         )
         self.assertEqual(selection["next_application_like_semantics_axis"], "program_image_delta")
-        self.assertEqual(selection["program_image_delta_status"], "selected_next")
+        self.assertEqual(selection["program_image_delta_status"], "gpu_cpu_gates_passed")
+        self.assertEqual(
+            selection["program_image_delta_gpu_report"],
+            "reports/xuantie_e902_program_image_delta.json",
+        )
+        self.assertEqual(
+            selection["program_image_delta_cpu_report"],
+            "reports/xuantie_e902_cpu_exact_loop_program_image_delta.json",
+        )
+        self.assertEqual(
+            selection["active_non_tlul_candidate_program_image_delta_gate"],
+            "config/scaling_gates/xuantie_e902_program_image_delta.json",
+        )
+        self.assertEqual(
+            selection["active_non_tlul_candidate_cpu_exact_loop_program_image_delta_gate"],
+            "config/scaling_gates/xuantie_e902_cpu_exact_loop_program_image_delta.json",
+        )
         self.assertEqual(
             selection["named_rom_memory_symbol_mapping_gpu_report"],
             "reports/xuantie_e902_named_rom_memory_mapping.json",

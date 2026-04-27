@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_xuantie_e902_program_image_delta_gate
+  package_xuantie_e902_program_image_delta_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1493,13 +1493,50 @@ define_xuantie_e902_program_image_delta_gate:
   source_mapping_boundary: package_xuantie_e902_named_rom_memory_mapping_boundary
   source_gpu_report: reports/xuantie_e902_named_rom_memory_mapping.json
   source_cpu_report: reports/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json
+  gpu_gate: config/scaling_gates/xuantie_e902_program_image_delta.json
+  cpu_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_program_image_delta.json
   acceptance:
     - define GPU and CPU gate configs from program-image deltas, not raw root byte offsets
     - preserve generated root field offsets as lowering output, not hand-authored source
     - keep one-time schedule upload and no per-step host-device patch copies
     - state non-claims for ISA correctness, full software boot, and broad XuanTie coverage
+  status: done_gates_defined
+  next_action: run_xuantie_e902_program_image_delta_gate
+
+run_xuantie_e902_program_image_delta_gate:
+  goal: run the bounded XuanTie-E902 program-image delta GPU gate and matching CPU exact-loop baseline
+  weakest_point: the gate still mutates a bounded loaded program image; passing throughput does not prove the mutated program is semantically meaningful.
+  source_gpu_gate: config/scaling_gates/xuantie_e902_program_image_delta.json
+  source_cpu_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_program_image_delta.json
+  gpu_report: reports/xuantie_e902_program_image_delta.json
+  cpu_report: reports/xuantie_e902_cpu_exact_loop_program_image_delta.json
+  accepted_claim:
+    xuantie_e902_program_image_delta_batch_128x32: 1.3826459191531113
+  non_claims:
+    - smoke 1x6 remains CPU-favorable with ratio 0.016034347357067786
+    - not ISA/program correctness
+    - not full software boot correctness
+    - not broad XuanTie family support
+    - not full RTL application throughput
+  acceptance:
+    - run GPU resident schedule gate
+    - run matching CPU exact-loop baseline
+    - compare 128x32 throughput and record non-claims
+    - keep generated reports under reports/
+  status: done_gpu_cpu_pass
+  next_action: package_xuantie_e902_program_image_delta_boundary
+
+package_xuantie_e902_program_image_delta_boundary:
+  goal: package the bounded XuanTie-E902 program-image delta result and choose the next responsibility expansion
+  weakest_point: the result uses a small mutation to a loaded image and still does not prove executable program behavior; packaging must avoid upgrading it to ISA correctness.
+  source_gpu_report: reports/xuantie_e902_program_image_delta.json
+  source_cpu_report: reports/xuantie_e902_cpu_exact_loop_program_image_delta.json
+  acceptance:
+    - summarize the program-image delta win and non-claims
+    - keep reports generated-only
+    - choose next axis: input_stream_delta, broader memory-family coverage, or target breadth
   status: next
-  next_action: define_xuantie_e902_program_image_delta_gate
+  next_action: package_xuantie_e902_program_image_delta_boundary
 ```
 
 ## source_of_truth

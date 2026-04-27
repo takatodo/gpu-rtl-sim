@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  define_xuantie_e902_program_image_delta_gate
+  package_xuantie_e902_program_image_delta_boundary
 
 policy:
   - upload init-state once
@@ -465,6 +465,8 @@ source_of_truth:
   - config/scaling_gates/xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule.json
   - config/scaling_gates/xuantie_e902_named_rom_memory_mapping.json
   - config/scaling_gates/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json
+  - config/scaling_gates/xuantie_e902_program_image_delta.json
+  - config/scaling_gates/xuantie_e902_cpu_exact_loop_program_image_delta.json
 ```
 
 Current bounded resident changing-input result:
@@ -489,10 +491,13 @@ accepted_claim:
   xuantie_e902_named_rom_memory_mapping:
     shape: nstates=128 logical_patch_steps=32
     gpu_over_cpu_throughput_ratio: 2.0903639153360194
-  boundary_status: packaged_xuantie_e902_named_mapping_gpu_win
+  xuantie_e902_program_image_delta:
+    shape: nstates=128 logical_patch_steps=32
+    gpu_over_cpu_throughput_ratio: 1.3826459191531113
+  boundary_status: program_image_delta_gpu_cpu_gates_passed
 
 next_candidate_order:
-  - program_image_delta
+  - package_xuantie_e902_program_image_delta_boundary
   - input_stream_delta
   - broader_memory_family_coverage
 

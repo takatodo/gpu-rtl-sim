@@ -164,7 +164,9 @@ phase_3:
   define_xuantie_e902_named_rom_memory_mapping_gate: done_gates_defined
   implement_xuantie_e902_named_rom_memory_mapping_lowering: done_gpu_cpu_pass
   package_xuantie_e902_named_rom_memory_mapping_boundary: done
-  define_xuantie_e902_program_image_delta_gate: next
+  define_xuantie_e902_program_image_delta_gate: done_gates_defined
+  run_xuantie_e902_program_image_delta_gate: done_gpu_cpu_pass
+  package_xuantie_e902_program_image_delta_boundary: next
 ```
 
 ## acceptance
