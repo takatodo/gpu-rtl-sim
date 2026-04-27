@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  select_non_tlul_resident_patch_schedule_breadth_candidate
+  package_veer_el2_resident_patch_schedule_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1150,8 +1150,48 @@ select_non_tlul_resident_patch_schedule_breadth_candidate:
     - veer_el2
     - xuantie_e902
   recommended_next: define_veer_el2_resident_patch_schedule_gate
-  status: next
+  selected: veer_el2
+  status: done
   next_action: define_veer_el2_resident_patch_schedule_gate
+
+define_veer_el2_resident_patch_schedule_gate:
+  goal: define VeeR-EL2 GPU and matching CPU exact-loop resident patch schedule gates without adding new runner logic
+  weakest_point: the gate is defined with byte-offset patch stimuli; it does not yet prove runtime pass, speedup, or VeeR program semantics.
+  gpu_gate: config/scaling_gates/veer_el2_resident_patch_schedule.json
+  cpu_gate: config/scaling_gates/veer_el2_cpu_exact_loop_resident_patch_schedule.json
+  gpu_report: reports/veer_el2_resident_patch_schedule.json
+  cpu_report: reports/veer_el2_cpu_exact_loop_resident_patch_schedule.json
+  status: done
+  next_action: run_veer_el2_resident_patch_schedule_gate
+
+run_veer_el2_resident_patch_schedule_gate:
+  goal: run the first non-TL-UL resident changing-input patch schedule GPU gate on VeeR-EL2
+  weakest_point: until the VeeR-EL2 gate runs, non-TL-UL patch schedule breadth is only planned, not measured.
+  gate: config/scaling_gates/veer_el2_resident_patch_schedule.json
+  report: reports/veer_el2_resident_patch_schedule.json
+  status: done
+  next_action: run_veer_el2_cpu_exact_loop_resident_patch_schedule_gate
+
+run_veer_el2_cpu_exact_loop_resident_patch_schedule_gate:
+  goal: run the matching VeeR-EL2 CPU exact-loop patch schedule baseline and compare against the GPU report
+  weakest_point: the CPU baseline applies byte patches directly to root storage, so the claim is bounded to matching root-storage offsets rather than VeeR program semantics.
+  gate: config/scaling_gates/veer_el2_cpu_exact_loop_resident_patch_schedule.json
+  report: reports/veer_el2_cpu_exact_loop_resident_patch_schedule.json
+  accepted_claim:
+    veer_el2_resident_patch_schedule_batch_512x32: 2.8489279680483475
+  non_claims:
+    - veer_el2_resident_patch_schedule_smoke_1x6 remains CPU-favorable with ratio 0.005922418043868761
+    - not broad VeeR family support
+    - not full RTL application throughput
+    - byte patch offsets are validation stimuli, not VeeR ISA/program semantics
+  status: done
+  next_action: package_veer_el2_resident_patch_schedule_boundary
+
+package_veer_el2_resident_patch_schedule_boundary:
+  goal: package the first non-TL-UL resident patch schedule boundary before broadening further
+  weakest_point: the measured VeeR-EL2 win proves one non-TL-UL generated design shape, not broad target coverage.
+  status: next
+  next_action: commit_veer_el2_resident_patch_schedule_boundary
 ```
 
 ## source_of_truth

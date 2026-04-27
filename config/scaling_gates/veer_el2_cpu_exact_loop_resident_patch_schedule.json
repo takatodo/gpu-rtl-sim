@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "gate": "veer_el2_cpu_exact_loop_resident_patch_schedule",
+  "target": "veer_el2",
+  "source_gpu_gate": "config/scaling_gates/veer_el2_resident_patch_schedule.json",
+  "purpose": "Provide a matching single-process CPU exact-loop baseline for the VeeR-EL2 resident changing-input patch schedule gate.",
+  "preconditions": [
+    "reports/veer_el2_resident_patch_schedule.json exists",
+    "artifacts/veer_el2_obj_dir/veer_el2_host_probe exists",
+    "patch_script_lines use the same GLOBAL_OFF:BYTE, '-', and @repeat-seq grammar as the GPU resident gate"
+  ],
+  "runs": [
+    {
+      "name": "veer_el2_resident_patch_schedule_smoke_1x6_cpu_exact_loop",
+      "nstates": 1,
+      "steps": 6,
+      "reset_cycles": 120,
+      "post_reset_cycles": 120,
+      "required": true,
+      "patch_script_lines": [
+        "0:1",
+        "-",
+        "@repeat-seq 2",
+        "1:2",
+        "-",
+        "@end-repeat-seq"
+      ]
+    },
+    {
+      "name": "veer_el2_resident_patch_schedule_batch_512x32_cpu_exact_loop",
+      "nstates": 512,
+      "steps": 32,
+      "reset_cycles": 120,
+      "post_reset_cycles": 120,
+      "required": true,
+      "patch_script_lines": [
+        "0:1",
+        "-",
+        "@repeat-seq 15",
+        "1:2",
+        "-",
+        "@end-repeat-seq"
+      ]
+    }
+  ],
+  "acceptance": {
+    "run_exits_zero": true,
+    "each_loop_reports_constructor_ok": true,
+    "each_loop_root_size_matches_gpu_storage_size": true,
+    "record_state_steps_per_second": true,
+    "compare_against_gpu_patch_schedule_report_when_present": true
+  },
+  "comparison_policy": {
+    "allowed_claims": [
+      "single-process CPU repeated eval_step wall time with byte patch script application",
+      "GPU resident patch schedule throughput for VeeR-EL2 at the same bounded gate shape",
+      "CPU/GPU state-step throughput ratio for this specific non-TL-UL changing-input gate"
+    ],
+    "non_claims": [
+      "not proof of broad VeeR family support",
+      "not a full RTL application throughput claim",
+      "CPU baseline applies byte patches directly to root storage and assumes global offsets match the GPU storage layout",
+      "byte patch offsets are validation stimuli and not a VeeR ISA/program semantics claim"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/veer_el2_cpu_exact_loop_resident_patch_schedule.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "run_veer_el2_resident_patch_schedule_gpu_cpu_comparison",
+  "next_action_on_fail": "diagnose_veer_el2_cpu_patch_schedule_baseline_failure"
+}

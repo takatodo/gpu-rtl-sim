@@ -141,7 +141,11 @@ phase_3:
   port_patch_schedule_gate_to_tlul_sink: done
   package_two_seed_resident_patch_schedule_boundary: done
   commit_two_seed_resident_patch_schedule_boundary: done_9bddec4
-  select_non_tlul_resident_patch_schedule_breadth_candidate: next
+  select_non_tlul_resident_patch_schedule_breadth_candidate: done_veer_el2
+  define_veer_el2_resident_patch_schedule_gate: done
+  run_veer_el2_resident_patch_schedule_gate: done_gpu_pass
+  run_veer_el2_cpu_exact_loop_resident_patch_schedule_gate: done_gpu_win_at_512x32
+  package_veer_el2_resident_patch_schedule_boundary: next
 ```
 
 ## acceptance

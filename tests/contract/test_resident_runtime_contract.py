@@ -18,6 +18,10 @@ VEER_EL2_RESIDENT_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_resi
 VEER_EL2_CPU_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_cpu_exact_loop_resident_workload.json"
 VEER_EL2_LARGER_RESIDENT_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_larger_resident_workload.json"
 VEER_EL2_LARGER_CPU_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_cpu_exact_loop_larger_resident_workload.json"
+VEER_EL2_PATCH_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_resident_patch_schedule.json"
+VEER_EL2_PATCH_CPU_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "veer_el2_cpu_exact_loop_resident_patch_schedule.json"
+)
 VEER_EL2_TEMPLATE = REPO_ROOT / "config" / "slice_launch_templates" / "veer_el2.json"
 VEER_EL2_ASSETS = REPO_ROOT / "third_party" / "rtlmeter" / "designs" / "VeeR-EL2"
 RESIDENT_PATCH_SEMANTICS = REPO_ROOT / "config" / "resident_patch_script_semantics.json"
@@ -215,12 +219,27 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertTrue(all("patch_script_lines" in run for run in gpu_gate["runs"]))
         self.assertTrue(all("patch_script_lines" in run for run in cpu_gate["runs"]))
 
+    def test_veer_el2_resident_patch_schedule_gate_is_defined(self) -> None:
+        gpu_gate = json.loads(VEER_EL2_PATCH_GATE.read_text(encoding="utf-8"))
+        cpu_gate = json.loads(VEER_EL2_PATCH_CPU_GATE.read_text(encoding="utf-8"))
+        self.assertEqual(gpu_gate["gate"], "veer_el2_resident_patch_schedule_validation")
+        self.assertEqual(gpu_gate["target"], "veer_el2")
+        self.assertEqual(cpu_gate["source_gpu_gate"], "config/scaling_gates/veer_el2_resident_patch_schedule.json")
+        self.assertEqual(gpu_gate["artifacts"]["report"], "reports/veer_el2_resident_patch_schedule.json")
+        self.assertEqual(
+            cpu_gate["artifacts"]["report"],
+            "reports/veer_el2_cpu_exact_loop_resident_patch_schedule.json",
+        )
+        self.assertTrue(all(run.get("resident_steps") is True for run in gpu_gate["runs"]))
+        self.assertTrue(all("patch_script_lines" in run for run in gpu_gate["runs"]))
+        self.assertTrue(all("patch_script_lines" in run for run in cpu_gate["runs"]))
+
     def test_selection_advances_after_two_seed_boundary_commit(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
-        self.assertEqual(selection["current_priority"], "select_non_tlul_resident_patch_schedule_breadth_candidate")
+        self.assertEqual(selection["current_priority"], "package_veer_el2_resident_patch_schedule_boundary")
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
-            "committed_two_seed_tlul_resident_patch_schedule_gpu_win",
+            "measured_veer_el2_resident_patch_schedule_gpu_win",
         )
 
     def test_readme_keeps_xuantie_boundary_limited(self) -> None:

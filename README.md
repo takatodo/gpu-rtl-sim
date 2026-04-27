@@ -434,7 +434,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  select_non_tlul_resident_patch_schedule_breadth_candidate
+  package_veer_el2_resident_patch_schedule_boundary
 
 policy:
   - upload init-state once
@@ -448,6 +448,8 @@ source_of_truth:
   - config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json
   - config/scaling_gates/tlul_sink_resident_patch_schedule.json
   - config/scaling_gates/tlul_sink_cpu_exact_loop_resident_patch_schedule.json
+  - config/scaling_gates/veer_el2_resident_patch_schedule.json
+  - config/scaling_gates/veer_el2_cpu_exact_loop_resident_patch_schedule.json
 ```
 
 Current bounded resident changing-input result:
@@ -460,17 +462,21 @@ accepted_claim:
   tlul_sink:
     shape: nstates=512 logical_patch_steps=32
     gpu_over_cpu_throughput_ratio: 2.002480966457029
-  boundary_status: committed_two_seed_tlul_resident_patch_schedule_gpu_win
+  veer_el2:
+    shape: nstates=512 logical_patch_steps=32
+    gpu_over_cpu_throughput_ratio: 2.8489279680483475
+  boundary_status: measured_veer_el2_resident_patch_schedule_gpu_win
 
 next_candidate_order:
   - veer_el2
   - xuantie_e902
 
 non_claims:
-  - not non-TL-UL resident patch schedule breadth
+  - not broad non-TL-UL resident patch schedule breadth
+  - not broad VeeR family support
   - not broad target-breadth evidence
   - not full RTL application throughput
-  - small 1x6 smoke remains CPU-favorable on both seeds
+  - small 1x6 smoke remains CPU-favorable on all measured patch-schedule seeds
 ```
 
 The host probe reuses `src/hybrid/tlul_slice_host_probe.cpp` with XuanTie
