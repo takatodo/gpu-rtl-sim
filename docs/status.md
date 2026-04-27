@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  select_next_resident_patch_schedule_breadth_or_commit
+  commit_two_seed_resident_patch_schedule_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1101,8 +1101,46 @@ select_next_resident_patch_schedule_breadth_or_commit:
     - port_patch_schedule_gate_to_tlul_sink
     - port_patch_schedule_gate_to_non_tlul_resident_target
   recommended_next: commit_current_boundary
+  status: done_committed
+  next_action: port_patch_schedule_gate_to_tlul_sink
+
+port_patch_schedule_gate_to_tlul_sink:
+  goal: broaden resident changing-input patch schedule validation from tlul_fifo_sync to the second TL-UL seed
+  weakest_point: this improves TL-UL breadth, but still does not prove non-TL-UL target breadth.
+  gpu_gate: config/scaling_gates/tlul_sink_resident_patch_schedule.json
+  cpu_gate: config/scaling_gates/tlul_sink_cpu_exact_loop_resident_patch_schedule.json
+  gpu_report: reports/tlul_sink_resident_patch_schedule.json
+  cpu_report: reports/tlul_sink_cpu_exact_loop_resident_patch_schedule.json
+  result:
+    status: pass
+    gpu_over_cpu_throughput_ratio:
+      tlul_sink_resident_patch_schedule_smoke_1x6: 0.008255714084067339
+      tlul_sink_resident_patch_schedule_batch_512x32: 2.002480966457029
+  status: done
+  next_action: package_two_seed_resident_patch_schedule_boundary
+
+package_two_seed_resident_patch_schedule_boundary:
+  goal: document the two-seed TL-UL resident changing-input patch schedule claim and remaining non-claims
+  weakest_point: both TL-UL seeds pass at 512x32, but this still is not non-TL-UL resident patch schedule breadth.
+  accepted_claims:
+    - target: tlul_fifo_sync
+      shape: nstates=512 logical_patch_steps=32
+      gpu_over_cpu_throughput_ratio: 3.1160088024052413
+    - target: tlul_sink
+      shape: nstates=512 logical_patch_steps=32
+      gpu_over_cpu_throughput_ratio: 2.002480966457029
+  non_claims:
+    - no non-TL-UL resident patch schedule breadth
+    - no full RTL application throughput claim
+    - small 1x6 smoke remains CPU-favorable on both seeds
+  status: done
+  next_action: commit_two_seed_resident_patch_schedule_boundary
+
+commit_two_seed_resident_patch_schedule_boundary:
+  goal: commit the two-seed TL-UL resident patch schedule boundary before starting non-TL-UL breadth work
+  weakest_point: without a commit boundary, the next breadth experiment can blur the validated TL-UL claim.
   status: next
-  next_action: commit_current_boundary_if_requested
+  next_action: commit_current_boundary
 ```
 
 ## source_of_truth

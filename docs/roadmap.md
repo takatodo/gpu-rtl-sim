@@ -137,7 +137,10 @@ phase_3:
   define_matching_cpu_changing_input_patch_baseline: done
   run_matching_cpu_changing_input_patch_baseline: done
   package_resident_patch_schedule_boundary: done
-  select_next_resident_patch_schedule_breadth_or_commit: next
+  select_next_resident_patch_schedule_breadth_or_commit: done_commit_first
+  port_patch_schedule_gate_to_tlul_sink: done
+  package_two_seed_resident_patch_schedule_boundary: done
+  commit_two_seed_resident_patch_schedule_boundary: next
 ```
 
 ## acceptance
@@ -301,7 +304,7 @@ non_tlul_breadth_seed_candidate:
     c_runtime: src/hybrid/run_vl_hybrid.c
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: select_next_resident_patch_schedule_breadth_or_commit
+  next_task: commit_two_seed_resident_patch_schedule_boundary
 
 veer_el2_resident_breadth_candidate:
   selected: true
@@ -391,5 +394,13 @@ resident_patch_script_semantics:
     logical_patch_steps: 32
     gpu_over_cpu_throughput_ratio: 3.1160088024052413
   boundary_status: packaged_bounded_tlul_fifo_sync_512x32_gpu_win
-  next_task: select_next_resident_patch_schedule_breadth_or_commit
+  second_seed_gpu_gate: config/scaling_gates/tlul_sink_resident_patch_schedule.json
+  second_seed_cpu_gate: config/scaling_gates/tlul_sink_cpu_exact_loop_resident_patch_schedule.json
+  second_seed_status: pass
+  accepted_second_seed_ratio:
+    target: tlul_sink
+    nstates: 512
+    logical_patch_steps: 32
+    gpu_over_cpu_throughput_ratio: 2.002480966457029
+  next_task: package_two_seed_resident_patch_schedule_boundary
 ```

@@ -434,7 +434,7 @@ weakest_point:
   result is bounded to `tlul_fifo_sync` batch 512 with 32 logical patch steps.
 
 next:
-  select_next_resident_patch_schedule_breadth_or_commit
+  commit_two_seed_resident_patch_schedule_boundary
 
 policy:
   - upload init-state once
@@ -446,21 +446,27 @@ source_of_truth:
   - config/resident_patch_script_semantics.json
   - config/scaling_gates/tlul_fifo_sync_resident_patch_schedule.json
   - config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json
+  - config/scaling_gates/tlul_sink_resident_patch_schedule.json
+  - config/scaling_gates/tlul_sink_cpu_exact_loop_resident_patch_schedule.json
 ```
 
 Current bounded resident changing-input result:
 
 ```text
 accepted_claim:
-  target: tlul_fifo_sync
-  shape: nstates=512 logical_patch_steps=32
-  gpu_over_cpu_throughput_ratio: 3.1160088024052413
-  boundary_status: packaged_bounded_tlul_fifo_sync_512x32_gpu_win
+  tlul_fifo_sync:
+    shape: nstates=512 logical_patch_steps=32
+    gpu_over_cpu_throughput_ratio: 3.1160088024052413
+  tlul_sink:
+    shape: nstates=512 logical_patch_steps=32
+    gpu_over_cpu_throughput_ratio: 2.002480966457029
+  boundary_status: packaged_two_seed_tlul_resident_patch_schedule_gpu_win
 
 non_claims:
+  - not non-TL-UL resident patch schedule breadth
   - not broad target-breadth evidence
   - not full RTL application throughput
-  - small 1x6 smoke remains CPU-favorable
+  - small 1x6 smoke remains CPU-favorable on both seeds
 ```
 
 The host probe reuses `src/hybrid/tlul_slice_host_probe.cpp` with XuanTie

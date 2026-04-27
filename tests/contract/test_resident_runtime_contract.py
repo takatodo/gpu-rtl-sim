@@ -25,6 +25,12 @@ RESIDENT_PATCH_GATE = REPO_ROOT / "config" / "scaling_gates" / "tlul_fifo_sync_r
 RESIDENT_PATCH_CPU_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json"
 )
+TLUL_SINK_RESIDENT_PATCH_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "tlul_sink_resident_patch_schedule.json"
+)
+TLUL_SINK_RESIDENT_PATCH_CPU_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "tlul_sink_cpu_exact_loop_resident_patch_schedule.json"
+)
 TARGETS = REPO_ROOT / "config" / "targets.json"
 README = REPO_ROOT / "README.md"
 RUNTIME = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid.c"
@@ -198,6 +204,24 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertIn("--patch-script", runner)
         self.assertIn("--patch-script", probe)
+
+    def test_second_seed_patch_schedule_gates_are_defined(self) -> None:
+        gpu_gate = json.loads(TLUL_SINK_RESIDENT_PATCH_GATE.read_text(encoding="utf-8"))
+        cpu_gate = json.loads(TLUL_SINK_RESIDENT_PATCH_CPU_GATE.read_text(encoding="utf-8"))
+        self.assertEqual(gpu_gate["gate"], "tlul_sink_resident_patch_schedule_validation")
+        self.assertEqual(cpu_gate["gate"], "tlul_sink_cpu_exact_loop_resident_patch_schedule")
+        self.assertEqual(cpu_gate["source_gpu_gate"], "config/scaling_gates/tlul_sink_resident_patch_schedule.json")
+        self.assertTrue(all(run.get("resident_steps") is True for run in gpu_gate["runs"]))
+        self.assertTrue(all("patch_script_lines" in run for run in gpu_gate["runs"]))
+        self.assertTrue(all("patch_script_lines" in run for run in cpu_gate["runs"]))
+
+    def test_selection_points_to_two_seed_boundary_commit(self) -> None:
+        selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
+        self.assertEqual(selection["current_priority"], "commit_two_seed_resident_patch_schedule_boundary")
+        self.assertEqual(
+            selection["resident_patch_schedule_boundary_status"],
+            "packaged_two_seed_tlul_resident_patch_schedule_gpu_win",
+        )
 
     def test_readme_keeps_xuantie_boundary_limited(self) -> None:
         readme = README.read_text(encoding="utf-8")
