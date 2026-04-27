@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  decide_next_source_backed_target_import_or_close_breadth
+  select_next_runtime_depth_after_breadth_closure
 
 policy:
   - upload init-state once
@@ -500,7 +500,7 @@ next_candidate_order:
   - input_stream_delta
   - target_breadth
 selected_next_axis:
-  target_breadth
+  runtime_depth
 
 non_claims:
   - not broad non-TL-UL resident patch schedule breadth

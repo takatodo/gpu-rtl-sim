@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "decide_next_source_backed_target_import_or_close_breadth",
+  "current_priority": "select_next_runtime_depth_after_breadth_closure",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -116,6 +116,12 @@
     "veer_el2"
   ],
   "target_breadth_next_decision": "import a new source-backed target boundary or close minimal target-breadth expansion as complete for the current repository",
+  "target_breadth_decision": "close_current_minimal_breadth",
+  "target_breadth_decision_reason": "no unused checked-in minimal target remains with a clearer source-backed input or memory contract; importing a new target is deferred to avoid expanding repository scope without a contract",
+  "next_runtime_depth_axis_options": [
+    "resident_schedule_scalability_envelope",
+    "gpu_owned_state_construction"
+  ],
   "named_rom_memory_symbol_mapping_contract": {
     "selected_family": "iahb_instruction_memory",
     "source_rtl": "third_party/rtlmeter/designs/XuanTie-E902/src/tb.v",

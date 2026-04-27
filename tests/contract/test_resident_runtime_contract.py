@@ -343,7 +343,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "decide_next_source_backed_target_import_or_close_breadth",
+            "select_next_runtime_depth_after_breadth_closure",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -407,6 +407,11 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(
             selection["target_breadth_inventory"],
             ["tlul_fifo_sync", "tlul_sink", "xuantie_e902", "veer_el2"],
+        )
+        self.assertEqual(selection["target_breadth_decision"], "close_current_minimal_breadth")
+        self.assertIn(
+            "gpu_owned_state_construction",
+            selection["next_runtime_depth_axis_options"],
         )
         self.assertEqual(
             selection["active_non_tlul_candidate_program_image_delta_gate"],

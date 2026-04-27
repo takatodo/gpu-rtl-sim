@@ -172,7 +172,8 @@ phase_3:
   select_post_xuantie_memory_gap_responsibility_axis: done_input_stream_delta_selected
   define_xuantie_e902_input_stream_delta_contract: rejected_no_distinct_source_contract
   select_next_target_breadth_source_backed_contract: blocked_checked_in_minimal_targets_exhausted
-  decide_next_source_backed_target_import_or_close_breadth: next
+  decide_next_source_backed_target_import_or_close_breadth: done_close_current_minimal_breadth
+  select_next_runtime_depth_after_breadth_closure: next
 ```
 
 ## acceptance

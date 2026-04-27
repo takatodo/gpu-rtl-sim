@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  decide_next_source_backed_target_import_or_close_breadth
+  select_next_runtime_depth_after_breadth_closure
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1635,12 +1635,27 @@ decide_next_source_backed_target_import_or_close_breadth:
       requirement: target has checked-in RTL/test assets plus an explicit input/memory/stimulus source contract
     close_current_minimal_breadth:
       requirement: record that current minimal repo breadth is exhausted and move back to runtime responsibility depth
+  decision: close_current_minimal_breadth
+  decision_reason: no unused checked-in minimal target remains with a clearer source-backed input or memory contract; importing a new target is deferred to avoid expanding repository scope without a contract.
   acceptance:
     - choose import or close
     - if import, name the source repo/path and required asset boundary
     - if close, select the next runtime-depth axis without adding target configs
+  status: done_close_current_minimal_breadth
+  next_action: select_next_runtime_depth_after_breadth_closure
+
+select_next_runtime_depth_after_breadth_closure:
+  goal: choose the next runtime-depth axis after closing current minimal target breadth
+  weakest_point: repeating target-breadth paperwork will not improve runtime capability; the next task should reduce communication, increase resident scalability, or move more state construction onto GPU.
+  candidate_axes:
+    resident_schedule_scalability_envelope: measure and document where resident patch/program-image schedules remain GPU-favorable across larger nstates/steps.
+    gpu_owned_state_construction: reduce host-device transfer by constructing or deriving more per-state initial data on GPU before resident eval.
+  acceptance:
+    - select one runtime-depth axis
+    - define the first gate or documentation packet for that axis
+    - avoid adding new target assets
   status: next
-  next_action: decide_next_source_backed_target_import_or_close_breadth
+  next_action: select_next_runtime_depth_after_breadth_closure
 ```
 
 ## source_of_truth
