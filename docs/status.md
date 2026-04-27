@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  select_next_target_breadth_source_backed_contract
+  decide_next_source_backed_target_import_or_close_breadth
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1613,12 +1613,34 @@ select_next_target_breadth_source_backed_contract:
   candidate_policy:
     required: source-backed input/memory image or stimulus contract visible from checked-in RTL/test assets
     reject: targets that only offer arbitrary generated root storage mutation
+  inventory:
+    checked_in_minimal_targets:
+      - tlul_fifo_sync
+      - tlul_sink
+      - xuantie_e902
+      - veer_el2
+    finding: all checked-in minimal targets have already been used as seeds or breadth candidates.
   acceptance:
     - name one next target candidate
     - cite the source artifact that defines its input/memory/stimulus contract
     - defer gate config creation until that contract is documented
+  status: blocked_checked_in_minimal_targets_exhausted
+  next_action: decide_next_source_backed_target_import_or_close_breadth
+
+decide_next_source_backed_target_import_or_close_breadth:
+  goal: decide whether to import a new source-backed target boundary or close target-breadth expansion for the current minimal repository
+  weakest_point: importing a target without a source-backed input/memory contract repeats the current failure mode, while closing breadth too early may stop before proving another family.
+  options:
+    import_next_target:
+      requirement: target has checked-in RTL/test assets plus an explicit input/memory/stimulus source contract
+    close_current_minimal_breadth:
+      requirement: record that current minimal repo breadth is exhausted and move back to runtime responsibility depth
+  acceptance:
+    - choose import or close
+    - if import, name the source repo/path and required asset boundary
+    - if close, select the next runtime-depth axis without adding target configs
   status: next
-  next_action: select_next_target_breadth_source_backed_contract
+  next_action: decide_next_source_backed_target_import_or_close_breadth
 ```
 
 ## source_of_truth

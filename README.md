@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  select_next_target_breadth_source_backed_contract
+  decide_next_source_backed_target_import_or_close_breadth
 
 policy:
   - upload init-state once

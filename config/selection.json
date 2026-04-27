@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "select_next_target_breadth_source_backed_contract",
+  "current_priority": "decide_next_source_backed_target_import_or_close_breadth",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -108,6 +108,14 @@
   "input_stream_delta_contract_status": "rejected_no_distinct_source_contract",
   "input_stream_delta_rejection_reason": "XuanTie-E902 testbench exposes case.pat as the only source-backed variable input; additional input_stream_delta would collapse into another program-image byte mutation rather than a distinct stimulus/input contract",
   "next_responsibility_expansion_axis_after_input_stream_rejection": "target_breadth",
+  "target_breadth_inventory_status": "checked_in_minimal_targets_exhausted",
+  "target_breadth_inventory": [
+    "tlul_fifo_sync",
+    "tlul_sink",
+    "xuantie_e902",
+    "veer_el2"
+  ],
+  "target_breadth_next_decision": "import a new source-backed target boundary or close minimal target-breadth expansion as complete for the current repository",
   "named_rom_memory_symbol_mapping_contract": {
     "selected_family": "iahb_instruction_memory",
     "source_rtl": "third_party/rtlmeter/designs/XuanTie-E902/src/tb.v",
