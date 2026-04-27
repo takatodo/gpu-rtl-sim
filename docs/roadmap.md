@@ -128,7 +128,8 @@ phase_3:
   define_veer_el2_larger_resident_workload_gate: done
   run_veer_el2_larger_resident_workload_gate: done_gpu_win
   package_veer_el2_larger_resident_boundary: done
-  commit_veer_el2_larger_resident_boundary: next
+  commit_veer_el2_larger_resident_boundary: done_620cf74
+  define_resident_patch_script_semantics: next
 ```
 
 ## acceptance
@@ -292,7 +293,7 @@ non_tlul_breadth_seed_candidate:
     c_runtime: src/hybrid/run_vl_hybrid.c
   storage_size: 1318784
   support_rtl: third_party/rtlmeter/rtl
-  next_task: commit_veer_el2_larger_resident_boundary
+  next_task: define_resident_patch_script_semantics
 
 veer_el2_resident_breadth_candidate:
   selected: true
@@ -356,6 +357,16 @@ veer_el2_resident_breadth_candidate:
     nstates_64_steps_64: 0.6021517508485191
     nstates_128_steps_64: 0.8295362109911266
   package_status: done_bounded_larger_resident_claim
-  required_next_step: commit the bounded VeeR-EL2 larger resident boundary source/config/docs changes
+  required_next_step: define resident patch/script semantics so changing-input workloads can stay device-resident
   non_claim: broad VeeR family support and full RTL application throughput are not proven
+
+resident_patch_script_semantics:
+  status: next
+  reason: bounded non-TL-UL resident breadth now exists for XuanTie-E902 and VeeR-EL2, but resident mode still rejects --patch and --patch-script
+  initial_policy:
+    - keep full state resident across repeated eval steps
+    - upload init-state once
+    - represent changing inputs as a compact device-side patch schedule
+    - forbid per-step host-device patch copies in resident mode
+    - dump final state only at the boundary when requested
 ```

@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  commit_veer_el2_larger_resident_boundary
+  define_resident_patch_script_semantics
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -965,7 +965,7 @@ package_veer_el2_larger_resident_boundary:
 
 commit_veer_el2_larger_resident_boundary:
   goal: create a source commit for the VeeR-EL2 host-probe, larger resident gate, docs, and contract updates
-  weakest_point: the generated reports and artifacts prove the result locally, but the hand-authored source/config/docs boundary is still uncommitted.
+  weakest_point: the generated reports and artifacts prove the result locally, but the next operational axis was not yet selected in the minimal repo canonical state.
   include:
     - src/hybrid/Makefile
     - src/hybrid/tlul_slice_host_probe.cpp
@@ -980,8 +980,27 @@ commit_veer_el2_larger_resident_boundary:
   exclude:
     - artifacts/**
     - reports/**
+  status: done_620cf74
+  next_action: define_resident_patch_script_semantics
+
+define_resident_patch_script_semantics:
+  goal: define how resident mode should handle per-step input changes without falling back to host-device copies on every step
+  weakest_point: resident mode currently rejects --patch and --patch-script, so workloads needing changing inputs cannot use the fastest resident path yet.
+  reason_for_priority:
+    - XuanTie-E902 and VeeR-EL2 already provide bounded non-TL-UL resident breadth
+    - the remaining practical gap is communication reduction with changing inputs
+    - defining semantics before implementation avoids ambiguous host/GPU ownership
+  proposed_semantics:
+    - --resident-steps keeps the full state array device-resident across eval steps
+    - static init-state upload remains a one-time pre-run transfer
+    - per-step patches must be represented as a compact device-side patch schedule before the resident loop begins
+    - host must not perform per-step cuMemcpyHtoD during resident mode
+    - final DtoH remains optional and occurs only at the boundary when --dump-state is requested
+  first_contract:
+    - reject current --patch / --patch-script remains valid until a resident patch buffer ABI is defined
+    - add config/test/docs describing the resident patch buffer ABI before C runtime implementation
   status: next
-  next_action: commit_veer_el2_larger_resident_boundary
+  next_action: define_resident_patch_script_semantics
 ```
 
 ## source_of_truth

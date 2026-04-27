@@ -77,7 +77,7 @@ selected:
     - output/design_scope_expansion_packet.json
 
 next:
-  commit_veer_el2_larger_resident_boundary
+  define_resident_patch_script_semantics
 ```
 
 Resident boundary:
@@ -423,6 +423,23 @@ batched state on device across repeated eval steps, preserves the existing
 non-resident path for comparison, and only dumps final state at the boundary.
 The first resident mode rejects per-step `--patch` / `--patch-script` inputs
 until their semantics are defined.
+
+Next resident communication-reduction task:
+
+```text
+weakest_point:
+  resident mode keeps state on device, but changing-input workloads still lack
+  defined patch/script semantics.
+
+next:
+  define_resident_patch_script_semantics
+
+policy:
+  - upload init-state once
+  - keep state device-resident across repeated eval steps
+  - represent per-step changes as a compact device-side patch schedule
+  - do not reintroduce per-step host-device patch copies
+```
 
 The host probe reuses `src/hybrid/tlul_slice_host_probe.cpp` with XuanTie
 model-specific macros. Run it from the generated obj_dir so the stock testbench

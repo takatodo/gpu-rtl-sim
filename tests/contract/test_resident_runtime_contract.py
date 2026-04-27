@@ -120,8 +120,8 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("GPU resident mode beats", readme)
         self.assertIn("Not broad XuanTie family support", readme)
         self.assertIn("resident --patch / --patch-script semantics", readme)
+        self.assertIn("define_resident_patch_script_semantics", readme)
         self.assertIn("config/scaling_gates/veer_el2_resident_workload.json", readme)
-        self.assertIn("commit_veer_el2_larger_resident_boundary", readme)
         self.assertIn("config/scaling_gates/veer_el2_larger_resident_workload.json", readme)
         self.assertIn("make -C src/hybrid veer_el2_host_probe", readme)
 
