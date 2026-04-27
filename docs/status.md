@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_device_side_init_state_replication_gate
+  select_next_gpu_owned_state_construction_step
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1755,8 +1755,26 @@ define_device_side_init_state_replication_gate:
     - generate one GPU run with device-side init-state replication
     - compare final state dumps under the existing normalized compare policy
     - record whether host-device initialization traffic is reduced from O(nstates * storage) to O(storage)
+  observed:
+    - gate: config/scaling_gates/tlul_fifo_sync_init_state_replication.json
+    - report: reports/tlul_fifo_sync_init_state_replication_compare.json
+    - shape: tlul_fifo_sync 64x1
+    - strict_match: true
+    - normalized_final_state_equivalence: true
+    - upload_reduction_ratio: 64.0
+  status: done_gate_passed
+  next_action: select_next_gpu_owned_state_construction_step
+
+select_next_gpu_owned_state_construction_step:
+  goal: choose the next GPU-owned construction responsibility after device-side init-state replication passed
+  weakest_point: init-state replication reduces upload traffic for duplicated state images, but it still does not construct semantically meaningful ROM/program state on GPU.
+  options:
+    - extend init replication gate to a resident schedule throughput comparison
+    - define ROM/program initialization construction boundary
+    - stop construction expansion and package the current minimal boundary
+  recommended_next: define_rom_or_program_initialization_construction_boundary
   status: next
-  next_action: define_device_side_init_state_replication_gate
+  next_action: select_next_gpu_owned_state_construction_step
 ```
 
 ## source_of_truth

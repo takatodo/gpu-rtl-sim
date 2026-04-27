@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "define_device_side_init_state_replication_gate",
+  "current_priority": "select_next_gpu_owned_state_construction_step",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -177,8 +177,12 @@
   "larger_resident_schedule_envelope_decision": "larger resident schedule keeps improving on TL-UL sink, so the next runtime-depth task should decide the GPU-owned state construction boundary rather than adding more target breadth",
   "gpu_owned_state_construction_boundary": "device_side_init_state_replication",
   "gpu_owned_state_construction_boundary_reason": "the existing runtime repeats a single init-state image with one host-to-device copy per state; device-side replication is the smallest GPU-owned construction step that reduces host-device traffic without adding ROM or ISA semantics",
-  "device_side_init_state_replication_status": "runtime_support_implemented",
+  "device_side_init_state_replication_status": "gate_passed",
   "device_side_init_state_replication_runtime_flag": "RUN_VL_HYBRID_GPU_REPLICATE_INIT_STATE",
   "device_side_init_state_replication_kernel": "vl_replicate_init_state_gpu",
-  "device_side_init_state_replication_next_action": "define_device_side_init_state_replication_gate"
+  "device_side_init_state_replication_gate": "config/scaling_gates/tlul_fifo_sync_init_state_replication.json",
+  "device_side_init_state_replication_report": "reports/tlul_fifo_sync_init_state_replication_compare.json",
+  "device_side_init_state_replication_shape": "tlul_fifo_sync 64x1",
+  "device_side_init_state_replication_upload_reduction_ratio": 64.0,
+  "device_side_init_state_replication_next_action": "select_next_gpu_owned_state_construction_step"
 }

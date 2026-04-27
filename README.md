@@ -443,7 +443,7 @@ weakest_point:
   is still not non-TL-UL breadth or full RTL application throughput.
 
 next:
-  define_device_side_init_state_replication_gate
+  select_next_gpu_owned_state_construction_step
 
 latest_larger_envelope:
   tlul_sink_1024x64_gpu_over_cpu_ratio: 5.557127971950416
@@ -451,6 +451,12 @@ latest_larger_envelope:
 
 selected_gpu_owned_state_construction_boundary:
   device_side_init_state_replication
+
+latest_init_state_replication_gate:
+  shape: tlul_fifo_sync 64x1
+  strict_match: true
+  normalized_final_state_equivalence: true
+  upload_reduction_ratio: 64.0
 
 policy:
   - upload init-state once

@@ -178,7 +178,8 @@ phase_3:
   define_larger_resident_schedule_envelope_gate: done_gates_defined
   run_larger_resident_schedule_envelope_gate: done_gpu_cpu_pass
   select_next_runtime_depth_after_larger_resident_envelope: done_device_side_init_state_replication_selected
-  define_device_side_init_state_replication_gate: next
+  define_device_side_init_state_replication_gate: done_gate_passed
+  select_next_gpu_owned_state_construction_step: next
 ```
 
 ## acceptance

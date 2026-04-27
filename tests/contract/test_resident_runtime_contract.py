@@ -66,6 +66,9 @@ TLUL_SINK_LARGER_ENVELOPE_GATE = (
 TLUL_SINK_LARGER_ENVELOPE_CPU_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "tlul_sink_cpu_exact_loop_larger_resident_patch_schedule.json"
 )
+TLUL_FIFO_INIT_REPLICATION_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "tlul_fifo_sync_init_state_replication.json"
+)
 TARGETS = REPO_ROOT / "config" / "targets.json"
 README = REPO_ROOT / "README.md"
 RUNTIME = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid.c"
@@ -223,6 +226,20 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("vl_replicate_init_state_gpu", cpp_generator)
         self.assertIn("--gpu-replicate-init-state", wrapper)
 
+    def test_device_side_init_state_replication_gate_is_defined(self) -> None:
+        gate = json.loads(TLUL_FIFO_INIT_REPLICATION_GATE.read_text(encoding="utf-8"))
+        self.assertEqual(gate["gate"], "tlul_fifo_sync_device_side_init_state_replication")
+        self.assertEqual(gate["boundary"], "device_side_init_state_replication")
+        self.assertEqual(gate["shape"], {"nstates": 64, "steps": 1, "storage_size": 6016})
+        self.assertEqual(gate["runtime_support"]["kernel"], "vl_replicate_init_state_gpu")
+        self.assertEqual(
+            gate["comparison"]["acceptance_policy"],
+            "normalized_final_state_equivalence",
+        )
+        self.assertTrue(gate["comparison"]["strict_match"])
+        self.assertTrue(gate["comparison"]["normalized_final_state_equivalence"])
+        self.assertEqual(gate["communication_claim"]["upload_reduction_ratio"], 64.0)
+
     def test_resident_patch_schedule_gate_is_defined(self) -> None:
         gate = json.loads(RESIDENT_PATCH_GATE.read_text(encoding="utf-8"))
         self.assertEqual(gate["gate"], "tlul_fifo_sync_resident_patch_schedule_validation")
@@ -364,7 +381,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "define_device_side_init_state_replication_gate",
+            "select_next_gpu_owned_state_construction_step",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -468,12 +485,17 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["device_side_init_state_replication_status"],
-            "runtime_support_implemented",
+            "gate_passed",
         )
         self.assertEqual(
             selection["device_side_init_state_replication_next_action"],
-            "define_device_side_init_state_replication_gate",
+            "select_next_gpu_owned_state_construction_step",
         )
+        self.assertEqual(
+            selection["device_side_init_state_replication_gate"],
+            "config/scaling_gates/tlul_fifo_sync_init_state_replication.json",
+        )
+        self.assertEqual(selection["device_side_init_state_replication_upload_reduction_ratio"], 64.0)
         self.assertEqual(
             selection["larger_resident_schedule_envelope_gate"],
             "config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json",
