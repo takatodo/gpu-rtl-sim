@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  package_xuantie_e902_resident_patch_schedule_boundary
+  commit_xuantie_e902_resident_patch_schedule_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1267,6 +1267,31 @@ run_xuantie_e902_cpu_exact_loop_resident_patch_schedule_gate:
 package_xuantie_e902_resident_patch_schedule_boundary:
   goal: package the second non-TL-UL resident patch schedule boundary before moving toward application-like patch semantics
   weakest_point: XuanTie-E902 adds breadth but still relies on arbitrary root byte patches rather than application-level input or ROM semantics.
+  accepted_claims:
+    - target: tlul_fifo_sync
+      shape: nstates=512 logical_patch_steps=32
+      gpu_over_cpu_throughput_ratio: 3.1160088024052413
+    - target: tlul_sink
+      shape: nstates=512 logical_patch_steps=32
+      gpu_over_cpu_throughput_ratio: 2.002480966457029
+    - target: veer_el2
+      shape: nstates=512 logical_patch_steps=32
+      gpu_over_cpu_throughput_ratio: 2.8489279680483475
+    - target: xuantie_e902
+      shape: nstates=128 logical_patch_steps=32
+      gpu_over_cpu_throughput_ratio: 1.1724144754038845
+  non_claims:
+    - no broad non-TL-UL resident patch schedule breadth
+    - no broad XuanTie family support
+    - no full RTL application throughput claim
+    - byte patch offsets are validation stimuli, not target program semantics
+    - application-like input, ROM, or program-delta semantics are not defined yet
+  status: next
+  next_action: commit_xuantie_e902_resident_patch_schedule_boundary
+
+commit_xuantie_e902_resident_patch_schedule_boundary:
+  goal: commit the packaged XuanTie-E902 resident patch schedule boundary before defining application-like patch semantics
+  weakest_point: without a commit boundary, the measured XuanTie-E902 byte-patch claim can be mixed with the next semantic broadening step.
   status: next
   next_action: commit_xuantie_e902_resident_patch_schedule_boundary
 ```

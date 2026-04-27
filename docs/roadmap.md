@@ -151,7 +151,8 @@ phase_3:
   define_xuantie_e902_resident_patch_schedule_gate: done
   run_xuantie_e902_resident_patch_schedule_gate: done_gpu_pass
   run_xuantie_e902_cpu_exact_loop_resident_patch_schedule_gate: done_gpu_win_at_128x32
-  package_xuantie_e902_resident_patch_schedule_boundary: next
+  package_xuantie_e902_resident_patch_schedule_boundary: done
+  commit_xuantie_e902_resident_patch_schedule_boundary: next
 ```
 
 ## acceptance
