@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  validate_word_packed_program_image_initialization_against_byte_record_boundary
+  measure_word_packed_program_image_upload_reduction
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2052,6 +2052,18 @@ launch_program_image_word_packed_initialization_before_resident_eval:
   report_line: program_image_word_launch
   status: done_launch_before_resident_eval_wired
   next_action: validate_word_packed_program_image_initialization_against_byte_record_boundary
+
+validate_word_packed_program_image_initialization_against_byte_record_boundary:
+  goal: prove word-packed case.pat construction matches the prior byte-record boundary under the accepted normalized policy
+  weakest_point: validation passed, but the upload reduction ratio is not yet measured and packaged as the next claim.
+  reference_dump: artifacts/xuantie_e902_obj_dir/xuantie_gpu_program_image_init_state.bin
+  candidate_dump: artifacts/xuantie_e902_obj_dir/xuantie_gpu_program_image_words_state.bin
+  report: reports/xuantie_e902_program_image_word_packed_initialization_validation.json
+  result: normalized_final_state_equivalence_pass
+  design_state_mismatch_bytes: 0
+  raw_mismatch_scope: verilator_internal_only
+  status: done_normalized_final_state_equivalence_pass
+  next_action: measure_word_packed_program_image_upload_reduction
 ```
 
 ## source_of_truth

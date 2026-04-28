@@ -197,7 +197,8 @@ phase_3:
   add_program_image_word_packed_host_flag_and_env: done_host_flag_env_wired
   upload_program_image_words_once: done_words_uploaded_once
   launch_program_image_word_packed_initialization_before_resident_eval: done_launch_before_resident_eval_wired
-  validate_word_packed_program_image_initialization_against_byte_record_boundary: next
+  validate_word_packed_program_image_initialization_against_byte_record_boundary: done_normalized_final_state_equivalence_pass
+  measure_word_packed_program_image_upload_reduction: next
 ```
 
 ## acceptance

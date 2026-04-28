@@ -497,6 +497,14 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             word_boundary["runtime_support"]["launch_status"],
             "launch_before_resident_eval_wired",
         )
+        self.assertEqual(
+            word_boundary["runtime_support"]["validation_status"],
+            "normalized_final_state_equivalence_pass",
+        )
+        self.assertEqual(
+            word_boundary["runtime_support"]["validation_report"],
+            "reports/xuantie_e902_program_image_word_packed_initialization_validation.json",
+        )
         self.assertEqual(word_boundary["expected_traffic"]["expected_word_count"], 33336)
         self.assertEqual(word_boundary["expected_traffic"]["expected_upload_bytes"], 166688)
         self.assertEqual(
@@ -519,6 +527,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             word_boundary["implementation_subtasks"][4],
             "launch_program_image_word_packed_initialization_before_resident_eval: done",
         )
+        self.assertEqual(
+            word_boundary["implementation_subtasks"][5],
+            "validate_word_packed_program_image_initialization_against_byte_record_boundary: done",
+        )
         self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
@@ -529,7 +541,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "validate_word_packed_program_image_initialization_against_byte_record_boundary",
+            "measure_word_packed_program_image_upload_reduction",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -666,7 +678,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "validate_word_packed_program_image_initialization_against_byte_record_boundary",
+            "measure_word_packed_program_image_upload_reduction",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_kernel_name"],
@@ -750,11 +762,19 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             selection["program_image_word_packed_initialization_launch_status"],
             "launch_before_resident_eval_wired",
         )
+        self.assertEqual(
+            selection["program_image_word_packed_initialization_validation_status"],
+            "normalized_final_state_equivalence_pass",
+        )
+        self.assertEqual(
+            selection["program_image_word_packed_initialization_validation_design_state_mismatch_bytes"],
+            0,
+        )
         self.assertEqual(selection["program_image_word_packed_initialization_expected_word_count"], 33336)
         self.assertEqual(selection["program_image_word_packed_initialization_expected_upload_bytes"], 166688)
         self.assertEqual(
             selection["program_image_word_packed_initialization_next_action"],
-            "validate_word_packed_program_image_initialization_against_byte_record_boundary",
+            "measure_word_packed_program_image_upload_reduction",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],
