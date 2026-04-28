@@ -2195,6 +2195,18 @@ package_xuantie_e902_combined_program_image_and_dmem_construction_boundary:
     - not launch-latency speedup
   status: done_packaged_combined_construction_boundary
   next_action: select_next_gpu_owned_state_construction_after_combined_xuantie_package
+
+select_next_gpu_owned_state_construction_after_combined_xuantie_package:
+  goal: choose the next responsibility after the combined XuanTie-E902 construction package is accepted
+  weakest_point: no further checked-in XuanTie memory family has a defensible source-backed data-image contract, and the combined package still excludes launch latency and CPU/root-layout discovery cost.
+  rejected_axes:
+    x_smem_ctrl_initialization: blocked_no_testbench_or_external_source_image
+    x_dmem_data_image_initialization: blocked_zero_fill_policy_only_no_external_data_image
+    new_target_breadth: deferred_to_avoid_importing_without_source_backed_contract
+  selected_next_axis: define_xuantie_combined_construction_runtime_accounting_gate
+  selection_reason: quantify the overhead excluded from the combined package claim before expanding responsibility again.
+  status: done_selected_runtime_accounting_gate
+  next_action: define_xuantie_combined_construction_runtime_accounting_gate
 ```
 
 ## source_of_truth

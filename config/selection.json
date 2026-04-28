@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "select_next_gpu_owned_state_construction_after_combined_xuantie_package",
+  "current_priority": "define_xuantie_combined_construction_runtime_accounting_gate",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -399,5 +399,17 @@
     ],
     "packaging_status": "accepted_current_combined_construction_surface",
     "next_action": "select_next_gpu_owned_state_construction_after_combined_xuantie_package"
+  },
+  "post_combined_xuantie_package_axis_selection": {
+    "status": "selected_runtime_accounting_gate",
+    "selected_next_axis": "define_xuantie_combined_construction_runtime_accounting_gate",
+    "weakest_point": "No further checked-in XuanTie memory family has a defensible source-backed data-image contract, and the combined package still excludes launch latency and CPU/root-layout discovery cost.",
+    "rejected_axes": {
+      "x_smem_ctrl_initialization": "blocked_no_testbench_or_external_source_image",
+      "x_dmem_data_image_initialization": "blocked_zero_fill_policy_only_no_external_data_image",
+      "new_target_breadth": "deferred_to_avoid_importing_without_source_backed_contract"
+    },
+    "reason": "The next useful step is to quantify the overhead excluded from the combined package claim before expanding responsibility again.",
+    "next_action": "define_xuantie_combined_construction_runtime_accounting_gate"
   }
 }

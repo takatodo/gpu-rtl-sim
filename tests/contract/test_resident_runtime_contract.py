@@ -650,7 +650,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "select_next_gpu_owned_state_construction_after_combined_xuantie_package",
+            "define_xuantie_combined_construction_runtime_accounting_gate",
         )
         self.assertEqual(
             selection["post_dmem_zero_fill_axis_selection"]["status"],
@@ -685,6 +685,20 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(
             combined_package["packaging_status"],
             "accepted_current_combined_construction_surface",
+        )
+        post_combined = selection["post_combined_xuantie_package_axis_selection"]
+        self.assertEqual(post_combined["status"], "selected_runtime_accounting_gate")
+        self.assertEqual(
+            post_combined["selected_next_axis"],
+            "define_xuantie_combined_construction_runtime_accounting_gate",
+        )
+        self.assertEqual(
+            post_combined["rejected_axes"]["x_smem_ctrl_initialization"],
+            "blocked_no_testbench_or_external_source_image",
+        )
+        self.assertEqual(
+            post_combined["next_action"],
+            "define_xuantie_combined_construction_runtime_accounting_gate",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],

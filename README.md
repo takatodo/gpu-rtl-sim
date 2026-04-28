@@ -542,6 +542,8 @@ next_gpu_owned_state_construction_step:
   combined_package_reduction_ratio_vs_full_state_bytes: 9.885345705657835
   combined_package_status: packaged
   combined_package_next_action: select_next_gpu_owned_state_construction_after_combined_xuantie_package
+  post_combined_package_axis: define_xuantie_combined_construction_runtime_accounting_gate
+  post_combined_package_axis_reason: no further checked-in XuanTie memory family has a defensible source-backed data-image contract; measure launch and CPU/root-layout overhead before expanding again
   word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]
   expected_next_axis_upload_bytes: 166688
   expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822
