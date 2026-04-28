@@ -187,8 +187,8 @@ phase_3:
   implement_program_image_initialization_kernel_and_host_flag: planned_subtasks_defined
   implement_program_image_initialization_kernel_generation: done_kernel_generation_implemented
   add_program_image_initialization_host_flag_and_env: done_host_flag_env_wired
-  upload_program_image_initialization_records_once: next
-  launch_program_image_initialization_before_resident_eval: pending
+  upload_program_image_initialization_records_once: done_records_uploaded_once
+  launch_program_image_initialization_before_resident_eval: next
   validate_program_image_initialization_against_cpu_constructed_state: pending
   measure_program_image_initialization_upload_reduction: pending
 ```

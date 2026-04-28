@@ -81,7 +81,7 @@
     "relationship_to_resident_patch_schedule": "reuse the proven offset/value SoA upload shape, but run once before resident eval instead of once per logical patch step"
   },
   "runtime_support": {
-    "status": "host_flag_env_wired",
+    "status": "records_uploaded_once",
     "required_kernel_family": "program_image_initialization_gpu",
     "required_kernel": "vl_apply_program_image_init_gpu",
     "required_host_flag": "--program-image-init-records",
@@ -90,7 +90,7 @@
     "implementation_subtasks": [
       "implement_program_image_initialization_kernel_generation: done",
       "add_program_image_initialization_host_flag_and_env: done",
-      "upload_program_image_initialization_records_once",
+      "upload_program_image_initialization_records_once: done",
       "launch_program_image_initialization_before_resident_eval",
       "validate_program_image_initialization_against_cpu_constructed_state"
     ],

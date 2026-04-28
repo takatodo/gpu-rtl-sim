@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  upload_program_image_initialization_records_once
+  launch_program_image_initialization_before_resident_eval
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1895,8 +1895,8 @@ implement_program_image_initialization_kernel_and_host_flag:
     - validate_program_image_initialization_against_cpu_constructed_state:
         purpose: compare CPU/source-backed construction against GPU/device-side construction
         output: reports/xuantie_e902_program_image_initialization_construction.json
-  status: host_flag_env_wired
-  next_action: upload_program_image_initialization_records_once
+  status: records_uploaded_once
+  next_action: launch_program_image_initialization_before_resident_eval
 
 implement_program_image_initialization_kernel_generation:
   goal: emit the program-image initialization kernel from both GPU kernel generators
@@ -1924,6 +1924,21 @@ add_program_image_initialization_host_flag_and_env:
   non_claim: no program-image record upload, no device-side application, and no CPU/GPU construction validation yet.
   status: done_host_flag_env_wired
   next_action: upload_program_image_initialization_records_once
+
+upload_program_image_initialization_records_once:
+  goal: parse and upload source-backed program-image initialization records once as offset/value SoA buffers
+  weakest_point: the runtime owns device buffers for the records, but still does not launch vl_apply_program_image_init_gpu to apply them to every state.
+  record_file_grammar:
+    token: target_root_offset:byte
+    comments: '#' starts a comment
+    duplicate_offsets: rejected
+    offset_scope: per-state storage_size, not global multi-state storage
+  runtime_surface:
+    parser: load_program_image_init_records
+    upload: cuMemcpyHtoD(program_image_init_records.d_offsets / d_values)
+    report_line: program_image_init_record_upload
+  status: done_records_uploaded_once
+  next_action: launch_program_image_initialization_before_resident_eval
 ```
 
 ## source_of_truth
