@@ -2134,6 +2134,23 @@ define_xuantie_e902_dmem_zero_fill_device_initialization_boundary:
     - not ISA/software correctness
   status: done_defined_boundary
   next_action: select_next_gpu_owned_state_construction_after_dmem_zero_fill
+
+select_next_gpu_owned_state_construction_after_dmem_zero_fill:
+  goal: choose the next GPU-owned construction responsibility after deterministic x_dmem zero-fill is packaged
+  weakest_point: no remaining XuanTie-E902 non-IAHB memory family has a source-backed data-image contract; expanding to x_smem or x_dmem data-image initialization would overclaim.
+  selected_next_axis: define_xuantie_e902_combined_program_image_and_dmem_construction_package
+  selection_reason: the defensible next step is to package already validated construction responsibilities together: word-packed case.pat IAHB program-image initialization plus deterministic x_dmem zero-fill.
+  included_boundaries:
+    - source_backed_iahb_case_pat_word_packed_program_image_initialization
+    - deterministic_x_dmem_zero_fill_device_initialization
+  excluded_claims:
+    - x_smem_ctrl initialization
+    - x_dmem data-image initialization
+    - new source-backed non-IAHB memory image
+    - ISA/software correctness
+    - launch-latency speedup
+  status: done_selected_combined_existing_construction_package
+  next_action: define_xuantie_e902_combined_program_image_and_dmem_construction_package
 ```
 
 ## source_of_truth

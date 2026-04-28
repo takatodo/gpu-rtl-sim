@@ -532,6 +532,11 @@ next_gpu_owned_state_construction_step:
   dmem_zero_fill_offset_upload_bytes: 32
   dmem_zero_fill_reduction_ratio_vs_per_state_dmem_bytes: 8192.0
   dmem_zero_fill_next_action: select_next_gpu_owned_state_construction_after_dmem_zero_fill
+  post_dmem_zero_fill_axis: define_xuantie_e902_combined_program_image_and_dmem_construction_package
+  post_dmem_zero_fill_axis_reason: combine the already validated word-packed IAHB program-image construction and deterministic x_dmem zero-fill construction instead of overclaiming x_smem or x_dmem data-image support
+  combined_package_includes:
+    - source_backed_iahb_case_pat_word_packed_program_image_initialization
+    - deterministic_x_dmem_zero_fill_device_initialization
   word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]
   expected_next_axis_upload_bytes: 166688
   expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822

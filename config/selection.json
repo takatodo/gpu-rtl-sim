@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "select_next_gpu_owned_state_construction_after_dmem_zero_fill",
+  "current_priority": "define_xuantie_e902_combined_program_image_and_dmem_construction_package",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -345,5 +345,23 @@
       "does not include launch latency or CPU/root-layout discovery cost"
     ]
   },
-  "xuantie_e902_dmem_zero_fill_device_initialization_next_action": "select_next_gpu_owned_state_construction_after_dmem_zero_fill"
+  "xuantie_e902_dmem_zero_fill_device_initialization_next_action": "select_next_gpu_owned_state_construction_after_dmem_zero_fill",
+  "post_dmem_zero_fill_axis_selection": {
+    "status": "selected_combined_existing_construction_package",
+    "selected_next_axis": "define_xuantie_e902_combined_program_image_and_dmem_construction_package",
+    "weakest_point": "No remaining XuanTie-E902 non-IAHB memory family has a source-backed data-image contract; expanding to x_smem or x_dmem data-image initialization would overclaim.",
+    "reason": "The defensible next step is to package already validated GPU-owned construction responsibilities together: word-packed case.pat IAHB program-image initialization plus deterministic x_dmem zero-fill.",
+    "included_boundaries": [
+      "source_backed_iahb_case_pat_word_packed_program_image_initialization",
+      "deterministic_x_dmem_zero_fill_device_initialization"
+    ],
+    "excluded_claims": [
+      "x_smem_ctrl initialization",
+      "x_dmem data-image initialization",
+      "new source-backed non-IAHB memory image",
+      "ISA/software correctness",
+      "launch-latency speedup"
+    ],
+    "next_action": "define_xuantie_e902_combined_program_image_and_dmem_construction_package"
+  }
 }
