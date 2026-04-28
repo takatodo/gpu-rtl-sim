@@ -2179,6 +2179,22 @@ define_xuantie_e902_combined_program_image_and_dmem_construction_package:
     - not raw full-state byte equality
   status: done_defined_boundary
   next_action: package_xuantie_e902_combined_program_image_and_dmem_construction_boundary
+
+package_xuantie_e902_combined_program_image_and_dmem_construction_boundary:
+  goal: accept the combined XuanTie-E902 GPU-owned construction surface as the current packaged boundary
+  weakest_point: packaging does not create a new source-backed input family; it only makes the existing IAHB word-packed and x_dmem zero-fill construction claims easier to carry forward.
+  packaged_boundary: combined_word_packed_iahb_program_image_and_dmem_zero_fill_construction
+  accepted_claim: GPU-owned construction now covers word-packed case.pat IAHB initialization plus deterministic x_dmem zero-fill as a single bounded package.
+  aggregate_upload_bytes: 133408
+  aggregate_reduction_ratio_vs_full_state_bytes: 9.885345705657835
+  preserved_non_claims:
+    - not x_smem_ctrl initialization
+    - not x_dmem data-image initialization
+    - not a new source-backed non-IAHB memory image
+    - not ISA/software correctness
+    - not launch-latency speedup
+  status: done_packaged_combined_construction_boundary
+  next_action: select_next_gpu_owned_state_construction_after_combined_xuantie_package
 ```
 
 ## source_of_truth

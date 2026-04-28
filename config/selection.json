@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "package_xuantie_e902_combined_program_image_and_dmem_construction_boundary",
+  "current_priority": "select_next_gpu_owned_state_construction_after_combined_xuantie_package",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -365,7 +365,7 @@
     "next_action": "define_xuantie_e902_combined_program_image_and_dmem_construction_package"
   },
   "xuantie_e902_combined_program_image_and_dmem_construction_package": {
-    "status": "defined_boundary",
+    "status": "packaged",
     "packaged_boundary": "combined_word_packed_iahb_program_image_and_dmem_zero_fill_construction",
     "weakest_point": "This package composes two validated construction responsibilities but does not add a new source-backed non-IAHB memory image or prove launch-latency speedup.",
     "accepted_claim": "GPU can construct the selected XuanTie-E902 IAHB case.pat program image from word-packed source records and zero selected x_dmem_ctrl.ram0..3.mem storage before resident eval without uploading a per-state full image or per-state DMEM payload.",
@@ -397,6 +397,7 @@
       "not launch-latency speedup",
       "not raw full-state byte equality"
     ],
-    "next_action": "package_xuantie_e902_combined_program_image_and_dmem_construction_boundary"
+    "packaging_status": "accepted_current_combined_construction_surface",
+    "next_action": "select_next_gpu_owned_state_construction_after_combined_xuantie_package"
   }
 }

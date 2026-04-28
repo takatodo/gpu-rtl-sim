@@ -650,7 +650,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "package_xuantie_e902_combined_program_image_and_dmem_construction_boundary",
+            "select_next_gpu_owned_state_construction_after_combined_xuantie_package",
         )
         self.assertEqual(
             selection["post_dmem_zero_fill_axis_selection"]["status"],
@@ -663,7 +663,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         combined_package = selection[
             "xuantie_e902_combined_program_image_and_dmem_construction_package"
         ]
-        self.assertEqual(combined_package["status"], "defined_boundary")
+        self.assertEqual(combined_package["status"], "packaged")
         self.assertEqual(
             combined_package["packaged_boundary"],
             "combined_word_packed_iahb_program_image_and_dmem_zero_fill_construction",
@@ -680,7 +680,11 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("not x_dmem data-image initialization", combined_package["non_claims"])
         self.assertEqual(
             combined_package["next_action"],
-            "package_xuantie_e902_combined_program_image_and_dmem_construction_boundary",
+            "select_next_gpu_owned_state_construction_after_combined_xuantie_package",
+        )
+        self.assertEqual(
+            combined_package["packaging_status"],
+            "accepted_current_combined_construction_surface",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
