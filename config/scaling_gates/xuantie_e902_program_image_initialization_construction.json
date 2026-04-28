@@ -150,6 +150,7 @@
     },
     "runtime_support": {
       "required_kernel": "vl_apply_program_image_words_gpu",
+      "kernel_generation_status": "implemented_in_generators",
       "planned_host_flag": "--program-image-words",
       "planned_env": "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS",
       "upload_layout": "program_words plus four lane base offsets uploaded once"
@@ -162,7 +163,7 @@
     },
     "implementation_subtasks": [
       "define_program_image_word_packed_initialization_boundary: done",
-      "implement_program_image_word_packed_kernel_generation",
+      "implement_program_image_word_packed_kernel_generation: done",
       "add_program_image_word_packed_host_flag_and_env",
       "upload_program_image_words_once",
       "launch_program_image_word_packed_initialization_before_resident_eval",

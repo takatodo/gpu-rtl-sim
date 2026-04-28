@@ -193,7 +193,8 @@ phase_3:
   measure_program_image_initialization_upload_reduction: done_positive_but_small_1_0989x
   package_program_image_initialization_boundary_and_select_next_gpu_construction_axis: done_selected_word_packed_program_image_initialization
   define_program_image_word_packed_initialization_boundary: done_boundary_defined
-  implement_program_image_word_packed_kernel_generation: next
+  implement_program_image_word_packed_kernel_generation: done_kernel_generation_implemented
+  add_program_image_word_packed_host_flag_and_env: next
 ```
 
 ## acceptance

@@ -498,6 +498,7 @@ next_gpu_owned_state_construction_step:
   next_axis: source_backed_program_image_word_packed_initialization
   word_packed_boundary: defined
   word_packed_required_kernel: vl_apply_program_image_words_gpu
+  word_packed_kernel_generation: implemented_in_generators
   word_packed_planned_host_flag: --program-image-words
   word_packed_planned_env: RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS
   word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]

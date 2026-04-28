@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  implement_program_image_word_packed_kernel_generation
+  add_program_image_word_packed_host_flag_and_env
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2011,6 +2011,17 @@ define_program_image_word_packed_initialization_boundary:
   planned_env: RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS
   status: done_boundary_defined
   next_action: implement_program_image_word_packed_kernel_generation
+
+implement_program_image_word_packed_kernel_generation:
+  goal: emit vl_apply_program_image_words_gpu from both kernel generation paths
+  weakest_point: the kernel exists in generated IR paths, but the runtime still has no --program-image-words input path or launch site.
+  kernel: vl_apply_program_image_words_gpu
+  generators:
+    - src/tools/gen_vl_gpu_kernel.py
+    - src/passes/vlgpugen.cpp
+  semantics: one logical work item expands one state_index / word_index pair into ram0..3 bytes
+  status: done_kernel_generation_implemented
+  next_action: add_program_image_word_packed_host_flag_and_env
 ```
 
 ## source_of_truth

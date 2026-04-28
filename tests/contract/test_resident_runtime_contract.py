@@ -244,6 +244,14 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("record_offsets", cpp_generator)
         self.assertIn("storage_bytes", generator)
         self.assertIn("storage_bytes", cpp_generator)
+        self.assertIn("vl_apply_program_image_words_gpu", generator)
+        self.assertIn("vl_apply_program_image_words_gpu", cpp_generator)
+        self.assertIn("program_words", generator)
+        self.assertIn("program_words", cpp_generator)
+        self.assertIn("lane_base_offsets", generator)
+        self.assertIn("lane_base_offsets", cpp_generator)
+        self.assertIn("lshr i32 %word, 24", generator)
+        self.assertIn("B.CreateLShr(Word, ConstantInt::get(I32Ty, 24)", cpp_generator)
         self.assertIn("RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS", wrapper)
         self.assertIn("RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS", runtime)
         self.assertIn("--program-image-init-records", wrapper)
@@ -458,6 +466,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         word_boundary = gate["program_image_word_packed_initialization_boundary"]
         self.assertEqual(word_boundary["status"], "defined")
         self.assertEqual(word_boundary["runtime_support"]["required_kernel"], "vl_apply_program_image_words_gpu")
+        self.assertEqual(
+            word_boundary["runtime_support"]["kernel_generation_status"],
+            "implemented_in_generators",
+        )
         self.assertEqual(word_boundary["runtime_support"]["planned_host_flag"], "--program-image-words")
         self.assertEqual(word_boundary["runtime_support"]["planned_env"], "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS")
         self.assertEqual(word_boundary["expected_traffic"]["expected_word_count"], 33336)
@@ -465,6 +477,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(
             word_boundary["implementation_subtasks"][0],
             "define_program_image_word_packed_initialization_boundary: done",
+        )
+        self.assertEqual(
+            word_boundary["implementation_subtasks"][1],
+            "implement_program_image_word_packed_kernel_generation: done",
         )
         self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
         self.assertTrue(
@@ -476,7 +492,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "implement_program_image_word_packed_kernel_generation",
+            "add_program_image_word_packed_host_flag_and_env",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -613,7 +629,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "implement_program_image_word_packed_kernel_generation",
+            "add_program_image_word_packed_host_flag_and_env",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_kernel_name"],
@@ -674,6 +690,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "vl_apply_program_image_words_gpu",
         )
         self.assertEqual(
+            selection["program_image_word_packed_initialization_kernel_generation_status"],
+            "implemented_in_generators",
+        )
+        self.assertEqual(
             selection["program_image_word_packed_initialization_planned_host_flag"],
             "--program-image-words",
         )
@@ -685,7 +705,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(selection["program_image_word_packed_initialization_expected_upload_bytes"], 166688)
         self.assertEqual(
             selection["program_image_word_packed_initialization_next_action"],
-            "implement_program_image_word_packed_kernel_generation",
+            "add_program_image_word_packed_host_flag_and_env",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],
