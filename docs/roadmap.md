@@ -183,8 +183,8 @@ phase_3:
   define_xuantie_e902_program_image_initialization_construction_gate: done_gate_defined
   implement_xuantie_e902_program_image_initialization_construction: planned_task_ladder_defined
   extract_xuantie_e902_program_image_initialization_inputs: done_contract_defined
-  define_program_image_initialization_record_format: next
-  implement_program_image_initialization_kernel_and_host_flag: pending
+  define_program_image_initialization_record_format: done_format_defined
+  implement_program_image_initialization_kernel_and_host_flag: next
   validate_program_image_initialization_against_cpu_constructed_state: pending
   measure_program_image_initialization_upload_reduction: pending
 ```

@@ -398,6 +398,12 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "full per-state root storage images",
             gate["program_image_initialization_inputs"]["non_sources"],
         )
+        record_format = gate["program_image_initialization_record_format"]
+        self.assertEqual(record_format["status"], "defined")
+        self.assertEqual(record_format["device_upload_layout"]["layout"], "structure_of_arrays")
+        self.assertIn("target_root_offset", record_format["device_upload_layout"]["offsets"])
+        self.assertIn("byte_value", record_format["device_upload_layout"]["values"])
+        self.assertIn("before the first resident eval step", record_format["application_semantics"]["apply_scope"])
         self.assertEqual(gate["runtime_support"]["status"], "not_implemented")
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
@@ -408,7 +414,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "define_program_image_initialization_record_format",
+            "implement_program_image_initialization_kernel_and_host_flag",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -545,7 +551,15 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "define_program_image_initialization_record_format",
+            "implement_program_image_initialization_kernel_and_host_flag",
+        )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_record_format_status"],
+            "defined",
+        )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_device_upload_layout"],
+            "structure_of_arrays_offsets_and_values",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_task_ladder"][0],
@@ -555,7 +569,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             selection["source_backed_program_image_initialization_task_ladder"][-1],
             "measure_program_image_initialization_upload_reduction",
         )
-        self.assertIn("host/GPU ABI", selection["source_backed_program_image_initialization_current_blocker"])
+        self.assertIn("GPU kernel and host flag", selection["source_backed_program_image_initialization_current_blocker"])
         self.assertEqual(
             selection["larger_resident_schedule_envelope_gate"],
             "config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json",

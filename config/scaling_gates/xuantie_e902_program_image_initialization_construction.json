@@ -53,6 +53,33 @@
       "full per-state root storage images"
     ]
   },
+  "program_image_initialization_record_format": {
+    "status": "defined",
+    "host_logical_record": {
+      "word_index": "uint32",
+      "lane": "uint8 enum {ram0=0, ram1=1, ram2=2, ram3=3}",
+      "byte_value": "uint8",
+      "target_root_offset": "size_t"
+    },
+    "device_upload_layout": {
+      "layout": "structure_of_arrays",
+      "offsets": "size_t target_root_offset[record_count]",
+      "values": "uint8 byte_value[record_count]",
+      "provenance": "word_index/lane remain host-side validation metadata until the runtime needs device-side source decoding"
+    },
+    "application_semantics": {
+      "base_state": "device-side replicated init-state image",
+      "apply_scope": "apply every record to every GPU state before the first resident eval step",
+      "addressing": "storage_base + state_index * storage_size + target_root_offset",
+      "ordering": "records are applied in ascending input order; duplicate target_root_offset records are rejected by the host contract before upload"
+    },
+    "size_policy": {
+      "offset_width": "native size_t in host runtime, matching existing ResidentPatchSchedule offsets",
+      "value_width": "uint8",
+      "record_count_limit": "must fit unsigned record_count in the current runtime scheduling model"
+    },
+    "relationship_to_resident_patch_schedule": "reuse the proven offset/value SoA upload shape, but run once before resident eval instead of once per logical patch step"
+  },
   "runtime_support": {
     "status": "not_implemented",
     "required_kernel_family": "program_image_initialization_gpu",

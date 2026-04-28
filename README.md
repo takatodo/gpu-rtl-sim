@@ -465,10 +465,10 @@ next_gpu_owned_state_construction_step:
   source: case.pat loaded through mem_inst_temp
   selected_family: iahb_instruction_memory
   status: planned_task_ladder_defined
-  next: define_program_image_initialization_record_format
+  next: implement_program_image_initialization_kernel_and_host_flag
   task_ladder:
     - extract_xuantie_e902_program_image_initialization_inputs: done_contract_defined
-    - define_program_image_initialization_record_format
+    - define_program_image_initialization_record_format: done_format_defined
     - implement_program_image_initialization_kernel_and_host_flag
     - validate_program_image_initialization_against_cpu_constructed_state
     - measure_program_image_initialization_upload_reduction
@@ -477,6 +477,8 @@ next_gpu_owned_state_construction_step:
     - lane
     - byte_value
     - target_root_offset
+  device_upload_layout: structure_of_arrays_offsets_and_values
+  apply_scope: apply every record to every GPU state before the first resident eval step
   non_claim: not broad ROM initialization, not x_smem/x_dmem coverage, not ISA correctness, and not full software boot correctness
 
 policy:

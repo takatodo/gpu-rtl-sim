@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_program_image_initialization_record_format
+  implement_program_image_initialization_kernel_and_host_flag
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1819,14 +1819,14 @@ implement_xuantie_e902_program_image_initialization_construction:
     - measure_program_image_initialization_upload_reduction:
         purpose: separate construction upload traffic from resident eval throughput
         output: bounded communication-reduction claim for the selected XuanTie-E902 IAHB family
-  current_blocker: runtime does not yet have a concrete host/GPU ABI for compact program-image initialization records or a GPU kernel that writes x_iahb_mem_ctrl.ram0..3.mem before resident eval.
+  current_blocker: runtime does not yet have a GPU kernel and host flag that upload the defined offset/value SoA records and write x_iahb_mem_ctrl.ram0..3.mem before resident eval.
   non_claims:
     - not broad ROM initialization
     - not x_smem_ctrl or x_dmem_ctrl coverage
     - not ISA correctness
     - not full software boot correctness
   status: planned_task_ladder_defined
-  next_action: define_program_image_initialization_record_format
+  next_action: implement_program_image_initialization_kernel_and_host_flag
 
 extract_xuantie_e902_program_image_initialization_inputs:
   goal: identify the smallest source-backed input records needed for XuanTie-E902 IAHB program-image construction
@@ -1850,6 +1850,28 @@ extract_xuantie_e902_program_image_initialization_inputs:
     - full per-state root storage images
   status: done_contract_defined
   next_action: define_program_image_initialization_record_format
+
+define_program_image_initialization_record_format:
+  goal: define the host/GPU ABI for compact source-backed program-image initialization records
+  weakest_point: the ABI must not become a second patch-script surface or a full-state upload; it should reuse the proven offset/value upload shape and keep word/lane provenance as validation metadata.
+  host_logical_record:
+    word_index: uint32
+    lane: uint8 enum {ram0=0, ram1=1, ram2=2, ram3=3}
+    byte_value: uint8
+    target_root_offset: size_t
+  device_upload_layout:
+    layout: structure_of_arrays
+    offsets: size_t target_root_offset[record_count]
+    values: uint8 byte_value[record_count]
+    provenance: word_index/lane remain host-side validation metadata until device-side source decoding is needed
+  application_semantics:
+    base_state: device-side replicated init-state image
+    apply_scope: apply every record to every GPU state before the first resident eval step
+    addressing: storage_base + state_index * storage_size + target_root_offset
+    ordering: records are applied in ascending input order; duplicate target_root_offset records are rejected by the host contract before upload
+  relationship_to_resident_patch_schedule: reuse the offset/value SoA upload shape, but run once before resident eval instead of once per logical patch step.
+  status: done_format_defined
+  next_action: implement_program_image_initialization_kernel_and_host_flag
 ```
 
 ## source_of_truth
