@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "add_program_image_word_packed_host_flag_and_env",
+  "current_priority": "upload_program_image_words_once",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -225,7 +225,7 @@
   "source_backed_program_image_initialization_upload_reduction_ratio": 1.0988987547662854,
   "source_backed_program_image_initialization_upload_reduction_status": "measured_positive_but_small",
   "source_backed_program_image_initialization_boundary_status": "packaged_bounded_case_pat_iahb_byte_record_construction",
-  "source_backed_program_image_initialization_next_action": "add_program_image_word_packed_host_flag_and_env",
+  "source_backed_program_image_initialization_next_action": "upload_program_image_words_once",
   "source_backed_program_image_initialization_task_ladder": [
     "extract_xuantie_e902_program_image_initialization_inputs",
     "define_program_image_initialization_record_format",
@@ -245,10 +245,11 @@
   "program_image_word_packed_initialization_kernel_generation_status": "implemented_in_generators",
   "program_image_word_packed_initialization_planned_host_flag": "--program-image-words",
   "program_image_word_packed_initialization_planned_env": "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS",
+  "program_image_word_packed_initialization_host_flag_status": "wired_to_runtime_env",
   "program_image_word_packed_initialization_expected_word_count": 33336,
   "program_image_word_packed_initialization_expected_upload_bytes": 166688,
   "program_image_word_packed_initialization_expected_reduction_ratio_vs_full_state": 7.911700901080822,
-  "program_image_word_packed_initialization_next_action": "add_program_image_word_packed_host_flag_and_env",
+  "program_image_word_packed_initialization_next_action": "upload_program_image_words_once",
   "program_image_word_packed_initialization_task_ladder": [
     "define_program_image_word_packed_initialization_boundary",
     "implement_program_image_word_packed_kernel_generation",
@@ -258,5 +259,5 @@
     "validate_word_packed_program_image_initialization_against_byte_record_boundary",
     "measure_word_packed_program_image_upload_reduction"
   ],
-  "program_image_word_packed_initialization_current_blocker": "--program-image-words is not wired through the Python wrapper or C runtime yet"
+  "program_image_word_packed_initialization_current_blocker": "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS is recognized, but program words are not parsed or uploaded to GPU yet"
 }

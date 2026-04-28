@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  add_program_image_word_packed_host_flag_and_env
+  upload_program_image_words_once
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2022,6 +2022,16 @@ implement_program_image_word_packed_kernel_generation:
   semantics: one logical work item expands one state_index / word_index pair into ram0..3 bytes
   status: done_kernel_generation_implemented
   next_action: add_program_image_word_packed_host_flag_and_env
+
+add_program_image_word_packed_host_flag_and_env:
+  goal: expose the word-packed program-image input path without parsing/uploading it yet
+  weakest_point: the runtime now recognizes RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS, but the file is not parsed or uploaded to GPU.
+  host_flag: --program-image-words
+  env: RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS
+  wrapper: src/tools/run_vl_hybrid.py validates the file path and forwards the env
+  runtime: src/hybrid/run_vl_hybrid.c reports program_image_words
+  status: done_host_flag_env_wired
+  next_action: upload_program_image_words_once
 ```
 
 ## source_of_truth

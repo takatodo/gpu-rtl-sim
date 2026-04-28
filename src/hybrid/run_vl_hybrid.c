@@ -46,6 +46,8 @@
 #define ENV_PATCH_SCRIPT "RUN_VL_HYBRID_PATCH_SCRIPT"
 /* Optional source-backed program-image initialization records. */
 #define ENV_PROGRAM_IMAGE_INIT_RECORDS "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS"
+/* Optional word-packed source-backed program-image initialization input. */
+#define ENV_PROGRAM_IMAGE_WORDS "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS"
 /* Explicit resident repeated-step mode; keeps state on device across eval steps. */
 #define ENV_RESIDENT_STEPS "RUN_VL_HYBRID_RESIDENT_STEPS"
 
@@ -1108,6 +1110,9 @@ int main(int argc, char **argv) {
   const char *program_image_init_records_path = getenv(ENV_PROGRAM_IMAGE_INIT_RECORDS);
   const int program_image_init_records_enabled =
       program_image_init_records_path != NULL && program_image_init_records_path[0] != '\0';
+  const char *program_image_words_path = getenv(ENV_PROGRAM_IMAGE_WORDS);
+  const int program_image_words_enabled =
+      program_image_words_path != NULL && program_image_words_path[0] != '\0';
 
   {
     const char *patch_script_path = getenv(ENV_PATCH_SCRIPT);
@@ -1596,6 +1601,8 @@ int main(int argc, char **argv) {
          gpu_replicate_init_state ? "true" : "false");
   printf("program_image_init_records: %s\n",
          program_image_init_records_enabled ? program_image_init_records_path : "none");
+  printf("program_image_words: %s\n",
+         program_image_words_enabled ? program_image_words_path : "none");
   if (program_image_init_records.record_count > 0U) {
     printf("program_image_init_record_upload: records=%u layout=offsets_values_soa\n",
            program_image_init_records.record_count);

@@ -45,6 +45,7 @@ _CUBIN_CHAIN_ENV = "RUN_VL_HYBRID_CUBINS"
 _RESIDENT_STEPS_ENV = "RUN_VL_HYBRID_RESIDENT_STEPS"
 _GPU_REPLICATE_INIT_STATE_ENV = "RUN_VL_HYBRID_GPU_REPLICATE_INIT_STATE"
 _PROGRAM_IMAGE_INIT_RECORDS_ENV = "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS"
+_PROGRAM_IMAGE_WORDS_ENV = "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS"
 _POINTER_SIZED_HOST_ONLY_FIELDS = {"__VdlySched"}
 _FULLY_ZEROED_HOST_ONLY_FIELDS = {"vlNamep"}
 _TRANSIENT_VERILATOR_RUNTIME_FIELDS = {
@@ -307,6 +308,14 @@ def main() -> None:
             "Forwarded to the hybrid runtime through RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS."
         ),
     )
+    p.add_argument(
+        "--program-image-words",
+        type=Path,
+        help=(
+            "Optional word-packed source-backed program-image file. "
+            "Forwarded to the hybrid runtime through RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS."
+        ),
+    )
     args = p.parse_args()
     if args.resident_steps and args.patch:
         p.error("--resident-steps rejects --patch; use --patch-script for a resident schedule")
@@ -411,6 +420,17 @@ def main() -> None:
         env[_PROGRAM_IMAGE_INIT_RECORDS_ENV] = str(program_image_init_records)
     else:
         env.pop(_PROGRAM_IMAGE_INIT_RECORDS_ENV, None)
+    if args.program_image_words:
+        program_image_words = args.program_image_words.resolve()
+        if not program_image_words.is_file():
+            print(
+                f"error: program image words not found: {program_image_words}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        env[_PROGRAM_IMAGE_WORDS_ENV] = str(program_image_words)
+    else:
+        env.pop(_PROGRAM_IMAGE_WORDS_ENV, None)
     sanitized_init_tmp: Path | None = None
     if args.init_state:
         init_state = args.init_state.resolve()
