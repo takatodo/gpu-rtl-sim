@@ -537,6 +537,10 @@ next_gpu_owned_state_construction_step:
   combined_package_includes:
     - source_backed_iahb_case_pat_word_packed_program_image_initialization
     - deterministic_x_dmem_zero_fill_device_initialization
+  combined_package_boundary: combined_word_packed_iahb_program_image_and_dmem_zero_fill_construction
+  combined_package_aggregate_upload_bytes: 133408
+  combined_package_reduction_ratio_vs_full_state_bytes: 9.885345705657835
+  combined_package_next_action: package_xuantie_e902_combined_program_image_and_dmem_construction_boundary
   word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]
   expected_next_axis_upload_bytes: 166688
   expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822

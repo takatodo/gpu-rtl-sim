@@ -2151,6 +2151,34 @@ select_next_gpu_owned_state_construction_after_dmem_zero_fill:
     - launch-latency speedup
   status: done_selected_combined_existing_construction_package
   next_action: define_xuantie_e902_combined_program_image_and_dmem_construction_package
+
+define_xuantie_e902_combined_program_image_and_dmem_construction_package:
+  goal: define the combined XuanTie-E902 GPU-owned construction boundary from already validated construction pieces
+  weakest_point: this package composes two validated responsibilities, but does not add a new source-backed non-IAHB memory image or prove launch-latency speedup.
+  packaged_boundary: combined_word_packed_iahb_program_image_and_dmem_zero_fill_construction
+  accepted_claim: GPU can construct the selected IAHB case.pat program image from word-packed source records and zero selected x_dmem_ctrl.ram0..3.mem storage before resident eval without uploading a per-state full image or per-state DMEM payload.
+  included_boundaries:
+    - source_backed_iahb_case_pat_word_packed_program_image_initialization
+    - deterministic_x_dmem_zero_fill_device_initialization
+  aggregate_upload_bytes: 133408
+  aggregate_upload_components:
+    program_image_words_and_lane_offsets: 133376
+    dmem_zero_fill_lane_offsets: 32
+    dmem_zero_fill_word_count: host scalar argument
+  aggregate_reduction_ratio_vs_full_state_bytes: 9.885345705657835
+  dmem_payload_reduction_ratio_vs_per_state_dmem_bytes: 8192.0
+  validation_reports:
+    - reports/xuantie_e902_program_image_word_packed_initialization_validation.json
+    - reports/xuantie_e902_dmem_zero_fill_validation.json
+  non_claims:
+    - not x_smem_ctrl initialization
+    - not x_dmem data-image initialization
+    - not a new source-backed non-IAHB memory image
+    - not ISA/software correctness
+    - not launch-latency speedup
+    - not raw full-state byte equality
+  status: done_defined_boundary
+  next_action: package_xuantie_e902_combined_program_image_and_dmem_construction_boundary
 ```
 
 ## source_of_truth
