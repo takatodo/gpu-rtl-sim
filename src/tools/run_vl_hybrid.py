@@ -44,6 +44,7 @@ HYBRID_BIN = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid"
 _CUBIN_CHAIN_ENV = "RUN_VL_HYBRID_CUBINS"
 _RESIDENT_STEPS_ENV = "RUN_VL_HYBRID_RESIDENT_STEPS"
 _GPU_REPLICATE_INIT_STATE_ENV = "RUN_VL_HYBRID_GPU_REPLICATE_INIT_STATE"
+_PROGRAM_IMAGE_INIT_RECORDS_ENV = "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS"
 _POINTER_SIZED_HOST_ONLY_FIELDS = {"__VdlySched"}
 _FULLY_ZEROED_HOST_ONLY_FIELDS = {"vlNamep"}
 _TRANSIENT_VERILATOR_RUNTIME_FIELDS = {
@@ -298,6 +299,14 @@ def main() -> None:
             "and replicate it across device state storage with vl_replicate_init_state_gpu."
         ),
     )
+    p.add_argument(
+        "--program-image-init-records",
+        type=Path,
+        help=(
+            "Optional source-backed program-image initialization record file. "
+            "Forwarded to the hybrid runtime through RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS."
+        ),
+    )
     args = p.parse_args()
     if args.resident_steps and args.patch:
         p.error("--resident-steps rejects --patch; use --patch-script for a resident schedule")
@@ -391,6 +400,17 @@ def main() -> None:
         env[_GPU_REPLICATE_INIT_STATE_ENV] = "1"
     else:
         env.pop(_GPU_REPLICATE_INIT_STATE_ENV, None)
+    if args.program_image_init_records:
+        program_image_init_records = args.program_image_init_records.resolve()
+        if not program_image_init_records.is_file():
+            print(
+                f"error: program image init records not found: {program_image_init_records}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        env[_PROGRAM_IMAGE_INIT_RECORDS_ENV] = str(program_image_init_records)
+    else:
+        env.pop(_PROGRAM_IMAGE_INIT_RECORDS_ENV, None)
     sanitized_init_tmp: Path | None = None
     if args.init_state:
         init_state = args.init_state.resolve()

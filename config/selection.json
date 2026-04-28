@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "add_program_image_initialization_host_flag_and_env",
+  "current_priority": "upload_program_image_initialization_records_once",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -188,7 +188,7 @@
   "next_gpu_owned_state_construction_step": "source_backed_program_image_initialization",
   "next_gpu_owned_state_construction_gate": "config/scaling_gates/xuantie_e902_program_image_initialization_construction.json",
   "next_gpu_owned_state_construction_reason": "after raw init-state replication passed, the next useful GPU-owned construction responsibility is source-backed program-image construction for the existing XuanTie-E902 case.pat / IAHB contract",
-  "source_backed_program_image_initialization_status": "planned_task_ladder_defined",
+  "source_backed_program_image_initialization_status": "host_flag_env_wired",
   "source_backed_program_image_initialization_target": "xuantie_e902",
   "source_backed_program_image_initialization_source": "case.pat loaded through mem_inst_temp",
   "source_backed_program_image_initialization_selected_family": "iahb_instruction_memory",
@@ -213,8 +213,9 @@
   "source_backed_program_image_initialization_kernel_name": "vl_apply_program_image_init_gpu",
   "source_backed_program_image_initialization_kernel_generation_status": "implemented_in_generators",
   "source_backed_program_image_initialization_host_flag": "--program-image-init-records",
+  "source_backed_program_image_initialization_host_flag_status": "wired_to_runtime_env",
   "source_backed_program_image_initialization_env": "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS",
-  "source_backed_program_image_initialization_next_action": "add_program_image_initialization_host_flag_and_env",
+  "source_backed_program_image_initialization_next_action": "upload_program_image_initialization_records_once",
   "source_backed_program_image_initialization_task_ladder": [
     "extract_xuantie_e902_program_image_initialization_inputs",
     "define_program_image_initialization_record_format",
@@ -222,5 +223,5 @@
     "validate_program_image_initialization_against_cpu_constructed_state",
     "measure_program_image_initialization_upload_reduction"
   ],
-  "source_backed_program_image_initialization_current_blocker": "host wrapper and C runtime do not yet accept RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS / --program-image-init-records, so the emitted kernel is not launchable from the supported runtime path"
+  "source_backed_program_image_initialization_current_blocker": "the host wrapper and C runtime now accept RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS / --program-image-init-records, but the runtime does not yet parse, upload, or own the program-image offset/value SoA records"
 }

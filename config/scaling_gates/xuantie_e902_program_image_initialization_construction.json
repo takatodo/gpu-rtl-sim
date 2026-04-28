@@ -81,7 +81,7 @@
     "relationship_to_resident_patch_schedule": "reuse the proven offset/value SoA upload shape, but run once before resident eval instead of once per logical patch step"
   },
   "runtime_support": {
-    "status": "kernel_generation_implemented",
+    "status": "host_flag_env_wired",
     "required_kernel_family": "program_image_initialization_gpu",
     "required_kernel": "vl_apply_program_image_init_gpu",
     "required_host_flag": "--program-image-init-records",
@@ -89,7 +89,7 @@
     "required_lowering": "reuse named case.pat word/lane lowering to generated root field offsets for x_iahb_mem_ctrl.ram0..3.mem",
     "implementation_subtasks": [
       "implement_program_image_initialization_kernel_generation: done",
-      "add_program_image_initialization_host_flag_and_env",
+      "add_program_image_initialization_host_flag_and_env: done",
       "upload_program_image_initialization_records_once",
       "launch_program_image_initialization_before_resident_eval",
       "validate_program_image_initialization_against_cpu_constructed_state"

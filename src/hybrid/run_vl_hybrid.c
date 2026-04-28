@@ -44,6 +44,8 @@
 #define ENV_GPU_REPLICATE_INIT_STATE "RUN_VL_HYBRID_GPU_REPLICATE_INIT_STATE"
 /* Optional per-step patch script file; each non-comment line is one step of patch tokens. */
 #define ENV_PATCH_SCRIPT "RUN_VL_HYBRID_PATCH_SCRIPT"
+/* Optional source-backed program-image initialization records. */
+#define ENV_PROGRAM_IMAGE_INIT_RECORDS "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS"
 /* Explicit resident repeated-step mode; keeps state on device across eval steps. */
 #define ENV_RESIDENT_STEPS "RUN_VL_HYBRID_RESIDENT_STEPS"
 
@@ -945,6 +947,9 @@ int main(int argc, char **argv) {
 
   const int resident_steps = getenv(ENV_RESIDENT_STEPS) != NULL;
   const int gpu_replicate_init_state = getenv(ENV_GPU_REPLICATE_INIT_STATE) != NULL;
+  const char *program_image_init_records_path = getenv(ENV_PROGRAM_IMAGE_INIT_RECORDS);
+  const int program_image_init_records_enabled =
+      program_image_init_records_path != NULL && program_image_init_records_path[0] != '\0';
 
   {
     const char *patch_script_path = getenv(ENV_PATCH_SCRIPT);
@@ -1076,6 +1081,16 @@ int main(int argc, char **argv) {
       return 1;
     }
     trace_function_attrs(init_replication_kfn, "vl_replicate_init_state_gpu");
+  }
+  if (program_image_init_records_enabled) {
+    FILE *records_fp = fopen(program_image_init_records_path, "rb");
+    if (!records_fp) {
+      fprintf(stderr, "failed to open %s=%s\n", ENV_PROGRAM_IMAGE_INIT_RECORDS,
+              program_image_init_records_path);
+      free_step_patch_blocks(script_blocks, script_block_count);
+      return 1;
+    }
+    fclose(records_fp);
   }
   {
     int stack_limit_status = maybe_raise_stack_limit_for_kernels(kfns, nk);
@@ -1386,6 +1401,8 @@ int main(int argc, char **argv) {
   printf("resident_mode: %s\n", resident_steps ? "true" : "false");
   printf("gpu_init_state_replication: %s\n",
          gpu_replicate_init_state ? "true" : "false");
+  printf("program_image_init_records: %s\n",
+         program_image_init_records_enabled ? program_image_init_records_path : "none");
   if (script_blocks) {
     printf("patch_script_steps: logical=%u records=%u blocks=%u\n",
            script_logical_step_count, script_record_count, script_block_count);

@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  add_program_image_initialization_host_flag_and_env
+  upload_program_image_initialization_records_once
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1895,8 +1895,8 @@ implement_program_image_initialization_kernel_and_host_flag:
     - validate_program_image_initialization_against_cpu_constructed_state:
         purpose: compare CPU/source-backed construction against GPU/device-side construction
         output: reports/xuantie_e902_program_image_initialization_construction.json
-  status: kernel_generation_implemented
-  next_action: add_program_image_initialization_host_flag_and_env
+  status: host_flag_env_wired
+  next_action: upload_program_image_initialization_records_once
 
 implement_program_image_initialization_kernel_generation:
   goal: emit the program-image initialization kernel from both GPU kernel generators
@@ -1913,6 +1913,17 @@ implement_program_image_initialization_kernel_generation:
     - src/passes/vlgpugen.cpp
   status: done_kernel_generation_implemented
   next_action: add_program_image_initialization_host_flag_and_env
+
+add_program_image_initialization_host_flag_and_env:
+  goal: pass a source-backed program-image initialization record file from the wrapper into the C runtime
+  weakest_point: this only wires the supported runtime surface; the runtime still does not parse, upload, or launch the program-image offset/value SoA records.
+  runtime_surface:
+    wrapper_flag: --program-image-init-records
+    env: RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS
+    runtime_acceptance: src/hybrid/run_vl_hybrid.c validates that the record file can be opened and reports the active path
+  non_claim: no program-image record upload, no device-side application, and no CPU/GPU construction validation yet.
+  status: done_host_flag_env_wired
+  next_action: upload_program_image_initialization_records_once
 ```
 
 ## source_of_truth
