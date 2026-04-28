@@ -190,7 +190,8 @@ phase_3:
   upload_program_image_initialization_records_once: done_records_uploaded_once
   launch_program_image_initialization_before_resident_eval: done_launch_before_resident_eval_wired
   validate_program_image_initialization_against_cpu_constructed_state: done_normalized_final_state_equivalence_pass
-  measure_program_image_initialization_upload_reduction: next
+  measure_program_image_initialization_upload_reduction: done_positive_but_small_1_0989x
+  package_program_image_initialization_boundary_and_select_next_gpu_construction_axis: next
 ```
 
 ## acceptance

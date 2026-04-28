@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  measure_program_image_initialization_upload_reduction
+  package_program_image_initialization_boundary_and_select_next_gpu_construction_axis
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1895,8 +1895,8 @@ implement_program_image_initialization_kernel_and_host_flag:
     - validate_program_image_initialization_against_cpu_constructed_state:
         purpose: compare CPU/source-backed construction against GPU/device-side construction
         output: reports/xuantie_e902_program_image_initialization_construction.json
-  status: validation_passed
-  next_action: measure_program_image_initialization_upload_reduction
+  status: packaged_validation_and_upload_reduction
+  next_action: package_program_image_initialization_boundary_and_select_next_gpu_construction_axis
 
 implement_program_image_initialization_kernel_generation:
   goal: emit the program-image initialization kernel from both GPU kernel generators
@@ -1965,6 +1965,16 @@ validate_program_image_initialization_against_cpu_constructed_state:
   non_claim: raw byte equality remains false because only Verilator internal fields differ.
   status: done_normalized_final_state_equivalence_pass
   next_action: measure_program_image_initialization_upload_reduction
+
+measure_program_image_initialization_upload_reduction:
+  goal: quantify source-backed program-image record upload against full per-state image upload
+  weakest_point: the measured reduction is positive but small because this first boundary materializes a large IAHB image as explicit offset/value byte records.
+  full_state_upload_bytes: 1318784
+  record_count: 133344
+  record_upload_bytes: 1200096
+  upload_reduction_ratio: 1.0988987547662854
+  status: done_positive_but_small
+  next_action: package_program_image_initialization_boundary_and_select_next_gpu_construction_axis
 ```
 
 ## source_of_truth

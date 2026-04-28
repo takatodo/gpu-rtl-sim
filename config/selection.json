@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "measure_program_image_initialization_upload_reduction",
+  "current_priority": "package_program_image_initialization_boundary_and_select_next_gpu_construction_axis",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -188,7 +188,7 @@
   "next_gpu_owned_state_construction_step": "source_backed_program_image_initialization",
   "next_gpu_owned_state_construction_gate": "config/scaling_gates/xuantie_e902_program_image_initialization_construction.json",
   "next_gpu_owned_state_construction_reason": "after raw init-state replication passed, the next useful GPU-owned construction responsibility is source-backed program-image construction for the existing XuanTie-E902 case.pat / IAHB contract",
-  "source_backed_program_image_initialization_status": "validation_passed",
+  "source_backed_program_image_initialization_status": "packaged_validation_and_upload_reduction",
   "source_backed_program_image_initialization_target": "xuantie_e902",
   "source_backed_program_image_initialization_source": "case.pat loaded through mem_inst_temp",
   "source_backed_program_image_initialization_selected_family": "iahb_instruction_memory",
@@ -220,7 +220,11 @@
   "source_backed_program_image_initialization_validation_status": "normalized_final_state_equivalence_pass",
   "source_backed_program_image_initialization_validation_report": "reports/xuantie_e902_program_image_initialization_construction.json",
   "source_backed_program_image_initialization_validation_record_count": 133344,
-  "source_backed_program_image_initialization_next_action": "measure_program_image_initialization_upload_reduction",
+  "source_backed_program_image_initialization_full_state_upload_bytes": 1318784,
+  "source_backed_program_image_initialization_record_upload_bytes": 1200096,
+  "source_backed_program_image_initialization_upload_reduction_ratio": 1.0988987547662854,
+  "source_backed_program_image_initialization_upload_reduction_status": "measured_positive_but_small",
+  "source_backed_program_image_initialization_next_action": "package_program_image_initialization_boundary_and_select_next_gpu_construction_axis",
   "source_backed_program_image_initialization_task_ladder": [
     "extract_xuantie_e902_program_image_initialization_inputs",
     "define_program_image_initialization_record_format",
@@ -228,5 +232,5 @@
     "validate_program_image_initialization_against_cpu_constructed_state",
     "measure_program_image_initialization_upload_reduction"
   ],
-  "source_backed_program_image_initialization_current_blocker": "--program-image-init-records CPU/source-backed construction and GPU/device-side construction now pass normalized_final_state_equivalence, but the upload reduction has not yet been measured against full per-state image upload"
+  "source_backed_program_image_initialization_current_blocker": "--program-image-init-records construction is validated and upload reduction is measured at 1.0988987547662854x; next is packaging this bounded boundary and selecting the next GPU-owned construction responsibility"
 }
