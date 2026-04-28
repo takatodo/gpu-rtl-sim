@@ -518,7 +518,8 @@ next_gpu_owned_state_construction_step:
   dmem_zero_fill_kernel_generation: implemented_in_generators
   dmem_zero_fill_planned_host_flag: --dmem-zero-fill
   dmem_zero_fill_planned_env: RUN_VL_HYBRID_DMEM_ZERO_FILL
-  dmem_zero_fill_next_action: add_xuantie_e902_dmem_zero_fill_host_flag_and_env
+  dmem_zero_fill_host_flag_env: wired_to_runtime_env
+  dmem_zero_fill_next_action: upload_xuantie_e902_dmem_zero_fill_lane_offsets_once
   word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]
   expected_next_axis_upload_bytes: 166688
   expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822

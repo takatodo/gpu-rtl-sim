@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  add_xuantie_e902_dmem_zero_fill_host_flag_and_env
+  upload_xuantie_e902_dmem_zero_fill_lane_offsets_once
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2114,13 +2114,14 @@ define_xuantie_e902_dmem_zero_fill_device_initialization_boundary:
   kernel_generation: implemented_in_generators
   planned_host_flag: --dmem-zero-fill
   planned_env: RUN_VL_HYBRID_DMEM_ZERO_FILL
+  host_flag_env: wired_to_runtime_env
   non_claims:
     - not source-backed data-image initialization
     - not x_smem_ctrl initialization
     - not IAHB case.pat program-image initialization
     - not ISA/software correctness
   status: done_defined_boundary
-  next_action: add_xuantie_e902_dmem_zero_fill_host_flag_and_env
+  next_action: upload_xuantie_e902_dmem_zero_fill_lane_offsets_once
 ```
 
 ## source_of_truth

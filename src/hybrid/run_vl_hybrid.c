@@ -51,6 +51,8 @@
 #define ENV_PROGRAM_IMAGE_WORDS "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS"
 /* Optional word-packed IAHB lane base offsets: ram0,ram1,ram2,ram3. */
 #define ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS "RUN_VL_HYBRID_PROGRAM_IMAGE_LANE_BASE_OFFSETS"
+/* Optional deterministic XuanTie-E902 DMEM zero-fill construction. */
+#define ENV_DMEM_ZERO_FILL "RUN_VL_HYBRID_DMEM_ZERO_FILL"
 /* Explicit resident repeated-step mode; keeps state on device across eval steps. */
 #define ENV_RESIDENT_STEPS "RUN_VL_HYBRID_RESIDENT_STEPS"
 
@@ -1272,6 +1274,7 @@ int main(int argc, char **argv) {
   CUfunction init_replication_kfn = NULL;
   CUfunction program_image_init_kfn = NULL;
   CUfunction program_image_words_kfn = NULL;
+  CUfunction dmem_zero_fill_kfn = NULL;
 
   int pi = 4;
   if (argc > 4 && strchr(argv[4], ':') == NULL && strlen(argv[4]) > 0) {
@@ -1307,6 +1310,7 @@ int main(int argc, char **argv) {
   const int program_image_words_enabled =
       program_image_words_path != NULL && program_image_words_path[0] != '\0';
   const char *program_image_lane_base_offsets = getenv(ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS);
+  const int dmem_zero_fill_enabled = getenv(ENV_DMEM_ZERO_FILL) != NULL;
 
   {
     const char *patch_script_path = getenv(ENV_PATCH_SCRIPT);
@@ -1487,6 +1491,19 @@ int main(int argc, char **argv) {
       return 1;
     }
     trace_function_attrs(program_image_words_kfn, "vl_apply_program_image_words_gpu");
+  }
+  if (dmem_zero_fill_enabled) {
+    if (resolve_function_across_modules(&dmem_zero_fill_kfn, mods, nmods,
+                                        "vl_zero_dmem_words_gpu") != 0) {
+      fprintf(stderr,
+              "%s requires a cubin regenerated with vl_zero_dmem_words_gpu\n",
+              ENV_DMEM_ZERO_FILL);
+      free_step_patch_blocks(script_blocks, script_block_count);
+      free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
+      return 1;
+    }
+    trace_function_attrs(dmem_zero_fill_kfn, "vl_zero_dmem_words_gpu");
   }
   {
     int stack_limit_status = maybe_raise_stack_limit_for_kernels(kfns, nk);
@@ -1851,6 +1868,7 @@ int main(int argc, char **argv) {
          program_image_init_records_enabled ? program_image_init_records_path : "none");
   printf("program_image_words: %s\n",
          program_image_words_enabled ? program_image_words_path : "none");
+  printf("dmem_zero_fill: %s\n", dmem_zero_fill_enabled ? "true" : "false");
   if (program_image_init_records.record_count > 0U) {
     printf("program_image_init_record_upload: records=%u layout=offsets_values_soa\n",
            program_image_init_records.record_count);

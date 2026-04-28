@@ -203,7 +203,8 @@ phase_3:
   define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary: done_defined_blocked_source_contract_gap
   define_xuantie_e902_dmem_zero_fill_device_initialization_boundary: done_defined_boundary
   implement_xuantie_e902_dmem_zero_fill_kernel_generation: done_kernel_generation_implemented
-  add_xuantie_e902_dmem_zero_fill_host_flag_and_env: next
+  add_xuantie_e902_dmem_zero_fill_host_flag_and_env: done_host_flag_env_wired
+  upload_xuantie_e902_dmem_zero_fill_lane_offsets_once: next
 ```
 
 ## acceptance
