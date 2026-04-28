@@ -49,6 +49,8 @@
 #define ENV_PROGRAM_IMAGE_INIT_RECORDS "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS"
 /* Optional word-packed source-backed program-image initialization input. */
 #define ENV_PROGRAM_IMAGE_WORDS "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS"
+/* Optional word-packed IAHB lane base offsets: ram0,ram1,ram2,ram3. */
+#define ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS "RUN_VL_HYBRID_PROGRAM_IMAGE_LANE_BASE_OFFSETS"
 /* Explicit resident repeated-step mode; keeps state on device across eval steps. */
 #define ENV_RESIDENT_STEPS "RUN_VL_HYBRID_RESIDENT_STEPS"
 
@@ -127,8 +129,10 @@ typedef struct {
 
 typedef struct {
   uint32_t *words;
+  size_t lane_base_offsets[4];
   unsigned word_count;
   CUdeviceptr d_words;
+  CUdeviceptr d_lane_base_offsets;
 } ProgramImageWords;
 
 static int parse_byte(const char *s, unsigned char *out) {
@@ -214,8 +218,56 @@ static void free_program_image_words(ProgramImageWords *program_words) {
     return;
   if (program_words->d_words)
     CUDA_CHECK(cuMemFree(program_words->d_words));
+  if (program_words->d_lane_base_offsets)
+    CUDA_CHECK(cuMemFree(program_words->d_lane_base_offsets));
   free(program_words->words);
   memset(program_words, 0, sizeof(*program_words));
+}
+
+static int parse_program_image_lane_base_offsets(const char *text,
+                                                 ProgramImageWords *program_words) {
+  char *buf = NULL;
+  char *token = NULL;
+  unsigned count = 0U;
+  if (!text || text[0] == '\0') {
+    fprintf(stderr, "%s is required when %s is set\n",
+            ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS, ENV_PROGRAM_IMAGE_WORDS);
+    return -1;
+  }
+  buf = strdup(text);
+  if (!buf)
+    return -1;
+  for (token = strtok(buf, ","); token != NULL; token = strtok(NULL, ",")) {
+    char *cursor = token;
+    char *end = NULL;
+    unsigned long long value = 0ULL;
+    while (*cursor != '\0' && isspace((unsigned char)*cursor))
+      cursor++;
+    if (count >= 4U) {
+      fprintf(stderr, "%s has more than four offsets\n",
+              ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS);
+      free(buf);
+      return -1;
+    }
+    value = strtoull(cursor, &end, 0);
+    while (end && *end != '\0' && isspace((unsigned char)*end))
+      end++;
+    if (end == cursor || (end && *end != '\0')) {
+      fprintf(stderr, "%s has bad offset token '%s'\n",
+              ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS, token);
+      free(buf);
+      return -1;
+    }
+    program_words->lane_base_offsets[count] = (size_t)value;
+    count++;
+  }
+  free(buf);
+  if (count != 4U) {
+    fprintf(stderr, "%s requires exactly four offsets\n",
+            ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS);
+    return -1;
+  }
+  return 0;
 }
 
 static int append_program_image_word(ProgramImageWords *program_words,
@@ -923,6 +975,44 @@ static int launch_program_image_init(CUfunction init_kfn,
   return 0;
 }
 
+static int launch_program_image_words(CUfunction words_kfn,
+                                      CUdeviceptr d_storage,
+                                      const ProgramImageWords *program_words,
+                                      size_t storage,
+                                      unsigned nstates) {
+  if (!program_words || program_words->word_count == 0U)
+    return 0;
+  if (program_words->word_count > 2147483647U || nstates > 2147483647U) {
+    fprintf(stderr, "program-image word launch shape out of range: words=%u nstates=%u\n",
+            program_words->word_count, nstates);
+    return -1;
+  }
+  unsigned long long total_work =
+      (unsigned long long)program_words->word_count * (unsigned long long)nstates;
+  unsigned block = 256U;
+  unsigned long long grid_ull =
+      (total_work + (unsigned long long)block - 1ULL) / (unsigned long long)block;
+  if (grid_ull == 0ULL || grid_ull > 2147483647ULL) {
+    fprintf(stderr, "program-image word grid out of range: %llu\n", grid_ull);
+    return -1;
+  }
+  unsigned grid = (unsigned)grid_ull;
+  CUdeviceptr d_words = program_words->d_words;
+  CUdeviceptr d_lane_base_offsets = program_words->d_lane_base_offsets;
+  int word_count_i = (int)program_words->word_count;
+  unsigned long long storage_arg = (unsigned long long)storage;
+  int nstates_i = (int)nstates;
+  void *params[] = {&d_storage,
+                    &d_words,
+                    &d_lane_base_offsets,
+                    &word_count_i,
+                    &storage_arg,
+                    &nstates_i};
+  trace_kernel_launch("vl_apply_program_image_words_gpu", 0, -1);
+  CUDA_CHECK(cuLaunchKernel(words_kfn, grid, 1, 1, block, 1, 1, 0, 0, params, NULL));
+  return 0;
+}
+
 static size_t kernel_local_size_bytes(CUfunction fn) {
   int value = 0;
   CUresult err =
@@ -1181,6 +1271,7 @@ int main(int argc, char **argv) {
   CUfunction resident_patch_kfn = NULL;
   CUfunction init_replication_kfn = NULL;
   CUfunction program_image_init_kfn = NULL;
+  CUfunction program_image_words_kfn = NULL;
 
   int pi = 4;
   if (argc > 4 && strchr(argv[4], ':') == NULL && strlen(argv[4]) > 0) {
@@ -1215,6 +1306,7 @@ int main(int argc, char **argv) {
   const char *program_image_words_path = getenv(ENV_PROGRAM_IMAGE_WORDS);
   const int program_image_words_enabled =
       program_image_words_path != NULL && program_image_words_path[0] != '\0';
+  const char *program_image_lane_base_offsets = getenv(ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS);
 
   {
     const char *patch_script_path = getenv(ENV_PATCH_SCRIPT);
@@ -1256,6 +1348,13 @@ int main(int argc, char **argv) {
     if (load_program_image_words(program_image_words_path, &program_image_words) != 0) {
       free_step_patch_blocks(script_blocks, script_block_count);
       free_program_image_init_records(&program_image_init_records);
+      return 1;
+    }
+    if (parse_program_image_lane_base_offsets(program_image_lane_base_offsets,
+                                              &program_image_words) != 0) {
+      free_step_patch_blocks(script_blocks, script_block_count);
+      free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
       return 1;
     }
   }
@@ -1375,6 +1474,19 @@ int main(int argc, char **argv) {
       return 1;
     }
     trace_function_attrs(program_image_init_kfn, "vl_apply_program_image_init_gpu");
+  }
+  if (program_image_words_enabled) {
+    if (resolve_function_across_modules(&program_image_words_kfn, mods, nmods,
+                                        "vl_apply_program_image_words_gpu") != 0) {
+      fprintf(stderr,
+              "%s requires a cubin regenerated with vl_apply_program_image_words_gpu\n",
+              ENV_PROGRAM_IMAGE_WORDS);
+      free_step_patch_blocks(script_blocks, script_block_count);
+      free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
+      return 1;
+    }
+    trace_function_attrs(program_image_words_kfn, "vl_apply_program_image_words_gpu");
   }
   {
     int stack_limit_status = maybe_raise_stack_limit_for_kernels(kfns, nk);
@@ -1530,9 +1642,23 @@ int main(int argc, char **argv) {
     CUDA_CHECK(cuMemAlloc(&program_image_words.d_words,
                           (size_t)program_image_words.word_count *
                               sizeof(*program_image_words.words)));
+    CUDA_CHECK(cuMemAlloc(&program_image_words.d_lane_base_offsets,
+                          sizeof(program_image_words.lane_base_offsets)));
     CUDA_CHECK(cuMemcpyHtoD(program_image_words.d_words, program_image_words.words,
                             (size_t)program_image_words.word_count *
                                 sizeof(*program_image_words.words)));
+    CUDA_CHECK(cuMemcpyHtoD(program_image_words.d_lane_base_offsets,
+                            program_image_words.lane_base_offsets,
+                            sizeof(program_image_words.lane_base_offsets)));
+    if (launch_program_image_words(program_image_words_kfn, d_storage,
+                                   &program_image_words, storage, nstates) != 0) {
+      free_step_patch_blocks(script_blocks, script_block_count);
+      free_resident_patch_schedule(&resident_patch_schedule);
+      free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
+      return 1;
+    }
+    CUDA_CHECK(cuCtxSynchronize());
   }
 
   int nstates_i = (int)nstates;
@@ -1732,8 +1858,10 @@ int main(int argc, char **argv) {
            program_image_init_records.record_count, nstates);
   }
   if (program_image_words.word_count > 0U) {
-    printf("program_image_word_upload: words=%u layout=uint32_words\n",
+    printf("program_image_word_upload: words=%u layout=uint32_words_lane_base_offsets\n",
            program_image_words.word_count);
+    printf("program_image_word_launch: kernel=vl_apply_program_image_words_gpu words=%u nstates=%u\n",
+           program_image_words.word_count, nstates);
   }
   if (script_blocks) {
     printf("patch_script_steps: logical=%u records=%u blocks=%u\n",

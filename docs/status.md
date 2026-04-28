@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  launch_program_image_word_packed_initialization_before_resident_eval
+  validate_word_packed_program_image_initialization_against_byte_record_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2041,6 +2041,17 @@ upload_program_image_words_once:
   report_line: program_image_word_upload
   status: done_words_uploaded_once
   next_action: launch_program_image_word_packed_initialization_before_resident_eval
+
+launch_program_image_word_packed_initialization_before_resident_eval:
+  goal: launch vl_apply_program_image_words_gpu after init-state setup and before resident eval
+  weakest_point: the launch path exists, but word-packed construction has not yet been compared against the byte-record boundary.
+  required_env:
+    - RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS
+    - RUN_VL_HYBRID_PROGRAM_IMAGE_LANE_BASE_OFFSETS
+  launch: vl_apply_program_image_words_gpu
+  report_line: program_image_word_launch
+  status: done_launch_before_resident_eval_wired
+  next_action: validate_word_packed_program_image_initialization_against_byte_record_boundary
 ```
 
 ## source_of_truth

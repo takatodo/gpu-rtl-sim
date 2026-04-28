@@ -155,6 +155,7 @@
       "planned_env": "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS",
       "host_flag_status": "wired_to_runtime_env",
       "word_upload_status": "uint32_words_uploaded_once",
+      "launch_status": "launch_before_resident_eval_wired",
       "upload_layout": "program_words plus four lane base offsets uploaded once"
     },
     "expected_traffic": {
@@ -168,7 +169,7 @@
       "implement_program_image_word_packed_kernel_generation: done",
       "add_program_image_word_packed_host_flag_and_env: done",
       "upload_program_image_words_once: done",
-      "launch_program_image_word_packed_initialization_before_resident_eval",
+      "launch_program_image_word_packed_initialization_before_resident_eval: done",
       "validate_word_packed_program_image_initialization_against_byte_record_boundary",
       "measure_word_packed_program_image_upload_reduction"
     ],
