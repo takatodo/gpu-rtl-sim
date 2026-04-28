@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "implement_program_image_initialization_kernel_and_host_flag",
+  "current_priority": "implement_program_image_initialization_kernel_generation",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -203,7 +203,17 @@
   "source_backed_program_image_initialization_record_format_status": "defined",
   "source_backed_program_image_initialization_device_upload_layout": "structure_of_arrays_offsets_and_values",
   "source_backed_program_image_initialization_apply_scope": "apply every record to every GPU state before the first resident eval step",
-  "source_backed_program_image_initialization_next_action": "implement_program_image_initialization_kernel_and_host_flag",
+  "source_backed_program_image_initialization_implementation_subtasks": [
+    "implement_program_image_initialization_kernel_generation",
+    "add_program_image_initialization_host_flag_and_env",
+    "upload_program_image_initialization_records_once",
+    "launch_program_image_initialization_before_resident_eval",
+    "validate_program_image_initialization_against_cpu_constructed_state"
+  ],
+  "source_backed_program_image_initialization_kernel_name": "vl_apply_program_image_init_gpu",
+  "source_backed_program_image_initialization_host_flag": "--program-image-init-records",
+  "source_backed_program_image_initialization_env": "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS",
+  "source_backed_program_image_initialization_next_action": "implement_program_image_initialization_kernel_generation",
   "source_backed_program_image_initialization_task_ladder": [
     "extract_xuantie_e902_program_image_initialization_inputs",
     "define_program_image_initialization_record_format",
@@ -211,5 +221,5 @@
     "validate_program_image_initialization_against_cpu_constructed_state",
     "measure_program_image_initialization_upload_reduction"
   ],
-  "source_backed_program_image_initialization_current_blocker": "runtime does not yet have a GPU kernel and host flag that upload the defined offset/value SoA records and write x_iahb_mem_ctrl.ram0..3.mem before resident eval"
+  "source_backed_program_image_initialization_current_blocker": "kernel generation does not yet emit vl_apply_program_image_init_gpu, so the host cannot launch the defined offset/value SoA records before resident eval"
 }

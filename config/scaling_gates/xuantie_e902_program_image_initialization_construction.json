@@ -83,7 +83,17 @@
   "runtime_support": {
     "status": "not_implemented",
     "required_kernel_family": "program_image_initialization_gpu",
+    "required_kernel": "vl_apply_program_image_init_gpu",
+    "required_host_flag": "--program-image-init-records",
+    "required_env": "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS",
     "required_lowering": "reuse named case.pat word/lane lowering to generated root field offsets for x_iahb_mem_ctrl.ram0..3.mem",
+    "implementation_subtasks": [
+      "implement_program_image_initialization_kernel_generation",
+      "add_program_image_initialization_host_flag_and_env",
+      "upload_program_image_initialization_records_once",
+      "launch_program_image_initialization_before_resident_eval",
+      "validate_program_image_initialization_against_cpu_constructed_state"
+    ],
     "must_not_use": [
       "hand-written root byte offsets as source of truth",
       "broad x_smem_ctrl or x_dmem_ctrl initialization without a source image contract",

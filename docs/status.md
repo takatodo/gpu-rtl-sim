@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  implement_program_image_initialization_kernel_and_host_flag
+  implement_program_image_initialization_kernel_generation
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1871,7 +1871,32 @@ define_program_image_initialization_record_format:
     ordering: records are applied in ascending input order; duplicate target_root_offset records are rejected by the host contract before upload
   relationship_to_resident_patch_schedule: reuse the offset/value SoA upload shape, but run once before resident eval instead of once per logical patch step.
   status: done_format_defined
-  next_action: implement_program_image_initialization_kernel_and_host_flag
+  next_action: implement_program_image_initialization_kernel_generation
+
+implement_program_image_initialization_kernel_and_host_flag:
+  goal: implement the runtime path that applies compact program-image initialization records on GPU before resident eval
+  weakest_point: doing kernel, host flag, upload, launch, and validation as one change is too large; split the work so kernel availability is proven first.
+  required_kernel: vl_apply_program_image_init_gpu
+  required_host_flag: --program-image-init-records
+  required_env: RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS
+  implementation_subtasks:
+    - implement_program_image_initialization_kernel_generation:
+        purpose: emit vl_apply_program_image_init_gpu from both kernel generators
+        output: cubin symbol is available before host wiring
+    - add_program_image_initialization_host_flag_and_env:
+        purpose: pass a record file path from wrapper to C runtime
+        output: explicit opt-in runtime surface
+    - upload_program_image_initialization_records_once:
+        purpose: upload offset/value SoA once, not per state or per step
+        output: device buffers matching the defined record format
+    - launch_program_image_initialization_before_resident_eval:
+        purpose: apply every record to every state after init-state replication and before the first eval
+        output: initialized device storage before resident eval
+    - validate_program_image_initialization_against_cpu_constructed_state:
+        purpose: compare CPU/source-backed construction against GPU/device-side construction
+        output: reports/xuantie_e902_program_image_initialization_construction.json
+  status: planned_subtasks_defined
+  next_action: implement_program_image_initialization_kernel_generation
 ```
 
 ## source_of_truth
