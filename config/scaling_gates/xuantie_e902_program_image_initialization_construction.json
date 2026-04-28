@@ -129,7 +129,7 @@
     "non_claim": "expected ratio is a planning estimate until a word-packed kernel and validation gate are implemented"
   },
   "program_image_word_packed_initialization_boundary": {
-    "status": "defined",
+    "status": "packaged_source_backed_case_pat_word_packed_iahb_construction",
     "selected_axis": "source_backed_program_image_word_packed_initialization",
     "source": "case.pat 32-bit words loaded through mem_inst_temp",
     "input_layout": {
@@ -186,6 +186,17 @@
       "not ISA correctness",
       "not implementation yet"
     ]
+  },
+  "word_packed_boundary_package": {
+    "status": "packaged",
+    "packaged_boundary": "source_backed_case_pat_word_packed_iahb_program_image_initialization",
+    "accepted_claim": "XuanTie-E902 case.pat-backed IAHB program-image bytes can be uploaded as 33336 uint32 words plus four lane base offsets, launched on GPU before resident eval, and match the byte-record boundary under normalized_final_state_equivalence",
+    "measured_upload_bytes": 133376,
+    "measured_reduction_ratio_vs_full_state": 9.887715930902111,
+    "measured_reduction_ratio_vs_byte_records": 8.997840690978887,
+    "validation_report": "reports/xuantie_e902_program_image_word_packed_initialization_validation.json",
+    "next_axis": "xuantie_e902_non_iahb_source_backed_memory_initialization",
+    "next_action": "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary"
   },
   "artifacts": {
     "report": "reports/xuantie_e902_program_image_initialization_construction.json",

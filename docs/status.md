@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  package_word_packed_program_image_initialization_boundary_and_select_next_gpu_construction_axis
+  define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2078,6 +2078,19 @@ measure_word_packed_program_image_upload_reduction:
   reduction_ratio_vs_byte_records: 8.997840690978887
   status: done_measured_9_8877x_vs_full_state
   next_action: package_word_packed_program_image_initialization_boundary_and_select_next_gpu_construction_axis
+
+package_word_packed_program_image_initialization_boundary_and_select_next_gpu_construction_axis:
+  goal: close the compact IAHB program-image construction boundary and choose the next GPU-owned construction responsibility
+  weakest_point: IAHB case.pat is now compact and validated, but x_smem/x_dmem are still explicit non-claims.
+  packaged_boundary: source_backed_case_pat_word_packed_iahb_program_image_initialization
+  accepted_claim: upload 33336 uint32 words plus four lane base offsets, expand IAHB lanes on GPU, and match byte-record construction under normalized_final_state_equivalence
+  measured_upload_bytes: 133376
+  measured_reduction_ratio_vs_full_state: 9.887715930902111
+  measured_reduction_ratio_vs_byte_records: 8.997840690978887
+  selected_next_axis: xuantie_e902_non_iahb_source_backed_memory_initialization
+  reason: x_smem/x_dmem remain outside the accepted claim and need a source-backed boundary before broad memory initialization can be claimed
+  status: done_packaged_selected_non_iahb_memory_initialization
+  next_action: define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary
 ```
 
 ## source_of_truth

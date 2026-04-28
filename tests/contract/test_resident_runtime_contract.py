@@ -477,7 +477,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(gate["next_axis_selection"]["expected_upload_bytes"], 166688)
         word_boundary = gate["program_image_word_packed_initialization_boundary"]
-        self.assertEqual(word_boundary["status"], "defined")
+        self.assertEqual(
+            word_boundary["status"],
+            "packaged_source_backed_case_pat_word_packed_iahb_construction",
+        )
         self.assertEqual(word_boundary["runtime_support"]["required_kernel"], "vl_apply_program_image_words_gpu")
         self.assertEqual(
             word_boundary["runtime_support"]["kernel_generation_status"],
@@ -544,6 +547,21 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             word_boundary["implementation_subtasks"][6],
             "measure_word_packed_program_image_upload_reduction: done",
         )
+        package = gate["word_packed_boundary_package"]
+        self.assertEqual(package["status"], "packaged")
+        self.assertEqual(
+            package["packaged_boundary"],
+            "source_backed_case_pat_word_packed_iahb_program_image_initialization",
+        )
+        self.assertEqual(package["measured_upload_bytes"], 133376)
+        self.assertEqual(
+            package["next_axis"],
+            "xuantie_e902_non_iahb_source_backed_memory_initialization",
+        )
+        self.assertEqual(
+            package["next_action"],
+            "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary",
+        )
         self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
@@ -554,7 +572,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "package_word_packed_program_image_initialization_boundary_and_select_next_gpu_construction_axis",
+            "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -691,7 +709,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "package_word_packed_program_image_initialization_boundary_and_select_next_gpu_construction_axis",
+            "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_kernel_name"],
@@ -746,7 +764,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "source_backed_program_image_word_packed_initialization",
         )
         self.assertEqual(selection["next_gpu_owned_state_construction_expected_upload_bytes"], 166688)
-        self.assertEqual(selection["program_image_word_packed_initialization_status"], "defined")
+        self.assertEqual(
+            selection["program_image_word_packed_initialization_status"],
+            "packaged_source_backed_case_pat_word_packed_iahb_construction",
+        )
         self.assertEqual(
             selection["program_image_word_packed_initialization_kernel_name"],
             "vl_apply_program_image_words_gpu",
@@ -796,7 +817,11 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(selection["program_image_word_packed_initialization_expected_upload_bytes"], 166688)
         self.assertEqual(
             selection["program_image_word_packed_initialization_next_action"],
-            "package_word_packed_program_image_initialization_boundary_and_select_next_gpu_construction_axis",
+            "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary",
+        )
+        self.assertEqual(
+            selection["next_gpu_owned_state_construction_axis_after_word_packed_program_image"],
+            "xuantie_e902_non_iahb_source_backed_memory_initialization",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],
