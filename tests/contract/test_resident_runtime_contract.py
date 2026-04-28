@@ -650,7 +650,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "run_xuantie_combined_construction_runtime_accounting_gate",
+            "package_xuantie_combined_construction_runtime_accounting_gate",
         )
         self.assertEqual(
             selection["post_dmem_zero_fill_axis_selection"]["status"],
@@ -701,7 +701,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "define_xuantie_combined_construction_runtime_accounting_gate",
         )
         accounting_gate = selection["xuantie_combined_construction_runtime_accounting_gate"]
-        self.assertEqual(accounting_gate["status"], "defined_gate")
+        self.assertEqual(accounting_gate["status"], "run_ok")
         self.assertEqual(
             accounting_gate["artifact"],
             "reports/xuantie_e902_combined_construction_runtime_accounting.json",
@@ -709,9 +709,15 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("program_image_word_launch", accounting_gate["measured_components"])
         self.assertIn("dmem_zero_fill_launch", accounting_gate["required_existing_report_lines"])
         self.assertIn("not launch-latency speedup", accounting_gate["non_claims"])
+        run_report = accounting_gate["run_report"]
+        self.assertEqual(run_report["status"], "ok")
+        self.assertEqual(run_report["program_image_word_count"], 33336)
+        self.assertEqual(run_report["combined_accounted_upload_bytes"], 133408)
+        self.assertIn("program_image_word_upload", run_report["observed_report_lines"])
+        self.assertIn("dmem_zero_fill_launch", run_report["observed_report_lines"])
         self.assertEqual(
             accounting_gate["next_action"],
-            "run_xuantie_combined_construction_runtime_accounting_gate",
+            "package_xuantie_combined_construction_runtime_accounting_gate",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],

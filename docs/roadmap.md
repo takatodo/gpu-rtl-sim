@@ -213,7 +213,8 @@ phase_3:
   package_xuantie_e902_combined_program_image_and_dmem_construction_boundary: done_packaged_combined_construction_boundary
   select_next_gpu_owned_state_construction_after_combined_xuantie_package: done_selected_runtime_accounting_gate
   define_xuantie_combined_construction_runtime_accounting_gate: done_defined_gate
-  run_xuantie_combined_construction_runtime_accounting_gate: next
+  run_xuantie_combined_construction_runtime_accounting_gate: done_run_ok
+  package_xuantie_combined_construction_runtime_accounting_gate: next
 ```
 
 ## acceptance

@@ -2230,6 +2230,23 @@ define_xuantie_combined_construction_runtime_accounting_gate:
     - not x_dmem data-image initialization
   status: done_defined_gate
   next_action: run_xuantie_combined_construction_runtime_accounting_gate
+
+run_xuantie_combined_construction_runtime_accounting_gate:
+  goal: run the combined construction path and record upload/launch report lines separately from the accepted upload claim
+  weakest_point: this is a single-state accounting run and does not establish launch-latency speedup.
+  artifact: reports/xuantie_e902_combined_construction_runtime_accounting.json
+  observed_report_lines:
+    - program_image_word_upload
+    - program_image_word_launch
+    - dmem_zero_fill_offset_upload
+    - dmem_zero_fill_launch
+  accounting:
+    program_image_word_count: 33336
+    combined_accounted_upload_bytes: 133408
+    gpu_kernel_time_total_ms: 0.023552
+    host_wall_time_ms: 0.067
+  status: done_run_ok
+  next_action: package_xuantie_combined_construction_runtime_accounting_gate
 ```
 
 ## source_of_truth

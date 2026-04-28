@@ -546,7 +546,10 @@ next_gpu_owned_state_construction_step:
   post_combined_package_axis_reason: no further checked-in XuanTie memory family has a defensible source-backed data-image contract; measure launch and CPU/root-layout overhead before expanding again
   runtime_accounting_gate: defined_gate
   runtime_accounting_artifact: reports/xuantie_e902_combined_construction_runtime_accounting.json
-  runtime_accounting_next_action: run_xuantie_combined_construction_runtime_accounting_gate
+  runtime_accounting_status: run_ok
+  runtime_accounting_gpu_kernel_time_total_ms: 0.023552
+  runtime_accounting_host_wall_time_ms: 0.067
+  runtime_accounting_next_action: package_xuantie_combined_construction_runtime_accounting_gate
   word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]
   expected_next_axis_upload_bytes: 166688
   expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822

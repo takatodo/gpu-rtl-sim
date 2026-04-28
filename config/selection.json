@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "run_xuantie_combined_construction_runtime_accounting_gate",
+  "current_priority": "package_xuantie_combined_construction_runtime_accounting_gate",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -413,7 +413,7 @@
     "next_action": "define_xuantie_combined_construction_runtime_accounting_gate"
   },
   "xuantie_combined_construction_runtime_accounting_gate": {
-    "status": "defined_gate",
+    "status": "run_ok",
     "weakest_point": "This gate can account runtime overhead using existing report lines, but it still does not prove end-to-end launch-latency speedup or add a new source-backed memory family.",
     "goal": "Measure the overhead excluded from the combined XuanTie construction package claim before expanding GPU-owned construction responsibility again.",
     "measured_components": [
@@ -447,6 +447,20 @@
       "not x_smem_ctrl initialization",
       "not x_dmem data-image initialization"
     ],
-    "next_action": "run_xuantie_combined_construction_runtime_accounting_gate"
+    "run_report": {
+      "status": "ok",
+      "artifact": "reports/xuantie_e902_combined_construction_runtime_accounting.json",
+      "program_image_word_count": 33336,
+      "combined_accounted_upload_bytes": 133408,
+      "gpu_kernel_time_total_ms": 0.023552,
+      "host_wall_time_ms": 0.067,
+      "observed_report_lines": [
+        "program_image_word_upload",
+        "program_image_word_launch",
+        "dmem_zero_fill_offset_upload",
+        "dmem_zero_fill_launch"
+      ]
+    },
+    "next_action": "package_xuantie_combined_construction_runtime_accounting_gate"
   }
 }
