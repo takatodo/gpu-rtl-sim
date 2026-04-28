@@ -2277,6 +2277,24 @@ select_next_axis_after_xuantie_runtime_accounting:
   selection_reason: no concrete external source-backed target contract is present, and multi-state combined construction accounting would not change the accepted construction responsibility surface.
   status: done_selected_close_current_track
   next_action: close_gpu_owned_state_construction_track_for_current_minimal_repo
+
+close_gpu_owned_state_construction_track_for_current_minimal_repo:
+  goal: close the current checked-in source-backed GPU-owned construction surface before selecting a broader project axis
+  weakest_point: closure does not prove full RTL-on-GPU execution, x_smem/x_dmem data-image coverage, ISA/software correctness, or application throughput.
+  closed_scope:
+    - source_backed_iahb_case_pat_word_packed_program_image_initialization
+    - deterministic_x_dmem_zero_fill_device_initialization
+    - combined_word_packed_iahb_program_image_and_dmem_zero_fill_construction
+    - xuantie_combined_construction_runtime_accounting_gate
+  preserved_non_claims:
+    - not x_smem_ctrl initialization
+    - not x_dmem data-image initialization
+    - not a new source-backed non-IAHB memory image
+    - not ISA/software correctness
+    - not launch-latency speedup
+    - not full application throughput
+  status: done_closed_current_minimal_repo_scope
+  next_action: select_next_project_axis_after_gpu_owned_construction_closure
 ```
 
 ## source_of_truth

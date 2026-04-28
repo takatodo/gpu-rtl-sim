@@ -216,7 +216,8 @@ phase_3:
   run_xuantie_combined_construction_runtime_accounting_gate: done_run_ok
   package_xuantie_combined_construction_runtime_accounting_gate: done_packaged_accounting_result
   select_next_axis_after_xuantie_runtime_accounting: done_selected_close_current_track
-  close_gpu_owned_state_construction_track_for_current_minimal_repo: next
+  close_gpu_owned_state_construction_track_for_current_minimal_repo: done_closed_current_minimal_repo_scope
+  select_next_project_axis_after_gpu_owned_construction_closure: next
 ```
 
 ## acceptance

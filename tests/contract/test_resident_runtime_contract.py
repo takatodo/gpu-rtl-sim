@@ -650,7 +650,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "close_gpu_owned_state_construction_track_for_current_minimal_repo",
+            "select_next_project_axis_after_gpu_owned_construction_closure",
         )
         self.assertEqual(
             selection["post_dmem_zero_fill_axis_selection"]["status"],
@@ -741,6 +741,17 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(
             post_accounting["next_action"],
             "close_gpu_owned_state_construction_track_for_current_minimal_repo",
+        )
+        closure = selection["gpu_owned_state_construction_track_closure"]
+        self.assertEqual(closure["status"], "closed_current_minimal_repo_scope")
+        self.assertIn(
+            "combined_word_packed_iahb_program_image_and_dmem_zero_fill_construction",
+            closure["closed_scope"],
+        )
+        self.assertIn("not full application throughput", closure["preserved_non_claims"])
+        self.assertEqual(
+            closure["next_action"],
+            "select_next_project_axis_after_gpu_owned_construction_closure",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],

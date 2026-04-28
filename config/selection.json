@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "close_gpu_owned_state_construction_track_for_current_minimal_repo",
+  "current_priority": "select_next_project_axis_after_gpu_owned_construction_closure",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -476,5 +476,30 @@
     "selected_axis": "close_gpu_owned_state_construction_track_for_current_minimal_repo",
     "selection_reason": "No concrete external source-backed target contract is present, and multi-state combined construction accounting would not change the accepted construction responsibility surface.",
     "next_action": "close_gpu_owned_state_construction_track_for_current_minimal_repo"
+  },
+  "gpu_owned_state_construction_track_closure": {
+    "status": "closed_current_minimal_repo_scope",
+    "weakest_point": "Closing this track does not prove full RTL-on-GPU execution, x_smem/x_dmem data-image coverage, ISA/software correctness, or application throughput; it only closes the current checked-in source-backed construction surface.",
+    "closed_scope": [
+      "source_backed_iahb_case_pat_word_packed_program_image_initialization",
+      "deterministic_x_dmem_zero_fill_device_initialization",
+      "combined_word_packed_iahb_program_image_and_dmem_zero_fill_construction",
+      "xuantie_combined_construction_runtime_accounting_gate"
+    ],
+    "closure_reason": "No concrete external source-backed target contract is present, and multi-state combined construction accounting would not change the accepted construction responsibility surface.",
+    "preserved_non_claims": [
+      "not x_smem_ctrl initialization",
+      "not x_dmem data-image initialization",
+      "not a new source-backed non-IAHB memory image",
+      "not ISA/software correctness",
+      "not launch-latency speedup",
+      "not full application throughput"
+    ],
+    "source_artifacts": [
+      "reports/xuantie_e902_combined_construction_runtime_accounting.json",
+      "docs/status.md",
+      "docs/roadmap.md"
+    ],
+    "next_action": "select_next_project_axis_after_gpu_owned_construction_closure"
   }
 }
