@@ -303,6 +303,42 @@ def generate_gpu_ll(merged_ll_path: Path, storage_size: int) -> str:
     lines.append('}')
     lines.append('')
 
+    # DMEM zero-fill initialization owns deterministic zero construction for
+    # the selected XuanTie-E902 x_dmem_ctrl lanes without uploading per-state
+    # DMEM bytes.
+    lines.append('; === GPU kernel: XuanTie-E902 DMEM zero-fill initialization ===')
+    lines.append('define void @vl_zero_dmem_words_gpu(ptr %storage_base, ptr %lane_base_offsets, i32 %word_count, i64 %storage_bytes, i32 %nstates) {')
+    lines.append('entry:')
+    lines.append('  %tid  = call i32 @llvm.nvvm.read.ptx.sreg.tid.x()')
+    lines.append('  %bid  = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x()')
+    lines.append('  %bdim = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x()')
+    lines.append('  %gid_mul = mul i32 %bid, %bdim')
+    lines.append('  %gid32   = add i32 %gid_mul, %tid')
+    lines.append('  %gid = zext i32 %gid32 to i64')
+    lines.append('  %word_count64 = zext i32 %word_count to i64')
+    lines.append('  %nstates64 = zext i32 %nstates to i64')
+    lines.append('  %total_words = mul i64 %word_count64, %nstates64')
+    lines.append('  %in_range = icmp ult i64 %gid, %total_words')
+    lines.append('  br i1 %in_range, label %body, label %exit')
+    lines.append('')
+    lines.append('body:')
+    lines.append('  %state_idx = udiv i64 %gid, %word_count64')
+    lines.append('  %word_idx = urem i64 %gid, %word_count64')
+    lines.append('  %state_base_off = mul i64 %state_idx, %storage_bytes')
+    for lane in range(4):
+        lines.append(f'  %dmem_lane{lane}_base_ptr = getelementptr inbounds i64, ptr %lane_base_offsets, i64 {lane}')
+        lines.append(f'  %dmem_lane{lane}_base = load i64, ptr %dmem_lane{lane}_base_ptr, align 8')
+        lines.append(f'  %dmem_lane{lane}_rel = add i64 %dmem_lane{lane}_base, %word_idx')
+        lines.append(f'  %dmem_lane{lane}_dst_off = add i64 %state_base_off, %dmem_lane{lane}_rel')
+        lines.append(f'  %dmem_lane{lane}_dst = getelementptr inbounds i8, ptr %storage_base, i64 %dmem_lane{lane}_dst_off')
+        lines.append(f'  store i8 0, ptr %dmem_lane{lane}_dst, align 1')
+    lines.append('  br label %exit')
+    lines.append('')
+    lines.append('exit:')
+    lines.append('  ret void')
+    lines.append('}')
+    lines.append('')
+
     # TBAA / prof メタデータ
     meta_lines = []
     max_id = -1
@@ -319,12 +355,14 @@ def generate_gpu_ll(merged_ll_path: Path, storage_size: int) -> str:
     init_replication_kernel_id = kernel_id + 2
     program_image_init_kernel_id = kernel_id + 3
     program_image_words_kernel_id = kernel_id + 4
+    dmem_zero_kernel_id = kernel_id + 5
     lines.append(f'!{kernel_id} = !{{ptr @vl_eval_batch_gpu, !"kernel", i32 1}}')
     lines.append(f'!{patch_kernel_id} = !{{ptr @vl_apply_patch_schedule_gpu, !"kernel", i32 1}}')
     lines.append(f'!{init_replication_kernel_id} = !{{ptr @vl_replicate_init_state_gpu, !"kernel", i32 1}}')
     lines.append(f'!{program_image_init_kernel_id} = !{{ptr @vl_apply_program_image_init_gpu, !"kernel", i32 1}}')
     lines.append(f'!{program_image_words_kernel_id} = !{{ptr @vl_apply_program_image_words_gpu, !"kernel", i32 1}}')
-    lines.append(f'!nvvm.annotations = !{{!{kernel_id}, !{patch_kernel_id}, !{init_replication_kernel_id}, !{program_image_init_kernel_id}, !{program_image_words_kernel_id}}}')
+    lines.append(f'!{dmem_zero_kernel_id} = !{{ptr @vl_zero_dmem_words_gpu, !"kernel", i32 1}}')
+    lines.append(f'!nvvm.annotations = !{{!{kernel_id}, !{patch_kernel_id}, !{init_replication_kernel_id}, !{program_image_init_kernel_id}, !{program_image_words_kernel_id}, !{dmem_zero_kernel_id}}}')
 
     return '\n'.join(lines)
 

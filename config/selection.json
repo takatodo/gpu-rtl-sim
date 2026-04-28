@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "implement_xuantie_e902_dmem_zero_fill_kernel_generation",
+  "current_priority": "add_xuantie_e902_dmem_zero_fill_host_flag_and_env",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -307,5 +307,7 @@
     ]
   },
   "xuantie_e902_dmem_zero_fill_device_initialization_upload_goal": "upload four lane base offsets and a bounded DMEM word count or byte count, not per-state DMEM bytes",
-  "xuantie_e902_dmem_zero_fill_device_initialization_next_action": "implement_xuantie_e902_dmem_zero_fill_kernel_generation"
+  "xuantie_e902_dmem_zero_fill_kernel_generation_status": "implemented_in_generators",
+  "xuantie_e902_dmem_zero_fill_kernel_name": "vl_zero_dmem_words_gpu",
+  "xuantie_e902_dmem_zero_fill_device_initialization_next_action": "add_xuantie_e902_dmem_zero_fill_host_flag_and_env"
 }

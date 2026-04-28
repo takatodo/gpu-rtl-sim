@@ -246,6 +246,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("storage_bytes", cpp_generator)
         self.assertIn("vl_apply_program_image_words_gpu", generator)
         self.assertIn("vl_apply_program_image_words_gpu", cpp_generator)
+        self.assertIn("vl_zero_dmem_words_gpu", generator)
+        self.assertIn("vl_zero_dmem_words_gpu", cpp_generator)
+        self.assertIn("dmem_lane{lane}_dst", generator)
+        self.assertIn("dmem_lane_dst", cpp_generator)
         self.assertIn("program_words", generator)
         self.assertIn("program_words", cpp_generator)
         self.assertIn("lane_base_offsets", generator)
@@ -575,12 +579,16 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(dmem_zero["selected_family"], "x_dmem_ctrl.ram0..3.mem")
         self.assertIn("zero-fills", dmem_zero["source_policy"])
         self.assertEqual(dmem_zero["runtime_support"]["required_kernel"], "vl_zero_dmem_words_gpu")
+        self.assertEqual(
+            dmem_zero["runtime_support"]["kernel_generation_status"],
+            "implemented_in_generators",
+        )
         self.assertEqual(dmem_zero["runtime_support"]["planned_host_flag"], "--dmem-zero-fill")
         self.assertEqual(dmem_zero["runtime_support"]["planned_env"], "RUN_VL_HYBRID_DMEM_ZERO_FILL")
         self.assertIn("not source-backed data-image initialization", dmem_zero["non_claims"])
         self.assertEqual(
             dmem_zero["next_action"],
-            "implement_xuantie_e902_dmem_zero_fill_kernel_generation",
+            "add_xuantie_e902_dmem_zero_fill_host_flag_and_env",
         )
         self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
         self.assertTrue(
@@ -592,7 +600,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "implement_xuantie_e902_dmem_zero_fill_kernel_generation",
+            "add_xuantie_e902_dmem_zero_fill_host_flag_and_env",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -877,8 +885,16 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             selection["xuantie_e902_dmem_zero_fill_device_initialization_upload_goal"],
         )
         self.assertEqual(
+            selection["xuantie_e902_dmem_zero_fill_kernel_generation_status"],
+            "implemented_in_generators",
+        )
+        self.assertEqual(
+            selection["xuantie_e902_dmem_zero_fill_kernel_name"],
+            "vl_zero_dmem_words_gpu",
+        )
+        self.assertEqual(
             selection["xuantie_e902_dmem_zero_fill_device_initialization_next_action"],
-            "implement_xuantie_e902_dmem_zero_fill_kernel_generation",
+            "add_xuantie_e902_dmem_zero_fill_host_flag_and_env",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],

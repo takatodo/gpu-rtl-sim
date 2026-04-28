@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  implement_xuantie_e902_dmem_zero_fill_kernel_generation
+  add_xuantie_e902_dmem_zero_fill_host_flag_and_env
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2111,6 +2111,7 @@ define_xuantie_e902_dmem_zero_fill_device_initialization_boundary:
   source_policy: tb.v zero-fills x_dmem_ctrl.ram0..3.mem during initial construction
   construction_scope: zero selected DMEM lane storage on device after init-state replication and before resident eval
   required_kernel: vl_zero_dmem_words_gpu
+  kernel_generation: implemented_in_generators
   planned_host_flag: --dmem-zero-fill
   planned_env: RUN_VL_HYBRID_DMEM_ZERO_FILL
   non_claims:
@@ -2119,7 +2120,7 @@ define_xuantie_e902_dmem_zero_fill_device_initialization_boundary:
     - not IAHB case.pat program-image initialization
     - not ISA/software correctness
   status: done_defined_boundary
-  next_action: implement_xuantie_e902_dmem_zero_fill_kernel_generation
+  next_action: add_xuantie_e902_dmem_zero_fill_host_flag_and_env
 ```
 
 ## source_of_truth

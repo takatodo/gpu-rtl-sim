@@ -1498,6 +1498,74 @@ static void injectProgramImageWordsKernel(Module &M) {
                           ConstantAsMetadata::get(ConstantInt::get(I32Ty, 1))}));
 }
 
+static void injectDmemZeroFillKernel(Module &M) {
+    LLVMContext &Ctx = M.getContext();
+    Type *I8Ty = Type::getInt8Ty(Ctx);
+    Type *I32Ty = Type::getInt32Ty(Ctx);
+    Type *I64Ty = Type::getInt64Ty(Ctx);
+    auto *PtrTy = PointerType::get(Ctx, 0);
+    auto *IntrTy = FunctionType::get(I32Ty, {}, false);
+
+    auto *TidX = cast<Function>(
+        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.tid.x", IntrTy).getCallee());
+    auto *CtaidX = cast<Function>(
+        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ctaid.x", IntrTy).getCallee());
+    auto *NtidX = cast<Function>(
+        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ntid.x", IntrTy).getCallee());
+
+    auto *Kernel = Function::Create(
+        FunctionType::get(Type::getVoidTy(Ctx), {PtrTy, PtrTy, I32Ty, I64Ty, I32Ty}, false),
+        GlobalValue::ExternalLinkage, "vl_zero_dmem_words_gpu", &M);
+    Kernel->getArg(0)->setName("storage_base");
+    Kernel->getArg(1)->setName("lane_base_offsets");
+    Kernel->getArg(2)->setName("word_count");
+    Kernel->getArg(3)->setName("storage_bytes");
+    Kernel->getArg(4)->setName("nstates");
+
+    auto *EntryBB = BasicBlock::Create(Ctx, "entry", Kernel);
+    auto *BodyBB = BasicBlock::Create(Ctx, "body", Kernel);
+    auto *ExitBB = BasicBlock::Create(Ctx, "exit", Kernel);
+
+    IRBuilder<> B(EntryBB);
+    auto *Gid32 = B.CreateAdd(
+        B.CreateMul(B.CreateCall(CtaidX, {}, "bid"),
+                    B.CreateCall(NtidX, {}, "bdim"), "gid_mul"),
+        B.CreateCall(TidX, {}, "tid"), "gid32");
+    auto *Gid64 = B.CreateZExt(Gid32, I64Ty, "gid");
+    auto *WordCount64 = B.CreateZExt(Kernel->getArg(2), I64Ty, "word_count64");
+    auto *Nstates64 = B.CreateZExt(Kernel->getArg(4), I64Ty, "nstates64");
+    auto *TotalWords = B.CreateMul(WordCount64, Nstates64, "total_words");
+    B.CreateCondBr(B.CreateICmpULT(Gid64, TotalWords, "in_range"), BodyBB,
+                   ExitBB);
+
+    B.SetInsertPoint(BodyBB);
+    auto *StateIdx = B.CreateUDiv(Gid64, WordCount64, "state_idx");
+    auto *WordIdx = B.CreateURem(Gid64, WordCount64, "word_idx");
+    auto *StateBaseOff =
+        B.CreateMul(StateIdx, Kernel->getArg(3), "state_base_off");
+    for (uint64_t Lane = 0; Lane < 4; ++Lane) {
+        auto *LaneBasePtr = B.CreateGEP(
+            I64Ty, Kernel->getArg(1), {ConstantInt::get(I64Ty, Lane)},
+            "dmem_lane_base_ptr", true);
+        auto *LaneBase =
+            B.CreateAlignedLoad(I64Ty, LaneBasePtr, Align(8), "dmem_lane_base");
+        auto *LaneRel = B.CreateAdd(LaneBase, WordIdx, "dmem_lane_rel");
+        auto *DstOff = B.CreateAdd(StateBaseOff, LaneRel, "dmem_lane_dst_off");
+        auto *Dst =
+            B.CreateGEP(I8Ty, Kernel->getArg(0), {DstOff}, "dmem_lane_dst", true);
+        B.CreateAlignedStore(ConstantInt::get(I8Ty, 0), Dst, Align(1));
+    }
+    B.CreateBr(ExitBB);
+
+    B.SetInsertPoint(ExitBB);
+    B.CreateRetVoid();
+
+    M.getOrInsertNamedMetadata("nvvm.annotations")->addOperand(
+        MDNode::get(Ctx, {ValueAsMetadata::get(Kernel),
+                          MDString::get(Ctx, "kernel"),
+                          ConstantAsMetadata::get(ConstantInt::get(I32Ty, 1))}));
+}
+
 static void injectInitStateReplicationKernel(Module &M) {
     LLVMContext &Ctx = M.getContext();
     Type *I8Ty = Type::getInt8Ty(Ctx);
@@ -1827,6 +1895,7 @@ int main(int argc, char **argv) {
     injectResidentPatchScheduleKernel(*M);
     injectProgramImageInitKernel(*M);
     injectProgramImageWordsKernel(*M);
+    injectDmemZeroFillKernel(*M);
     injectInitStateReplicationKernel(*M);
 
     if (KernelSplit == "phases") {
