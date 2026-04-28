@@ -2207,6 +2207,29 @@ select_next_gpu_owned_state_construction_after_combined_xuantie_package:
   selection_reason: quantify the overhead excluded from the combined package claim before expanding responsibility again.
   status: done_selected_runtime_accounting_gate
   next_action: define_xuantie_combined_construction_runtime_accounting_gate
+
+define_xuantie_combined_construction_runtime_accounting_gate:
+  goal: measure the overhead excluded from the combined XuanTie construction package claim before expanding GPU-owned construction responsibility again
+  weakest_point: this gate can account runtime overhead using existing report lines, but it still does not prove end-to-end launch-latency speedup or add a new source-backed memory family.
+  measured_components:
+    - program_image_word_upload
+    - program_image_word_launch
+    - dmem_zero_fill_offset_upload
+    - dmem_zero_fill_launch
+    - CPU/root-layout discovery and preparation wall time when available
+  artifact: reports/xuantie_e902_combined_construction_runtime_accounting.json
+  acceptance:
+    - records aggregate upload bytes already accepted by the combined package
+    - records observed construction launch/report lines without claiming speedup
+    - keeps x_smem and x_dmem data-image initialization as non-claims
+    - separates upload accounting from launch/runtime accounting
+  non_claims:
+    - not launch-latency speedup
+    - not full application throughput
+    - not x_smem_ctrl initialization
+    - not x_dmem data-image initialization
+  status: done_defined_gate
+  next_action: run_xuantie_combined_construction_runtime_accounting_gate
 ```
 
 ## source_of_truth

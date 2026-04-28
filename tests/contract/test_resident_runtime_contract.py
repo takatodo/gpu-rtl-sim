@@ -650,7 +650,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "define_xuantie_combined_construction_runtime_accounting_gate",
+            "run_xuantie_combined_construction_runtime_accounting_gate",
         )
         self.assertEqual(
             selection["post_dmem_zero_fill_axis_selection"]["status"],
@@ -699,6 +699,19 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(
             post_combined["next_action"],
             "define_xuantie_combined_construction_runtime_accounting_gate",
+        )
+        accounting_gate = selection["xuantie_combined_construction_runtime_accounting_gate"]
+        self.assertEqual(accounting_gate["status"], "defined_gate")
+        self.assertEqual(
+            accounting_gate["artifact"],
+            "reports/xuantie_e902_combined_construction_runtime_accounting.json",
+        )
+        self.assertIn("program_image_word_launch", accounting_gate["measured_components"])
+        self.assertIn("dmem_zero_fill_launch", accounting_gate["required_existing_report_lines"])
+        self.assertIn("not launch-latency speedup", accounting_gate["non_claims"])
+        self.assertEqual(
+            accounting_gate["next_action"],
+            "run_xuantie_combined_construction_runtime_accounting_gate",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
