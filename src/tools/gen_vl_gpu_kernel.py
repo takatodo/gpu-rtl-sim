@@ -219,6 +219,43 @@ def generate_gpu_ll(merged_ll_path: Path, storage_size: int) -> str:
     lines.append('}')
     lines.append('')
 
+    # Program-image initialization applies source-backed IAHB records once to
+    # every state before resident eval. It intentionally reuses the offset/value
+    # SoA shape from resident patch schedules, but expands across states inside
+    # the kernel instead of launching once per logical step.
+    lines.append('; === GPU kernel: program-image initialization ===')
+    lines.append('define void @vl_apply_program_image_init_gpu(ptr %storage_base, ptr %record_offsets, ptr %record_values, i32 %record_count, i64 %storage_bytes, i32 %nstates) {')
+    lines.append('entry:')
+    lines.append('  %tid  = call i32 @llvm.nvvm.read.ptx.sreg.tid.x()')
+    lines.append('  %bid  = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x()')
+    lines.append('  %bdim = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x()')
+    lines.append('  %gid_mul = mul i32 %bid, %bdim')
+    lines.append('  %gid32   = add i32 %gid_mul, %tid')
+    lines.append('  %gid = zext i32 %gid32 to i64')
+    lines.append('  %record_count64 = zext i32 %record_count to i64')
+    lines.append('  %nstates64 = zext i32 %nstates to i64')
+    lines.append('  %total_records = mul i64 %record_count64, %nstates64')
+    lines.append('  %in_range = icmp ult i64 %gid, %total_records')
+    lines.append('  br i1 %in_range, label %body, label %exit')
+    lines.append('')
+    lines.append('body:')
+    lines.append('  %state_idx = udiv i64 %gid, %record_count64')
+    lines.append('  %record_idx = urem i64 %gid, %record_count64')
+    lines.append('  %state_base_off = mul i64 %state_idx, %storage_bytes')
+    lines.append('  %offset_ptr = getelementptr inbounds i64, ptr %record_offsets, i64 %record_idx')
+    lines.append('  %record_off = load i64, ptr %offset_ptr, align 8')
+    lines.append('  %value_ptr = getelementptr inbounds i8, ptr %record_values, i64 %record_idx')
+    lines.append('  %value = load i8, ptr %value_ptr, align 1')
+    lines.append('  %dst_off = add i64 %state_base_off, %record_off')
+    lines.append('  %dst = getelementptr inbounds i8, ptr %storage_base, i64 %dst_off')
+    lines.append('  store i8 %value, ptr %dst, align 1')
+    lines.append('  br label %exit')
+    lines.append('')
+    lines.append('exit:')
+    lines.append('  ret void')
+    lines.append('}')
+    lines.append('')
+
     # TBAA / prof メタデータ
     meta_lines = []
     max_id = -1
@@ -233,10 +270,12 @@ def generate_gpu_ll(merged_ll_path: Path, storage_size: int) -> str:
     kernel_id = max_id + 1
     patch_kernel_id = kernel_id + 1
     init_replication_kernel_id = kernel_id + 2
+    program_image_init_kernel_id = kernel_id + 3
     lines.append(f'!{kernel_id} = !{{ptr @vl_eval_batch_gpu, !"kernel", i32 1}}')
     lines.append(f'!{patch_kernel_id} = !{{ptr @vl_apply_patch_schedule_gpu, !"kernel", i32 1}}')
     lines.append(f'!{init_replication_kernel_id} = !{{ptr @vl_replicate_init_state_gpu, !"kernel", i32 1}}')
-    lines.append(f'!nvvm.annotations = !{{!{kernel_id}, !{patch_kernel_id}, !{init_replication_kernel_id}}}')
+    lines.append(f'!{program_image_init_kernel_id} = !{{ptr @vl_apply_program_image_init_gpu, !"kernel", i32 1}}')
+    lines.append(f'!nvvm.annotations = !{{!{kernel_id}, !{patch_kernel_id}, !{init_replication_kernel_id}, !{program_image_init_kernel_id}}}')
 
     return '\n'.join(lines)
 

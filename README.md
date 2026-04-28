@@ -465,12 +465,12 @@ next_gpu_owned_state_construction_step:
   source: case.pat loaded through mem_inst_temp
   selected_family: iahb_instruction_memory
   status: planned_task_ladder_defined
-  next: implement_program_image_initialization_kernel_generation
+  next: add_program_image_initialization_host_flag_and_env
   task_ladder:
     - extract_xuantie_e902_program_image_initialization_inputs: done_contract_defined
     - define_program_image_initialization_record_format: done_format_defined
     - implement_program_image_initialization_kernel_and_host_flag: planned_subtasks_defined
-    - implement_program_image_initialization_kernel_generation
+    - implement_program_image_initialization_kernel_generation: done_kernel_generation_implemented
     - add_program_image_initialization_host_flag_and_env
     - upload_program_image_initialization_records_once
     - launch_program_image_initialization_before_resident_eval
@@ -484,6 +484,7 @@ next_gpu_owned_state_construction_step:
   device_upload_layout: structure_of_arrays_offsets_and_values
   apply_scope: apply every record to every GPU state before the first resident eval step
   required_kernel: vl_apply_program_image_init_gpu
+  kernel_generation: implemented_in_generators
   required_host_flag: --program-image-init-records
   required_env: RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS
   non_claim: not broad ROM initialization, not x_smem/x_dmem coverage, not ISA correctness, and not full software boot correctness

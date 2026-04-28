@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  implement_program_image_initialization_kernel_generation
+  add_program_image_initialization_host_flag_and_env
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1895,8 +1895,24 @@ implement_program_image_initialization_kernel_and_host_flag:
     - validate_program_image_initialization_against_cpu_constructed_state:
         purpose: compare CPU/source-backed construction against GPU/device-side construction
         output: reports/xuantie_e902_program_image_initialization_construction.json
-  status: planned_subtasks_defined
-  next_action: implement_program_image_initialization_kernel_generation
+  status: kernel_generation_implemented
+  next_action: add_program_image_initialization_host_flag_and_env
+
+implement_program_image_initialization_kernel_generation:
+  goal: emit the program-image initialization kernel from both GPU kernel generators
+  weakest_point: kernel availability alone is not runtime support; without the host flag/env and upload path the kernel cannot be used by operators.
+  kernel: vl_apply_program_image_init_gpu
+  signature: ptr storage_base, ptr record_offsets, ptr record_values, i32 record_count, i64 storage_bytes, i32 nstates
+  semantics:
+    - one logical thread maps to one state/record pair
+    - target address is storage_base + state_index * storage_bytes + target_root_offset
+    - record offsets and values use the same SoA shape as resident patch schedules
+    - kernel runs once before resident eval, not per logical patch step
+  generator_updates:
+    - src/tools/gen_vl_gpu_kernel.py
+    - src/passes/vlgpugen.cpp
+  status: done_kernel_generation_implemented
+  next_action: add_program_image_initialization_host_flag_and_env
 ```
 
 ## source_of_truth

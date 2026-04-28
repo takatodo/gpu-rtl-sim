@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "implement_program_image_initialization_kernel_generation",
+  "current_priority": "add_program_image_initialization_host_flag_and_env",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -211,9 +211,10 @@
     "validate_program_image_initialization_against_cpu_constructed_state"
   ],
   "source_backed_program_image_initialization_kernel_name": "vl_apply_program_image_init_gpu",
+  "source_backed_program_image_initialization_kernel_generation_status": "implemented_in_generators",
   "source_backed_program_image_initialization_host_flag": "--program-image-init-records",
   "source_backed_program_image_initialization_env": "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS",
-  "source_backed_program_image_initialization_next_action": "implement_program_image_initialization_kernel_generation",
+  "source_backed_program_image_initialization_next_action": "add_program_image_initialization_host_flag_and_env",
   "source_backed_program_image_initialization_task_ladder": [
     "extract_xuantie_e902_program_image_initialization_inputs",
     "define_program_image_initialization_record_format",
@@ -221,5 +222,5 @@
     "validate_program_image_initialization_against_cpu_constructed_state",
     "measure_program_image_initialization_upload_reduction"
   ],
-  "source_backed_program_image_initialization_current_blocker": "kernel generation does not yet emit vl_apply_program_image_init_gpu, so the host cannot launch the defined offset/value SoA records before resident eval"
+  "source_backed_program_image_initialization_current_blocker": "host wrapper and C runtime do not yet accept RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS / --program-image-init-records, so the emitted kernel is not launchable from the supported runtime path"
 }

@@ -1348,6 +1348,73 @@ static void injectResidentPatchScheduleKernel(Module &M) {
                           ConstantAsMetadata::get(ConstantInt::get(I32Ty, 1))}));
 }
 
+static void injectProgramImageInitKernel(Module &M) {
+    LLVMContext &Ctx = M.getContext();
+    Type *I8Ty = Type::getInt8Ty(Ctx);
+    Type *I32Ty = Type::getInt32Ty(Ctx);
+    Type *I64Ty = Type::getInt64Ty(Ctx);
+    auto *PtrTy = PointerType::get(Ctx, 0);
+    auto *IntrTy = FunctionType::get(I32Ty, {}, false);
+
+    auto *TidX = cast<Function>(
+        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.tid.x", IntrTy).getCallee());
+    auto *CtaidX = cast<Function>(
+        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ctaid.x", IntrTy).getCallee());
+    auto *NtidX = cast<Function>(
+        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ntid.x", IntrTy).getCallee());
+
+    auto *Kernel = Function::Create(
+        FunctionType::get(Type::getVoidTy(Ctx),
+                          {PtrTy, PtrTy, PtrTy, I32Ty, I64Ty, I32Ty}, false),
+        GlobalValue::ExternalLinkage, "vl_apply_program_image_init_gpu", &M);
+    Kernel->getArg(0)->setName("storage_base");
+    Kernel->getArg(1)->setName("record_offsets");
+    Kernel->getArg(2)->setName("record_values");
+    Kernel->getArg(3)->setName("record_count");
+    Kernel->getArg(4)->setName("storage_bytes");
+    Kernel->getArg(5)->setName("nstates");
+
+    auto *EntryBB = BasicBlock::Create(Ctx, "entry", Kernel);
+    auto *BodyBB = BasicBlock::Create(Ctx, "body", Kernel);
+    auto *ExitBB = BasicBlock::Create(Ctx, "exit", Kernel);
+
+    IRBuilder<> B(EntryBB);
+    auto *Gid32 = B.CreateAdd(
+        B.CreateMul(B.CreateCall(CtaidX, {}, "bid"),
+                    B.CreateCall(NtidX, {}, "bdim"), "gid_mul"),
+        B.CreateCall(TidX, {}, "tid"), "gid32");
+    auto *Gid64 = B.CreateZExt(Gid32, I64Ty, "gid");
+    auto *RecordCount64 = B.CreateZExt(Kernel->getArg(3), I64Ty, "record_count64");
+    auto *Nstates64 = B.CreateZExt(Kernel->getArg(5), I64Ty, "nstates64");
+    auto *TotalRecords = B.CreateMul(RecordCount64, Nstates64, "total_records");
+    B.CreateCondBr(B.CreateICmpULT(Gid64, TotalRecords, "in_range"), BodyBB,
+                   ExitBB);
+
+    B.SetInsertPoint(BodyBB);
+    auto *StateIdx = B.CreateUDiv(Gid64, RecordCount64, "state_idx");
+    auto *RecordIdx = B.CreateURem(Gid64, RecordCount64, "record_idx");
+    auto *StateBaseOff =
+        B.CreateMul(StateIdx, Kernel->getArg(4), "state_base_off");
+    auto *OffsetPtr =
+        B.CreateGEP(I64Ty, Kernel->getArg(1), {RecordIdx}, "offset_ptr", true);
+    auto *RecordOff = B.CreateAlignedLoad(I64Ty, OffsetPtr, Align(8), "record_off");
+    auto *ValuePtr =
+        B.CreateGEP(I8Ty, Kernel->getArg(2), {RecordIdx}, "value_ptr", true);
+    auto *Value = B.CreateAlignedLoad(I8Ty, ValuePtr, Align(1), "value");
+    auto *DstOff = B.CreateAdd(StateBaseOff, RecordOff, "dst_off");
+    auto *Dst = B.CreateGEP(I8Ty, Kernel->getArg(0), {DstOff}, "dst", true);
+    B.CreateAlignedStore(Value, Dst, Align(1));
+    B.CreateBr(ExitBB);
+
+    B.SetInsertPoint(ExitBB);
+    B.CreateRetVoid();
+
+    M.getOrInsertNamedMetadata("nvvm.annotations")->addOperand(
+        MDNode::get(Ctx, {ValueAsMetadata::get(Kernel),
+                          MDString::get(Ctx, "kernel"),
+                          ConstantAsMetadata::get(ConstantInt::get(I32Ty, 1))}));
+}
+
 static void injectInitStateReplicationKernel(Module &M) {
     LLVMContext &Ctx = M.getContext();
     Type *I8Ty = Type::getInt8Ty(Ctx);
@@ -1675,6 +1742,7 @@ int main(int argc, char **argv) {
     injectBatchKernel(*M, "vl_eval_batch_gpu", ArrayRef(&EvalFn, 1), StorageSize, VlOff,
                       FakeSymsBuf);
     injectResidentPatchScheduleKernel(*M);
+    injectProgramImageInitKernel(*M);
     injectInitStateReplicationKernel(*M);
 
     if (KernelSplit == "phases") {

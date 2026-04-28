@@ -229,6 +229,20 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("vl_replicate_init_state_gpu", cpp_generator)
         self.assertIn("--gpu-replicate-init-state", wrapper)
 
+    def test_program_image_initialization_kernel_generation_is_present(self) -> None:
+        generator = (REPO_ROOT / "src" / "tools" / "gen_vl_gpu_kernel.py").read_text(
+            encoding="utf-8"
+        )
+        cpp_generator = (REPO_ROOT / "src" / "passes" / "vlgpugen.cpp").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("vl_apply_program_image_init_gpu", generator)
+        self.assertIn("vl_apply_program_image_init_gpu", cpp_generator)
+        self.assertIn("record_offsets", generator)
+        self.assertIn("record_offsets", cpp_generator)
+        self.assertIn("storage_bytes", generator)
+        self.assertIn("storage_bytes", cpp_generator)
+
     def test_device_side_init_state_replication_gate_is_defined(self) -> None:
         gate = json.loads(TLUL_FIFO_INIT_REPLICATION_GATE.read_text(encoding="utf-8"))
         self.assertEqual(gate["gate"], "tlul_fifo_sync_device_side_init_state_replication")
@@ -409,9 +423,9 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(gate["runtime_support"]["required_env"], "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS")
         self.assertEqual(
             gate["runtime_support"]["implementation_subtasks"][0],
-            "implement_program_image_initialization_kernel_generation",
+            "implement_program_image_initialization_kernel_generation: done",
         )
-        self.assertEqual(gate["runtime_support"]["status"], "not_implemented")
+        self.assertEqual(gate["runtime_support"]["status"], "kernel_generation_implemented")
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
         )
@@ -421,7 +435,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "implement_program_image_initialization_kernel_generation",
+            "add_program_image_initialization_host_flag_and_env",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -558,11 +572,15 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "implement_program_image_initialization_kernel_generation",
+            "add_program_image_initialization_host_flag_and_env",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_kernel_name"],
             "vl_apply_program_image_init_gpu",
+        )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_kernel_generation_status"],
+            "implemented_in_generators",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_env"],
@@ -588,7 +606,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             selection["source_backed_program_image_initialization_task_ladder"][-1],
             "measure_program_image_initialization_upload_reduction",
         )
-        self.assertIn("kernel generation", selection["source_backed_program_image_initialization_current_blocker"])
+        self.assertIn("--program-image-init-records", selection["source_backed_program_image_initialization_current_blocker"])
         self.assertEqual(
             selection["larger_resident_schedule_envelope_gate"],
             "config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json",
