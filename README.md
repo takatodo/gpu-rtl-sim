@@ -511,10 +511,17 @@ next_gpu_owned_state_construction_step:
   next_gpu_owned_state_construction_axis: xuantie_e902_non_iahb_source_backed_memory_initialization
   non_iahb_source_backed_boundary: blocked_source_contract_gap
   next_gpu_owned_state_construction_axis_after_non_iahb_gap: xuantie_e902_dmem_zero_fill_device_initialization
+  dmem_zero_fill_boundary: defined_boundary
+  dmem_zero_fill_selected_family: x_dmem_ctrl.ram0..3.mem
+  dmem_zero_fill_source_policy: tb.v zero-fills x_dmem_ctrl.ram0..3.mem
+  dmem_zero_fill_required_kernel: vl_zero_dmem_words_gpu
+  dmem_zero_fill_planned_host_flag: --dmem-zero-fill
+  dmem_zero_fill_planned_env: RUN_VL_HYBRID_DMEM_ZERO_FILL
+  dmem_zero_fill_next_action: implement_xuantie_e902_dmem_zero_fill_kernel_generation
   word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]
   expected_next_axis_upload_bytes: 166688
   expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822
-  non_claim: not broad ROM initialization, not x_smem/x_dmem coverage, not ISA correctness, and not full software boot correctness
+  non_claim: not source-backed x_dmem data-image initialization, not x_smem coverage, not ISA correctness, and not full software boot correctness
 
 policy:
   - upload init-state once

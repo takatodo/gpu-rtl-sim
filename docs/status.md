@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_xuantie_e902_dmem_zero_fill_device_initialization_boundary
+  implement_xuantie_e902_dmem_zero_fill_kernel_generation
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2103,6 +2103,23 @@ define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary:
   non_claim: does not claim x_smem/x_dmem source-backed program/data image initialization
   status: done_defined_blocked_source_contract_gap
   next_action: define_xuantie_e902_dmem_zero_fill_device_initialization_boundary
+
+define_xuantie_e902_dmem_zero_fill_device_initialization_boundary:
+  goal: define the next bounded GPU-owned construction step for deterministic x_dmem zero-fill
+  weakest_point: this is a zero-fill policy boundary, not a source-backed data-image initialization claim.
+  selected_family: x_dmem_ctrl.ram0..3.mem
+  source_policy: tb.v zero-fills x_dmem_ctrl.ram0..3.mem during initial construction
+  construction_scope: zero selected DMEM lane storage on device after init-state replication and before resident eval
+  required_kernel: vl_zero_dmem_words_gpu
+  planned_host_flag: --dmem-zero-fill
+  planned_env: RUN_VL_HYBRID_DMEM_ZERO_FILL
+  non_claims:
+    - not source-backed data-image initialization
+    - not x_smem_ctrl initialization
+    - not IAHB case.pat program-image initialization
+    - not ISA/software correctness
+  status: done_defined_boundary
+  next_action: implement_xuantie_e902_dmem_zero_fill_kernel_generation
 ```
 
 ## source_of_truth

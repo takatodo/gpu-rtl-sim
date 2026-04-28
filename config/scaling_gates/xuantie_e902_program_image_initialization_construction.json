@@ -218,6 +218,45 @@
     "next_axis": "xuantie_e902_dmem_zero_fill_device_initialization",
     "next_action": "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary"
   },
+  "dmem_zero_fill_device_initialization_boundary": {
+    "status": "defined_boundary",
+    "weakest_point": "This is a deterministic zero-fill construction boundary, not a source-backed data-image initialization claim.",
+    "selected_family": "x_dmem_ctrl.ram0..3.mem",
+    "source_policy": "tb.v zero-fills x_dmem_ctrl.ram0..3.mem during initial construction",
+    "construction_scope": {
+      "input": "lane base offsets plus bounded DMEM word or byte count",
+      "device_side_output": "zeroed x_dmem_ctrl.ram0..3.mem root storage for each GPU state",
+      "apply_scope": "after init-state replication and before resident eval",
+      "host_device_traffic_goal": "avoid uploading per-state DMEM bytes when the accepted semantic is all-zero construction"
+    },
+    "root_storage_scope": [
+      "x_dmem_ctrl.ram0.mem",
+      "x_dmem_ctrl.ram1.mem",
+      "x_dmem_ctrl.ram2.mem",
+      "x_dmem_ctrl.ram3.mem"
+    ],
+    "runtime_support": {
+      "required_kernel": "vl_zero_dmem_words_gpu",
+      "planned_host_flag": "--dmem-zero-fill",
+      "planned_env": "RUN_VL_HYBRID_DMEM_ZERO_FILL",
+      "required_lowering": "resolve generated root layout offsets for x_dmem_ctrl.ram0..3.mem lanes",
+      "implementation_subtasks": [
+        "implement_xuantie_e902_dmem_zero_fill_kernel_generation",
+        "add_xuantie_e902_dmem_zero_fill_host_flag_and_env",
+        "upload_xuantie_e902_dmem_zero_fill_lane_offsets_once",
+        "launch_xuantie_e902_dmem_zero_fill_before_resident_eval",
+        "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state"
+      ]
+    },
+    "accepted_claim": "GPU can own deterministic zero-fill construction for the selected DMEM root storage without uploading per-state DMEM bytes.",
+    "non_claims": [
+      "not source-backed data-image initialization",
+      "not x_smem_ctrl initialization",
+      "not IAHB case.pat program-image initialization",
+      "not ISA/software correctness"
+    ],
+    "next_action": "implement_xuantie_e902_dmem_zero_fill_kernel_generation"
+  },
   "artifacts": {
     "report": "reports/xuantie_e902_program_image_initialization_construction.json",
     "generated_outputs_only": true

@@ -570,6 +570,18 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             non_iahb["next_action"],
             "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary",
         )
+        dmem_zero = gate["dmem_zero_fill_device_initialization_boundary"]
+        self.assertEqual(dmem_zero["status"], "defined_boundary")
+        self.assertEqual(dmem_zero["selected_family"], "x_dmem_ctrl.ram0..3.mem")
+        self.assertIn("zero-fills", dmem_zero["source_policy"])
+        self.assertEqual(dmem_zero["runtime_support"]["required_kernel"], "vl_zero_dmem_words_gpu")
+        self.assertEqual(dmem_zero["runtime_support"]["planned_host_flag"], "--dmem-zero-fill")
+        self.assertEqual(dmem_zero["runtime_support"]["planned_env"], "RUN_VL_HYBRID_DMEM_ZERO_FILL")
+        self.assertIn("not source-backed data-image initialization", dmem_zero["non_claims"])
+        self.assertEqual(
+            dmem_zero["next_action"],
+            "implement_xuantie_e902_dmem_zero_fill_kernel_generation",
+        )
         self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
@@ -580,7 +592,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary",
+            "implement_xuantie_e902_dmem_zero_fill_kernel_generation",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -850,6 +862,23 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(
             selection["xuantie_e902_non_iahb_source_backed_memory_initialization_next_action"],
             "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary",
+        )
+        self.assertEqual(
+            selection["xuantie_e902_dmem_zero_fill_device_initialization_status"],
+            "defined_boundary",
+        )
+        dmem_zero = selection["xuantie_e902_dmem_zero_fill_device_initialization_boundary"]
+        self.assertEqual(dmem_zero["selected_family"], "x_dmem_ctrl.ram0..3.mem")
+        self.assertIn("zero-fills", dmem_zero["source_policy"])
+        self.assertIn("x_dmem_ctrl.ram2.mem", dmem_zero["root_storage_scope"])
+        self.assertIn("not source-backed data-image initialization", dmem_zero["non_claims"])
+        self.assertIn(
+            "not per-state DMEM bytes",
+            selection["xuantie_e902_dmem_zero_fill_device_initialization_upload_goal"],
+        )
+        self.assertEqual(
+            selection["xuantie_e902_dmem_zero_fill_device_initialization_next_action"],
+            "implement_xuantie_e902_dmem_zero_fill_kernel_generation",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],
