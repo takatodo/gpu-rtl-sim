@@ -2273,8 +2273,10 @@ select_next_axis_after_xuantie_runtime_accounting:
     - multi_state_combined_construction_accounting
     - close_gpu_owned_state_construction_track_for_current_minimal_repo
   selection_rule: prefer a source-backed target/import decision if a concrete source input contract exists; otherwise prefer multi-state accounting only if it answers an unresolved scaling question.
-  status: pending_selection
-  next_action: select_next_axis_after_xuantie_runtime_accounting
+  selected_axis: close_gpu_owned_state_construction_track_for_current_minimal_repo
+  selection_reason: no concrete external source-backed target contract is present, and multi-state combined construction accounting would not change the accepted construction responsibility surface.
+  status: done_selected_close_current_track
+  next_action: close_gpu_owned_state_construction_track_for_current_minimal_repo
 ```
 
 ## source_of_truth

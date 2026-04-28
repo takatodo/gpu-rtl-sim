@@ -555,6 +555,8 @@ next_gpu_owned_state_construction_step:
     - external_source_backed_target_import_decision
     - multi_state_combined_construction_accounting
     - close_gpu_owned_state_construction_track_for_current_minimal_repo
+  post_runtime_accounting_selected_axis: close_gpu_owned_state_construction_track_for_current_minimal_repo
+  post_runtime_accounting_selection_reason: no concrete external source-backed target contract is present, and multi-state combined construction accounting would not change the accepted construction responsibility surface
   word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]
   expected_next_axis_upload_bytes: 166688
   expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822

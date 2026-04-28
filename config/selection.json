@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "select_next_axis_after_xuantie_runtime_accounting",
+  "current_priority": "close_gpu_owned_state_construction_track_for_current_minimal_repo",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -465,7 +465,7 @@
     "next_action": "select_next_axis_after_xuantie_runtime_accounting"
   },
   "post_xuantie_runtime_accounting_axis_selection": {
-    "status": "pending_selection",
+    "status": "selected_close_current_track",
     "weakest_point": "The current minimal repo has exhausted checked-in source-backed XuanTie construction surfaces; choosing another implementation axis before a source contract or benchmark target is selected risks busywork.",
     "candidate_axes": [
       "external_source_backed_target_import_decision",
@@ -473,6 +473,8 @@
       "close_gpu_owned_state_construction_track_for_current_minimal_repo"
     ],
     "selection_rule": "Prefer a source-backed target/import decision if a concrete source input contract exists; otherwise prefer multi-state accounting only if it answers an unresolved scaling question.",
-    "next_action": "select_next_axis_after_xuantie_runtime_accounting"
+    "selected_axis": "close_gpu_owned_state_construction_track_for_current_minimal_repo",
+    "selection_reason": "No concrete external source-backed target contract is present, and multi-state combined construction accounting would not change the accepted construction responsibility surface.",
+    "next_action": "close_gpu_owned_state_construction_track_for_current_minimal_repo"
   }
 }

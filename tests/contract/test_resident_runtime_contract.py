@@ -650,7 +650,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "select_next_axis_after_xuantie_runtime_accounting",
+            "close_gpu_owned_state_construction_track_for_current_minimal_repo",
         )
         self.assertEqual(
             selection["post_dmem_zero_fill_axis_selection"]["status"],
@@ -724,7 +724,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "accepted_accounting_result_without_speedup_claim",
         )
         post_accounting = selection["post_xuantie_runtime_accounting_axis_selection"]
-        self.assertEqual(post_accounting["status"], "pending_selection")
+        self.assertEqual(post_accounting["status"], "selected_close_current_track")
         self.assertIn(
             "external_source_backed_target_import_decision",
             post_accounting["candidate_axes"],
@@ -732,6 +732,15 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn(
             "close_gpu_owned_state_construction_track_for_current_minimal_repo",
             post_accounting["candidate_axes"],
+        )
+        self.assertEqual(
+            post_accounting["selected_axis"],
+            "close_gpu_owned_state_construction_track_for_current_minimal_repo",
+        )
+        self.assertIn("No concrete external source-backed target", post_accounting["selection_reason"])
+        self.assertEqual(
+            post_accounting["next_action"],
+            "close_gpu_owned_state_construction_track_for_current_minimal_repo",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
