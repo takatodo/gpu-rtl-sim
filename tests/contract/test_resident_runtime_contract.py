@@ -613,10 +613,22 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             dmem_zero["runtime_support"]["launch_status"],
             "launch_before_resident_eval_wired",
         )
+        self.assertEqual(
+            dmem_zero["runtime_support"]["validation_status"],
+            "strict_and_normalized_final_state_equivalence_pass",
+        )
+        self.assertEqual(
+            dmem_zero["runtime_support"]["validation_report"],
+            "reports/xuantie_e902_dmem_zero_fill_validation.json",
+        )
+        self.assertEqual(
+            dmem_zero["runtime_support"]["validation_shape"]["dirty_dmem_bytes"],
+            262144,
+        )
         self.assertIn("not source-backed data-image initialization", dmem_zero["non_claims"])
         self.assertEqual(
             dmem_zero["next_action"],
-            "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state",
+            "package_xuantie_e902_dmem_zero_fill_boundary",
         )
         self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
         self.assertTrue(
@@ -628,7 +640,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state",
+            "package_xuantie_e902_dmem_zero_fill_boundary",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -951,8 +963,18 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "launch_before_resident_eval_wired",
         )
         self.assertEqual(
+            selection["xuantie_e902_dmem_zero_fill_validation_status"],
+            "strict_and_normalized_final_state_equivalence_pass",
+        )
+        self.assertEqual(
+            selection["xuantie_e902_dmem_zero_fill_validation_report"],
+            "reports/xuantie_e902_dmem_zero_fill_validation.json",
+        )
+        self.assertEqual(selection["xuantie_e902_dmem_zero_fill_validation_dirty_dmem_bytes"], 262144)
+        self.assertEqual(selection["xuantie_e902_dmem_zero_fill_validation_word_count"], 65536)
+        self.assertEqual(
             selection["xuantie_e902_dmem_zero_fill_device_initialization_next_action"],
-            "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state",
+            "package_xuantie_e902_dmem_zero_fill_boundary",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],

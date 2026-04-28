@@ -206,7 +206,8 @@ phase_3:
   add_xuantie_e902_dmem_zero_fill_host_flag_and_env: done_host_flag_env_wired
   upload_xuantie_e902_dmem_zero_fill_lane_offsets_once: done_lane_offsets_uploaded_once
   launch_xuantie_e902_dmem_zero_fill_before_resident_eval: done_launch_before_resident_eval_wired
-  validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state: next
+  validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state: done_strict_and_normalized_final_state_equivalence_pass
+  package_xuantie_e902_dmem_zero_fill_boundary: next
 ```
 
 ## acceptance

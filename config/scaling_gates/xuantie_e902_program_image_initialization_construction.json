@@ -247,13 +247,25 @@
       "word_count_env": "RUN_VL_HYBRID_DMEM_ZERO_FILL_WORD_COUNT",
       "lane_offset_upload_status": "lane_base_offsets_uploaded_once",
       "launch_status": "launch_before_resident_eval_wired",
+      "validation_status": "strict_and_normalized_final_state_equivalence_pass",
+      "validation_report": "reports/xuantie_e902_dmem_zero_fill_validation.json",
+      "validation_shape": {
+        "dirty_dmem_bytes": 262144,
+        "word_count": 65536,
+        "lane_base_offsets": [
+          1056336,
+          1121872,
+          1187408,
+          1252944
+        ]
+      },
       "required_lowering": "resolve generated root layout offsets for x_dmem_ctrl.ram0..3.mem lanes",
       "implementation_subtasks": [
         "implement_xuantie_e902_dmem_zero_fill_kernel_generation: done",
         "add_xuantie_e902_dmem_zero_fill_host_flag_and_env: done",
         "upload_xuantie_e902_dmem_zero_fill_lane_offsets_once: done",
         "launch_xuantie_e902_dmem_zero_fill_before_resident_eval: done",
-        "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state"
+        "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state: done"
       ]
     },
     "accepted_claim": "GPU can own deterministic zero-fill construction for the selected DMEM root storage without uploading per-state DMEM bytes.",
@@ -263,7 +275,7 @@
       "not IAHB case.pat program-image initialization",
       "not ISA/software correctness"
     ],
-    "next_action": "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state"
+    "next_action": "package_xuantie_e902_dmem_zero_fill_boundary"
   },
   "artifacts": {
     "report": "reports/xuantie_e902_program_image_initialization_construction.json",

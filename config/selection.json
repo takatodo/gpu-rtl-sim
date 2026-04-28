@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state",
+  "current_priority": "package_xuantie_e902_dmem_zero_fill_boundary",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -318,5 +318,15 @@
   "xuantie_e902_dmem_zero_fill_word_count_flag": "--dmem-zero-fill-word-count",
   "xuantie_e902_dmem_zero_fill_lane_offset_upload_status": "lane_base_offsets_uploaded_once",
   "xuantie_e902_dmem_zero_fill_launch_status": "launch_before_resident_eval_wired",
-  "xuantie_e902_dmem_zero_fill_device_initialization_next_action": "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state"
+  "xuantie_e902_dmem_zero_fill_validation_status": "strict_and_normalized_final_state_equivalence_pass",
+  "xuantie_e902_dmem_zero_fill_validation_report": "reports/xuantie_e902_dmem_zero_fill_validation.json",
+  "xuantie_e902_dmem_zero_fill_validation_dirty_dmem_bytes": 262144,
+  "xuantie_e902_dmem_zero_fill_validation_word_count": 65536,
+  "xuantie_e902_dmem_zero_fill_validation_lane_base_offsets": [
+    1056336,
+    1121872,
+    1187408,
+    1252944
+  ],
+  "xuantie_e902_dmem_zero_fill_device_initialization_next_action": "package_xuantie_e902_dmem_zero_fill_boundary"
 }
