@@ -49,6 +49,7 @@ _PROGRAM_IMAGE_WORDS_ENV = "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS"
 _PROGRAM_IMAGE_LANE_BASE_OFFSETS_ENV = "RUN_VL_HYBRID_PROGRAM_IMAGE_LANE_BASE_OFFSETS"
 _DMEM_ZERO_FILL_ENV = "RUN_VL_HYBRID_DMEM_ZERO_FILL"
 _DMEM_ZERO_FILL_LANE_BASE_OFFSETS_ENV = "RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS"
+_DMEM_ZERO_FILL_WORD_COUNT_ENV = "RUN_VL_HYBRID_DMEM_ZERO_FILL_WORD_COUNT"
 _POINTER_SIZED_HOST_ONLY_FIELDS = {"__VdlySched"}
 _FULLY_ZEROED_HOST_ONLY_FIELDS = {"vlNamep"}
 _TRANSIENT_VERILATOR_RUNTIME_FIELDS = {
@@ -341,6 +342,11 @@ def main() -> None:
             "XuanTie-E902 DMEM zero-fill construction."
         ),
     )
+    p.add_argument(
+        "--dmem-zero-fill-word-count",
+        type=int,
+        help="Number of per-lane DMEM byte entries to zero for each state.",
+    )
     args = p.parse_args()
     if args.resident_steps and args.patch:
         p.error("--resident-steps rejects --patch; use --patch-script for a resident schedule")
@@ -468,6 +474,10 @@ def main() -> None:
         env[_DMEM_ZERO_FILL_LANE_BASE_OFFSETS_ENV] = args.dmem_zero_fill_lane_base_offsets
     else:
         env.pop(_DMEM_ZERO_FILL_LANE_BASE_OFFSETS_ENV, None)
+    if args.dmem_zero_fill_word_count is not None:
+        env[_DMEM_ZERO_FILL_WORD_COUNT_ENV] = str(args.dmem_zero_fill_word_count)
+    else:
+        env.pop(_DMEM_ZERO_FILL_WORD_COUNT_ENV, None)
     sanitized_init_tmp: Path | None = None
     if args.init_state:
         init_state = args.init_state.resolve()

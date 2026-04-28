@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  launch_xuantie_e902_dmem_zero_fill_before_resident_eval
+  validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2117,14 +2117,17 @@ define_xuantie_e902_dmem_zero_fill_device_initialization_boundary:
   host_flag_env: wired_to_runtime_env
   lane_offsets_flag: --dmem-zero-fill-lane-base-offsets
   lane_offsets_env: RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS
+  word_count_flag: --dmem-zero-fill-word-count
+  word_count_env: RUN_VL_HYBRID_DMEM_ZERO_FILL_WORD_COUNT
   lane_offset_upload: lane_base_offsets_uploaded_once
+  launch: before_resident_eval_wired
   non_claims:
     - not source-backed data-image initialization
     - not x_smem_ctrl initialization
     - not IAHB case.pat program-image initialization
     - not ISA/software correctness
   status: done_defined_boundary
-  next_action: launch_xuantie_e902_dmem_zero_fill_before_resident_eval
+  next_action: validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state
 ```
 
 ## source_of_truth

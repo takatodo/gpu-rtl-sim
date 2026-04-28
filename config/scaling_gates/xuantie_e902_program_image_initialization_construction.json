@@ -243,13 +243,16 @@
       "host_flag_status": "wired_to_runtime_env",
       "lane_base_offsets_flag": "--dmem-zero-fill-lane-base-offsets",
       "lane_base_offsets_env": "RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS",
+      "word_count_flag": "--dmem-zero-fill-word-count",
+      "word_count_env": "RUN_VL_HYBRID_DMEM_ZERO_FILL_WORD_COUNT",
       "lane_offset_upload_status": "lane_base_offsets_uploaded_once",
+      "launch_status": "launch_before_resident_eval_wired",
       "required_lowering": "resolve generated root layout offsets for x_dmem_ctrl.ram0..3.mem lanes",
       "implementation_subtasks": [
         "implement_xuantie_e902_dmem_zero_fill_kernel_generation: done",
         "add_xuantie_e902_dmem_zero_fill_host_flag_and_env: done",
         "upload_xuantie_e902_dmem_zero_fill_lane_offsets_once: done",
-        "launch_xuantie_e902_dmem_zero_fill_before_resident_eval",
+        "launch_xuantie_e902_dmem_zero_fill_before_resident_eval: done",
         "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state"
       ]
     },
@@ -260,7 +263,7 @@
       "not IAHB case.pat program-image initialization",
       "not ISA/software correctness"
     ],
-    "next_action": "launch_xuantie_e902_dmem_zero_fill_before_resident_eval"
+    "next_action": "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state"
   },
   "artifacts": {
     "report": "reports/xuantie_e902_program_image_initialization_construction.json",

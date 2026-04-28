@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "launch_xuantie_e902_dmem_zero_fill_before_resident_eval",
+  "current_priority": "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -314,6 +314,9 @@
   "xuantie_e902_dmem_zero_fill_host_flag_status": "wired_to_runtime_env",
   "xuantie_e902_dmem_zero_fill_lane_base_offsets_env": "RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS",
   "xuantie_e902_dmem_zero_fill_lane_base_offsets_flag": "--dmem-zero-fill-lane-base-offsets",
+  "xuantie_e902_dmem_zero_fill_word_count_env": "RUN_VL_HYBRID_DMEM_ZERO_FILL_WORD_COUNT",
+  "xuantie_e902_dmem_zero_fill_word_count_flag": "--dmem-zero-fill-word-count",
   "xuantie_e902_dmem_zero_fill_lane_offset_upload_status": "lane_base_offsets_uploaded_once",
-  "xuantie_e902_dmem_zero_fill_device_initialization_next_action": "launch_xuantie_e902_dmem_zero_fill_before_resident_eval"
+  "xuantie_e902_dmem_zero_fill_launch_status": "launch_before_resident_eval_wired",
+  "xuantie_e902_dmem_zero_fill_device_initialization_next_action": "validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state"
 }

@@ -55,6 +55,8 @@
 #define ENV_DMEM_ZERO_FILL "RUN_VL_HYBRID_DMEM_ZERO_FILL"
 /* Optional XuanTie-E902 DMEM zero-fill lane base offsets: ram0,ram1,ram2,ram3. */
 #define ENV_DMEM_ZERO_FILL_LANE_BASE_OFFSETS "RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS"
+/* Optional XuanTie-E902 DMEM zero-fill per-lane word count. */
+#define ENV_DMEM_ZERO_FILL_WORD_COUNT "RUN_VL_HYBRID_DMEM_ZERO_FILL_WORD_COUNT"
 /* Explicit resident repeated-step mode; keeps state on device across eval steps. */
 #define ENV_RESIDENT_STEPS "RUN_VL_HYBRID_RESIDENT_STEPS"
 
@@ -141,6 +143,7 @@ typedef struct {
 
 typedef struct {
   size_t lane_base_offsets[4];
+  unsigned word_count;
   CUdeviceptr d_lane_base_offsets;
 } DmemZeroFill;
 
@@ -289,6 +292,28 @@ static int parse_program_image_lane_base_offsets(const char *text,
   return parse_lane_base_offsets(text, program_words->lane_base_offsets,
                                  ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS,
                                  ENV_PROGRAM_IMAGE_WORDS);
+}
+
+static int parse_dmem_zero_fill_word_count(const char *text,
+                                           DmemZeroFill *zero_fill) {
+  char *end = NULL;
+  unsigned long value = 0UL;
+  if (!text || text[0] == '\0') {
+    fprintf(stderr, "%s is required when %s is set\n",
+            ENV_DMEM_ZERO_FILL_WORD_COUNT, ENV_DMEM_ZERO_FILL);
+    return -1;
+  }
+  value = strtoul(text, &end, 0);
+  while (end && *end != '\0' && isspace((unsigned char)*end))
+    end++;
+  if (end == text || (end && *end != '\0') || value == 0UL ||
+      value > 2147483647UL) {
+    fprintf(stderr, "%s has invalid word count '%s'\n",
+            ENV_DMEM_ZERO_FILL_WORD_COUNT, text);
+    return -1;
+  }
+  zero_fill->word_count = (unsigned)value;
+  return 0;
 }
 
 static int append_program_image_word(ProgramImageWords *program_words,
@@ -1034,6 +1059,42 @@ static int launch_program_image_words(CUfunction words_kfn,
   return 0;
 }
 
+static int launch_dmem_zero_fill(CUfunction zero_kfn,
+                                 CUdeviceptr d_storage,
+                                 const DmemZeroFill *zero_fill,
+                                 size_t storage,
+                                 unsigned nstates) {
+  if (!zero_fill || zero_fill->word_count == 0U)
+    return 0;
+  if (zero_fill->word_count > 2147483647U || nstates > 2147483647U) {
+    fprintf(stderr, "DMEM zero-fill launch shape out of range: words=%u nstates=%u\n",
+            zero_fill->word_count, nstates);
+    return -1;
+  }
+  unsigned long long total_work =
+      (unsigned long long)zero_fill->word_count * (unsigned long long)nstates;
+  unsigned block = 256U;
+  unsigned long long grid_ull =
+      (total_work + (unsigned long long)block - 1ULL) / (unsigned long long)block;
+  if (grid_ull == 0ULL || grid_ull > 2147483647ULL) {
+    fprintf(stderr, "DMEM zero-fill grid out of range: %llu\n", grid_ull);
+    return -1;
+  }
+  unsigned grid = (unsigned)grid_ull;
+  CUdeviceptr d_lane_base_offsets = zero_fill->d_lane_base_offsets;
+  int word_count_i = (int)zero_fill->word_count;
+  unsigned long long storage_arg = (unsigned long long)storage;
+  int nstates_i = (int)nstates;
+  void *params[] = {&d_storage,
+                    &d_lane_base_offsets,
+                    &word_count_i,
+                    &storage_arg,
+                    &nstates_i};
+  trace_kernel_launch("vl_zero_dmem_words_gpu", 0, -1);
+  CUDA_CHECK(cuLaunchKernel(zero_kfn, grid, 1, 1, block, 1, 1, 0, 0, params, NULL));
+  return 0;
+}
+
 static size_t kernel_local_size_bytes(CUfunction fn) {
   int value = 0;
   CUresult err =
@@ -1334,6 +1395,7 @@ int main(int argc, char **argv) {
   const int dmem_zero_fill_enabled = getenv(ENV_DMEM_ZERO_FILL) != NULL;
   const char *dmem_zero_fill_lane_base_offsets =
       getenv(ENV_DMEM_ZERO_FILL_LANE_BASE_OFFSETS);
+  const char *dmem_zero_fill_word_count = getenv(ENV_DMEM_ZERO_FILL_WORD_COUNT);
 
   {
     const char *patch_script_path = getenv(ENV_PATCH_SCRIPT);
@@ -1390,6 +1452,13 @@ int main(int argc, char **argv) {
                                 dmem_zero_fill.lane_base_offsets,
                                 ENV_DMEM_ZERO_FILL_LANE_BASE_OFFSETS,
                                 ENV_DMEM_ZERO_FILL) != 0) {
+      free_step_patch_blocks(script_blocks, script_block_count);
+      free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
+      return 1;
+    }
+    if (parse_dmem_zero_fill_word_count(dmem_zero_fill_word_count,
+                                        &dmem_zero_fill) != 0) {
       free_step_patch_blocks(script_blocks, script_block_count);
       free_program_image_init_records(&program_image_init_records);
       free_program_image_words(&program_image_words);
@@ -1717,6 +1786,16 @@ int main(int argc, char **argv) {
     CUDA_CHECK(cuMemcpyHtoD(dmem_zero_fill.d_lane_base_offsets,
                             dmem_zero_fill.lane_base_offsets,
                             sizeof(dmem_zero_fill.lane_base_offsets)));
+    if (launch_dmem_zero_fill(dmem_zero_fill_kfn, d_storage,
+                              &dmem_zero_fill, storage, nstates) != 0) {
+      free_step_patch_blocks(script_blocks, script_block_count);
+      free_resident_patch_schedule(&resident_patch_schedule);
+      free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
+      free_dmem_zero_fill(&dmem_zero_fill);
+      return 1;
+    }
+    CUDA_CHECK(cuCtxSynchronize());
   }
 
   int nstates_i = (int)nstates;
@@ -1912,6 +1991,8 @@ int main(int argc, char **argv) {
   printf("dmem_zero_fill: %s\n", dmem_zero_fill_enabled ? "true" : "false");
   if (dmem_zero_fill_enabled) {
     printf("dmem_zero_fill_offset_upload: offsets=4 layout=lane_base_offsets\n");
+    printf("dmem_zero_fill_launch: kernel=vl_zero_dmem_words_gpu words=%u nstates=%u\n",
+           dmem_zero_fill.word_count, nstates);
   }
   if (program_image_init_records.record_count > 0U) {
     printf("program_image_init_record_upload: records=%u layout=offsets_values_soa\n",
