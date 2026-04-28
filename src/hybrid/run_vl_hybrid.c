@@ -783,6 +783,44 @@ static int launch_init_state_replication(CUfunction init_kfn,
   return 0;
 }
 
+static int launch_program_image_init(CUfunction init_kfn,
+                                     CUdeviceptr d_storage,
+                                     const ProgramImageInitRecords *records,
+                                     size_t storage,
+                                     unsigned nstates) {
+  if (!records || records->record_count == 0U)
+    return 0;
+  if (records->record_count > 2147483647U || nstates > 2147483647U) {
+    fprintf(stderr, "program-image init launch shape out of range: records=%u nstates=%u\n",
+            records->record_count, nstates);
+    return -1;
+  }
+  unsigned long long total_work =
+      (unsigned long long)records->record_count * (unsigned long long)nstates;
+  unsigned block = 256U;
+  unsigned long long grid_ull =
+      (total_work + (unsigned long long)block - 1ULL) / (unsigned long long)block;
+  if (grid_ull == 0ULL || grid_ull > 2147483647ULL) {
+    fprintf(stderr, "program-image init grid out of range: %llu\n", grid_ull);
+    return -1;
+  }
+  unsigned grid = (unsigned)grid_ull;
+  CUdeviceptr d_offsets = records->d_offsets;
+  CUdeviceptr d_values = records->d_values;
+  int record_count_i = (int)records->record_count;
+  unsigned long long storage_arg = (unsigned long long)storage;
+  int nstates_i = (int)nstates;
+  void *params[] = {&d_storage,
+                    &d_offsets,
+                    &d_values,
+                    &record_count_i,
+                    &storage_arg,
+                    &nstates_i};
+  trace_kernel_launch("vl_apply_program_image_init_gpu", 0, -1);
+  CUDA_CHECK(cuLaunchKernel(init_kfn, grid, 1, 1, block, 1, 1, 0, 0, params, NULL));
+  return 0;
+}
+
 static size_t kernel_local_size_bytes(CUfunction fn) {
   int value = 0;
   CUresult err =
@@ -1038,6 +1076,7 @@ int main(int argc, char **argv) {
   memset(&program_image_init_records, 0, sizeof(program_image_init_records));
   CUfunction resident_patch_kfn = NULL;
   CUfunction init_replication_kfn = NULL;
+  CUfunction program_image_init_kfn = NULL;
 
   int pi = 4;
   if (argc > 4 && strchr(argv[4], ':') == NULL && strlen(argv[4]) > 0) {
@@ -1208,6 +1247,18 @@ int main(int argc, char **argv) {
     }
     trace_function_attrs(init_replication_kfn, "vl_replicate_init_state_gpu");
   }
+  if (program_image_init_records_enabled) {
+    if (resolve_function_across_modules(&program_image_init_kfn, mods, nmods,
+                                        "vl_apply_program_image_init_gpu") != 0) {
+      fprintf(stderr,
+              "%s requires a cubin regenerated with vl_apply_program_image_init_gpu\n",
+              ENV_PROGRAM_IMAGE_INIT_RECORDS);
+      free_step_patch_blocks(script_blocks, script_block_count);
+      free_program_image_init_records(&program_image_init_records);
+      return 1;
+    }
+    trace_function_attrs(program_image_init_kfn, "vl_apply_program_image_init_gpu");
+  }
   {
     int stack_limit_status = maybe_raise_stack_limit_for_kernels(kfns, nk);
     if (env_flag_enabled(ENV_STACK_LIMIT_PROBE_ONLY))
@@ -1347,6 +1398,14 @@ int main(int argc, char **argv) {
                             program_image_init_records.values,
                             (size_t)program_image_init_records.record_count *
                                 sizeof(*program_image_init_records.values)));
+    if (launch_program_image_init(program_image_init_kfn, d_storage,
+                                  &program_image_init_records, storage, nstates) != 0) {
+      free_step_patch_blocks(script_blocks, script_block_count);
+      free_resident_patch_schedule(&resident_patch_schedule);
+      free_program_image_init_records(&program_image_init_records);
+      return 1;
+    }
+    CUDA_CHECK(cuCtxSynchronize());
   }
 
   int nstates_i = (int)nstates;
@@ -1540,6 +1599,8 @@ int main(int argc, char **argv) {
   if (program_image_init_records.record_count > 0U) {
     printf("program_image_init_record_upload: records=%u layout=offsets_values_soa\n",
            program_image_init_records.record_count);
+    printf("program_image_init_launch: kernel=vl_apply_program_image_init_gpu records=%u nstates=%u\n",
+           program_image_init_records.record_count, nstates);
   }
   if (script_blocks) {
     printf("patch_script_steps: logical=%u records=%u blocks=%u\n",

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "launch_program_image_initialization_before_resident_eval",
+  "current_priority": "validate_program_image_initialization_against_cpu_constructed_state",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -188,7 +188,7 @@
   "next_gpu_owned_state_construction_step": "source_backed_program_image_initialization",
   "next_gpu_owned_state_construction_gate": "config/scaling_gates/xuantie_e902_program_image_initialization_construction.json",
   "next_gpu_owned_state_construction_reason": "after raw init-state replication passed, the next useful GPU-owned construction responsibility is source-backed program-image construction for the existing XuanTie-E902 case.pat / IAHB contract",
-  "source_backed_program_image_initialization_status": "records_uploaded_once",
+  "source_backed_program_image_initialization_status": "launch_before_resident_eval_wired",
   "source_backed_program_image_initialization_target": "xuantie_e902",
   "source_backed_program_image_initialization_source": "case.pat loaded through mem_inst_temp",
   "source_backed_program_image_initialization_selected_family": "iahb_instruction_memory",
@@ -216,7 +216,8 @@
   "source_backed_program_image_initialization_host_flag_status": "wired_to_runtime_env",
   "source_backed_program_image_initialization_env": "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS",
   "source_backed_program_image_initialization_record_upload_status": "offset_value_soa_uploaded_once",
-  "source_backed_program_image_initialization_next_action": "launch_program_image_initialization_before_resident_eval",
+  "source_backed_program_image_initialization_launch_status": "launch_before_resident_eval_wired",
+  "source_backed_program_image_initialization_next_action": "validate_program_image_initialization_against_cpu_constructed_state",
   "source_backed_program_image_initialization_task_ladder": [
     "extract_xuantie_e902_program_image_initialization_inputs",
     "define_program_image_initialization_record_format",
@@ -224,5 +225,5 @@
     "validate_program_image_initialization_against_cpu_constructed_state",
     "measure_program_image_initialization_upload_reduction"
   ],
-  "source_backed_program_image_initialization_current_blocker": "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS / --program-image-init-records now parses and uploads program-image offset/value SoA records once, but the runtime does not yet launch vl_apply_program_image_init_gpu before resident eval"
+  "source_backed_program_image_initialization_current_blocker": "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS / --program-image-init-records now parses, uploads, and launches vl_apply_program_image_init_gpu before resident eval, but CPU/source-backed construction has not yet been compared against GPU/device-side construction"
 }

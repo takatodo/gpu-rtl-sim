@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  launch_program_image_initialization_before_resident_eval
+  validate_program_image_initialization_against_cpu_constructed_state
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1895,8 +1895,8 @@ implement_program_image_initialization_kernel_and_host_flag:
     - validate_program_image_initialization_against_cpu_constructed_state:
         purpose: compare CPU/source-backed construction against GPU/device-side construction
         output: reports/xuantie_e902_program_image_initialization_construction.json
-  status: records_uploaded_once
-  next_action: launch_program_image_initialization_before_resident_eval
+  status: launch_before_resident_eval_wired
+  next_action: validate_program_image_initialization_against_cpu_constructed_state
 
 implement_program_image_initialization_kernel_generation:
   goal: emit the program-image initialization kernel from both GPU kernel generators
@@ -1939,6 +1939,17 @@ upload_program_image_initialization_records_once:
     report_line: program_image_init_record_upload
   status: done_records_uploaded_once
   next_action: launch_program_image_initialization_before_resident_eval
+
+launch_program_image_initialization_before_resident_eval:
+  goal: apply uploaded program-image initialization records on GPU after init-state preparation and before the first eval launch
+  weakest_point: runtime launch ordering is now wired, but CPU/source-backed construction has not yet been compared with GPU/device-side construction.
+  runtime_surface:
+    kernel: vl_apply_program_image_init_gpu
+    launcher: launch_program_image_init
+    ordering: after init-state upload or device-side replication, before timing events and resident eval loop
+    report_line: program_image_init_launch
+  status: done_launch_before_resident_eval_wired
+  next_action: validate_program_image_initialization_against_cpu_constructed_state
 ```
 
 ## source_of_truth

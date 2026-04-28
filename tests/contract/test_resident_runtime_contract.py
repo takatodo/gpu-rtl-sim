@@ -251,6 +251,9 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("load_program_image_init_records", runtime)
         self.assertIn("cuMemcpyHtoD(program_image_init_records.d_offsets", runtime)
         self.assertIn("program_image_init_record_upload", runtime)
+        self.assertIn("launch_program_image_init", runtime)
+        self.assertIn("cuLaunchKernel(init_kfn", runtime)
+        self.assertIn("program_image_init_launch", runtime)
 
     def test_device_side_init_state_replication_gate_is_defined(self) -> None:
         gate = json.loads(TLUL_FIFO_INIT_REPLICATION_GATE.read_text(encoding="utf-8"))
@@ -434,7 +437,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             gate["runtime_support"]["implementation_subtasks"][0],
             "implement_program_image_initialization_kernel_generation: done",
         )
-        self.assertEqual(gate["runtime_support"]["status"], "records_uploaded_once")
+        self.assertEqual(gate["runtime_support"]["status"], "launch_before_resident_eval_wired")
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
         )
@@ -444,7 +447,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "launch_program_image_initialization_before_resident_eval",
+            "validate_program_image_initialization_against_cpu_constructed_state",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -569,7 +572,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_status"],
-            "records_uploaded_once",
+            "launch_before_resident_eval_wired",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_input_extraction_status"],
@@ -581,7 +584,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "launch_program_image_initialization_before_resident_eval",
+            "validate_program_image_initialization_against_cpu_constructed_state",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_kernel_name"],
@@ -602,6 +605,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(
             selection["source_backed_program_image_initialization_record_upload_status"],
             "offset_value_soa_uploaded_once",
+        )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_launch_status"],
+            "launch_before_resident_eval_wired",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],
