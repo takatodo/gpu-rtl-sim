@@ -265,9 +265,12 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("RUN_VL_HYBRID_PROGRAM_IMAGE_LANE_BASE_OFFSETS", runtime)
         self.assertIn("RUN_VL_HYBRID_DMEM_ZERO_FILL", wrapper)
         self.assertIn("RUN_VL_HYBRID_DMEM_ZERO_FILL", runtime)
+        self.assertIn("RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS", wrapper)
+        self.assertIn("RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS", runtime)
         self.assertIn("--program-image-words", wrapper)
         self.assertIn("--program-image-lane-base-offsets", wrapper)
         self.assertIn("--dmem-zero-fill", wrapper)
+        self.assertIn("--dmem-zero-fill-lane-base-offsets", wrapper)
         self.assertIn("program_image_words", runtime)
         self.assertIn("dmem_zero_fill", runtime)
         self.assertIn("load_program_image_words", runtime)
@@ -277,6 +280,8 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("launch_program_image_words", runtime)
         self.assertIn("program_image_word_launch", runtime)
         self.assertIn("vl_zero_dmem_words_gpu", runtime)
+        self.assertIn("cuMemcpyHtoD(dmem_zero_fill.d_lane_base_offsets", runtime)
+        self.assertIn("dmem_zero_fill_offset_upload", runtime)
         self.assertIn("program_image_init_records", runtime)
         self.assertIn("load_program_image_init_records", runtime)
         self.assertIn("cuMemcpyHtoD(program_image_init_records.d_offsets", runtime)
@@ -594,10 +599,14 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             dmem_zero["runtime_support"]["host_flag_status"],
             "wired_to_runtime_env",
         )
+        self.assertEqual(
+            dmem_zero["runtime_support"]["lane_offset_upload_status"],
+            "lane_base_offsets_uploaded_once",
+        )
         self.assertIn("not source-backed data-image initialization", dmem_zero["non_claims"])
         self.assertEqual(
             dmem_zero["next_action"],
-            "upload_xuantie_e902_dmem_zero_fill_lane_offsets_once",
+            "launch_xuantie_e902_dmem_zero_fill_before_resident_eval",
         )
         self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
         self.assertTrue(
@@ -609,7 +618,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "upload_xuantie_e902_dmem_zero_fill_lane_offsets_once",
+            "launch_xuantie_e902_dmem_zero_fill_before_resident_eval",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -908,8 +917,20 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "wired_to_runtime_env",
         )
         self.assertEqual(
+            selection["xuantie_e902_dmem_zero_fill_lane_base_offsets_env"],
+            "RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS",
+        )
+        self.assertEqual(
+            selection["xuantie_e902_dmem_zero_fill_lane_base_offsets_flag"],
+            "--dmem-zero-fill-lane-base-offsets",
+        )
+        self.assertEqual(
+            selection["xuantie_e902_dmem_zero_fill_lane_offset_upload_status"],
+            "lane_base_offsets_uploaded_once",
+        )
+        self.assertEqual(
             selection["xuantie_e902_dmem_zero_fill_device_initialization_next_action"],
-            "upload_xuantie_e902_dmem_zero_fill_lane_offsets_once",
+            "launch_xuantie_e902_dmem_zero_fill_before_resident_eval",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],

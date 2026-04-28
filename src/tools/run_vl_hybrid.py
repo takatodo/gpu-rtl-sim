@@ -48,6 +48,7 @@ _PROGRAM_IMAGE_INIT_RECORDS_ENV = "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS"
 _PROGRAM_IMAGE_WORDS_ENV = "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS"
 _PROGRAM_IMAGE_LANE_BASE_OFFSETS_ENV = "RUN_VL_HYBRID_PROGRAM_IMAGE_LANE_BASE_OFFSETS"
 _DMEM_ZERO_FILL_ENV = "RUN_VL_HYBRID_DMEM_ZERO_FILL"
+_DMEM_ZERO_FILL_LANE_BASE_OFFSETS_ENV = "RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS"
 _POINTER_SIZED_HOST_ONLY_FIELDS = {"__VdlySched"}
 _FULLY_ZEROED_HOST_ONLY_FIELDS = {"vlNamep"}
 _TRANSIENT_VERILATOR_RUNTIME_FIELDS = {
@@ -333,6 +334,13 @@ def main() -> None:
             "Forwarded to the hybrid runtime through RUN_VL_HYBRID_DMEM_ZERO_FILL."
         ),
     )
+    p.add_argument(
+        "--dmem-zero-fill-lane-base-offsets",
+        help=(
+            "Comma-separated ram0,ram1,ram2,ram3 root-storage base offsets for "
+            "XuanTie-E902 DMEM zero-fill construction."
+        ),
+    )
     args = p.parse_args()
     if args.resident_steps and args.patch:
         p.error("--resident-steps rejects --patch; use --patch-script for a resident schedule")
@@ -456,6 +464,10 @@ def main() -> None:
         env[_DMEM_ZERO_FILL_ENV] = "1"
     else:
         env.pop(_DMEM_ZERO_FILL_ENV, None)
+    if args.dmem_zero_fill_lane_base_offsets:
+        env[_DMEM_ZERO_FILL_LANE_BASE_OFFSETS_ENV] = args.dmem_zero_fill_lane_base_offsets
+    else:
+        env.pop(_DMEM_ZERO_FILL_LANE_BASE_OFFSETS_ENV, None)
     sanitized_init_tmp: Path | None = None
     if args.init_state:
         init_state = args.init_state.resolve()

@@ -53,6 +53,8 @@
 #define ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS "RUN_VL_HYBRID_PROGRAM_IMAGE_LANE_BASE_OFFSETS"
 /* Optional deterministic XuanTie-E902 DMEM zero-fill construction. */
 #define ENV_DMEM_ZERO_FILL "RUN_VL_HYBRID_DMEM_ZERO_FILL"
+/* Optional XuanTie-E902 DMEM zero-fill lane base offsets: ram0,ram1,ram2,ram3. */
+#define ENV_DMEM_ZERO_FILL_LANE_BASE_OFFSETS "RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS"
 /* Explicit resident repeated-step mode; keeps state on device across eval steps. */
 #define ENV_RESIDENT_STEPS "RUN_VL_HYBRID_RESIDENT_STEPS"
 
@@ -136,6 +138,11 @@ typedef struct {
   CUdeviceptr d_words;
   CUdeviceptr d_lane_base_offsets;
 } ProgramImageWords;
+
+typedef struct {
+  size_t lane_base_offsets[4];
+  CUdeviceptr d_lane_base_offsets;
+} DmemZeroFill;
 
 static int parse_byte(const char *s, unsigned char *out) {
   if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))
@@ -226,14 +233,22 @@ static void free_program_image_words(ProgramImageWords *program_words) {
   memset(program_words, 0, sizeof(*program_words));
 }
 
-static int parse_program_image_lane_base_offsets(const char *text,
-                                                 ProgramImageWords *program_words) {
+static void free_dmem_zero_fill(DmemZeroFill *zero_fill) {
+  if (!zero_fill)
+    return;
+  if (zero_fill->d_lane_base_offsets)
+    CUDA_CHECK(cuMemFree(zero_fill->d_lane_base_offsets));
+  memset(zero_fill, 0, sizeof(*zero_fill));
+}
+
+static int parse_lane_base_offsets(const char *text, size_t lane_base_offsets[4],
+                                   const char *env_name,
+                                   const char *owner_env_name) {
   char *buf = NULL;
   char *token = NULL;
   unsigned count = 0U;
   if (!text || text[0] == '\0') {
-    fprintf(stderr, "%s is required when %s is set\n",
-            ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS, ENV_PROGRAM_IMAGE_WORDS);
+    fprintf(stderr, "%s is required when %s is set\n", env_name, owner_env_name);
     return -1;
   }
   buf = strdup(text);
@@ -246,8 +261,7 @@ static int parse_program_image_lane_base_offsets(const char *text,
     while (*cursor != '\0' && isspace((unsigned char)*cursor))
       cursor++;
     if (count >= 4U) {
-      fprintf(stderr, "%s has more than four offsets\n",
-              ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS);
+      fprintf(stderr, "%s has more than four offsets\n", env_name);
       free(buf);
       return -1;
     }
@@ -255,21 +269,26 @@ static int parse_program_image_lane_base_offsets(const char *text,
     while (end && *end != '\0' && isspace((unsigned char)*end))
       end++;
     if (end == cursor || (end && *end != '\0')) {
-      fprintf(stderr, "%s has bad offset token '%s'\n",
-              ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS, token);
+      fprintf(stderr, "%s has bad offset token '%s'\n", env_name, token);
       free(buf);
       return -1;
     }
-    program_words->lane_base_offsets[count] = (size_t)value;
+    lane_base_offsets[count] = (size_t)value;
     count++;
   }
   free(buf);
   if (count != 4U) {
-    fprintf(stderr, "%s requires exactly four offsets\n",
-            ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS);
+    fprintf(stderr, "%s requires exactly four offsets\n", env_name);
     return -1;
   }
   return 0;
+}
+
+static int parse_program_image_lane_base_offsets(const char *text,
+                                                 ProgramImageWords *program_words) {
+  return parse_lane_base_offsets(text, program_words->lane_base_offsets,
+                                 ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS,
+                                 ENV_PROGRAM_IMAGE_WORDS);
 }
 
 static int append_program_image_word(ProgramImageWords *program_words,
@@ -1270,6 +1289,8 @@ int main(int argc, char **argv) {
   memset(&program_image_init_records, 0, sizeof(program_image_init_records));
   ProgramImageWords program_image_words;
   memset(&program_image_words, 0, sizeof(program_image_words));
+  DmemZeroFill dmem_zero_fill;
+  memset(&dmem_zero_fill, 0, sizeof(dmem_zero_fill));
   CUfunction resident_patch_kfn = NULL;
   CUfunction init_replication_kfn = NULL;
   CUfunction program_image_init_kfn = NULL;
@@ -1311,6 +1332,8 @@ int main(int argc, char **argv) {
       program_image_words_path != NULL && program_image_words_path[0] != '\0';
   const char *program_image_lane_base_offsets = getenv(ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS);
   const int dmem_zero_fill_enabled = getenv(ENV_DMEM_ZERO_FILL) != NULL;
+  const char *dmem_zero_fill_lane_base_offsets =
+      getenv(ENV_DMEM_ZERO_FILL_LANE_BASE_OFFSETS);
 
   {
     const char *patch_script_path = getenv(ENV_PATCH_SCRIPT);
@@ -1356,6 +1379,17 @@ int main(int argc, char **argv) {
     }
     if (parse_program_image_lane_base_offsets(program_image_lane_base_offsets,
                                               &program_image_words) != 0) {
+      free_step_patch_blocks(script_blocks, script_block_count);
+      free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
+      return 1;
+    }
+  }
+  if (dmem_zero_fill_enabled) {
+    if (parse_lane_base_offsets(dmem_zero_fill_lane_base_offsets,
+                                dmem_zero_fill.lane_base_offsets,
+                                ENV_DMEM_ZERO_FILL_LANE_BASE_OFFSETS,
+                                ENV_DMEM_ZERO_FILL) != 0) {
       free_step_patch_blocks(script_blocks, script_block_count);
       free_program_image_init_records(&program_image_init_records);
       free_program_image_words(&program_image_words);
@@ -1677,6 +1711,13 @@ int main(int argc, char **argv) {
     }
     CUDA_CHECK(cuCtxSynchronize());
   }
+  if (dmem_zero_fill_enabled) {
+    CUDA_CHECK(cuMemAlloc(&dmem_zero_fill.d_lane_base_offsets,
+                          sizeof(dmem_zero_fill.lane_base_offsets)));
+    CUDA_CHECK(cuMemcpyHtoD(dmem_zero_fill.d_lane_base_offsets,
+                            dmem_zero_fill.lane_base_offsets,
+                            sizeof(dmem_zero_fill.lane_base_offsets)));
+  }
 
   int nstates_i = (int)nstates;
   void *params[] = {&d_storage, &nstates_i};
@@ -1869,6 +1910,9 @@ int main(int argc, char **argv) {
   printf("program_image_words: %s\n",
          program_image_words_enabled ? program_image_words_path : "none");
   printf("dmem_zero_fill: %s\n", dmem_zero_fill_enabled ? "true" : "false");
+  if (dmem_zero_fill_enabled) {
+    printf("dmem_zero_fill_offset_upload: offsets=4 layout=lane_base_offsets\n");
+  }
   if (program_image_init_records.record_count > 0U) {
     printf("program_image_init_record_upload: records=%u layout=offsets_values_soa\n",
            program_image_init_records.record_count);
@@ -1970,6 +2014,7 @@ int main(int argc, char **argv) {
   free_resident_patch_schedule(&resident_patch_schedule);
   free_program_image_init_records(&program_image_init_records);
   free_program_image_words(&program_image_words);
+  free_dmem_zero_fill(&dmem_zero_fill);
   CUDA_CHECK(cuMemFree(d_storage));
   CUDA_CHECK(cuCtxDestroy(ctx));
   free_step_patch_blocks(script_blocks, script_block_count);
