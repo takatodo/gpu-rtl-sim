@@ -198,6 +198,26 @@
     "next_axis": "xuantie_e902_non_iahb_source_backed_memory_initialization",
     "next_action": "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary"
   },
+  "non_iahb_source_backed_memory_initialization_boundary": {
+    "status": "defined_blocked_source_contract_gap",
+    "weakest_point": "x_smem has no loaded source image and x_dmem is zero-filled by policy, so neither family supports a source-backed program/data image claim comparable to case.pat IAHB initialization.",
+    "candidate_families": {
+      "x_smem_ctrl.ram0..3.mem": "blocked_no_testbench_or_external_source_image",
+      "x_dmem_ctrl.ram0..3.mem": "not_source_backed_zero_fill_policy_only"
+    },
+    "accepted_source_backed_families": [],
+    "eligible_non_source_backed_construction": [
+      "x_dmem_ctrl_zero_fill"
+    ],
+    "non_claims": [
+      "not broad ROM/memory initialization",
+      "not x_smem source-backed initialization",
+      "not x_dmem data-image initialization",
+      "not ISA/software correctness"
+    ],
+    "next_axis": "xuantie_e902_dmem_zero_fill_device_initialization",
+    "next_action": "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary"
+  },
   "artifacts": {
     "report": "reports/xuantie_e902_program_image_initialization_construction.json",
     "generated_outputs_only": true

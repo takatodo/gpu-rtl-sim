@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary
+  define_xuantie_e902_dmem_zero_fill_device_initialization_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2091,6 +2091,18 @@ package_word_packed_program_image_initialization_boundary_and_select_next_gpu_co
   reason: x_smem/x_dmem remain outside the accepted claim and need a source-backed boundary before broad memory initialization can be claimed
   status: done_packaged_selected_non_iahb_memory_initialization
   next_action: define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary
+
+define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary:
+  goal: decide whether x_smem/x_dmem can support a source-backed memory initialization claim
+  weakest_point: x_smem has no source image and x_dmem is only zero-filled, so neither can honestly be claimed as source-backed data/program image initialization.
+  x_smem_ctrl: blocked_no_testbench_or_external_source_image
+  x_dmem_ctrl: not_source_backed_zero_fill_policy_only
+  accepted_source_backed_families: []
+  eligible_non_source_backed_construction:
+    - x_dmem_ctrl_zero_fill
+  non_claim: does not claim x_smem/x_dmem source-backed program/data image initialization
+  status: done_defined_blocked_source_contract_gap
+  next_action: define_xuantie_e902_dmem_zero_fill_device_initialization_boundary
 ```
 
 ## source_of_truth

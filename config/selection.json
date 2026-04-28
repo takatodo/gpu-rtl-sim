@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary",
+  "current_priority": "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -275,5 +275,16 @@
   "program_image_word_packed_initialization_current_blocker": "word-packed IAHB program-image construction is packaged; next GPU-owned construction gap is source-backed initialization for non-IAHB memory families",
   "next_gpu_owned_state_construction_axis_after_word_packed_program_image": "xuantie_e902_non_iahb_source_backed_memory_initialization",
   "next_gpu_owned_state_construction_axis_after_word_packed_program_image_reason": "IAHB case.pat construction is now compact and validated; x_smem/x_dmem remain explicit non-claims and need a source-backed boundary before broad memory initialization can be claimed",
-  "next_gpu_owned_state_construction_axis_after_word_packed_program_image_next_action": "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary"
+  "next_gpu_owned_state_construction_axis_after_word_packed_program_image_next_action": "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary",
+  "xuantie_e902_non_iahb_source_backed_memory_initialization_status": "defined_blocked_source_contract_gap",
+  "xuantie_e902_non_iahb_source_backed_memory_initialization_boundary": {
+    "x_smem_ctrl": "blocked_no_testbench_or_external_source_image",
+    "x_dmem_ctrl": "not_source_backed_zero_fill_policy_only",
+    "accepted_source_backed_families": [],
+    "eligible_non_source_backed_construction": [
+      "x_dmem_ctrl_zero_fill"
+    ],
+    "non_claim": "does not claim x_smem/x_dmem source-backed program/data image initialization"
+  },
+  "xuantie_e902_non_iahb_source_backed_memory_initialization_next_action": "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary"
 }

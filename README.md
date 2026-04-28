@@ -509,6 +509,8 @@ next_gpu_owned_state_construction_step:
   word_packed_reduction_ratio_vs_full_state: 9.887715930902111
   word_packed_boundary: packaged_source_backed_case_pat_word_packed_iahb_construction
   next_gpu_owned_state_construction_axis: xuantie_e902_non_iahb_source_backed_memory_initialization
+  non_iahb_source_backed_boundary: blocked_source_contract_gap
+  next_gpu_owned_state_construction_axis_after_non_iahb_gap: xuantie_e902_dmem_zero_fill_device_initialization
   word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]
   expected_next_axis_upload_bytes: 166688
   expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822

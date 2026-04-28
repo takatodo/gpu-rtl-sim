@@ -562,6 +562,14 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             package["next_action"],
             "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary",
         )
+        non_iahb = gate["non_iahb_source_backed_memory_initialization_boundary"]
+        self.assertEqual(non_iahb["status"], "defined_blocked_source_contract_gap")
+        self.assertEqual(non_iahb["accepted_source_backed_families"], [])
+        self.assertIn("x_dmem_ctrl_zero_fill", non_iahb["eligible_non_source_backed_construction"])
+        self.assertEqual(
+            non_iahb["next_action"],
+            "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary",
+        )
         self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
@@ -572,7 +580,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary",
+            "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -822,6 +830,26 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(
             selection["next_gpu_owned_state_construction_axis_after_word_packed_program_image"],
             "xuantie_e902_non_iahb_source_backed_memory_initialization",
+        )
+        self.assertEqual(
+            selection["xuantie_e902_non_iahb_source_backed_memory_initialization_status"],
+            "defined_blocked_source_contract_gap",
+        )
+        self.assertEqual(
+            selection["xuantie_e902_non_iahb_source_backed_memory_initialization_boundary"][
+                "accepted_source_backed_families"
+            ],
+            [],
+        )
+        self.assertIn(
+            "x_dmem_ctrl_zero_fill",
+            selection["xuantie_e902_non_iahb_source_backed_memory_initialization_boundary"][
+                "eligible_non_source_backed_construction"
+            ],
+        )
+        self.assertEqual(
+            selection["xuantie_e902_non_iahb_source_backed_memory_initialization_next_action"],
+            "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],
