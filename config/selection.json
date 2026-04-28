@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "define_program_image_word_packed_initialization_boundary",
+  "current_priority": "implement_program_image_word_packed_kernel_generation",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -225,7 +225,7 @@
   "source_backed_program_image_initialization_upload_reduction_ratio": 1.0988987547662854,
   "source_backed_program_image_initialization_upload_reduction_status": "measured_positive_but_small",
   "source_backed_program_image_initialization_boundary_status": "packaged_bounded_case_pat_iahb_byte_record_construction",
-  "source_backed_program_image_initialization_next_action": "define_program_image_word_packed_initialization_boundary",
+  "source_backed_program_image_initialization_next_action": "implement_program_image_word_packed_kernel_generation",
   "source_backed_program_image_initialization_task_ladder": [
     "extract_xuantie_e902_program_image_initialization_inputs",
     "define_program_image_initialization_record_format",
@@ -238,5 +238,24 @@
   "next_gpu_owned_state_construction_axis_reason": "the byte-record boundary is correct but low-compression; uploading case.pat 32-bit words plus lane base offsets should reduce record payload from per-byte offset/value records to per-word source records while keeping the same IAHB source contract",
   "next_gpu_owned_state_construction_expected_upload_bytes": 166688,
   "next_gpu_owned_state_construction_expected_reduction_ratio_vs_full_state": 7.911700901080822,
-  "next_gpu_owned_state_construction_non_claim": "expected byte count assumes 33336 32-bit words plus four size_t lane base offsets and does not yet include implementation, launch latency, or CPU parsing cost"
+  "next_gpu_owned_state_construction_non_claim": "expected byte count assumes 33336 32-bit words plus four size_t lane base offsets and does not yet include implementation, launch latency, or CPU parsing cost",
+  "program_image_word_packed_initialization_status": "defined",
+  "program_image_word_packed_initialization_source": "case.pat 32-bit words loaded through mem_inst_temp",
+  "program_image_word_packed_initialization_kernel_name": "vl_apply_program_image_words_gpu",
+  "program_image_word_packed_initialization_planned_host_flag": "--program-image-words",
+  "program_image_word_packed_initialization_planned_env": "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS",
+  "program_image_word_packed_initialization_expected_word_count": 33336,
+  "program_image_word_packed_initialization_expected_upload_bytes": 166688,
+  "program_image_word_packed_initialization_expected_reduction_ratio_vs_full_state": 7.911700901080822,
+  "program_image_word_packed_initialization_next_action": "implement_program_image_word_packed_kernel_generation",
+  "program_image_word_packed_initialization_task_ladder": [
+    "define_program_image_word_packed_initialization_boundary",
+    "implement_program_image_word_packed_kernel_generation",
+    "add_program_image_word_packed_host_flag_and_env",
+    "upload_program_image_words_once",
+    "launch_program_image_word_packed_initialization_before_resident_eval",
+    "validate_word_packed_program_image_initialization_against_byte_record_boundary",
+    "measure_word_packed_program_image_upload_reduction"
+  ],
+  "program_image_word_packed_initialization_current_blocker": "vl_apply_program_image_words_gpu is not emitted by either kernel generator yet"
 }

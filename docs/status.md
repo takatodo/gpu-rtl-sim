@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  define_program_image_word_packed_initialization_boundary
+  implement_program_image_word_packed_kernel_generation
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1987,6 +1987,30 @@ package_program_image_initialization_boundary_and_select_next_gpu_construction_a
   expected_reduction_ratio_vs_full_state: 7.911700901080822
   status: done_selected_word_packed_program_image_initialization
   next_action: define_program_image_word_packed_initialization_boundary
+
+define_program_image_word_packed_initialization_boundary:
+  goal: replace per-byte offset/value program-image records with source-backed case.pat 32-bit words plus lane base offsets
+  weakest_point: this only defines the compact boundary; vl_apply_program_image_words_gpu is not emitted by either kernel generator yet.
+  source: case.pat 32-bit words loaded through mem_inst_temp
+  input_layout:
+    - uint32 program_words[word_count]
+    - size_t lane_base_offsets[4]
+    - uint32 word_count
+  device_semantics:
+    ram0: word[31:24]
+    ram1: word[23:16]
+    ram2: word[15:8]
+    ram3: word[7:0]
+    addressing: storage_base + state_index * storage_size + lane_base_offsets[lane] + word_index
+    apply_scope: expand all words into each GPU state's IAHB lane storage before resident eval
+  expected_word_count: 33336
+  expected_upload_bytes: 166688
+  expected_reduction_ratio_vs_full_state: 7.911700901080822
+  required_kernel: vl_apply_program_image_words_gpu
+  planned_host_flag: --program-image-words
+  planned_env: RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS
+  status: done_boundary_defined
+  next_action: implement_program_image_word_packed_kernel_generation
 ```
 
 ## source_of_truth

@@ -455,6 +455,18 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "source_backed_program_image_word_packed_initialization",
         )
         self.assertEqual(gate["next_axis_selection"]["expected_upload_bytes"], 166688)
+        word_boundary = gate["program_image_word_packed_initialization_boundary"]
+        self.assertEqual(word_boundary["status"], "defined")
+        self.assertEqual(word_boundary["runtime_support"]["required_kernel"], "vl_apply_program_image_words_gpu")
+        self.assertEqual(word_boundary["runtime_support"]["planned_host_flag"], "--program-image-words")
+        self.assertEqual(word_boundary["runtime_support"]["planned_env"], "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS")
+        self.assertEqual(word_boundary["expected_traffic"]["expected_word_count"], 33336)
+        self.assertEqual(word_boundary["expected_traffic"]["expected_upload_bytes"], 166688)
+        self.assertEqual(
+            word_boundary["implementation_subtasks"][0],
+            "define_program_image_word_packed_initialization_boundary: done",
+        )
+        self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
         )
@@ -464,7 +476,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "define_program_image_word_packed_initialization_boundary",
+            "implement_program_image_word_packed_kernel_generation",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -601,7 +613,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "define_program_image_word_packed_initialization_boundary",
+            "implement_program_image_word_packed_kernel_generation",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_kernel_name"],
@@ -656,6 +668,25 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "source_backed_program_image_word_packed_initialization",
         )
         self.assertEqual(selection["next_gpu_owned_state_construction_expected_upload_bytes"], 166688)
+        self.assertEqual(selection["program_image_word_packed_initialization_status"], "defined")
+        self.assertEqual(
+            selection["program_image_word_packed_initialization_kernel_name"],
+            "vl_apply_program_image_words_gpu",
+        )
+        self.assertEqual(
+            selection["program_image_word_packed_initialization_planned_host_flag"],
+            "--program-image-words",
+        )
+        self.assertEqual(
+            selection["program_image_word_packed_initialization_planned_env"],
+            "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS",
+        )
+        self.assertEqual(selection["program_image_word_packed_initialization_expected_word_count"], 33336)
+        self.assertEqual(selection["program_image_word_packed_initialization_expected_upload_bytes"], 166688)
+        self.assertEqual(
+            selection["program_image_word_packed_initialization_next_action"],
+            "implement_program_image_word_packed_kernel_generation",
+        )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],
             "implement_program_image_initialization_kernel_generation",

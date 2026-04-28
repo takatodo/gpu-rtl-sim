@@ -128,6 +128,54 @@
     "expected_reduction_ratio_vs_full_state": 7.911700901080822,
     "non_claim": "expected ratio is a planning estimate until a word-packed kernel and validation gate are implemented"
   },
+  "program_image_word_packed_initialization_boundary": {
+    "status": "defined",
+    "selected_axis": "source_backed_program_image_word_packed_initialization",
+    "source": "case.pat 32-bit words loaded through mem_inst_temp",
+    "input_layout": {
+      "program_words": "uint32 program_words[word_count]",
+      "lane_base_offsets": "size_t lane_base_offsets[4] for ram0, ram1, ram2, ram3",
+      "word_count": "uint32"
+    },
+    "device_semantics": {
+      "thread_mapping": "each logical GPU work item maps a state_index and word_index pair",
+      "addressing": "storage_base + state_index * storage_size + lane_base_offsets[lane] + word_index",
+      "lane_decode": {
+        "ram0": "word[31:24]",
+        "ram1": "word[23:16]",
+        "ram2": "word[15:8]",
+        "ram3": "word[7:0]"
+      },
+      "apply_scope": "expand all case.pat words into each GPU state's IAHB lane storage before the first resident eval step"
+    },
+    "runtime_support": {
+      "required_kernel": "vl_apply_program_image_words_gpu",
+      "planned_host_flag": "--program-image-words",
+      "planned_env": "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS",
+      "upload_layout": "program_words plus four lane base offsets uploaded once"
+    },
+    "expected_traffic": {
+      "full_state_upload_bytes": 1318784,
+      "expected_word_count": 33336,
+      "expected_upload_bytes": 166688,
+      "expected_reduction_ratio_vs_full_state": 7.911700901080822
+    },
+    "implementation_subtasks": [
+      "define_program_image_word_packed_initialization_boundary: done",
+      "implement_program_image_word_packed_kernel_generation",
+      "add_program_image_word_packed_host_flag_and_env",
+      "upload_program_image_words_once",
+      "launch_program_image_word_packed_initialization_before_resident_eval",
+      "validate_word_packed_program_image_initialization_against_byte_record_boundary",
+      "measure_word_packed_program_image_upload_reduction"
+    ],
+    "non_claims": [
+      "not broad ROM initialization",
+      "not x_smem/x_dmem coverage",
+      "not ISA correctness",
+      "not implementation yet"
+    ]
+  },
   "artifacts": {
     "report": "reports/xuantie_e902_program_image_initialization_construction.json",
     "generated_outputs_only": true

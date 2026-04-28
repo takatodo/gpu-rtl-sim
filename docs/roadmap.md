@@ -192,7 +192,8 @@ phase_3:
   validate_program_image_initialization_against_cpu_constructed_state: done_normalized_final_state_equivalence_pass
   measure_program_image_initialization_upload_reduction: done_positive_but_small_1_0989x
   package_program_image_initialization_boundary_and_select_next_gpu_construction_axis: done_selected_word_packed_program_image_initialization
-  define_program_image_word_packed_initialization_boundary: next
+  define_program_image_word_packed_initialization_boundary: done_boundary_defined
+  implement_program_image_word_packed_kernel_generation: next
 ```
 
 ## acceptance

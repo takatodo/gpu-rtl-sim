@@ -465,7 +465,7 @@ next_gpu_owned_state_construction_step:
   source: case.pat loaded through mem_inst_temp
   selected_family: iahb_instruction_memory
   status: packaged_bounded_case_pat_iahb_byte_record_construction
-  next: define_program_image_word_packed_initialization_boundary
+  next: implement_program_image_word_packed_kernel_generation
   task_ladder:
     - extract_xuantie_e902_program_image_initialization_inputs: done_contract_defined
     - define_program_image_initialization_record_format: done_format_defined
@@ -496,6 +496,11 @@ next_gpu_owned_state_construction_step:
   record_upload_bytes: 1200096
   upload_reduction_ratio: 1.0988987547662854
   next_axis: source_backed_program_image_word_packed_initialization
+  word_packed_boundary: defined
+  word_packed_required_kernel: vl_apply_program_image_words_gpu
+  word_packed_planned_host_flag: --program-image-words
+  word_packed_planned_env: RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS
+  word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]
   expected_next_axis_upload_bytes: 166688
   expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822
   non_claim: not broad ROM initialization, not x_smem/x_dmem coverage, not ISA correctness, and not full software boot correctness
