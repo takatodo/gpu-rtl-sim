@@ -81,7 +81,7 @@
     "relationship_to_resident_patch_schedule": "reuse the proven offset/value SoA upload shape, but run once before resident eval instead of once per logical patch step"
   },
   "runtime_support": {
-    "status": "packaged_validation_and_upload_reduction",
+    "status": "packaged_bounded_case_pat_iahb_byte_record_construction",
     "required_kernel_family": "program_image_initialization_gpu",
     "required_kernel": "vl_apply_program_image_init_gpu",
     "required_host_flag": "--program-image-init-records",
@@ -119,6 +119,14 @@
     "upload_reduction_ratio": 1.0988987547662854,
     "status": "positive_but_small",
     "non_claim": "does not include launch latency, CPU parsing cost, or broader ROM/memory family construction"
+  },
+  "next_axis_selection": {
+    "selected_axis": "source_backed_program_image_word_packed_initialization",
+    "reason": "byte-record initialization validates the source-backed construction path but spends most upload bytes on per-byte target offsets; case.pat is naturally a 32-bit word source",
+    "expected_word_count": 33336,
+    "expected_upload_bytes": 166688,
+    "expected_reduction_ratio_vs_full_state": 7.911700901080822,
+    "non_claim": "expected ratio is a planning estimate until a word-packed kernel and validation gate are implemented"
   },
   "artifacts": {
     "report": "reports/xuantie_e902_program_image_initialization_construction.json",

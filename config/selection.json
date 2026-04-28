@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "package_program_image_initialization_boundary_and_select_next_gpu_construction_axis",
+  "current_priority": "define_program_image_word_packed_initialization_boundary",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -188,7 +188,7 @@
   "next_gpu_owned_state_construction_step": "source_backed_program_image_initialization",
   "next_gpu_owned_state_construction_gate": "config/scaling_gates/xuantie_e902_program_image_initialization_construction.json",
   "next_gpu_owned_state_construction_reason": "after raw init-state replication passed, the next useful GPU-owned construction responsibility is source-backed program-image construction for the existing XuanTie-E902 case.pat / IAHB contract",
-  "source_backed_program_image_initialization_status": "packaged_validation_and_upload_reduction",
+  "source_backed_program_image_initialization_status": "packaged_bounded_case_pat_iahb_byte_record_construction",
   "source_backed_program_image_initialization_target": "xuantie_e902",
   "source_backed_program_image_initialization_source": "case.pat loaded through mem_inst_temp",
   "source_backed_program_image_initialization_selected_family": "iahb_instruction_memory",
@@ -224,7 +224,8 @@
   "source_backed_program_image_initialization_record_upload_bytes": 1200096,
   "source_backed_program_image_initialization_upload_reduction_ratio": 1.0988987547662854,
   "source_backed_program_image_initialization_upload_reduction_status": "measured_positive_but_small",
-  "source_backed_program_image_initialization_next_action": "package_program_image_initialization_boundary_and_select_next_gpu_construction_axis",
+  "source_backed_program_image_initialization_boundary_status": "packaged_bounded_case_pat_iahb_byte_record_construction",
+  "source_backed_program_image_initialization_next_action": "define_program_image_word_packed_initialization_boundary",
   "source_backed_program_image_initialization_task_ladder": [
     "extract_xuantie_e902_program_image_initialization_inputs",
     "define_program_image_initialization_record_format",
@@ -232,5 +233,10 @@
     "validate_program_image_initialization_against_cpu_constructed_state",
     "measure_program_image_initialization_upload_reduction"
   ],
-  "source_backed_program_image_initialization_current_blocker": "--program-image-init-records construction is validated and upload reduction is measured at 1.0988987547662854x; next is packaging this bounded boundary and selecting the next GPU-owned construction responsibility"
+  "source_backed_program_image_initialization_current_blocker": "--program-image-init-records construction is packaged with 1.0988987547662854x upload reduction; next GPU-owned construction axis is word-packed case.pat initialization to reduce offset/value byte-record overhead",
+  "next_gpu_owned_state_construction_axis": "source_backed_program_image_word_packed_initialization",
+  "next_gpu_owned_state_construction_axis_reason": "the byte-record boundary is correct but low-compression; uploading case.pat 32-bit words plus lane base offsets should reduce record payload from per-byte offset/value records to per-word source records while keeping the same IAHB source contract",
+  "next_gpu_owned_state_construction_expected_upload_bytes": 166688,
+  "next_gpu_owned_state_construction_expected_reduction_ratio_vs_full_state": 7.911700901080822,
+  "next_gpu_owned_state_construction_non_claim": "expected byte count assumes 33336 32-bit words plus four size_t lane base offsets and does not yet include implementation, launch latency, or CPU parsing cost"
 }

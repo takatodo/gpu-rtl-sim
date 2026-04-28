@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  package_program_image_initialization_boundary_and_select_next_gpu_construction_axis
+  define_program_image_word_packed_initialization_boundary
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1895,8 +1895,8 @@ implement_program_image_initialization_kernel_and_host_flag:
     - validate_program_image_initialization_against_cpu_constructed_state:
         purpose: compare CPU/source-backed construction against GPU/device-side construction
         output: reports/xuantie_e902_program_image_initialization_construction.json
-  status: packaged_validation_and_upload_reduction
-  next_action: package_program_image_initialization_boundary_and_select_next_gpu_construction_axis
+  status: packaged_bounded_case_pat_iahb_byte_record_construction
+  next_action: define_program_image_word_packed_initialization_boundary
 
 implement_program_image_initialization_kernel_generation:
   goal: emit the program-image initialization kernel from both GPU kernel generators
@@ -1975,6 +1975,18 @@ measure_program_image_initialization_upload_reduction:
   upload_reduction_ratio: 1.0988987547662854
   status: done_positive_but_small
   next_action: package_program_image_initialization_boundary_and_select_next_gpu_construction_axis
+
+package_program_image_initialization_boundary_and_select_next_gpu_construction_axis:
+  goal: close the bounded byte-record program-image construction boundary and choose the next GPU-owned construction responsibility
+  weakest_point: byte-record construction proves correctness but spends most upload bytes on per-byte target offsets, so it is not the right long-term compression shape.
+  packaged_boundary: source_backed_program_image_initialization
+  selected_next_axis: source_backed_program_image_word_packed_initialization
+  reason: case.pat is naturally a 32-bit word source; upload words plus four lane base offsets, then expand lanes on GPU.
+  expected_word_count: 33336
+  expected_upload_bytes: 166688
+  expected_reduction_ratio_vs_full_state: 7.911700901080822
+  status: done_selected_word_packed_program_image_initialization
+  next_action: define_program_image_word_packed_initialization_boundary
 ```
 
 ## source_of_truth

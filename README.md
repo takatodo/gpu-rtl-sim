@@ -464,8 +464,8 @@ next_gpu_owned_state_construction_step:
   gate: config/scaling_gates/xuantie_e902_program_image_initialization_construction.json
   source: case.pat loaded through mem_inst_temp
   selected_family: iahb_instruction_memory
-  status: packaged_validation_and_upload_reduction
-  next: package_program_image_initialization_boundary_and_select_next_gpu_construction_axis
+  status: packaged_bounded_case_pat_iahb_byte_record_construction
+  next: define_program_image_word_packed_initialization_boundary
   task_ladder:
     - extract_xuantie_e902_program_image_initialization_inputs: done_contract_defined
     - define_program_image_initialization_record_format: done_format_defined
@@ -495,6 +495,9 @@ next_gpu_owned_state_construction_step:
   full_state_upload_bytes: 1318784
   record_upload_bytes: 1200096
   upload_reduction_ratio: 1.0988987547662854
+  next_axis: source_backed_program_image_word_packed_initialization
+  expected_next_axis_upload_bytes: 166688
+  expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822
   non_claim: not broad ROM initialization, not x_smem/x_dmem coverage, not ISA correctness, and not full software boot correctness
 
 policy:

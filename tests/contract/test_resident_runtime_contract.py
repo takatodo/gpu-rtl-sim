@@ -440,13 +440,21 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             gate["runtime_support"]["implementation_subtasks"][0],
             "implement_program_image_initialization_kernel_generation: done",
         )
-        self.assertEqual(gate["runtime_support"]["status"], "packaged_validation_and_upload_reduction")
+        self.assertEqual(
+            gate["runtime_support"]["status"],
+            "packaged_bounded_case_pat_iahb_byte_record_construction",
+        )
         self.assertEqual(gate["communication_claim"]["full_state_upload_bytes"], 1318784)
         self.assertEqual(gate["communication_claim"]["record_upload_bytes"], 1200096)
         self.assertEqual(
             gate["communication_claim"]["upload_reduction_ratio"],
             1.0988987547662854,
         )
+        self.assertEqual(
+            gate["next_axis_selection"]["selected_axis"],
+            "source_backed_program_image_word_packed_initialization",
+        )
+        self.assertEqual(gate["next_axis_selection"]["expected_upload_bytes"], 166688)
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
         )
@@ -456,7 +464,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "package_program_image_initialization_boundary_and_select_next_gpu_construction_axis",
+            "define_program_image_word_packed_initialization_boundary",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -581,7 +589,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_status"],
-            "packaged_validation_and_upload_reduction",
+            "packaged_bounded_case_pat_iahb_byte_record_construction",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_input_extraction_status"],
@@ -593,7 +601,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "package_program_image_initialization_boundary_and_select_next_gpu_construction_axis",
+            "define_program_image_word_packed_initialization_boundary",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_kernel_name"],
@@ -639,6 +647,15 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             selection["source_backed_program_image_initialization_upload_reduction_ratio"],
             1.0988987547662854,
         )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_boundary_status"],
+            "packaged_bounded_case_pat_iahb_byte_record_construction",
+        )
+        self.assertEqual(
+            selection["next_gpu_owned_state_construction_axis"],
+            "source_backed_program_image_word_packed_initialization",
+        )
+        self.assertEqual(selection["next_gpu_owned_state_construction_expected_upload_bytes"], 166688)
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],
             "implement_program_image_initialization_kernel_generation",
