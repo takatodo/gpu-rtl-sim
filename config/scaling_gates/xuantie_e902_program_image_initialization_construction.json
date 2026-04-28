@@ -164,7 +164,12 @@
       "full_state_upload_bytes": 1318784,
       "expected_word_count": 33336,
       "expected_upload_bytes": 166688,
-      "expected_reduction_ratio_vs_full_state": 7.911700901080822
+      "expected_reduction_ratio_vs_full_state": 7.911700901080822,
+      "measured_word_upload_bytes": 133344,
+      "measured_lane_base_offset_upload_bytes": 32,
+      "measured_upload_bytes": 133376,
+      "measured_reduction_ratio_vs_full_state": 9.887715930902111,
+      "measured_reduction_ratio_vs_byte_records": 8.997840690978887
     },
     "implementation_subtasks": [
       "define_program_image_word_packed_initialization_boundary: done",
@@ -173,7 +178,7 @@
       "upload_program_image_words_once: done",
       "launch_program_image_word_packed_initialization_before_resident_eval: done",
       "validate_word_packed_program_image_initialization_against_byte_record_boundary: done",
-      "measure_word_packed_program_image_upload_reduction"
+      "measure_word_packed_program_image_upload_reduction: done"
     ],
     "non_claims": [
       "not broad ROM initialization",

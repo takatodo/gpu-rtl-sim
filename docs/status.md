@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  measure_word_packed_program_image_upload_reduction
+  package_word_packed_program_image_initialization_boundary_and_select_next_gpu_construction_axis
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2064,6 +2064,20 @@ validate_word_packed_program_image_initialization_against_byte_record_boundary:
   raw_mismatch_scope: verilator_internal_only
   status: done_normalized_final_state_equivalence_pass
   next_action: measure_word_packed_program_image_upload_reduction
+
+measure_word_packed_program_image_upload_reduction:
+  goal: quantify the traffic reduction from word-packed case.pat upload
+  weakest_point: this closes the measurement, but the word-packed boundary still needs an explicit package/next-axis decision.
+  full_state_upload_bytes: 1318784
+  byte_record_upload_bytes: 1200096
+  word_count: 33336
+  word_upload_bytes: 133344
+  lane_base_offset_upload_bytes: 32
+  measured_upload_bytes: 133376
+  reduction_ratio_vs_full_state: 9.887715930902111
+  reduction_ratio_vs_byte_records: 8.997840690978887
+  status: done_measured_9_8877x_vs_full_state
+  next_action: package_word_packed_program_image_initialization_boundary_and_select_next_gpu_construction_axis
 ```
 
 ## source_of_truth

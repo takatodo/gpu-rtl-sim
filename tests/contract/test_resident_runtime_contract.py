@@ -507,6 +507,15 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(word_boundary["expected_traffic"]["expected_word_count"], 33336)
         self.assertEqual(word_boundary["expected_traffic"]["expected_upload_bytes"], 166688)
+        self.assertEqual(word_boundary["expected_traffic"]["measured_upload_bytes"], 133376)
+        self.assertEqual(
+            word_boundary["expected_traffic"]["measured_reduction_ratio_vs_full_state"],
+            9.887715930902111,
+        )
+        self.assertEqual(
+            word_boundary["expected_traffic"]["measured_reduction_ratio_vs_byte_records"],
+            8.997840690978887,
+        )
         self.assertEqual(
             word_boundary["implementation_subtasks"][0],
             "define_program_image_word_packed_initialization_boundary: done",
@@ -531,6 +540,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             word_boundary["implementation_subtasks"][5],
             "validate_word_packed_program_image_initialization_against_byte_record_boundary: done",
         )
+        self.assertEqual(
+            word_boundary["implementation_subtasks"][6],
+            "measure_word_packed_program_image_upload_reduction: done",
+        )
         self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
@@ -541,7 +554,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "measure_word_packed_program_image_upload_reduction",
+            "package_word_packed_program_image_initialization_boundary_and_select_next_gpu_construction_axis",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -678,7 +691,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "measure_word_packed_program_image_upload_reduction",
+            "package_word_packed_program_image_initialization_boundary_and_select_next_gpu_construction_axis",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_kernel_name"],
@@ -770,11 +783,20 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             selection["program_image_word_packed_initialization_validation_design_state_mismatch_bytes"],
             0,
         )
+        self.assertEqual(selection["program_image_word_packed_initialization_upload_bytes"], 133376)
+        self.assertEqual(
+            selection["program_image_word_packed_initialization_upload_reduction_ratio_vs_full_state"],
+            9.887715930902111,
+        )
+        self.assertEqual(
+            selection["program_image_word_packed_initialization_upload_reduction_ratio_vs_byte_records"],
+            8.997840690978887,
+        )
         self.assertEqual(selection["program_image_word_packed_initialization_expected_word_count"], 33336)
         self.assertEqual(selection["program_image_word_packed_initialization_expected_upload_bytes"], 166688)
         self.assertEqual(
             selection["program_image_word_packed_initialization_next_action"],
-            "measure_word_packed_program_image_upload_reduction",
+            "package_word_packed_program_image_initialization_boundary_and_select_next_gpu_construction_axis",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],
