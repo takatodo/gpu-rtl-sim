@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  upload_program_image_words_once
+  launch_program_image_word_packed_initialization_before_resident_eval
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2032,6 +2032,15 @@ add_program_image_word_packed_host_flag_and_env:
   runtime: src/hybrid/run_vl_hybrid.c reports program_image_words
   status: done_host_flag_env_wired
   next_action: upload_program_image_words_once
+
+upload_program_image_words_once:
+  goal: parse word-packed case.pat-style input and upload uint32 program words once
+  weakest_point: words are now on device, but lane base offsets and vl_apply_program_image_words_gpu launch are still missing.
+  parser: load_program_image_words
+  upload: cuMemcpyHtoD(program_image_words.d_words)
+  report_line: program_image_word_upload
+  status: done_words_uploaded_once
+  next_action: launch_program_image_word_packed_initialization_before_resident_eval
 ```
 
 ## source_of_truth

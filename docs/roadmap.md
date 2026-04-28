@@ -195,7 +195,8 @@ phase_3:
   define_program_image_word_packed_initialization_boundary: done_boundary_defined
   implement_program_image_word_packed_kernel_generation: done_kernel_generation_implemented
   add_program_image_word_packed_host_flag_and_env: done_host_flag_env_wired
-  upload_program_image_words_once: next
+  upload_program_image_words_once: done_words_uploaded_once
+  launch_program_image_word_packed_initialization_before_resident_eval: next
 ```
 
 ## acceptance

@@ -502,6 +502,7 @@ next_gpu_owned_state_construction_step:
   word_packed_planned_host_flag: --program-image-words
   word_packed_planned_env: RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS
   word_packed_host_flag_env: wired_to_runtime_env
+  word_packed_upload: uint32_words_uploaded_once
   word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]
   expected_next_axis_upload_bytes: 166688
   expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822

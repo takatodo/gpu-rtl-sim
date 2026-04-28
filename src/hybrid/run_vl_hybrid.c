@@ -21,6 +21,7 @@
 
 #include <ctype.h>
 #include <cuda.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -124,6 +125,12 @@ typedef struct {
   CUdeviceptr d_values;
 } ProgramImageInitRecords;
 
+typedef struct {
+  uint32_t *words;
+  unsigned word_count;
+  CUdeviceptr d_words;
+} ProgramImageWords;
+
 static int parse_byte(const char *s, unsigned char *out) {
   if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))
     return sscanf(s + 2, "%hhx", out) == 1 ? 0 : -1;
@@ -200,6 +207,99 @@ static void free_program_image_init_records(ProgramImageInitRecords *records) {
   free(records->offsets);
   free(records->values);
   memset(records, 0, sizeof(*records));
+}
+
+static void free_program_image_words(ProgramImageWords *program_words) {
+  if (!program_words)
+    return;
+  if (program_words->d_words)
+    CUDA_CHECK(cuMemFree(program_words->d_words));
+  free(program_words->words);
+  memset(program_words, 0, sizeof(*program_words));
+}
+
+static int append_program_image_word(ProgramImageWords *program_words,
+                                     unsigned *capacity, uint32_t word) {
+  if (program_words->word_count == *capacity) {
+    unsigned new_capacity = *capacity ? (*capacity * 2U) : 1024U;
+    uint32_t *grown_words =
+        (uint32_t *)realloc(program_words->words,
+                            new_capacity * sizeof(*program_words->words));
+    if (!grown_words)
+      return -1;
+    program_words->words = grown_words;
+    *capacity = new_capacity;
+  }
+  program_words->words[program_words->word_count] = word;
+  program_words->word_count++;
+  return 0;
+}
+
+static int load_program_image_words(const char *path, ProgramImageWords *out) {
+  FILE *fp = fopen(path, "r");
+  char line[4096];
+  unsigned capacity = 0U;
+  unsigned line_no = 0U;
+  memset(out, 0, sizeof(*out));
+  if (!fp) {
+    fprintf(stderr, "failed to open %s=%s\n", ENV_PROGRAM_IMAGE_WORDS, path);
+    return -1;
+  }
+  while (fgets(line, sizeof(line), fp) != NULL) {
+    char *cursor = line;
+    char *comment = NULL;
+    char *token = NULL;
+    line_no++;
+    if (strchr(line, '\n') == NULL && !feof(fp)) {
+      fprintf(stderr, "%s line %u exceeds internal parser buffer\n", path, line_no);
+      fclose(fp);
+      free_program_image_words(out);
+      return -1;
+    }
+    while (*cursor != '\0' && isspace((unsigned char)*cursor))
+      cursor++;
+    if (*cursor == '\0' || *cursor == '\n' || *cursor == '#')
+      continue;
+    comment = strchr(cursor, '#');
+    if (comment)
+      *comment = '\0';
+    if (cursor[0] == '@') {
+      token = strtok(cursor, " \t\r\n");
+      token = strtok(NULL, " \t\r\n");
+    } else {
+      token = strtok(cursor, " \t\r\n");
+    }
+    for (; token != NULL; token = strtok(NULL, " \t\r\n")) {
+      char *end = NULL;
+      unsigned long value = strtoul(token, &end, 16);
+      if (end == token || *end != '\0' || value > 0xffffffffUL) {
+        fprintf(stderr,
+                "%s line %u has bad program-image word token '%s' (want 32-bit hex word)\n",
+                path, line_no, token);
+        fclose(fp);
+        free_program_image_words(out);
+        return -1;
+      }
+      if (append_program_image_word(out, &capacity, (uint32_t)value) != 0) {
+        fclose(fp);
+        free_program_image_words(out);
+        return -1;
+      }
+    }
+  }
+  if (ferror(fp)) {
+    fprintf(stderr, "failed while reading %s\n", path);
+    fclose(fp);
+    free_program_image_words(out);
+    return -1;
+  }
+  fclose(fp);
+  if (out->word_count == 0U) {
+    fprintf(stderr, "%s contained no program-image words\n", path);
+    free_program_image_words(out);
+    return -1;
+  }
+  return 0;
 }
 
 static int append_program_image_init_record(ProgramImageInitRecords *records,
@@ -1076,6 +1176,8 @@ int main(int argc, char **argv) {
   memset(&resident_patch_schedule, 0, sizeof(resident_patch_schedule));
   ProgramImageInitRecords program_image_init_records;
   memset(&program_image_init_records, 0, sizeof(program_image_init_records));
+  ProgramImageWords program_image_words;
+  memset(&program_image_words, 0, sizeof(program_image_words));
   CUfunction resident_patch_kfn = NULL;
   CUfunction init_replication_kfn = NULL;
   CUfunction program_image_init_kfn = NULL;
@@ -1150,6 +1252,13 @@ int main(int argc, char **argv) {
       return 1;
     }
   }
+  if (program_image_words_enabled) {
+    if (load_program_image_words(program_image_words_path, &program_image_words) != 0) {
+      free_step_patch_blocks(script_blocks, script_block_count);
+      free_program_image_init_records(&program_image_init_records);
+      return 1;
+    }
+  }
 
   trace_stage("before_cuInit");
   {
@@ -1182,6 +1291,8 @@ int main(int argc, char **argv) {
   int nmods = 0;
   if (load_module_chain(cubin_path, mods, &nmods) != 0) {
     free_step_patch_blocks(script_blocks, script_block_count);
+    free_program_image_init_records(&program_image_init_records);
+    free_program_image_words(&program_image_words);
     return 1;
   }
 
@@ -1260,6 +1371,7 @@ int main(int argc, char **argv) {
               ENV_PROGRAM_IMAGE_INIT_RECORDS);
       free_step_patch_blocks(script_blocks, script_block_count);
       free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
       return 1;
     }
     trace_function_attrs(program_image_init_kfn, "vl_apply_program_image_init_gpu");
@@ -1271,6 +1383,7 @@ int main(int argc, char **argv) {
     if (stack_limit_status != 0) {
       fprintf(stderr, "stack-limit setup failed with status=%d\n", stack_limit_status);
       free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
       return stack_limit_status;
     }
   }
@@ -1408,9 +1521,18 @@ int main(int argc, char **argv) {
       free_step_patch_blocks(script_blocks, script_block_count);
       free_resident_patch_schedule(&resident_patch_schedule);
       free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
       return 1;
     }
     CUDA_CHECK(cuCtxSynchronize());
+  }
+  if (program_image_words.word_count > 0U) {
+    CUDA_CHECK(cuMemAlloc(&program_image_words.d_words,
+                          (size_t)program_image_words.word_count *
+                              sizeof(*program_image_words.words)));
+    CUDA_CHECK(cuMemcpyHtoD(program_image_words.d_words, program_image_words.words,
+                            (size_t)program_image_words.word_count *
+                                sizeof(*program_image_words.words)));
   }
 
   int nstates_i = (int)nstates;
@@ -1609,6 +1731,10 @@ int main(int argc, char **argv) {
     printf("program_image_init_launch: kernel=vl_apply_program_image_init_gpu records=%u nstates=%u\n",
            program_image_init_records.record_count, nstates);
   }
+  if (program_image_words.word_count > 0U) {
+    printf("program_image_word_upload: words=%u layout=uint32_words\n",
+           program_image_words.word_count);
+  }
   if (script_blocks) {
     printf("patch_script_steps: logical=%u records=%u blocks=%u\n",
            script_logical_step_count, script_record_count, script_block_count);
@@ -1651,6 +1777,7 @@ int main(int argc, char **argv) {
       free_step_patch_blocks(script_blocks, script_block_count);
       free_resident_patch_schedule(&resident_patch_schedule);
       free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
       return 1;
     }
     CUDA_CHECK(cuMemcpyDtoH(host, d_storage, total));
@@ -1661,6 +1788,7 @@ int main(int argc, char **argv) {
       free_step_patch_blocks(script_blocks, script_block_count);
       free_resident_patch_schedule(&resident_patch_schedule);
       free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
       return 1;
     }
     size_t nw = fwrite(host, 1, total, fp);
@@ -1672,6 +1800,7 @@ int main(int argc, char **argv) {
       free_step_patch_blocks(script_blocks, script_block_count);
       free_resident_patch_schedule(&resident_patch_schedule);
       free_program_image_init_records(&program_image_init_records);
+      free_program_image_words(&program_image_words);
       return 1;
     }
     printf("state_dump: %s (%zu bytes)\n", dump_path, total);
@@ -1694,6 +1823,7 @@ int main(int argc, char **argv) {
   trace_stage("before_cleanup");
   free_resident_patch_schedule(&resident_patch_schedule);
   free_program_image_init_records(&program_image_init_records);
+  free_program_image_words(&program_image_words);
   CUDA_CHECK(cuMemFree(d_storage));
   CUDA_CHECK(cuCtxDestroy(ctx));
   free_step_patch_blocks(script_blocks, script_block_count);

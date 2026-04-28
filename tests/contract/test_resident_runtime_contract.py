@@ -259,6 +259,9 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS", runtime)
         self.assertIn("--program-image-words", wrapper)
         self.assertIn("program_image_words", runtime)
+        self.assertIn("load_program_image_words", runtime)
+        self.assertIn("cuMemcpyHtoD(program_image_words.d_words", runtime)
+        self.assertIn("program_image_word_upload", runtime)
         self.assertIn("program_image_init_records", runtime)
         self.assertIn("load_program_image_init_records", runtime)
         self.assertIn("cuMemcpyHtoD(program_image_init_records.d_offsets", runtime)
@@ -480,6 +483,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             word_boundary["runtime_support"]["host_flag_status"],
             "wired_to_runtime_env",
         )
+        self.assertEqual(
+            word_boundary["runtime_support"]["word_upload_status"],
+            "uint32_words_uploaded_once",
+        )
         self.assertEqual(word_boundary["expected_traffic"]["expected_word_count"], 33336)
         self.assertEqual(word_boundary["expected_traffic"]["expected_upload_bytes"], 166688)
         self.assertEqual(
@@ -494,6 +501,10 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             word_boundary["implementation_subtasks"][2],
             "add_program_image_word_packed_host_flag_and_env: done",
         )
+        self.assertEqual(
+            word_boundary["implementation_subtasks"][3],
+            "upload_program_image_words_once: done",
+        )
         self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
@@ -504,7 +515,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "upload_program_image_words_once",
+            "launch_program_image_word_packed_initialization_before_resident_eval",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -641,7 +652,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "upload_program_image_words_once",
+            "launch_program_image_word_packed_initialization_before_resident_eval",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_kernel_name"],
@@ -717,11 +728,15 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             selection["program_image_word_packed_initialization_host_flag_status"],
             "wired_to_runtime_env",
         )
+        self.assertEqual(
+            selection["program_image_word_packed_initialization_word_upload_status"],
+            "uint32_words_uploaded_once",
+        )
         self.assertEqual(selection["program_image_word_packed_initialization_expected_word_count"], 33336)
         self.assertEqual(selection["program_image_word_packed_initialization_expected_upload_bytes"], 166688)
         self.assertEqual(
             selection["program_image_word_packed_initialization_next_action"],
-            "upload_program_image_words_once",
+            "launch_program_image_word_packed_initialization_before_resident_eval",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],
