@@ -650,7 +650,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "package_xuantie_combined_construction_runtime_accounting_gate",
+            "select_next_axis_after_xuantie_runtime_accounting",
         )
         self.assertEqual(
             selection["post_dmem_zero_fill_axis_selection"]["status"],
@@ -701,7 +701,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             "define_xuantie_combined_construction_runtime_accounting_gate",
         )
         accounting_gate = selection["xuantie_combined_construction_runtime_accounting_gate"]
-        self.assertEqual(accounting_gate["status"], "run_ok")
+        self.assertEqual(accounting_gate["status"], "packaged")
         self.assertEqual(
             accounting_gate["artifact"],
             "reports/xuantie_e902_combined_construction_runtime_accounting.json",
@@ -717,7 +717,21 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertIn("dmem_zero_fill_launch", run_report["observed_report_lines"])
         self.assertEqual(
             accounting_gate["next_action"],
-            "package_xuantie_combined_construction_runtime_accounting_gate",
+            "select_next_axis_after_xuantie_runtime_accounting",
+        )
+        self.assertEqual(
+            accounting_gate["packaging_status"],
+            "accepted_accounting_result_without_speedup_claim",
+        )
+        post_accounting = selection["post_xuantie_runtime_accounting_axis_selection"]
+        self.assertEqual(post_accounting["status"], "pending_selection")
+        self.assertIn(
+            "external_source_backed_target_import_decision",
+            post_accounting["candidate_axes"],
+        )
+        self.assertIn(
+            "close_gpu_owned_state_construction_track_for_current_minimal_repo",
+            post_accounting["candidate_axes"],
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],

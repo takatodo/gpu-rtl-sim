@@ -549,7 +549,12 @@ next_gpu_owned_state_construction_step:
   runtime_accounting_status: run_ok
   runtime_accounting_gpu_kernel_time_total_ms: 0.023552
   runtime_accounting_host_wall_time_ms: 0.067
-  runtime_accounting_next_action: package_xuantie_combined_construction_runtime_accounting_gate
+  runtime_accounting_package_status: packaged
+  runtime_accounting_next_action: select_next_axis_after_xuantie_runtime_accounting
+  post_runtime_accounting_next_candidates:
+    - external_source_backed_target_import_decision
+    - multi_state_combined_construction_accounting
+    - close_gpu_owned_state_construction_track_for_current_minimal_repo
   word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]
   expected_next_axis_upload_bytes: 166688
   expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822

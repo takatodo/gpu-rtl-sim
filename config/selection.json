@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "current_priority": "package_xuantie_combined_construction_runtime_accounting_gate",
+  "current_priority": "select_next_axis_after_xuantie_runtime_accounting",
   "current_scaling_gate": "config/scaling_gates/tlul_fifo_sync.json",
   "current_large_workload_scaling_gate": "config/scaling_gates/tlul_fifo_sync_large_workload.json",
   "current_repeated_steps_scaling_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
@@ -413,7 +413,7 @@
     "next_action": "define_xuantie_combined_construction_runtime_accounting_gate"
   },
   "xuantie_combined_construction_runtime_accounting_gate": {
-    "status": "run_ok",
+    "status": "packaged",
     "weakest_point": "This gate can account runtime overhead using existing report lines, but it still does not prove end-to-end launch-latency speedup or add a new source-backed memory family.",
     "goal": "Measure the overhead excluded from the combined XuanTie construction package claim before expanding GPU-owned construction responsibility again.",
     "measured_components": [
@@ -461,6 +461,18 @@
         "dmem_zero_fill_launch"
       ]
     },
-    "next_action": "package_xuantie_combined_construction_runtime_accounting_gate"
+    "packaging_status": "accepted_accounting_result_without_speedup_claim",
+    "next_action": "select_next_axis_after_xuantie_runtime_accounting"
+  },
+  "post_xuantie_runtime_accounting_axis_selection": {
+    "status": "pending_selection",
+    "weakest_point": "The current minimal repo has exhausted checked-in source-backed XuanTie construction surfaces; choosing another implementation axis before a source contract or benchmark target is selected risks busywork.",
+    "candidate_axes": [
+      "external_source_backed_target_import_decision",
+      "multi_state_combined_construction_accounting",
+      "close_gpu_owned_state_construction_track_for_current_minimal_repo"
+    ],
+    "selection_rule": "Prefer a source-backed target/import decision if a concrete source input contract exists; otherwise prefer multi-state accounting only if it answers an unresolved scaling question.",
+    "next_action": "select_next_axis_after_xuantie_runtime_accounting"
   }
 }

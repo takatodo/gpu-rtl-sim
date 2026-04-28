@@ -2247,6 +2247,34 @@ run_xuantie_combined_construction_runtime_accounting_gate:
     host_wall_time_ms: 0.067
   status: done_run_ok
   next_action: package_xuantie_combined_construction_runtime_accounting_gate
+
+package_xuantie_combined_construction_runtime_accounting_gate:
+  goal: accept the runtime accounting result while preserving launch speedup as a non-claim
+  weakest_point: the accounting result is useful, but it closes measurement bookkeeping rather than adding a new source-backed construction responsibility.
+  packaged_result: accepted_accounting_result_without_speedup_claim
+  artifact: reports/xuantie_e902_combined_construction_runtime_accounting.json
+  accepted_values:
+    combined_accounted_upload_bytes: 133408
+    gpu_kernel_time_total_ms: 0.023552
+    host_wall_time_ms: 0.067
+  preserved_non_claims:
+    - not launch-latency speedup
+    - not full application throughput
+    - not x_smem_ctrl initialization
+    - not x_dmem data-image initialization
+  status: done_packaged_accounting_result
+  next_action: select_next_axis_after_xuantie_runtime_accounting
+
+select_next_axis_after_xuantie_runtime_accounting:
+  goal: choose whether to import a new source-backed target, run multi-state combined construction accounting, or close the current GPU-owned construction track
+  weakest_point: the current minimal repo has exhausted checked-in source-backed XuanTie construction surfaces; choosing another implementation axis before a source contract or benchmark target is selected risks busywork.
+  candidate_axes:
+    - external_source_backed_target_import_decision
+    - multi_state_combined_construction_accounting
+    - close_gpu_owned_state_construction_track_for_current_minimal_repo
+  selection_rule: prefer a source-backed target/import decision if a concrete source input contract exists; otherwise prefer multi-state accounting only if it answers an unresolved scaling question.
+  status: pending_selection
+  next_action: select_next_axis_after_xuantie_runtime_accounting
 ```
 
 ## source_of_truth
