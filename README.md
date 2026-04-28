@@ -464,8 +464,8 @@ next_gpu_owned_state_construction_step:
   gate: config/scaling_gates/xuantie_e902_program_image_initialization_construction.json
   source: case.pat loaded through mem_inst_temp
   selected_family: iahb_instruction_memory
-  status: launch_before_resident_eval_wired
-  next: validate_program_image_initialization_against_cpu_constructed_state
+  status: validation_passed
+  next: measure_program_image_initialization_upload_reduction
   task_ladder:
     - extract_xuantie_e902_program_image_initialization_inputs: done_contract_defined
     - define_program_image_initialization_record_format: done_format_defined
@@ -474,7 +474,7 @@ next_gpu_owned_state_construction_step:
     - add_program_image_initialization_host_flag_and_env: done_host_flag_env_wired
     - upload_program_image_initialization_records_once: done_records_uploaded_once
     - launch_program_image_initialization_before_resident_eval: done_launch_before_resident_eval_wired
-    - validate_program_image_initialization_against_cpu_constructed_state
+    - validate_program_image_initialization_against_cpu_constructed_state: done_normalized_final_state_equivalence_pass
     - measure_program_image_initialization_upload_reduction
   input_record_fields:
     - word_index
@@ -490,6 +490,8 @@ next_gpu_owned_state_construction_step:
   required_env: RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS
   record_upload: offset_value_soa_uploaded_once
   launch: before_resident_eval_wired
+  validation: normalized_final_state_equivalence_pass
+  validation_report: reports/xuantie_e902_program_image_initialization_construction.json
   non_claim: not broad ROM initialization, not x_smem/x_dmem coverage, not ISA correctness, and not full software boot correctness
 
 policy:

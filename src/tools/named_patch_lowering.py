@@ -11,6 +11,13 @@ from compare_vl_hybrid_modes import probe_root_layout
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 REPEATED_TO_STEPS_RE = re.compile(r"_repeated_to_(?P<steps>\d+)_logical_steps$")
+LANES = ("ram0", "ram1", "ram2", "ram3")
+LANE_BYTE_SHIFTS = {
+    "ram0": 24,
+    "ram1": 16,
+    "ram2": 8,
+    "ram3": 0,
+}
 
 
 def resolve_patch_script_lines(
@@ -74,7 +81,7 @@ def _load_json(path: Path) -> dict[str, Any]:
 def _named_rom_lane_offsets(mdir: Path) -> dict[str, int]:
     layout = probe_root_layout(mdir)
     offsets: dict[str, int] = {}
-    for lane in ("ram0", "ram1", "ram2", "ram3"):
+    for lane in LANES:
         suffix = f"x_iahb_mem_ctrl__DOT__{lane}__DOT__mem"
         matches = [entry for entry in layout if str(entry["name"]).endswith(suffix)]
         if len(matches) != 1:
@@ -83,6 +90,62 @@ def _named_rom_lane_offsets(mdir: Path) -> dict[str, int]:
             )
         offsets[lane] = int(matches[0]["offset"])
     return offsets
+
+
+def program_image_init_record_lines(*, case_pat: Path, mdir: Path) -> tuple[list[str], dict[str, Any]]:
+    """Lower case.pat words to target_root_offset:byte initialization records."""
+
+    offsets = _named_rom_lane_offsets(mdir)
+    lines: list[str] = []
+    word_count = 0
+    for word_index, word in _iter_case_pat_words(case_pat):
+        word_count = max(word_count, word_index + 1)
+        for lane in LANES:
+            byte_value = (word >> LANE_BYTE_SHIFTS[lane]) & 0xFF
+            lines.append(f"{offsets[lane] + word_index}:{byte_value}")
+    return lines, {
+        "source": "case.pat",
+        "case_pat": str(case_pat),
+        "word_count": word_count,
+        "record_count": len(lines),
+        "resolved_lane_offsets": offsets,
+    }
+
+
+def zero_program_image_bytes(*, blob: bytes, record_lines: list[str]) -> bytes:
+    """Return blob with every program-image record target byte cleared."""
+
+    patched = bytearray(blob)
+    for line in record_lines:
+        offset, _value = _parse_record_line(line)
+        patched[offset] = 0
+    return bytes(patched)
+
+
+def _iter_case_pat_words(case_pat: Path):
+    for line_no, raw_line in enumerate(case_pat.read_text(encoding="utf-8").splitlines(), start=1):
+        stripped = raw_line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        parts = stripped.split()
+        if not parts or not parts[0].startswith("@"):
+            raise SystemExit(f"error: {case_pat} line {line_no} missing @word-address")
+        base_word_index = int(parts[0][1:], 16)
+        for lane_word_index, token in enumerate(parts[1:]):
+            if len(token) != 8:
+                raise SystemExit(f"error: {case_pat} line {line_no} has non-32-bit word {token!r}")
+            yield base_word_index + lane_word_index, int(token, 16)
+
+
+def _parse_record_line(line: str) -> tuple[int, int]:
+    if ":" not in line:
+        raise SystemExit(f"error: bad program-image init record {line!r}")
+    offset_raw, value_raw = line.split(":", 1)
+    offset = int(offset_raw, 0)
+    value = int(value_raw, 0)
+    if not 0 <= value <= 255:
+        raise SystemExit(f"error: byte_value out of range: {value}")
+    return offset, value
 
 
 def _lower_named_delta_sequence(

@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  validate_program_image_initialization_against_cpu_constructed_state
+  measure_program_image_initialization_upload_reduction
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -1895,8 +1895,8 @@ implement_program_image_initialization_kernel_and_host_flag:
     - validate_program_image_initialization_against_cpu_constructed_state:
         purpose: compare CPU/source-backed construction against GPU/device-side construction
         output: reports/xuantie_e902_program_image_initialization_construction.json
-  status: launch_before_resident_eval_wired
-  next_action: validate_program_image_initialization_against_cpu_constructed_state
+  status: validation_passed
+  next_action: measure_program_image_initialization_upload_reduction
 
 implement_program_image_initialization_kernel_generation:
   goal: emit the program-image initialization kernel from both GPU kernel generators
@@ -1950,6 +1950,21 @@ launch_program_image_initialization_before_resident_eval:
     report_line: program_image_init_launch
   status: done_launch_before_resident_eval_wired
   next_action: validate_program_image_initialization_against_cpu_constructed_state
+
+validate_program_image_initialization_against_cpu_constructed_state:
+  goal: compare CPU/source-backed construction against GPU/device-side program-image construction
+  weakest_point: validation passes only under normalized final-state equivalence; raw bytes still differ in Verilator internals.
+  method:
+    - generate case.pat-derived target_root_offset:byte records with named_patch_lowering.program_image_init_record_lines
+    - zero the same IAHB program-image bytes in the CPU reference state
+    - run GPU with --program-image-init-records to restore those bytes before eval
+    - compare CPU reference and GPU dump with normalized_final_state_equivalence
+  report: reports/xuantie_e902_program_image_initialization_construction.json
+  record_count: 133344
+  result: normalized_final_state_equivalence_pass
+  non_claim: raw byte equality remains false because only Verilator internal fields differ.
+  status: done_normalized_final_state_equivalence_pass
+  next_action: measure_program_image_initialization_upload_reduction
 ```
 
 ## source_of_truth

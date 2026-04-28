@@ -189,8 +189,8 @@ phase_3:
   add_program_image_initialization_host_flag_and_env: done_host_flag_env_wired
   upload_program_image_initialization_records_once: done_records_uploaded_once
   launch_program_image_initialization_before_resident_eval: done_launch_before_resident_eval_wired
-  validate_program_image_initialization_against_cpu_constructed_state: next
-  measure_program_image_initialization_upload_reduction: pending
+  validate_program_image_initialization_against_cpu_constructed_state: done_normalized_final_state_equivalence_pass
+  measure_program_image_initialization_upload_reduction: next
 ```
 
 ## acceptance

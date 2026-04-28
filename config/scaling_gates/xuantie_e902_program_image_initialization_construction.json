@@ -81,7 +81,7 @@
     "relationship_to_resident_patch_schedule": "reuse the proven offset/value SoA upload shape, but run once before resident eval instead of once per logical patch step"
   },
   "runtime_support": {
-    "status": "launch_before_resident_eval_wired",
+    "status": "validation_passed",
     "required_kernel_family": "program_image_initialization_gpu",
     "required_kernel": "vl_apply_program_image_init_gpu",
     "required_host_flag": "--program-image-init-records",
@@ -92,7 +92,7 @@
       "add_program_image_initialization_host_flag_and_env: done",
       "upload_program_image_initialization_records_once: done",
       "launch_program_image_initialization_before_resident_eval: done",
-      "validate_program_image_initialization_against_cpu_constructed_state"
+      "validate_program_image_initialization_against_cpu_constructed_state: done"
     ],
     "must_not_use": [
       "hand-written root byte offsets as source of truth",
@@ -113,7 +113,7 @@
     ]
   },
   "artifacts": {
-    "future_report": "reports/xuantie_e902_program_image_initialization_construction.json",
+    "report": "reports/xuantie_e902_program_image_initialization_construction.json",
     "generated_outputs_only": true
   },
   "next_action_on_defined": "implement_xuantie_e902_program_image_initialization_construction"

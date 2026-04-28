@@ -381,6 +381,9 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         cpu_runner = CPU_BASELINE_RUNNER.read_text(encoding="utf-8")
         self.assertIn("probe_root_layout", lowering)
         self.assertIn("named_patch_delta_sequence", lowering)
+        self.assertIn("program_image_init_record_lines", lowering)
+        self.assertIn("zero_program_image_bytes", lowering)
+        self.assertIn("case.pat", lowering)
         self.assertIn("x_iahb_mem_ctrl__DOT__{lane}__DOT__mem", lowering)
         self.assertIn("_repeated_to_(?P<steps>\\d+)_logical_steps", lowering)
         self.assertIn("resolve_patch_script_lines", gpu_runner)
@@ -437,7 +440,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             gate["runtime_support"]["implementation_subtasks"][0],
             "implement_program_image_initialization_kernel_generation: done",
         )
-        self.assertEqual(gate["runtime_support"]["status"], "launch_before_resident_eval_wired")
+        self.assertEqual(gate["runtime_support"]["status"], "validation_passed")
         self.assertTrue(
             any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
         )
@@ -447,7 +450,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "validate_program_image_initialization_against_cpu_constructed_state",
+            "measure_program_image_initialization_upload_reduction",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -572,7 +575,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_status"],
-            "launch_before_resident_eval_wired",
+            "validation_passed",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_input_extraction_status"],
@@ -584,7 +587,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_next_action"],
-            "validate_program_image_initialization_against_cpu_constructed_state",
+            "measure_program_image_initialization_upload_reduction",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_kernel_name"],
@@ -609,6 +612,14 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(
             selection["source_backed_program_image_initialization_launch_status"],
             "launch_before_resident_eval_wired",
+        )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_validation_status"],
+            "normalized_final_state_equivalence_pass",
+        )
+        self.assertEqual(
+            selection["source_backed_program_image_initialization_validation_report"],
+            "reports/xuantie_e902_program_image_initialization_construction.json",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],
