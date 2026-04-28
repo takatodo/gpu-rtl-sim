@@ -20,7 +20,7 @@ repo:
   generated_history_carried: false
 
 current_priority:
-  package_xuantie_e902_dmem_zero_fill_boundary
+  select_next_gpu_owned_state_construction_after_dmem_zero_fill
 
 dependency_closure:
   repo_local_missing_headers: 0
@@ -2124,13 +2124,16 @@ define_xuantie_e902_dmem_zero_fill_device_initialization_boundary:
   validation: strict_and_normalized_final_state_equivalence_pass
   validation_report: reports/xuantie_e902_dmem_zero_fill_validation.json
   dirty_dmem_bytes_validated: 262144
+  package: packaged_deterministic_zero_fill_construction
+  offset_upload_bytes: 32
+  reduction_ratio_vs_per_state_dmem_bytes: 8192.0
   non_claims:
     - not source-backed data-image initialization
     - not x_smem_ctrl initialization
     - not IAHB case.pat program-image initialization
     - not ISA/software correctness
   status: done_defined_boundary
-  next_action: package_xuantie_e902_dmem_zero_fill_boundary
+  next_action: select_next_gpu_owned_state_construction_after_dmem_zero_fill
 ```
 
 ## source_of_truth

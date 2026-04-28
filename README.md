@@ -528,7 +528,10 @@ next_gpu_owned_state_construction_step:
   dmem_zero_fill_validation: strict_and_normalized_final_state_equivalence_pass
   dmem_zero_fill_validation_report: reports/xuantie_e902_dmem_zero_fill_validation.json
   dmem_zero_fill_dirty_bytes_validated: 262144
-  dmem_zero_fill_next_action: package_xuantie_e902_dmem_zero_fill_boundary
+  dmem_zero_fill_boundary: packaged_deterministic_zero_fill_construction
+  dmem_zero_fill_offset_upload_bytes: 32
+  dmem_zero_fill_reduction_ratio_vs_per_state_dmem_bytes: 8192.0
+  dmem_zero_fill_next_action: select_next_gpu_owned_state_construction_after_dmem_zero_fill
   word_packed_input_layout: uint32 program_words[word_count] plus size_t lane_base_offsets[4]
   expected_next_axis_upload_bytes: 166688
   expected_next_axis_reduction_ratio_vs_full_state: 7.911700901080822

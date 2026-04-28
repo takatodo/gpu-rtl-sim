@@ -207,7 +207,8 @@ phase_3:
   upload_xuantie_e902_dmem_zero_fill_lane_offsets_once: done_lane_offsets_uploaded_once
   launch_xuantie_e902_dmem_zero_fill_before_resident_eval: done_launch_before_resident_eval_wired
   validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state: done_strict_and_normalized_final_state_equivalence_pass
-  package_xuantie_e902_dmem_zero_fill_boundary: next
+  package_xuantie_e902_dmem_zero_fill_boundary: done_packaged_deterministic_zero_fill_construction
+  select_next_gpu_owned_state_construction_after_dmem_zero_fill: next
 ```
 
 ## acceptance

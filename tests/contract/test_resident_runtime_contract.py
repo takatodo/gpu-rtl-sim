@@ -625,10 +625,20 @@ class ResidentRuntimeContractTest(unittest.TestCase):
             dmem_zero["runtime_support"]["validation_shape"]["dirty_dmem_bytes"],
             262144,
         )
+        self.assertEqual(dmem_zero["boundary_package"]["status"], "packaged")
+        self.assertEqual(
+            dmem_zero["boundary_package"]["packaged_boundary"],
+            "deterministic_x_dmem_zero_fill_device_initialization",
+        )
+        self.assertEqual(dmem_zero["boundary_package"]["device_offset_upload_bytes"], 32)
+        self.assertEqual(
+            dmem_zero["boundary_package"]["dmem_payload_reduction_ratio_vs_per_state_dmem_bytes"],
+            8192.0,
+        )
         self.assertIn("not source-backed data-image initialization", dmem_zero["non_claims"])
         self.assertEqual(
             dmem_zero["next_action"],
-            "package_xuantie_e902_dmem_zero_fill_boundary",
+            "select_next_gpu_owned_state_construction_after_dmem_zero_fill",
         )
         self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
         self.assertTrue(
@@ -640,7 +650,7 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
         self.assertEqual(
             selection["current_priority"],
-            "package_xuantie_e902_dmem_zero_fill_boundary",
+            "select_next_gpu_owned_state_construction_after_dmem_zero_fill",
         )
         self.assertEqual(
             selection["resident_patch_schedule_boundary_status"],
@@ -973,8 +983,21 @@ class ResidentRuntimeContractTest(unittest.TestCase):
         self.assertEqual(selection["xuantie_e902_dmem_zero_fill_validation_dirty_dmem_bytes"], 262144)
         self.assertEqual(selection["xuantie_e902_dmem_zero_fill_validation_word_count"], 65536)
         self.assertEqual(
+            selection["xuantie_e902_dmem_zero_fill_boundary_status"],
+            "packaged_deterministic_zero_fill_construction",
+        )
+        package = selection["xuantie_e902_dmem_zero_fill_package"]
+        self.assertEqual(package["status"], "packaged")
+        self.assertEqual(
+            package["packaged_boundary"],
+            "deterministic_x_dmem_zero_fill_device_initialization",
+        )
+        self.assertEqual(package["validated_dirty_dmem_bytes"], 262144)
+        self.assertEqual(package["device_offset_upload_bytes"], 32)
+        self.assertEqual(package["dmem_payload_reduction_ratio_vs_per_state_dmem_bytes"], 8192.0)
+        self.assertEqual(
             selection["xuantie_e902_dmem_zero_fill_device_initialization_next_action"],
-            "package_xuantie_e902_dmem_zero_fill_boundary",
+            "select_next_gpu_owned_state_construction_after_dmem_zero_fill",
         )
         self.assertEqual(
             selection["source_backed_program_image_initialization_implementation_subtasks"][0],
