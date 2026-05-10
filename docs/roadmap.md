@@ -218,61 +218,47 @@ Tracked evidence:
 
 Recommended next gate:
 
-`active_inventory_records_rtlmeter_boundary`
+`verilator_like_hybrid_config_generation_boundary`
 
 Acceptance criteria:
 
-- move historical gate records out of the active `config/` surface while preserving `config/scaling_gates/...` compatibility
-- keep `config/scaling_gates` as a symlink to `../records/scaling_gates`
-- keep current config source-of-truth files small and explicit
-- keep every path referenced by active target metadata present from a clean checkout
-- keep `third_party/rtlmeter` as the only upstream submodule in this review boundary
-- keep runtime/pass changes and non-rtlmeter third-party imports out of this review boundary
+- keep `run_hybrid_template.py` usable from generated slice-launch templates
+- generate the scaling gate, coverage manifest, and launch template from target/top/overlay metadata
+- build the generic host probe from template metadata without adding a per-target `src/hybrid/Makefile` rule
+- preserve `--dry-run` behavior so generated command plans can be reviewed before execution
+- keep runtime/pass implementation changes, new NN target imports, and MobileViT tooling out of this review boundary
 
 Working tree review boundary:
 
-`next_task: active_inventory_records_rtlmeter_boundary`
+`next_task: verilator_like_hybrid_config_generation_boundary`
 
-Review records migration together with the active target inventory boundary it references. This is the smallest current review boundary that can still work from a clean checkout after `config/targets.json` points at gate records, slice-launch templates, repo overlays, and upstream rtlmeter source paths.
+Review the generated-config usability path together. This is the smallest current review boundary that makes hybrid operation feel close to a Verilator flow: generate config from target metadata, inspect the dry-run plan, and build the generic host probe from template metadata.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
-- `.gitignore`
-- `config/README.md`
-- `config/archived_targets.json`
-- `config/targets.json`
-- `config/scaling_gates`
-- tracked removals under the old `config/scaling_gates/*.json` location
-- `records/README.md`
-- `records/scaling_gates/README.md`
-- `records/scaling_gates/*.json`
-- `.gitmodules`
-- `third_party/rtlmeter`
-- every `config/slice_launch_templates/*.json` path referenced by `config/targets.json`
-- every `overlays/rtlmeter/...` path referenced by `config/targets.json`
-- `tests/contract/test_resident_runtime_contract.py`
-- `tests/contract/test_full_ita_mha_larger_paged_kv_next.py`
+- `src/tools/gen_hybrid_config.py`
+- `src/tools/hybrid_config_generator.py`
+- `src/tools/build_host_probe.py`
+- `src/tools/hybrid_host_probe_builder.py`
+- `src/tools/hybrid_template_runner.py`
+- existing `src/tools/run_hybrid_template.py` and `tests/contract/test_hybrid_verilator_like_cli.py` behavior
 
 Exclude from this review boundary:
 
-- `third_party/ITA`
-- `third_party/common_cells`
-- `third_party/ibex`
-- non-rtlmeter overlays such as ITA, ibex, and MobileViT
-- `overlays/rtlmeter/designs/NVDLA`
+- `third_party/ITA`, `third_party/common_cells`, and `third_party/ibex`
+- new NN target templates such as NVDLA, ITA, KV-cache, and LLM SoC kick templates
+- non-rtlmeter overlays such as ITA, ibex, MobileViT, and NVDLA
 - runtime/pass implementation changes under `src/hybrid/` and `src/passes/`
-- broad tool changes under `src/tools/`
-- unrelated local config experiments and generated output under `reports/` and `artifacts/`
+- broad existing-runner changes such as `build_vl_gpu.py`, `run_vl_hybrid.py`, `compare_vl_hybrid_modes.py`, and `gen_vl_gpu_kernel.py`
+- generated output under `reports/`, `artifacts/`, and `work/`
 
 Boundary acceptance:
 
-- `config/scaling_gates` resolves to `../records/scaling_gates`
-- current gate references through `config/scaling_gates/...` still resolve
-- all active target references in `config/targets.json` resolve to present paths
-- `.gitmodules` contains only the `third_party/rtlmeter` submodule for this boundary
-- generated `reports/` and `artifacts/` remain ignored and are not source of truth
-- `python3 -m unittest tests.contract.test_resident_runtime_contract -q` passes
+- `python3 src/tools/gen_hybrid_config.py --target PULP_ITA.demo_cov --top-module demo_cov_tb --overlay overlays/demo/src/demo_cov_tb.sv --dry-run` emits gate, manifest, and template payloads
+- generated templates name `src/tools/build_host_probe.py` as the host-probe builder
+- `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_attention_kv_score.json --shape 64x1 --dry-run` uses the generic host-probe builder and does not require a Makefile target
+- `python3 -m unittest tests.contract.test_hybrid_verilator_like_cli -q` passes
 - `python3 -m unittest discover -s tests/contract -q` passes
 
 ## Archive Boundary
