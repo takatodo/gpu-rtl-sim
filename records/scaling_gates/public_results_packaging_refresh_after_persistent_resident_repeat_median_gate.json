@@ -96,7 +96,9 @@
     "not model-level Transformer inference",
     "not production paged attention",
     "not production KV-cache memory hierarchy",
+    "not cross-process persistent CUDA state",
     "not raw full-state equality",
+    "not paper-grade statistical confidence beyond repeat-count 3 representative medians",
     "reports and artifacts are generated evidence, not source of truth"
   ]
 }

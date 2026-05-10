@@ -97,6 +97,9 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             "records/scaling_gates/public_results_packaging_gate.json",
             "records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json",
             "records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+            "records/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
+            "records/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+            "records/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
             "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",
@@ -106,6 +109,7 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
             "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
             "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+            "reports/persistent_resident_state_abi_repeat_median_summary.json",
             "reports/hybrid_benchmark_mobile_vit_template_limit128.json",
         ):
             self.assertIn(f"include: {path}", stdout)

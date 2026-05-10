@@ -3025,7 +3025,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertEqual(audit["source_packaging_gate"], "config/scaling_gates/public_results_packaging_gate.json")
         self.assertEqual(
             audit["source_refresh_gate"],
-            "config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+            "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
         )
         self.assertTrue(audit["decision"]["externalization_ready"])
         self.assertEqual(audit["results_doc"], "docs/results.md")
@@ -3064,6 +3064,9 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "records/scaling_gates/public_results_packaging_gate.json",
             "records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json",
             "records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+            "records/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
+            "records/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+            "records/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
             "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
             "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
         ):
@@ -3089,6 +3092,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "`docs/results.md` is the external-facing result pack and reader guide",
             "reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json",
             "reports/hybrid_benchmark_mobile_vit_template_limit128.json",
+            "next_goal_selection_after_persistent_resident_repeat_median_gate.json",
+            "persistent_resident_state_abi_repeat_median_measurement_gate.json",
+            "persistent resident repeat-median refresh",
+            "reports/persistent_resident_state_abi_repeat_median_summary.json",
             "not a new measurement result",
         ):
             self.assertIn(token, combined)
@@ -3294,6 +3301,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertFalse(gate["acceptance_policy"]["reports_and_artifacts_are_source_of_truth"])
         self.assertEqual(gate["next_task"], "public_benchmark_pack_externalization_ready")
         self.assertIn("not a new measurement result", gate["non_claims"])
+        self.assertIn("not cross-process persistent CUDA state", gate["non_claims"])
+        self.assertIn("not paper-grade statistical confidence beyond repeat-count 3 representative medians", gate["non_claims"])
         self.assertIn("reports and artifacts are generated evidence, not source of truth", gate["non_claims"])
 
         self.assertEqual(selection["current_priority"], "public_benchmark_pack_externalization_ready")

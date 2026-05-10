@@ -4,11 +4,11 @@
   "status": "ready_for_external_review",
   "current_priority": "public_benchmark_pack_externalization_ready",
   "source_packaging_gate": "config/scaling_gates/public_results_packaging_gate.json",
-  "source_refresh_gate": "config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+  "source_refresh_gate": "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
   "results_doc": "docs/results.md",
   "decision": {
     "externalization_ready": true,
-    "reason": "The public benchmark pack has a reader guide, manifest, dry-run smoke set, release checklist, scoped correctness policy, representative evidence paths, and explicit non-claims."
+    "reason": "The public benchmark pack has a reader guide, manifest, dry-run smoke set, release checklist, scoped correctness policy, representative evidence paths, explicit non-claims, and the persistent resident repeat-median refresh."
   },
   "required_review_surfaces": [
     "README.md",
@@ -19,6 +19,9 @@
     "records/scaling_gates/public_results_packaging_gate.json",
     "records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json",
     "records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+    "records/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
+    "records/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
     "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
     "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json"
   ],

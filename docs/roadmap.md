@@ -267,7 +267,7 @@ Record the completed persistent resident state ABI repeat-median measurement and
 - median GPU kernel total: `4.934624 ms`
 - median hybrid wall per final state-step: `0.001212158203125 ms`
 - document: `docs/results.md`
-- newest evidence: `reports/persistent_resident_state_abi_probe_summary.json`
+- newest evidence: `reports/persistent_resident_state_abi_repeat_median_summary.json`
 - latest MobileViT evidence: `reports/mobile_vit_hybrid_128_summary.json`
 - generic benchmark CLI gate: `config/scaling_gates/generic_hybrid_benchmark_cli_gate.json`
 - generic benchmark summary schema: `python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --summary-out reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json`
