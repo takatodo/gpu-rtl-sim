@@ -263,6 +263,7 @@ The public benchmark pack is ready for external review. The next useful measurem
 - use `reports/persistent_resident_state_abi_probe_summary.json` as the newest persistent resident ABI evidence
 - keep `coverage_output_equivalence` as the correctness policy
 - define `persistent_resident_state_abi_repeat_median_measurement_gate` before changing any runtime or ABI behavior
+- run `python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3 --dry-run` to inspect the next measurement flow
 - keep the long-term goal: make hybrid execution close to Verilator usage while preserving reproducible correctness and speed evidence for LLM-serving-like RTL workloads
 - keep config current-state-only and historical evidence in gates; regenerate reports/artifacts only when needed
 - keep public CLIs thin and tested

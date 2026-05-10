@@ -120,6 +120,12 @@ PERSISTENT_RESIDENT_DEVICE_HANDLE_STORAGE_GATE = (
 PERSISTENT_RESIDENT_DEVICE_HANDLE_STORAGE_REVIEW_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "persistent_resident_device_handle_storage_review_gate.json"
 )
+PERSISTENT_RESIDENT_STATE_ABI_REPEAT_MEDIAN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "persistent_resident_state_abi_repeat_median_measurement_gate.json"
+)
 CANDIDATE_TEMPLATE_SELECTION_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "candidate_template_clean_checkout_selection_gate.json"
 )
@@ -3116,6 +3122,50 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "define_persistent_resident_state_abi_repeat_median_measurement_gate",
             "persistent resident state ABI repeat-median measurement",
             "do not change runtime ABI or add a new workload",
+        ):
+            self.assertIn(token, combined)
+
+    def test_persistent_resident_state_abi_repeat_median_measurement_gate_is_defined(self) -> None:
+        gate = json.loads(PERSISTENT_RESIDENT_STATE_ABI_REPEAT_MEDIAN_GATE.read_text(encoding="utf-8"))
+        combined = "\n".join(
+            [
+                README.read_text(encoding="utf-8"),
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["gate"], "persistent_resident_state_abi_repeat_median_measurement_gate")
+        self.assertEqual(
+            gate["status"],
+            "defined_repeat_median_measurement_for_existing_persistent_resident_abi",
+        )
+        self.assertEqual(gate["shape"], "16x64")
+        self.assertEqual(gate["phases"], 4)
+        self.assertEqual(gate["repeat_count"], 3)
+        self.assertEqual(
+            gate["command"],
+            "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3",
+        )
+        self.assertEqual(
+            gate["dry_run_command"],
+            "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3 --dry-run",
+        )
+        self.assertEqual(gate["summary_report"], "reports/persistent_resident_state_abi_repeat_median_summary.json")
+        self.assertTrue(gate["acceptance_policy"]["coverage_output_equivalence_required"])
+        self.assertFalse(gate["acceptance_policy"]["runtime_or_abi_change_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["new_workload_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["generated_reports_are_source_of_truth"])
+        self.assertIn("hybrid_wall_ms", gate["summary_schema"]["metric_fields"])
+        self.assertIn("not a runtime or ABI change", gate["non_claims"])
+        self.assertIn("not a new workload", gate["non_claims"])
+        self.assertEqual(gate["next_task"], "run_persistent_resident_state_abi_repeat_median_measurement")
+
+        for token in (
+            "persistent_resident_state_abi_repeat_median_measurement_gate.json",
+            "--persistent-resident-state-abi-repeat-median 3",
+            "reports/persistent_resident_state_abi_repeat_median_summary.json",
+            "forbids runtime/ABI changes or new workload claims",
         ):
             self.assertIn(token, combined)
 

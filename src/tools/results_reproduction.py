@@ -872,9 +872,16 @@ def run_resident_state_reuse_experiment(
     return summary
 
 
-def _persistent_resident_state_abi_paths(*, nstates: int, steps: int, phase: int) -> dict[str, Path]:
+def _persistent_resident_state_abi_paths(
+    *,
+    nstates: int,
+    steps: int,
+    phase: int,
+    sample_tag: str | None = None,
+) -> dict[str, Path]:
     cumulative_steps = steps * phase
-    stem = f"pulp_ita_mha_{nstates}x{steps}_persistent_resident_state_abi_phase_{phase}"
+    tag = f"_{sample_tag}" if sample_tag else ""
+    stem = f"pulp_ita_mha_{nstates}x{steps}_persistent_resident_state_abi{tag}_phase_{phase}"
     return {
         "cpu_state": _mha_obj(f"{stem}_cpu_{nstates}x{cumulative_steps}.bin"),
         "gpu_state": _mha_obj(f"{stem}_gpu_dump_{nstates}x{cumulative_steps}.bin"),
@@ -965,14 +972,22 @@ def run_persistent_resident_state_abi_probe(
     steps: int,
     phases: int,
     dry_run: bool,
+    sample_tag: str | None = None,
+    summary_report: Path | None = None,
 ) -> None:
     if phases <= 0:
         raise ValueError("--persistent-resident-state-abi-phases must be positive")
 
     workload = _mha_reuse_workload(nstates=nstates, steps=steps)
-    init_state = _run_init_state(workload, tag="persistent_resident_state_abi", dry_run=dry_run)
+    init_tag = "persistent_resident_state_abi" + (f"_{sample_tag}" if sample_tag else "")
+    init_state = _run_init_state(workload, tag=init_tag, dry_run=dry_run)
     phase_paths = [
-        _persistent_resident_state_abi_paths(nstates=nstates, steps=steps, phase=phase)
+        _persistent_resident_state_abi_paths(
+            nstates=nstates,
+            steps=steps,
+            phase=phase,
+            sample_tag=sample_tag,
+        )
         for phase in range(1, phases + 1)
     ]
     phase_summaries: list[dict[str, object]] = []
@@ -988,7 +1003,8 @@ def run_persistent_resident_state_abi_probe(
         )
         _run_command(phase_cpu_command, dry_run=dry_run)
 
-    hybrid_report = _report(f"pulp_ita_mha_{nstates}x{steps}_persistent_resident_state_abi_multiphase_hybrid.txt")
+    tag = f"_{sample_tag}" if sample_tag else ""
+    hybrid_report = _report(f"pulp_ita_mha_{nstates}x{steps}_persistent_resident_state_abi{tag}_multiphase_hybrid.txt")
     hybrid_command = _persistent_resident_state_abi_multiphase_command(
         workload,
         phases=phases,
@@ -1038,7 +1054,7 @@ def run_persistent_resident_state_abi_probe(
             }
         )
     if dry_run:
-        print("+ write reports/persistent_resident_state_abi_probe_summary.json")
+        print(f"+ write {_display_path(summary_report or _report('persistent_resident_state_abi_probe_summary.json'))}")
         return
 
     summary = {
@@ -1056,7 +1072,101 @@ def run_persistent_resident_state_abi_probe(
         "hybrid_report": _display_path(hybrid_report),
         "phase_reports": phase_summaries,
     }
-    _report("persistent_resident_state_abi_probe_summary.json").write_text(
+    (summary_report or _report("persistent_resident_state_abi_probe_summary.json")).write_text(
+        json.dumps(summary, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def run_persistent_resident_state_abi_repeat_median(
+    *,
+    nstates: int,
+    steps: int,
+    phases: int,
+    repeat_count: int,
+    dry_run: bool,
+) -> None:
+    if repeat_count <= 0:
+        raise ValueError("--persistent-resident-state-abi-repeat-median must be positive")
+    if phases <= 0:
+        raise ValueError("--persistent-resident-state-abi-phases must be positive")
+
+    samples: list[dict[str, object]] = []
+    for sample_index in range(1, repeat_count + 1):
+        if dry_run:
+            print(f"# persistent_resident_state_abi_repeat_median sample {sample_index}/{repeat_count}")
+        run_persistent_resident_state_abi_probe(
+            nstates=nstates,
+            steps=steps,
+            phases=phases,
+            dry_run=dry_run,
+            sample_tag=f"repeat_median_sample_{sample_index}",
+            summary_report=_report(f"persistent_resident_state_abi_repeat_median_sample_{sample_index}.json"),
+        )
+        if dry_run:
+            continue
+
+        base_summary_path = _report(f"persistent_resident_state_abi_repeat_median_sample_{sample_index}.json")
+        base_summary = _json_report(base_summary_path)
+        hybrid_report = REPO_ROOT / str(base_summary["hybrid_report"])
+        hybrid = _parse_hybrid_report(hybrid_report)
+        final_state_step_count = nstates * steps * phases
+        sample = {
+            "sample_index": sample_index,
+            "state_authority": base_summary["state_authority"],
+            "phase_shapes": [phase["shape"] for phase in base_summary["phase_reports"]],
+            "all_coverage_output_passed": base_summary["all_coverage_output_passed"],
+            "max_coverage_output_mismatch_count": base_summary["max_coverage_output_mismatch_count"],
+            "final_state_step_count": final_state_step_count,
+            **hybrid,
+            "gpu_kernel_total_ms_per_final_state_step": hybrid["gpu_kernel_total_ms"] / final_state_step_count,
+            "hybrid_wall_ms_per_final_state_step": hybrid["hybrid_wall_ms"] / final_state_step_count,
+            "source_summary_report": _display_path(base_summary_path),
+            "hybrid_report": base_summary["hybrid_report"],
+        }
+        base_summary["repeat_median_sample"] = sample
+        base_summary_path.write_text(json.dumps(base_summary, indent=2) + "\n", encoding="utf-8")
+        samples.append({**sample, "sample_report": _display_path(base_summary_path)})
+
+    if dry_run:
+        print("+ write reports/persistent_resident_state_abi_repeat_median_summary.json")
+        return
+
+    summary = {
+        "schema_version": 1,
+        "status": "measured_persistent_resident_state_abi_repeat_median",
+        "target": "pulp_ita_mha",
+        "shape": f"{nstates}x{steps}",
+        "phases": phases,
+        "repeat_count": repeat_count,
+        "acceptance_policy": "coverage_output_equivalence",
+        "source_gate": "config/scaling_gates/persistent_resident_device_handle_storage_gate.json",
+        "state_authority": "in_process_gpu_d_storage_after_phase_1",
+        "all_coverage_output_passed": all(sample["all_coverage_output_passed"] for sample in samples),
+        "max_coverage_output_mismatch_count": max(
+            int(sample["max_coverage_output_mismatch_count"]) for sample in samples
+        ),
+        "metrics": {
+            "gpu_kernel_total_ms": _summarize_numbers([float(sample["gpu_kernel_total_ms"]) for sample in samples]),
+            "hybrid_wall_ms": _summarize_numbers([float(sample["hybrid_wall_ms"]) for sample in samples]),
+            "gpu_kernel_total_ms_per_final_state_step": _summarize_numbers(
+                [float(sample["gpu_kernel_total_ms_per_final_state_step"]) for sample in samples]
+            ),
+            "hybrid_wall_ms_per_final_state_step": _summarize_numbers(
+                [float(sample["hybrid_wall_ms_per_final_state_step"]) for sample in samples]
+            ),
+        },
+        "sample_reports": [sample["sample_report"] for sample in samples],
+        "samples": samples,
+        "non_claims": [
+            "not a new workload",
+            "not a runtime or ABI change",
+            "not production LLM serving throughput",
+            "not paper-grade statistical confidence beyond the selected repeat count",
+            "not raw full-state equality",
+        ],
+    }
+    _report("persistent_resident_state_abi_repeat_median_summary.json").write_text(
         json.dumps(summary, indent=2) + "\n",
         encoding="utf-8",
     )

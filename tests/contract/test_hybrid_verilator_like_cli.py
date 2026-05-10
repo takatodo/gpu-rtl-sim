@@ -630,6 +630,38 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
         self.assertIn("reports/persistent_resident_state_abi_probe_summary.json", stdout)
         self.assertIn("--acceptance-policy coverage_output_equivalence", stdout)
 
+    def test_run_results_reproduction_persistent_resident_state_abi_repeat_median_dry_run_prints_flow(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                "src/tools/run_results_reproduction.py",
+                "--persistent-resident-state-abi",
+                "16x64",
+                "--persistent-resident-state-abi-phases",
+                "4",
+                "--persistent-resident-state-abi-repeat-median",
+                "3",
+                "--dry-run",
+            ],
+            cwd=REPO_ROOT,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+
+        stdout = result.stdout
+        self.assertIn("# persistent_resident_state_abi_repeat_median sample 1/3", stdout)
+        self.assertIn("# persistent_resident_state_abi_repeat_median sample 3/3", stdout)
+        self.assertIn("reports/persistent_resident_state_abi_repeat_median_sample_1.json", stdout)
+        self.assertIn("reports/persistent_resident_state_abi_repeat_median_sample_2.json", stdout)
+        self.assertIn("reports/persistent_resident_state_abi_repeat_median_sample_3.json", stdout)
+        self.assertIn("persistent_resident_state_abi_repeat_median_sample_1_phase_1_cpu_16x64.json", stdout)
+        self.assertIn("persistent_resident_state_abi_repeat_median_sample_3_multiphase_hybrid.txt", stdout)
+        self.assertIn("reports/persistent_resident_state_abi_repeat_median_summary.json", stdout)
+        self.assertIn("--persistent-resident-state-abi-handle pulp_ita_mha_16x64", stdout)
+        self.assertIn("--persistent-resident-state-abi-phases 4", stdout)
+        self.assertNotIn("--persistent-resident-state-abi-phase 2 --init-state", stdout)
+
     def test_run_results_reproduction_mobile_vit_imagenet_128_dry_run_prints_flow(self) -> None:
         result = subprocess.run(
             [

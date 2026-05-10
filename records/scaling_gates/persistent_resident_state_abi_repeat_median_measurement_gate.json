@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "gate": "persistent_resident_state_abi_repeat_median_measurement_gate",
+  "status": "defined_repeat_median_measurement_for_existing_persistent_resident_abi",
+  "source_selection_gate": "config/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json",
+  "source_measurement_gate": "config/scaling_gates/persistent_resident_device_handle_storage_gate.json",
+  "objective": "Measure repeat-median timing for the existing persistent resident state ABI path without changing runtime ABI or adding a new workload.",
+  "target": "pulp_ita_mha",
+  "shape": "16x64",
+  "phases": 4,
+  "repeat_count": 3,
+  "command": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3",
+  "dry_run_command": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3 --dry-run",
+  "summary_report": "reports/persistent_resident_state_abi_repeat_median_summary.json",
+  "sample_report_pattern": "reports/persistent_resident_state_abi_repeat_median_sample_<N>.json",
+  "acceptance_policy": {
+    "coverage_output_equivalence_required": true,
+    "all_samples_must_pass_coverage_output_equivalence": true,
+    "raw_full_state_equality_required": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "generated_reports_are_source_of_truth": false
+  },
+  "summary_schema": {
+    "required_fields": [
+      "schema_version",
+      "status",
+      "target",
+      "shape",
+      "phases",
+      "repeat_count",
+      "acceptance_policy",
+      "state_authority",
+      "all_coverage_output_passed",
+      "max_coverage_output_mismatch_count",
+      "metrics",
+      "sample_reports",
+      "samples",
+      "non_claims"
+    ],
+    "metric_fields": [
+      "gpu_kernel_total_ms",
+      "hybrid_wall_ms",
+      "gpu_kernel_total_ms_per_final_state_step",
+      "hybrid_wall_ms_per_final_state_step"
+    ]
+  },
+  "state_authority": "in_process_gpu_d_storage_after_phase_1",
+  "non_claims": [
+    "not a new workload",
+    "not a runtime or ABI change",
+    "not cross-process persistent CUDA state",
+    "not production LLM serving throughput",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "not raw full-state equality"
+  ],
+  "next_task": "run_persistent_resident_state_abi_repeat_median_measurement"
+}

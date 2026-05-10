@@ -260,6 +260,8 @@ Define the next measurement boundary after the refreshed public benchmark pack b
 - next-goal selection gate: `config/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json`
 - selected next measurement goal: `persistent_resident_state_abi_repeat_median`
 - first required gate: `persistent_resident_state_abi_repeat_median_measurement_gate`
+- dry-run: `python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3 --dry-run`
+- planned report: `reports/persistent_resident_state_abi_repeat_median_summary.json`
 - document: `docs/results.md`
 - newest evidence: `reports/persistent_resident_state_abi_probe_summary.json`
 - latest MobileViT evidence: `reports/mobile_vit_hybrid_128_summary.json`
@@ -350,6 +352,7 @@ Acceptance criteria:
 - review `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
 - reuse the existing persistent resident state ABI entrypoint
 - measure repeat-median timing for the existing `16x64` four-phase path before changing runtime ABI
+- write `reports/persistent_resident_state_abi_repeat_median_summary.json`
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
 - keep resident execution optimization deferred to its own runtime/ABI gates

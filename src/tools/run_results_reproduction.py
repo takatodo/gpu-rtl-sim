@@ -11,6 +11,7 @@ from results_reproduction import (
     run_mobile_vit_imagenet_128_reproduction,
     run_public_pack_archive_plan,
     run_persistent_resident_state_abi_probe,
+    run_persistent_resident_state_abi_repeat_median,
     run_reproduction_plan,
     run_resident_batch_sweep,
     run_resident_state_reuse_experiment,
@@ -74,6 +75,15 @@ def main(argv: list[str] | None = None) -> int:
         help="Number of persistent resident state ABI phases to plan.",
     )
     parser.add_argument(
+        "--persistent-resident-state-abi-repeat-median",
+        type=int,
+        metavar="N",
+        help=(
+            "Repeat the existing persistent resident state ABI measurement N times "
+            "and write reports/persistent_resident_state_abi_repeat_median_summary.json."
+        ),
+    )
+    parser.add_argument(
         "--mobile-vit-imagenet-128",
         action="store_true",
         help="Run the MobileViT ImageNet local-cache limit-128 CPU-kick plus hybrid proxy reproduction.",
@@ -90,6 +100,17 @@ def main(argv: list[str] | None = None) -> int:
             run_public_pack_archive_plan(dry_run=args.dry_run)
         elif args.mobile_vit_imagenet_128:
             run_mobile_vit_imagenet_128_reproduction(dry_run=args.dry_run)
+        elif args.persistent_resident_state_abi_repeat_median is not None:
+            if args.persistent_resident_state_abi is None:
+                raise ValueError("--persistent-resident-state-abi-repeat-median requires --persistent-resident-state-abi SHAPE")
+            nstates, steps = parse_shape(args.persistent_resident_state_abi)
+            run_persistent_resident_state_abi_repeat_median(
+                nstates=nstates,
+                steps=steps,
+                phases=args.persistent_resident_state_abi_phases,
+                repeat_count=args.persistent_resident_state_abi_repeat_median,
+                dry_run=args.dry_run,
+            )
         elif args.persistent_resident_state_abi is not None:
             nstates, steps = parse_shape(args.persistent_resident_state_abi)
             run_persistent_resident_state_abi_probe(
