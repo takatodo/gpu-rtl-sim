@@ -192,6 +192,12 @@ PULP_ITA_MHA_FIRST_GENERIC_HOST_PROBE_BUILD_RUN_COMPARE_GATE = (
     / "scaling_gates"
     / "pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json"
 )
+PULP_ITA_MHA_SHAPE_EXPANSION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "pulp_ita_mha_shape_expansion_gate.json"
+)
 REPEAT_MEDIAN_RESULTS_SUMMARY = REPO_ROOT / "reports" / "results_reproduction_median_summary.json"
 RESIDENT_BATCH_SWEEP_SUMMARY = REPO_ROOT / "reports" / "resident_batch_sweep_summary.json"
 RESIDENT_STATE_REUSE_SUMMARY = REPO_ROOT / "reports" / "resident_state_reuse_experiment_summary.json"
@@ -1987,6 +1993,133 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         ):
             self.assertIn(token, combined_docs)
 
+    def test_pulp_ita_mha_shape_expansion_records_32x1_and_1x32(self) -> None:
+        gate = json.loads(PULP_ITA_MHA_SHAPE_EXPANSION_GATE.read_text(encoding="utf-8"))
+        combined_docs = "\n".join(
+            [
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["status"], "all_planned_shapes_passed_coverage_output_equivalence")
+        self.assertEqual(
+            gate["source_gate"],
+            "config/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
+        )
+        self.assertEqual(gate["target"], "PULP_ITA.pulp_ita_mha")
+        self.assertEqual(gate["active_seed"], "pulp_ita_mha")
+        self.assertEqual(gate["planned_shapes"], ["32x1", "1x32"])
+        self.assertEqual(gate["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertFalse(gate["makefile_target_required"])
+        self.assertEqual(gate["acceptance_policy"], "coverage_output_equivalence")
+        self.assertTrue(gate["result_summary"]["all_planned_shapes_passed_coverage_output_equivalence"])
+        self.assertEqual(gate["result_summary"]["max_coverage_output_mismatch_count"], 0)
+        self.assertIn("32x1 state-parallel", gate["result_summary"]["trend"])
+        self.assertIn("1x32 single-state", gate["result_summary"]["trend"])
+
+        coverage = gate["coverage_output_contract"]
+        self.assertEqual(
+            coverage["coverage_gate"],
+            "config/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
+        )
+        self.assertEqual(coverage["coverage_output_target"], "pulp_ita_mha")
+        self.assertEqual(coverage["strict_output_word_count_per_state"], 29)
+        self.assertEqual(coverage["strict_output_byte_count_per_state"], 116)
+        self.assertEqual(coverage["manifest_covered_word_count"], 18)
+
+        shapes = {entry["shape"]: entry for entry in gate["measured_shapes"]}
+        self.assertEqual(set(shapes), {"32x1", "1x32"})
+        self.assertEqual(shapes["32x1"]["nstates"], 32)
+        self.assertEqual(shapes["32x1"]["steps"], 1)
+        self.assertEqual(shapes["32x1"]["coverage_output_mismatch_count"], 0)
+        self.assertEqual(shapes["32x1"]["coverage_output_compared_state_pair_count"], 32)
+        self.assertEqual(shapes["32x1"]["coverage_output_compared_word_count"], 928)
+        self.assertEqual(shapes["32x1"]["coverage_output_compared_byte_count"], 3712)
+        self.assertEqual(shapes["32x1"]["cpu_elapsed_ms"], 72.0539)
+        self.assertEqual(shapes["32x1"]["hybrid_gpu_kernel_time_ms_total"], 0.848896)
+        self.assertEqual(shapes["32x1"]["hybrid_wall_time_ms"], 0.877)
+        self.assertGreater(shapes["32x1"]["cpu_to_hybrid_wall_speedup_ratio"], 80.0)
+        self.assertFalse(shapes["32x1"]["raw_full_state_match"])
+
+        self.assertEqual(shapes["1x32"]["nstates"], 1)
+        self.assertEqual(shapes["1x32"]["steps"], 32)
+        self.assertEqual(shapes["1x32"]["coverage_output_mismatch_count"], 0)
+        self.assertEqual(shapes["1x32"]["coverage_output_compared_state_pair_count"], 1)
+        self.assertEqual(shapes["1x32"]["coverage_output_compared_word_count"], 29)
+        self.assertEqual(shapes["1x32"]["coverage_output_compared_byte_count"], 116)
+        self.assertEqual(shapes["1x32"]["cpu_elapsed_ms"], 2.93625)
+        self.assertEqual(shapes["1x32"]["hybrid_gpu_kernel_time_ms_total"], 1.42336)
+        self.assertEqual(shapes["1x32"]["hybrid_wall_time_ms"], 1.453)
+        self.assertGreater(shapes["1x32"]["cpu_to_hybrid_wall_speedup_ratio"], 2.0)
+        self.assertLess(
+            shapes["1x32"]["cpu_to_hybrid_wall_speedup_ratio"],
+            shapes["32x1"]["cpu_to_hybrid_wall_speedup_ratio"],
+        )
+        self.assertFalse(shapes["1x32"]["raw_full_state_match"])
+
+        for shape, entry in shapes.items():
+            with self.subTest(shape=shape):
+                self.assertTrue(entry["coverage_output_equivalence_passed"])
+                self.assertTrue(entry["normalized_final_state_equivalence_passed"])
+                self.assertEqual(
+                    entry["raw_full_state_mismatch_role_summary"]["verilator_internal"]["field_count"],
+                    4,
+                )
+                if (REPO_ROOT / entry["coverage_output_compare_report"]).exists():
+                    report = json.loads((REPO_ROOT / entry["coverage_output_compare_report"]).read_text(encoding="utf-8"))
+                    self.assertTrue(report["selected_acceptance_policy"]["passed"])
+                    self.assertEqual(report["coverage_output_policy"]["mismatch_count"], 0)
+
+        dry_run_32 = subprocess.run(
+            [
+                "python3",
+                "src/tools/run_hybrid_template.py",
+                "config/slice_launch_templates/pulp_ita_mha.json",
+                "--shape",
+                "32x1",
+                "--dry-run",
+            ],
+            cwd=REPO_ROOT,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        dry_run_1x32 = subprocess.run(
+            [
+                "python3",
+                "src/tools/run_hybrid_template.py",
+                "config/slice_launch_templates/pulp_ita_mha.json",
+                "--shape",
+                "1x32",
+                "--dry-run",
+            ],
+            cwd=REPO_ROOT,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        for stdout in (dry_run_32.stdout, dry_run_1x32.stdout):
+            self.assertIn("python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_mha.json", stdout)
+            self.assertIn("--coverage-output-target pulp_ita_mha", stdout)
+            self.assertNotIn("make -C src/hybrid pulp_ita_mha_host_probe", stdout)
+
+        self.assertFalse(gate["acceptance_policy_summary"]["broad_speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(gate["acceptance_policy_summary"]["production_llm_serving_claim_allowed_by_gate_alone"])
+        self.assertFalse(gate["acceptance_policy_summary"]["second_active_ita_seed_allowed_by_gate"])
+        self.assertEqual(gate["next_task"], "review_pulp_ita_mha_shape_expansion_and_select_next_workload_or_hold")
+        self.assertIn("not broad modern-NN speedup", gate["non_claims"])
+        self.assertIn("not production LLM-serving throughput", gate["non_claims"])
+
+        for token in (
+            "pulp_ita_mha_shape_expansion_gate.json",
+            "Both shapes pass CPU-vs-hybrid `coverage_output_equivalence` with mismatch count `0`",
+            "`32x1` has CPU elapsed `72.0539 ms` and hybrid wall `0.877 ms`",
+            "`1x32` has CPU elapsed `2.93625 ms` and hybrid wall `1.453 ms`",
+            "review_pulp_ita_mha_shape_expansion_and_select_next_workload_or_hold",
+        ):
+            self.assertIn(token, combined_docs)
+
     def test_candidate_template_clean_checkout_selection_gate_selects_nvdla_first(self) -> None:
         gate = json.loads(CANDIDATE_TEMPLATE_SELECTION_GATE.read_text(encoding="utf-8"))
         combined_docs = "\n".join(
@@ -2590,8 +2723,9 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_softmax_top_shape_expansion_review_gate.json",
             "pulp_ita_mha_dependency_template_boundary_gate.json",
             "pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
-            "next_task: run_pulp_ita_mha_shape_expansion_gate",
-            "Review only the `pulp_ita_mha` shape expansion boundary",
+            "pulp_ita_mha_shape_expansion_gate.json",
+            "next_task: review_pulp_ita_mha_shape_expansion_and_select_next_workload_or_hold",
+            "Review only the completed `pulp_ita_mha` shape expansion evidence",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
@@ -2606,6 +2740,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "records/scaling_gates/pulp_ita_softmax_top_shape_expansion_review_gate.json",
             "records/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
             "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
+            "records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
             "config/slice_launch_templates/pulp_ita_mha.json",
             "overlays/ITA/src/pulp_ita_tc_sram_sim.sv",
             "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
@@ -2632,7 +2767,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "third_party/ITA`, `third_party/common_cells`, and `third_party/ibex` edits beyond validating required source paths",
             "third_party/ibex",
             "additional NVDLA targets beyond `nvdla_cmac_core_mac`",
-            "`ita_softmax_top`, full MHA, KV-cache, LLM SoC, and MobileViT candidate templates and overlays",
+            "`ita_softmax_top`, KV-cache, LLM SoC, and MobileViT candidate templates and overlays",
             "MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests",
             "runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`",
             "generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`",
@@ -2662,6 +2797,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "PULP ITA MHA dependency/template boundary gate keeps first full MHA measurement separate from boundary definition",
             "PULP ITA MHA first build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`",
             "PULP ITA MHA first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch",
+            "PULP ITA MHA shape expansion gate records `32x1` and `1x32` coverage-output pass with mismatch count `0`",
+            "PULP ITA MHA shape expansion gate records `32x1` as much more favorable than `1x32` in scoped single-run timing",
             "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "`run_hybrid_template.py` passes template `verilator_defines` into the Verilator command",

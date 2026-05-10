@@ -329,25 +329,21 @@ Tracked evidence:
 
 Recommended next gate:
 
-`run_pulp_ita_mha_shape_expansion_gate`
+`review_pulp_ita_mha_shape_expansion_and_select_next_workload_or_hold`
 
 Acceptance criteria:
 
-- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 32x1`
-- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x32`
-- build the host probe through `src/tools/build_host_probe.py`, not `src/hybrid/Makefile`
-- compare CPU vs hybrid with `coverage_output_equivalence`
-- require mismatch count `0` before any timing trend language
-- PULP ITA MHA first build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
-- PULP ITA MHA first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch
-- record state-parallel and repeated-step timing as scoped full ITA/MHA evidence only
-- keep KV-cache, LLM SoC, MobileViT, and runtime changes out of this shape expansion gate
+- review `config/scaling_gates/pulp_ita_mha_shape_expansion_gate.json`
+- confirm `32x1` and `1x32` both passed `coverage_output_equivalence` with mismatch count `0`
+- confirm the timing trend is scoped to this full ITA/MHA seed only
+- decide whether the next workload should be paged attention/KV-cache scale-up, resident execution optimization, or result packaging
+- keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the review
 
 Working tree review boundary:
 
-`next_task: run_pulp_ita_mha_shape_expansion_gate`
+`next_task: review_pulp_ita_mha_shape_expansion_and_select_next_workload_or_hold`
 
-Review only the `pulp_ita_mha` shape expansion boundary after the 1x1 generic-host-probe build/run/compare pass. Do not mix in KV-cache, runtime changes, or generated outputs.
+Review only the completed `pulp_ita_mha` shape expansion evidence and choose the next gate. Do not mix in new KV-cache, runtime, or MobileViT edits until the next workload is selected explicitly.
 
 Review/stage boundary:
 
@@ -364,6 +360,7 @@ Review/stage boundary:
 - `records/scaling_gates/pulp_ita_softmax_top_shape_expansion_review_gate.json`
 - `records/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json`
 - `records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`
+- `records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json`
 - `config/slice_launch_templates/pulp_ita_mha.json`
 - `overlays/ITA/src/pulp_ita_tc_sram_sim.sv`
 - `overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv`
@@ -393,7 +390,7 @@ Exclude from this review boundary:
 - `src/hybrid/Makefile`
 - `third_party/ITA`, `third_party/common_cells`, and `third_party/ibex` edits beyond validating required source paths
 - additional NVDLA targets beyond `nvdla_cmac_core_mac`
-- `ita_softmax_top`, full MHA, KV-cache, LLM SoC, and MobileViT candidate templates and overlays
+- `ita_softmax_top`, KV-cache, LLM SoC, and MobileViT candidate templates and overlays
 - MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests
 - runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`
 - generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`
@@ -426,6 +423,10 @@ Boundary acceptance:
 - PULP ITA softmax-top shape expansion review gate keeps full MHA measurement separate from boundary definition
 - PULP ITA MHA dependency/template boundary gate carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - PULP ITA MHA dependency/template boundary gate keeps first full MHA measurement separate from boundary definition
+- PULP ITA MHA first build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
+- PULP ITA MHA first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch
+- PULP ITA MHA shape expansion gate records `32x1` and `1x32` coverage-output pass with mismatch count `0`
+- PULP ITA MHA shape expansion gate records `32x1` as much more favorable than `1x32` in scoped single-run timing
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command
