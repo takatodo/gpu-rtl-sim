@@ -329,22 +329,25 @@ Tracked evidence:
 
 Recommended next gate:
 
-`run_pulp_ita_mha_first_generic_host_probe_build_run_compare_gate`
+`run_pulp_ita_mha_shape_expansion_gate`
 
 Acceptance criteria:
 
-- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1`
+- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 32x1`
+- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x32`
 - build the host probe through `src/tools/build_host_probe.py`, not `src/hybrid/Makefile`
 - compare CPU vs hybrid with `coverage_output_equivalence`
-- require mismatch count `0` before any timing or speedup language
-- keep `32x1` and `1x32` as planned followup shapes after `1x1` passes
-- keep KV-cache, LLM SoC, MobileViT, and runtime changes out of the first full ITA/MHA measurement gate
+- require mismatch count `0` before any timing trend language
+- PULP ITA MHA first build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
+- PULP ITA MHA first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch
+- record state-parallel and repeated-step timing as scoped full ITA/MHA evidence only
+- keep KV-cache, LLM SoC, MobileViT, and runtime changes out of this shape expansion gate
 
 Working tree review boundary:
 
-`next_task: run_pulp_ita_mha_first_generic_host_probe_build_run_compare_gate`
+`next_task: run_pulp_ita_mha_shape_expansion_gate`
 
-Review only the first `pulp_ita_mha` generic-host-probe build/run/compare boundary. Do not mix in KV-cache, runtime changes, or generated outputs.
+Review only the `pulp_ita_mha` shape expansion boundary after the 1x1 generic-host-probe build/run/compare pass. Do not mix in KV-cache, runtime changes, or generated outputs.
 
 Review/stage boundary:
 
@@ -360,6 +363,7 @@ Review/stage boundary:
 - `records/scaling_gates/pulp_ita_softmax_top_shape_expansion_gate.json`
 - `records/scaling_gates/pulp_ita_softmax_top_shape_expansion_review_gate.json`
 - `records/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json`
+- `records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`
 - `config/slice_launch_templates/pulp_ita_mha.json`
 - `overlays/ITA/src/pulp_ita_tc_sram_sim.sv`
 - `overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv`

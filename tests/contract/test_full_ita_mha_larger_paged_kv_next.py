@@ -186,6 +186,12 @@ PULP_ITA_MHA_DEPENDENCY_TEMPLATE_BOUNDARY_GATE = (
     / "scaling_gates"
     / "pulp_ita_mha_dependency_template_boundary_gate.json"
 )
+PULP_ITA_MHA_FIRST_GENERIC_HOST_PROBE_BUILD_RUN_COMPARE_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json"
+)
 REPEAT_MEDIAN_RESULTS_SUMMARY = REPO_ROOT / "reports" / "results_reproduction_median_summary.json"
 RESIDENT_BATCH_SWEEP_SUMMARY = REPO_ROOT / "reports" / "resident_batch_sweep_summary.json"
 RESIDENT_STATE_REUSE_SUMMARY = REPO_ROOT / "reports" / "resident_state_reuse_experiment_summary.json"
@@ -1851,6 +1857,20 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertEqual(gate["coverage_output_contract"]["manifest_region_words"]["count"], 18)
         self.assertEqual(gate["coverage_output_contract"]["total_words_per_state"], 29)
         self.assertEqual(gate["coverage_output_contract"]["total_bytes_per_state"], 116)
+        target_scope = gate["target_scope"][0]
+        self.assertEqual(target_scope["target"], "pulp_ita_mha")
+        self.assertEqual(target_scope["status"], "promoted_full_ita_mha_dependency_template_boundary")
+        self.assertEqual(target_scope["launch_template"], "config/slice_launch_templates/pulp_ita_mha.json")
+        self.assertEqual(target_scope["coverage_manifest"], "overlays/ITA/tests/pulp_ita_mha_coverage_regions.json")
+        self.assertEqual(target_scope["mdir"], "artifacts/pulp_ita_mha_obj_dir")
+        self.assertEqual(
+            target_scope["cpu_reference_state"],
+            "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_cpu_repeat_1x1.bin",
+        )
+        self.assertEqual(
+            target_scope["gpu_candidate_state"],
+            "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_gpu_from_cpu_init_1x1.bin",
+        )
         self.assertEqual(
             gate["required_next_gate"]["name"],
             "run_pulp_ita_mha_first_generic_host_probe_build_run_compare_gate",
@@ -1886,6 +1906,84 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "src/tools/build_host_probe.py",
             "next_task is `run_pulp_ita_mha_first_generic_host_probe_build_run_compare_gate`",
             "not full ITA/MHA build/run/compare yet",
+        ):
+            self.assertIn(token, combined_docs)
+
+    def test_pulp_ita_mha_first_generic_host_probe_build_run_compare_passed_1x1(self) -> None:
+        gate = json.loads(PULP_ITA_MHA_FIRST_GENERIC_HOST_PROBE_BUILD_RUN_COMPARE_GATE.read_text(encoding="utf-8"))
+        combined_docs = "\n".join(
+            [
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["status"], "minimal_1x1_build_run_compare_passed_coverage_output_equivalence")
+        self.assertEqual(
+            gate["source_gate"],
+            "config/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
+        )
+        self.assertEqual(gate["target"], "PULP_ITA.pulp_ita_mha")
+        self.assertEqual(gate["active_seed"], "pulp_ita_mha")
+        self.assertEqual(gate["shape"], "1x1")
+        self.assertEqual(
+            gate["command"],
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1",
+        )
+        self.assertEqual(gate["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertFalse(gate["makefile_target_required"])
+        for step, passed in gate["build_run_compare_steps"].items():
+            with self.subTest(step=step):
+                self.assertTrue(passed)
+
+        coverage = gate["coverage_output_contract"]
+        self.assertEqual(coverage["coverage_output_target"], "pulp_ita_mha")
+        self.assertEqual(coverage["acceptance_policy"], "coverage_output_equivalence")
+        self.assertEqual(coverage["compared_word_count"], 29)
+        self.assertEqual(coverage["compared_byte_count"], 116)
+        self.assertEqual(coverage["manifest_covered_word_count"], 18)
+
+        measured = gate["measured_shape"]
+        self.assertEqual(measured["shape"], "1x1")
+        self.assertEqual(measured["nstates"], 1)
+        self.assertEqual(measured["steps"], 1)
+        self.assertEqual(measured["storage_size_bytes"], 6144)
+        self.assertFalse(measured["raw_full_state_match"])
+        self.assertEqual(measured["raw_full_state_mismatch_count"], 32)
+        self.assertEqual(
+            measured["raw_full_state_mismatch_role_summary"]["verilator_internal"]["mismatch_bytes"],
+            32,
+        )
+        self.assertTrue(measured["normalized_final_state_equivalence_passed"])
+        self.assertTrue(measured["coverage_output_equivalence_passed"])
+        self.assertEqual(measured["coverage_output_mismatch_count"], 0)
+        self.assertEqual(measured["cpu_elapsed_ms"], 2.91612)
+        self.assertEqual(measured["hybrid_gpu_kernel_time_ms_total"], 0.856064)
+        self.assertEqual(measured["hybrid_wall_time_ms"], 0.891)
+
+        self.assertTrue(gate["acceptance_policy"]["coverage_output_equivalence_gate_passed"])
+        self.assertFalse(gate["acceptance_policy"]["raw_full_state_match_required"])
+        self.assertFalse(gate["acceptance_policy"]["speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(gate["acceptance_policy"]["shape_expansion_claim_allowed_by_gate_alone"])
+        self.assertEqual(gate["next_task"], "run_pulp_ita_mha_shape_expansion_gate")
+        self.assertIn("not shape expansion evidence", gate["non_claims"])
+        self.assertEqual([entry["shape"] for entry in gate["deferred_shapes"]], ["32x1", "1x32"])
+
+        if (REPO_ROOT / measured["coverage_output_compare_report"]).exists():
+            report = json.loads((REPO_ROOT / measured["coverage_output_compare_report"]).read_text(encoding="utf-8"))
+            self.assertTrue(report["selected_acceptance_policy"]["passed"])
+            self.assertEqual(report["selected_acceptance_policy"]["name"], "coverage_output_equivalence")
+            self.assertEqual(report["coverage_output_policy"]["mismatch_count"], 0)
+            self.assertEqual(report["coverage_output_policy"]["compared_word_count"], 29)
+            self.assertEqual(report["coverage_output_policy"]["compared_byte_count"], 116)
+
+        for token in (
+            "pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
+            "selected policy is `coverage_output_equivalence`",
+            "mismatch count `0`",
+            "Raw full-state equality remains false",
+            "pulp_ita_mha_shape_expansion_gate",
+            "run_pulp_ita_mha_shape_expansion_gate",
         ):
             self.assertIn(token, combined_docs)
 
@@ -2491,8 +2589,9 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_softmax_top_shape_expansion_gate.json",
             "pulp_ita_softmax_top_shape_expansion_review_gate.json",
             "pulp_ita_mha_dependency_template_boundary_gate.json",
-            "next_task: run_pulp_ita_mha_first_generic_host_probe_build_run_compare_gate",
-            "Review only the first `pulp_ita_mha` generic-host-probe build/run/compare boundary",
+            "pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
+            "next_task: run_pulp_ita_mha_shape_expansion_gate",
+            "Review only the `pulp_ita_mha` shape expansion boundary",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
@@ -2506,6 +2605,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "records/scaling_gates/pulp_ita_softmax_top_shape_expansion_gate.json",
             "records/scaling_gates/pulp_ita_softmax_top_shape_expansion_review_gate.json",
             "records/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
+            "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
             "config/slice_launch_templates/pulp_ita_mha.json",
             "overlays/ITA/src/pulp_ita_tc_sram_sim.sv",
             "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
@@ -2560,6 +2660,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "PULP ITA softmax-top shape expansion review gate keeps full MHA measurement separate from boundary definition",
             "PULP ITA MHA dependency/template boundary gate carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "PULP ITA MHA dependency/template boundary gate keeps first full MHA measurement separate from boundary definition",
+            "PULP ITA MHA first build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`",
+            "PULP ITA MHA first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch",
             "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "`run_hybrid_template.py` passes template `verilator_defines` into the Verilator command",

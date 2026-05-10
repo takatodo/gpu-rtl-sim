@@ -62,6 +62,17 @@
     "makefile_target_required": false,
     "verilator_mode": "flattened"
   },
+  "target_scope": [
+    {
+      "target": "pulp_ita_mha",
+      "status": "promoted_full_ita_mha_dependency_template_boundary",
+      "launch_template": "config/slice_launch_templates/pulp_ita_mha.json",
+      "coverage_manifest": "overlays/ITA/tests/pulp_ita_mha_coverage_regions.json",
+      "mdir": "artifacts/pulp_ita_mha_obj_dir",
+      "cpu_reference_state": "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_cpu_repeat_1x1.bin",
+      "gpu_candidate_state": "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_gpu_from_cpu_init_1x1.bin"
+    }
+  ],
   "template_contract": {
     "target": "PULP_ITA.pulp_ita_mha",
     "top_module": "pulp_ita_mha_gpu_cov_tb",

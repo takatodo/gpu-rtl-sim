@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "gate": "pulp_ita_mha_first_generic_host_probe_build_run_compare_gate",
+  "objective": "Run the first pulp_ita_mha 1x1 build/run/compare measurement through the generic host-probe builder path.",
+  "status": "minimal_1x1_build_run_compare_passed_coverage_output_equivalence",
+  "source_gate": "config/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
+  "target": "PULP_ITA.pulp_ita_mha",
+  "active_seed": "pulp_ita_mha",
+  "shape": "1x1",
+  "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1",
+  "template": "config/slice_launch_templates/pulp_ita_mha.json",
+  "upstream_source": "third_party/ITA/src/ita.sv",
+  "host_probe_builder": "src/tools/build_host_probe.py",
+  "makefile_target_required": false,
+  "build_run_compare_steps": {
+    "verilator_build": true,
+    "generic_host_probe_build": true,
+    "gpu_cubin_build": true,
+    "cpu_reference_run": true,
+    "hybrid_run": true,
+    "cpu_vs_hybrid_compare": true
+  },
+  "coverage_output_contract": {
+    "coverage_gate": "config/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
+    "coverage_output_target": "pulp_ita_mha",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "manifest_covered_word_count": 18
+  },
+  "measured_shape": {
+    "shape": "1x1",
+    "nstates": 1,
+    "steps": 1,
+    "storage_size_bytes": 6144,
+    "cpu_report": "reports/pulp_ita_mha_cpu_repeat_1x1.json",
+    "hybrid_report": "reports/pulp_ita_mha_hybrid_1x1.txt",
+    "coverage_output_compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "cpu_elapsed_ms": 2.91612,
+    "hybrid_gpu_kernel_time_ms_total": 0.856064,
+    "hybrid_wall_time_ms": 0.891,
+    "raw_full_state_match": false,
+    "raw_full_state_mismatch_count": 32,
+    "raw_full_state_mismatch_role_summary": {
+      "verilator_internal": {
+        "field_count": 4,
+        "mismatch_bytes": 32
+      }
+    },
+    "normalized_final_state_equivalence_passed": true,
+    "coverage_output_equivalence_passed": true,
+    "coverage_output_mismatch_count": 0
+  },
+  "acceptance_policy": {
+    "coverage_output_equivalence_required": true,
+    "coverage_output_equivalence_gate_passed": true,
+    "raw_full_state_match_required": false,
+    "generic_host_probe_builder_required": true,
+    "makefile_host_probe_target_allowed": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "shape_expansion_claim_allowed_by_gate_alone": false,
+    "only_one_active_ita_seed": true
+  },
+  "deferred_shapes": [
+    {
+      "shape": "32x1",
+      "reason": "state-parallel full ITA/MHA timing characterization belongs in a shape expansion gate"
+    },
+    {
+      "shape": "1x32",
+      "reason": "single-state repeated-step full ITA/MHA timing characterization belongs in a shape expansion gate"
+    }
+  ],
+  "required_next_gate": {
+    "name": "pulp_ita_mha_shape_expansion_gate",
+    "planned_shapes": [
+      "32x1",
+      "1x32"
+    ],
+    "scope": "Measure state-parallel and repeated-step full ITA/MHA timing tendency only after the 1x1 generic-host-probe path has passed coverage-output equivalence."
+  },
+  "review_boundary": [
+    "docs/roadmap.md",
+    "docs/status.md",
+    "records/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
+    "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+  ],
+  "next_task": "run_pulp_ita_mha_shape_expansion_gate",
+  "non_claims": [
+    "not shape expansion evidence",
+    "not production ITA/MHA integration",
+    "not model-level Transformer inference",
+    "not production memory hierarchy",
+    "not production LLM-serving throughput",
+    "not broad modern-NN speedup",
+    "not correctness beyond scoped coverage-output words",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
