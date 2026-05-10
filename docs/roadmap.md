@@ -70,6 +70,14 @@ Current strongest next stage:
 
 `Hold the refreshed public benchmark pack for review after publishing the wrapper summary schema, then choose whether to externalize results or open a new measurement goal.`
 
+Candidate-template selection gate:
+
+- `config/scaling_gates/candidate_template_clean_checkout_selection_gate.json`
+- selected primary: `NVDLA.nvdla_cmac_core_mac`
+- selected secondary: `NVDLA.nvdla_cmac_a2cacc`
+- deferred before promotion: PULP ITA / LLM-serving RTL, MobileViT CPU-kick, and Ibex LLM SoC kick
+- reason: only the selected NVDLA candidates are clean-checkout-ready in this boundary using tracked `third_party/rtlmeter` plus `src/tools/build_host_probe.py` without adding Makefile host-probe targets
+
 Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
@@ -218,26 +226,30 @@ Tracked evidence:
 
 Recommended next gate:
 
-`nvdla_cmac_core_mac_candidate_template_boundary`
+`nvdla_cmac_core_mac_minimal_build_run_compare_gate`
 
 Acceptance criteria:
 
-- add the NVDLA `cmac_core_mac` candidate launch template, overlay, and coverage manifest as a source-backed candidate
+- start from the selected candidate in `config/scaling_gates/candidate_template_clean_checkout_selection_gate.json`
+- keep `NVDLA.nvdla_cmac_core_mac` as the primary next candidate
 - use existing `third_party/rtlmeter` NVDLA source only; do not add new third-party submodules
 - use `build.host_probe_builder: src/tools/build_host_probe.py` metadata instead of adding a Makefile target
-- keep this as a candidate template, not a CPU-vs-hybrid benchmark or speedup claim
+- advance from template-only toward minimal build/run/compare evidence
+- keep any result scoped to coverage-output equivalence; do not make a speedup claim from template existence
 - keep the larger flattened DesignWare-dependent source list explicit in the template
 - leave ITA dotp, ITA softmax, KV-cache, LLM SoC, MobileViT, and non-NVDLA targets out of this boundary
 
 Working tree review boundary:
 
-`next_task: nvdla_cmac_core_mac_candidate_template_boundary`
+`next_task: nvdla_cmac_core_mac_minimal_build_run_compare_gate`
 
-Review only the NVDLA `cmac_core_mac` candidate template surface. The goal is to exercise a larger CNN-era MAC datapath candidate while preserving the generic host-probe builder policy.
+Review only the NVDLA `cmac_core_mac` minimal build/run/compare surface. The goal is to exercise a larger CNN-era MAC datapath candidate while preserving the generic host-probe builder policy and clean-checkout reproducibility.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
+- `docs/status.md`
+- `records/scaling_gates/candidate_template_clean_checkout_selection_gate.json`
 - `config/slice_launch_templates/nvdla_cmac_core_mac.json`
 - `overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_core_mac_gpu_cov_tb.sv`
 - `overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json`
@@ -257,6 +269,7 @@ Exclude from this review boundary:
 
 Boundary acceptance:
 
+- candidate selection gate identifies `NVDLA.nvdla_cmac_core_mac` as primary and `NVDLA.nvdla_cmac_a2cacc` as secondary
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - the overlay and coverage manifest are tracked source files

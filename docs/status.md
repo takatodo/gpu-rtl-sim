@@ -10,6 +10,8 @@ Config minimization state: `records/scaling_gates/config_minimal_surface_complet
 
 Hybrid usability state: generated templates now carry generic host-probe build metadata and can use `src/tools/build_host_probe.py` without adding a per-target Makefile rule.
 
+Candidate template selection state: `config/scaling_gates/candidate_template_clean_checkout_selection_gate.json` selects `NVDLA.nvdla_cmac_core_mac` as the primary next build/run/compare candidate and `NVDLA.nvdla_cmac_a2cacc` as the secondary reference candidate. Both are clean-checkout-ready through the tracked `third_party/rtlmeter` submodule and `src/tools/build_host_probe.py`; PULP ITA / LLM-serving RTL, MobileViT CPU-kick, and Ibex LLM SoC kick candidates remain deferred until their dependency boundaries and generic host-probe migration status are explicit.
+
 ## Goal
 
 `modern_llm_serving_rtl_hybrid_conditions`

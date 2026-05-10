@@ -1,4 +1,5 @@
 import json
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -100,6 +101,9 @@ PERSISTENT_RESIDENT_DEVICE_HANDLE_STORAGE_GATE = (
 )
 PERSISTENT_RESIDENT_DEVICE_HANDLE_STORAGE_REVIEW_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "persistent_resident_device_handle_storage_review_gate.json"
+)
+CANDIDATE_TEMPLATE_SELECTION_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "candidate_template_clean_checkout_selection_gate.json"
 )
 REPEAT_MEDIAN_RESULTS_SUMMARY = REPO_ROOT / "reports" / "results_reproduction_median_summary.json"
 RESIDENT_BATCH_SWEEP_SUMMARY = REPO_ROOT / "reports" / "resident_batch_sweep_summary.json"
@@ -257,6 +261,14 @@ LOCAL_ABSOLUTE_PATH_MARKERS = (
     "/workspace/",
     "/root/",
 )
+
+
+def _git_ls_files(path: Path) -> str:
+    return subprocess.check_output(
+        ["git", "ls-files", "--", str(path.relative_to(REPO_ROOT))],
+        cwd=REPO_ROOT,
+        text=True,
+    ).strip()
 
 
 class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
@@ -607,6 +619,90 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         )
         self.assertFalse(template["build"]["host_probe"]["probe_syms_state"])
         self.assertNotIn("makefile", template["planned_overlay"])
+
+    def test_candidate_template_clean_checkout_selection_gate_selects_nvdla_first(self) -> None:
+        gate = json.loads(CANDIDATE_TEMPLATE_SELECTION_GATE.read_text(encoding="utf-8"))
+        combined_docs = "\n".join(
+            [
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(
+            gate["status"],
+            "complete_selection_ready_for_next_build_run_compare_gate",
+        )
+        self.assertEqual(
+            gate["selected_for_next_build_run_compare_gate"]["primary"],
+            "NVDLA.nvdla_cmac_core_mac",
+        )
+        self.assertEqual(
+            gate["selected_for_next_build_run_compare_gate"]["secondary"],
+            "NVDLA.nvdla_cmac_a2cacc",
+        )
+        self.assertEqual(
+            gate["selected_for_next_build_run_compare_gate"]["next_gate"],
+            "nvdla_cmac_core_mac_minimal_build_run_compare_gate",
+        )
+
+        selected = {entry["target"]: entry for entry in gate["candidate_inventory"]}
+        for target, template_path, overlay_path, manifest_path in (
+            (
+                "NVDLA.nvdla_cmac_core_mac",
+                NVDLA_CMAC_CORE_MAC_TEMPLATE,
+                NVDLA_CMAC_CORE_MAC_OVERLAY,
+                NVDLA_CMAC_CORE_MAC_MANIFEST,
+            ),
+            (
+                "NVDLA.nvdla_cmac_a2cacc",
+                NVDLA_CMAC_A2CACC_TEMPLATE,
+                NVDLA_CMAC_A2CACC_OVERLAY,
+                NVDLA_CMAC_A2CACC_MANIFEST,
+            ),
+        ):
+            with self.subTest(target=target):
+                entry = selected[target]
+                template = json.loads(template_path.read_text(encoding="utf-8"))
+                self.assertEqual(entry["host_probe_builder"], "src/tools/build_host_probe.py")
+                self.assertFalse(entry["makefile_target_required"])
+                self.assertTrue(entry["clean_checkout_ready"])
+                self.assertEqual(entry["source_roots"], ["third_party/rtlmeter"])
+                self.assertEqual(template["build"]["host_probe_builder"], "src/tools/build_host_probe.py")
+                self.assertNotIn("makefile", template["planned_overlay"])
+                self.assertTrue(_git_ls_files(template_path))
+                self.assertTrue(_git_ls_files(overlay_path))
+                self.assertTrue(_git_ls_files(manifest_path))
+                for source_file in template["source_files"]:
+                    self.assertTrue(source_file.startswith("third_party/rtlmeter/"))
+                    self.assertTrue((REPO_ROOT / source_file).exists())
+
+        deferred_groups = {entry["group"]: entry for entry in gate["deferred_candidate_groups"]}
+        self.assertIn("PULP ITA / LLM-serving RTL", deferred_groups)
+        self.assertIn("MobileViT CPU-kick", deferred_groups)
+        self.assertIn("Ibex LLM SoC kick", deferred_groups)
+        self.assertIn("third_party/ITA", json.dumps(deferred_groups["PULP ITA / LLM-serving RTL"]))
+        self.assertIn("third_party/common_cells", json.dumps(deferred_groups["PULP ITA / LLM-serving RTL"]))
+        self.assertIn("third_party/ibex", json.dumps(deferred_groups["Ibex LLM SoC kick"]))
+        self.assertIn("not a CPU-vs-hybrid benchmark result", gate["non_claims"])
+        self.assertIn("not a speedup claim", gate["non_claims"])
+        self.assertIn(
+            "not approval to import ITA, common_cells, or ibex without a dependency boundary",
+            gate["non_claims"],
+        )
+
+        for token in (
+            "candidate_template_clean_checkout_selection_gate.json",
+            "NVDLA.nvdla_cmac_core_mac",
+            "NVDLA.nvdla_cmac_a2cacc",
+            "PULP ITA / LLM-serving RTL",
+            "MobileViT CPU-kick",
+            "Ibex LLM SoC kick",
+            "nvdla_cmac_core_mac_minimal_build_run_compare_gate",
+            "src/tools/build_host_probe.py",
+            "third_party/rtlmeter",
+        ):
+            self.assertIn(token, combined_docs)
 
     def test_full_ita_mha_first_benchmark_gate_records_passing_smoke_compare(self) -> None:
         gate = json.loads(FULL_ITA_MHA_BENCHMARK_GATE.read_text(encoding="utf-8"))
@@ -1111,10 +1207,13 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run",
             "Public archive dry-run:",
             "public_pack_archive_ready",
-            "next_task: nvdla_cmac_core_mac_candidate_template_boundary",
-            "Review only the NVDLA `cmac_core_mac` candidate template surface.",
+            "candidate_template_clean_checkout_selection_gate.json",
+            "next_task: nvdla_cmac_core_mac_minimal_build_run_compare_gate",
+            "Review only the NVDLA `cmac_core_mac` minimal build/run/compare surface.",
             "Review/stage boundary:",
             "docs/roadmap.md",
+            "docs/status.md",
+            "records/scaling_gates/candidate_template_clean_checkout_selection_gate.json",
             "config/slice_launch_templates/nvdla_cmac_core_mac.json",
             "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_core_mac_gpu_cov_tb.sv",
             "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json",
@@ -1128,6 +1227,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests",
             "runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`",
             "generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`",
+            "candidate selection gate identifies `NVDLA.nvdla_cmac_core_mac` as primary",
             "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "`src/hybrid/Makefile` remains free of generated NVDLA host-probe targets",

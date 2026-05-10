@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "objective": "NVDLA CNN-era seed から ITA/LLM-serving RTL へ進む前に、candidate template 境界を clean checkout で再現可能な形に整理し、generic host-probe builder だけで build/run/compare に進める候補を選別する",
+  "status": "complete_selection_ready_for_next_build_run_compare_gate",
+  "selection_scope": "candidate templates only; no new third_party import; no generated reports or artifacts as source of truth",
+  "success_criteria": [
+    "selected candidates are tracked in clean checkout",
+    "selected candidates use existing third_party/rtlmeter only",
+    "selected candidates use build.host_probe_builder: src/tools/build_host_probe.py",
+    "selected candidates do not require src/hybrid/Makefile target expansion",
+    "deferred ITA, KV-cache, LLM SoC, MobileViT, and ibex candidates have explicit reasons before promotion"
+  ],
+  "selected_for_next_build_run_compare_gate": {
+    "primary": "NVDLA.nvdla_cmac_core_mac",
+    "secondary": "NVDLA.nvdla_cmac_a2cacc",
+    "reason": "Both candidates are source-backed by the tracked third_party/rtlmeter submodule and use the generic host-probe builder without adding Makefile targets.",
+    "next_gate": "nvdla_cmac_core_mac_minimal_build_run_compare_gate"
+  },
+  "candidate_inventory": [
+    {
+      "target": "NVDLA.nvdla_cmac_core_mac",
+      "template": "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+      "overlay": "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_core_mac_gpu_cov_tb.sv",
+      "coverage_manifest": "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json",
+      "source_roots": [
+        "third_party/rtlmeter"
+      ],
+      "host_probe_builder": "src/tools/build_host_probe.py",
+      "makefile_target_required": false,
+      "clean_checkout_ready": true,
+      "selection": "primary_next",
+      "notes": [
+        "larger CNN-era MAC datapath candidate than cmac_a2cacc",
+        "requires explicit --flatten plus SYNTHESIS and DESIGNWARE_NOEXIST Verilator settings",
+        "candidate template only; no CPU-vs-hybrid speedup or correctness claim yet"
+      ]
+    },
+    {
+      "target": "NVDLA.nvdla_cmac_a2cacc",
+      "template": "config/slice_launch_templates/nvdla_cmac_a2cacc.json",
+      "overlay": "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_a2cacc_gpu_cov_tb.sv",
+      "coverage_manifest": "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_a2cacc_coverage_regions.json",
+      "source_roots": [
+        "third_party/rtlmeter"
+      ],
+      "host_probe_builder": "src/tools/build_host_probe.py",
+      "makefile_target_required": false,
+      "clean_checkout_ready": true,
+      "selection": "secondary_reference",
+      "notes": [
+        "smallest NVDLA CNN-era reference candidate",
+        "candidate template only; no CPU-vs-hybrid speedup or correctness claim yet"
+      ]
+    }
+  ],
+  "deferred_candidate_groups": [
+    {
+      "group": "PULP ITA / LLM-serving RTL",
+      "examples": [
+        "PULP_ITA.pulp_ita_dotp",
+        "PULP_ITA.pulp_ita_softmax_top",
+        "PULP_ITA.pulp_ita_mha",
+        "PULP_ITA.pulp_paged_kv_cache",
+        "PULP_ITA.pulp_paged_kv_cache_large",
+        "PULP_ITA.pulp_paged_attention_kv_score",
+        "PULP_ITA.pulp_llm_soc_kick"
+      ],
+      "reason": "Do not promote more ITA or LLM-serving candidates in this boundary until third_party/ITA and third_party/common_cells are canonical submodules or the source-backed dependency boundary is otherwise recorded.",
+      "required_before_promotion": [
+        "submodule or source import decision for third_party/ITA",
+        "submodule or source import decision for third_party/common_cells",
+        "clean checkout test that initializes required third_party dependencies",
+        "generic host-probe builder metadata or an explicit migration exception"
+      ]
+    },
+    {
+      "group": "MobileViT CPU-kick",
+      "examples": [
+        "MobileViT.mobile_vit_cpu_kick_rtl_proxy"
+      ],
+      "reason": "MobileViT remains CPU-kick plus RTL control-boundary evidence, not a candidate for NN RTL numerical datapath promotion.",
+      "required_before_promotion": [
+        "separate CPU-kick evidence gate",
+        "generic host-probe builder migration if the proxy remains in active scope"
+      ]
+    },
+    {
+      "group": "Ibex LLM SoC kick",
+      "examples": [
+        "Ibex.ibex_llm_soc_kick"
+      ],
+      "reason": "Ibex support requires a canonical third_party/ibex dependency decision and is outside the NVDLA CNN-era candidate boundary.",
+      "required_before_promotion": [
+        "submodule or source import decision for third_party/ibex",
+        "clean checkout test for the Ibex overlay and template",
+        "generic host-probe builder metadata or an explicit migration exception"
+      ]
+    }
+  ],
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "NVDLA CNN-era seed before ITA/LLM-serving RTL",
+      "status": "satisfied",
+      "evidence": [
+        "selected_for_next_build_run_compare_gate.primary: NVDLA.nvdla_cmac_core_mac",
+        "deferred_candidate_groups: PULP ITA / LLM-serving RTL"
+      ]
+    },
+    {
+      "requirement": "candidate template boundary organized for clean checkout",
+      "status": "satisfied",
+      "evidence": [
+        "candidate_inventory clean_checkout_ready=true for selected NVDLA candidates",
+        "selected candidates source_roots: third_party/rtlmeter",
+        "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+      ]
+    },
+    {
+      "requirement": "generic host-probe builder only",
+      "status": "satisfied",
+      "evidence": [
+        "build.host_probe_builder: src/tools/build_host_probe.py",
+        "planned_overlay has no makefile entry for selected candidates",
+        "src/hybrid/Makefile remains free of generated NVDLA host-probe targets"
+      ]
+    },
+    {
+      "requirement": "select candidates that can proceed to build/run/compare",
+      "status": "satisfied",
+      "evidence": [
+        "selected_for_next_build_run_compare_gate.primary",
+        "selected_for_next_build_run_compare_gate.next_gate"
+      ]
+    },
+    {
+      "requirement": "explicitly defer candidates that are not ready",
+      "status": "satisfied",
+      "evidence": [
+        "deferred_candidate_groups"
+      ]
+    }
+  ],
+  "non_claims": [
+    "not a CPU-vs-hybrid benchmark result",
+    "not a speedup claim",
+    "not NVDLA full accelerator execution",
+    "not modern Transformer or LLM completeness",
+    "not approval to import ITA, common_cells, or ibex without a dependency boundary"
+  ]
+}
