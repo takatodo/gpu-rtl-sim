@@ -1,0 +1,50 @@
+{
+  "schema_version": "coverage-region-manifest-v1",
+  "target": "NVDLA.nvdla_cmac_a2cacc",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "regions": [
+    {
+      "name": "pipeline_valid_counts",
+      "words": [
+        "real_toggle_subset_word0_o",
+        "real_toggle_subset_word1_o"
+      ]
+    },
+    {
+      "name": "pipeline_oracle_mismatch",
+      "words": [
+        "real_toggle_subset_word2_o",
+        "real_toggle_subset_word17_o"
+      ]
+    },
+    {
+      "name": "payload_toggle_counts",
+      "words": [
+        "real_toggle_subset_word3_o",
+        "real_toggle_subset_word4_o",
+        "real_toggle_subset_word5_o"
+      ]
+    },
+    {
+      "name": "dst_payload_sample",
+      "words": [
+        "real_toggle_subset_word6_o",
+        "real_toggle_subset_word7_o",
+        "real_toggle_subset_word8_o",
+        "real_toggle_subset_word9_o",
+        "real_toggle_subset_word10_o",
+        "real_toggle_subset_word11_o",
+        "real_toggle_subset_word12_o",
+        "real_toggle_subset_word13_o"
+      ]
+    },
+    {
+      "name": "dst_metadata_sample",
+      "words": [
+        "real_toggle_subset_word14_o",
+        "real_toggle_subset_word15_o",
+        "real_toggle_subset_word16_o"
+      ]
+    }
+  ]
+}

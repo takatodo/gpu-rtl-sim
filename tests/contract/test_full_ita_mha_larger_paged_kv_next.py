@@ -113,6 +113,27 @@ ROADMAP = REPO_ROOT / "docs" / "roadmap.md"
 README = REPO_ROOT / "README.md"
 RESULTS = REPO_ROOT / "docs" / "results.md"
 MAKEFILE = REPO_ROOT / "src" / "hybrid" / "Makefile"
+NVDLA_CMAC_A2CACC_OVERLAY = (
+    REPO_ROOT
+    / "overlays"
+    / "rtlmeter"
+    / "designs"
+    / "NVDLA"
+    / "src"
+    / "nvdla_cmac_a2cacc_gpu_cov_tb.sv"
+)
+NVDLA_CMAC_A2CACC_MANIFEST = (
+    REPO_ROOT
+    / "overlays"
+    / "rtlmeter"
+    / "designs"
+    / "NVDLA"
+    / "tests"
+    / "nvdla_cmac_a2cacc_coverage_regions.json"
+)
+NVDLA_CMAC_A2CACC_TEMPLATE = (
+    REPO_ROOT / "config" / "slice_launch_templates" / "nvdla_cmac_a2cacc.json"
+)
 LARGE_KV_OVERLAY = REPO_ROOT / "overlays" / "ITA" / "src" / "pulp_paged_kv_cache_large_gpu_cov_tb.sv"
 LARGE_KV_MANIFEST = (
     REPO_ROOT / "overlays" / "ITA" / "tests" / "pulp_paged_kv_cache_large_coverage_regions.json"
@@ -493,6 +514,32 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
                     template["build"]["host_probe_builder"],
                     "src/tools/build_host_probe.py",
                 )
+
+    def test_nvdla_cmac_a2cacc_candidate_template_uses_generic_host_probe_builder(self) -> None:
+        self.assertTrue(NVDLA_CMAC_A2CACC_OVERLAY.exists())
+        self.assertTrue(NVDLA_CMAC_A2CACC_MANIFEST.exists())
+        self.assertTrue(NVDLA_CMAC_A2CACC_TEMPLATE.exists())
+
+        overlay = NVDLA_CMAC_A2CACC_OVERLAY.read_text(encoding="utf-8")
+        manifest = json.loads(NVDLA_CMAC_A2CACC_MANIFEST.read_text(encoding="utf-8"))
+        template = json.loads(NVDLA_CMAC_A2CACC_TEMPLATE.read_text(encoding="utf-8"))
+
+        self.assertIn("module nvdla_cmac_a2cacc_gpu_cov_tb", overlay)
+        self.assertIn("NV_NVDLA_RT_cmac_a2cacc", overlay)
+        self.assertEqual(manifest["target"], "NVDLA.nvdla_cmac_a2cacc")
+        self.assertEqual(template["target"], "NVDLA.nvdla_cmac_a2cacc")
+        self.assertEqual(template["top_module"], "nvdla_cmac_a2cacc_gpu_cov_tb")
+        self.assertEqual(
+            template["source_files"],
+            ["third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_RT_cmac_a2cacc.v"],
+        )
+        self.assertEqual(template["build"]["host_probe_target"], "nvdla_cmac_a2cacc_host_probe")
+        self.assertEqual(template["build"]["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertEqual(
+            template["build"]["host_probe"]["clock_field"],
+            "nvdla_cmac_a2cacc_gpu_cov_tb__DOT__nvdla_core_clk",
+        )
+        self.assertNotIn("makefile", template["planned_overlay"])
 
     def test_full_ita_mha_first_benchmark_gate_records_passing_smoke_compare(self) -> None:
         gate = json.loads(FULL_ITA_MHA_BENCHMARK_GATE.read_text(encoding="utf-8"))
@@ -997,23 +1044,26 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run",
             "Public archive dry-run:",
             "public_pack_archive_ready",
-            "next_task: defer_untracked_nn_mobilevit_contract_tests_boundary",
-            "Review only the candidate-test quarantine needed to keep the active contract suite reproducible while NN/LLM/MobileViT work remains unaccepted.",
+            "next_task: nvdla_cmac_a2cacc_candidate_template_boundary",
+            "Review only the NVDLA `cmac_a2cacc` candidate template surface.",
             "Review/stage boundary:",
             "docs/roadmap.md",
-            "tests/candidate_contract/README.md",
+            "config/slice_launch_templates/nvdla_cmac_a2cacc.json",
+            "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_a2cacc_gpu_cov_tb.sv",
+            "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_a2cacc_coverage_regions.json",
             "Exclude from this review boundary:",
             "src/hybrid/Makefile",
             "third_party/ITA",
             "third_party/common_cells",
             "third_party/ibex",
-            "new NN target templates such as NVDLA, ITA, KV-cache, and LLM SoC kick templates",
-            "non-rtlmeter overlays such as ITA, ibex, MobileViT, and NVDLA",
+            "additional NVDLA targets such as `nvdla_cmac_core_mac`",
+            "ITA, KV-cache, LLM SoC, and MobileViT candidate templates and overlays",
             "MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests",
             "runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`",
             "generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`",
-            "tracked files under `tests/contract/` remain the active contract suite",
-            "candidate NN/LLM/MobileViT tests are documented as deferred and not discovered by `python3 -m unittest discover -s tests/contract -q`",
+            "the NVDLA `cmac_a2cacc` template references only present source files",
+            "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
+            "`src/hybrid/Makefile` remains free of generated NVDLA host-probe targets",
             "no generated output is introduced as source of truth",
             "python3 -m unittest tests.contract.test_resident_runtime_contract -q",
             "tar -czf <generated-output>/public-benchmark-pack.tgz <listed paths>",

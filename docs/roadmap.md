@@ -218,34 +218,37 @@ Tracked evidence:
 
 Recommended next gate:
 
-`defer_untracked_nn_mobilevit_contract_tests_boundary`
+`nvdla_cmac_a2cacc_candidate_template_boundary`
 
 Acceptance criteria:
 
-- keep active contract discovery limited to tracked, accepted contract tests under `tests/contract/`
-- move untracked NN/LLM/MobileViT candidate tests out of `tests/contract/` so local `unittest discover -s tests/contract` is not polluted
-- preserve candidate tests under `tests/candidate_contract/` without treating them as active source of truth
-- do not add NN/LLM/MobileViT tools, templates, overlays, or third-party imports in this boundary
-- keep the Makefile generated-host-probe retirement intact
+- add the NVDLA `cmac_a2cacc` candidate launch template, overlay, and coverage manifest as a small source-backed candidate
+- use existing `third_party/rtlmeter` NVDLA source only; do not add new third-party submodules
+- use `build.host_probe_builder: src/tools/build_host_probe.py` metadata instead of adding a Makefile target
+- keep this as a candidate template, not a CPU-vs-hybrid benchmark or speedup claim
+- leave ITA dotp, ITA softmax, KV-cache, LLM SoC, MobileViT, and additional NVDLA targets out of this boundary
 
 Working tree review boundary:
 
-`next_task: defer_untracked_nn_mobilevit_contract_tests_boundary`
+`next_task: nvdla_cmac_a2cacc_candidate_template_boundary`
 
-Review only the candidate-test quarantine needed to keep the active contract suite reproducible while NN/LLM/MobileViT work remains unaccepted. The goal is to avoid accidentally promoting exploratory tests into the active surface.
+Review only the NVDLA `cmac_a2cacc` candidate template surface. The goal is to keep the next NN candidate small and source-backed while preserving the generic host-probe builder policy.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
-- `tests/candidate_contract/README.md`
+- `config/slice_launch_templates/nvdla_cmac_a2cacc.json`
+- `overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_a2cacc_gpu_cov_tb.sv`
+- `overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_a2cacc_coverage_regions.json`
+- `tests/contract/test_full_ita_mha_larger_paged_kv_next.py`
 
 Exclude from this review boundary:
 
 - `AGENTS.md`
 - `src/hybrid/Makefile`
 - `third_party/ITA`, `third_party/common_cells`, and `third_party/ibex`
-- new NN target templates such as NVDLA, ITA, KV-cache, and LLM SoC kick templates
-- non-rtlmeter overlays such as ITA, ibex, MobileViT, and NVDLA
+- additional NVDLA targets such as `nvdla_cmac_core_mac`
+- ITA, KV-cache, LLM SoC, and MobileViT candidate templates and overlays
 - MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests
 - runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`
 - generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`
@@ -253,8 +256,10 @@ Exclude from this review boundary:
 
 Boundary acceptance:
 
-- tracked files under `tests/contract/` remain the active contract suite
-- candidate NN/LLM/MobileViT tests are documented as deferred and not discovered by `python3 -m unittest discover -s tests/contract -q`
+- the NVDLA `cmac_a2cacc` template references only present source files
+- the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
+- the overlay and coverage manifest are tracked source files
+- `src/hybrid/Makefile` remains free of generated NVDLA host-probe targets
 - no generated output is introduced as source of truth
 - `python3 -m unittest tests.contract.test_resident_runtime_contract -q` passes
 - `python3 -m unittest discover -s tests/contract -q` passes
