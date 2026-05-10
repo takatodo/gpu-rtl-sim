@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "gate": "pulp_ita_softmax_top_dependency_template_boundary_gate",
+  "objective": "Promote the selected ita_softmax_top dependency and template boundary after dotp shape expansion review, without running a softmax build/run/compare measurement.",
+  "status": "promoted_softmax_dependency_template_boundary_before_measurement",
+  "source_review_gate": "config/scaling_gates/pulp_ita_dotp_shape_expansion_review_gate.json",
+  "target": "PULP_ITA.pulp_ita_softmax_top",
+  "active_seed": "pulp_ita_softmax_top",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "upstream": {
+    "submodule": "third_party/ITA",
+    "module": "ita_softmax_top",
+    "source": "third_party/ITA/src/ita_softmax_top.sv",
+    "classification": "attention softmax/reduction datapath seed"
+  },
+  "dependency_boundary": {
+    "required_ita_sources": [
+      "third_party/ITA/src/ita_package.sv",
+      "third_party/ITA/src/ita_max_finder.sv",
+      "third_party/ITA/src/ita_register_file_1w_multi_port_read.sv",
+      "third_party/ITA/src/ita_softmax.sv",
+      "third_party/ITA/src/ita_serdiv.sv",
+      "third_party/ITA/src/ita_softmax_top.sv"
+    ],
+    "required_common_cells_sources": [
+      "third_party/common_cells/src/cf_math_pkg.sv",
+      "third_party/common_cells/src/lzc.sv",
+      "third_party/common_cells/src/fifo_v3.sv"
+    ],
+    "required_overlay_sources": [
+      "overlays/ITA/src/pulp_ita_cluster_clock_gating_sim.sv",
+      "overlays/ITA/src/pulp_ita_softmax_top_gpu_cov_tb.sv"
+    ],
+    "deferred_sources": [
+      "third_party/ITA/src/ita.sv",
+      "third_party/ITA/src/ita_controller.sv",
+      "third_party/ITA/src/ita_sumdotp.sv",
+      "third_party/ITA/src/ita_input_sampler.sv",
+      "third_party/ITA/src/ita_output_controller.sv"
+    ],
+    "policy": "Use only the canonical ITA/common_cells submodule paths and repo-specific overlays listed here; do not recursively import all Bender dependencies."
+  },
+  "promoted_source_boundary": {
+    "coverage_tb": "overlays/ITA/src/pulp_ita_softmax_top_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/ITA/tests/pulp_ita_softmax_top_coverage_regions.json",
+    "launch_template": "config/slice_launch_templates/pulp_ita_softmax_top.json",
+    "clock_gating_shim": "overlays/ITA/src/pulp_ita_cluster_clock_gating_sim.sv",
+    "template_status": "promoted_softmax_dependency_template_boundary",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "makefile_target_required": false,
+    "verilator_mode": "flattened"
+  },
+  "target_scope": [
+    {
+      "target": "pulp_ita_softmax_top",
+      "status": "promoted_softmax_dependency_template_boundary",
+      "launch_template": "config/slice_launch_templates/pulp_ita_softmax_top.json",
+      "coverage_manifest": "overlays/ITA/tests/pulp_ita_softmax_top_coverage_regions.json",
+      "mdir": "artifacts/pulp_ita_softmax_top_obj_dir",
+      "cpu_reference_state": "artifacts/pulp_ita_softmax_top_obj_dir/pulp_ita_softmax_top_cpu_repeat_1x1.bin",
+      "gpu_candidate_state": "artifacts/pulp_ita_softmax_top_obj_dir/pulp_ita_softmax_top_gpu_from_cpu_init_1x1.bin"
+    }
+  ],
+  "template_contract": {
+    "target": "PULP_ITA.pulp_ita_softmax_top",
+    "top_module": "pulp_ita_softmax_top_gpu_cov_tb",
+    "source_files": [
+      "third_party/common_cells/src/cf_math_pkg.sv",
+      "third_party/common_cells/src/lzc.sv",
+      "third_party/common_cells/src/fifo_v3.sv",
+      "overlays/ITA/src/pulp_ita_cluster_clock_gating_sim.sv",
+      "third_party/ITA/src/ita_package.sv",
+      "third_party/ITA/src/ita_max_finder.sv",
+      "third_party/ITA/src/ita_register_file_1w_multi_port_read.sv",
+      "third_party/ITA/src/ita_softmax.sv",
+      "third_party/ITA/src/ita_serdiv.sv",
+      "third_party/ITA/src/ita_softmax_top.sv"
+    ],
+    "overlay_source_is_loaded_from_planned_overlay": true,
+    "verilator_args": [
+      "--flatten",
+      "-Wno-WIDTHEXPAND",
+      "-Wno-WIDTHTRUNC",
+      "-Wno-COMBDLY",
+      "-Wno-UNSIGNED",
+      "+define+ITA_M=16",
+      "+define+ITA_N=16",
+      "+define+ITA_S=16",
+      "+define+ITA_P=16",
+      "+define+ITA_E=16"
+    ],
+    "host_probe_target": "pulp_ita_softmax_top_host_probe",
+    "host_probe_output": "tlul_slice_host_probe",
+    "host_probe_clock_field": "pulp_ita_softmax_top_gpu_cov_tb__DOT__clk_i",
+    "host_probe_reset_field": "pulp_ita_softmax_top_gpu_cov_tb__DOT__reset_like_w",
+    "host_probe_reset_asserted_value": "1U",
+    "host_probe_reset_deasserted_value": "0U",
+    "host_clock_control": true,
+    "host_reset_control": false,
+    "probe_syms_state": false
+  },
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18
+    },
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "dry_run_checked_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_softmax_top.json --shape 1x1 --dry-run",
+  "required_next_gate": {
+    "name": "run_pulp_ita_softmax_top_first_generic_host_probe_build_run_compare_gate",
+    "shape": "1x1",
+    "scope": [
+      "run Verilator build for pulp_ita_softmax_top",
+      "build host probe through src/tools/build_host_probe.py",
+      "build GPU cubin",
+      "run CPU reference and hybrid candidate",
+      "compare with coverage_output_equivalence using this gate as the coverage-output gate",
+      "record timing only after mismatch count is zero"
+    ]
+  },
+  "acceptance_policy": {
+    "boundary_definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "host_probe_built_with_generic_builder_required": true,
+    "makefile_host_probe_target_allowed": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "correctness_claim_allowed_by_gate_alone": false,
+    "only_one_active_ita_seed": true
+  },
+  "review_boundary": [
+    "config/slice_launch_templates/pulp_ita_softmax_top.json",
+    "overlays/ITA/src/pulp_ita_cluster_clock_gating_sim.sv",
+    "overlays/ITA/src/pulp_ita_softmax_top_gpu_cov_tb.sv",
+    "overlays/ITA/tests/pulp_ita_softmax_top_coverage_regions.json",
+    "docs/roadmap.md",
+    "docs/status.md",
+    "records/scaling_gates/pulp_ita_softmax_top_dependency_template_boundary_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+  ],
+  "next_task": "run_pulp_ita_softmax_top_first_generic_host_probe_build_run_compare_gate",
+  "non_claims": [
+    "not softmax build/run/compare yet",
+    "not full ITA execution",
+    "not MHA execution",
+    "not model-level Transformer inference",
+    "not production LLM-serving throughput",
+    "not broad modern-NN speedup",
+    "not correctness beyond scoped coverage-output words",
+    "not recursive Bender dependency support"
+  ]
+}

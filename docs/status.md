@@ -30,6 +30,8 @@ PULP ITA dotp shape expansion state: `config/scaling_gates/pulp_ita_dotp_shape_e
 
 PULP ITA dotp shape expansion review state: `config/scaling_gates/pulp_ita_dotp_shape_expansion_review_gate.json` selects `ita_softmax_top_dependency_template_boundary` next. The reason is not that dotp proves broad NN speedup; the reason is that dotp has answered the minimal attention-score datapath question while still missing softmax/reduction behavior. The next_task is `define_pulp_ita_softmax_top_dependency_template_boundary_gate`, and the review explicitly does not run softmax build/run/compare or permit recursive Bender imports.
 
+PULP ITA softmax-top dependency/template boundary state: `config/scaling_gates/pulp_ita_softmax_top_dependency_template_boundary_gate.json` promotes the `pulp_ita_softmax_top` source boundary before measurement. It uses canonical `third_party/ITA` and `third_party/common_cells` sources plus repo overlays for `pulp_ita_cluster_clock_gating_sim.sv` and `pulp_ita_softmax_top_gpu_cov_tb.sv`. The launch template now uses `src/tools/build_host_probe.py` with explicit `clk_i` and `reset_like_w` metadata, and no `src/hybrid/Makefile` host-probe target is added. This is not softmax build/run/compare yet; the next_task is `run_pulp_ita_softmax_top_first_generic_host_probe_build_run_compare_gate`.
+
 ## Goal
 
 `modern_llm_serving_rtl_hybrid_conditions`
