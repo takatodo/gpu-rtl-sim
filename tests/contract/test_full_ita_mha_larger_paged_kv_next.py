@@ -138,6 +138,12 @@ PULP_ITA_DOTP_OVERLAY_TEMPLATE_GENERIC_HOST_PROBE_GATE = (
     / "scaling_gates"
     / "pulp_ita_dotp_overlay_template_generic_host_probe_gate.json"
 )
+PULP_ITA_DOTP_FIRST_GENERIC_HOST_PROBE_BUILD_RUN_COMPARE_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json"
+)
 REPEAT_MEDIAN_RESULTS_SUMMARY = REPO_ROOT / "reports" / "results_reproduction_median_summary.json"
 RESIDENT_BATCH_SWEEP_SUMMARY = REPO_ROOT / "reports" / "resident_batch_sweep_summary.json"
 RESIDENT_STATE_REUSE_SUMMARY = REPO_ROOT / "reports" / "resident_state_reuse_experiment_summary.json"
@@ -995,7 +1001,13 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertEqual(gate["status"], "promoted_dotp_overlay_template_with_generic_host_probe_builder")
         self.assertEqual(gate["source_selection_gate"], "config/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json")
         self.assertEqual(gate["target"], "pulp_ita_dotp")
+        self.assertEqual(gate["coverage_domain"], "toggle_real_subset_bitmap")
         self.assertEqual(gate["upstream"]["source"], "third_party/ITA/src/ita_dotp.sv")
+        target_scope = {entry["target"]: entry for entry in gate["target_scope"]}
+        self.assertEqual(
+            target_scope["pulp_ita_dotp"]["coverage_manifest"],
+            "overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json",
+        )
         self.assertEqual(gate["promoted_source_boundary"]["coverage_tb"], "overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv")
         self.assertEqual(gate["promoted_source_boundary"]["coverage_manifest"], "overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json")
         self.assertEqual(gate["promoted_source_boundary"]["launch_template"], "config/slice_launch_templates/pulp_ita_dotp.json")
@@ -1057,8 +1069,82 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
             "src/tools/build_host_probe.py",
             "pulp_ita_dotp_gpu_cov_tb__DOT__clk_i",
-            "next_task: run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate",
+            "pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json",
             "not a build/run/compare result",
+        ):
+            self.assertIn(token, combined_docs)
+
+    def test_pulp_ita_dotp_first_generic_host_probe_build_run_compare_passed_1x1(self) -> None:
+        gate = json.loads(PULP_ITA_DOTP_FIRST_GENERIC_HOST_PROBE_BUILD_RUN_COMPARE_GATE.read_text(encoding="utf-8"))
+        combined_docs = "\n".join(
+            [
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["status"], "minimal_1x1_build_run_compare_passed_coverage_output_equivalence")
+        self.assertEqual(
+            gate["source_gate"],
+            "config/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
+        )
+        self.assertEqual(gate["target"], "PULP_ITA.pulp_ita_dotp")
+        self.assertEqual(gate["active_seed"], "pulp_ita_dotp")
+        self.assertEqual(gate["shape"], "1x1")
+        self.assertEqual(
+            gate["command"],
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x1",
+        )
+        self.assertEqual(gate["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertFalse(gate["makefile_target_required"])
+        for step, passed in gate["build_run_compare_steps"].items():
+            with self.subTest(step=step):
+                self.assertTrue(passed)
+
+        coverage = gate["coverage_output_contract"]
+        self.assertEqual(coverage["coverage_output_target"], "pulp_ita_dotp")
+        self.assertEqual(coverage["acceptance_policy"], "coverage_output_equivalence")
+        self.assertEqual(coverage["compared_word_count"], 29)
+        self.assertEqual(coverage["compared_byte_count"], 116)
+
+        measured = gate["measured_shape"]
+        self.assertEqual(measured["shape"], "1x1")
+        self.assertEqual(measured["storage_size_bytes"], 576)
+        self.assertFalse(measured["raw_full_state_match"])
+        self.assertEqual(measured["raw_full_state_mismatch_count"], 32)
+        self.assertEqual(
+            measured["raw_full_state_mismatch_role_summary"]["verilator_internal"]["mismatch_bytes"],
+            32,
+        )
+        self.assertTrue(measured["normalized_final_state_equivalence_passed"])
+        self.assertTrue(measured["coverage_output_equivalence_passed"])
+        self.assertEqual(measured["coverage_output_mismatch_count"], 0)
+        self.assertEqual(measured["cpu_elapsed_ms"], 3.12573)
+        self.assertEqual(measured["hybrid_gpu_kernel_time_ms_total"], 1.40288)
+        self.assertEqual(measured["hybrid_wall_time_ms"], 1.46)
+
+        self.assertTrue(gate["acceptance_policy"]["coverage_output_equivalence_gate_passed"])
+        self.assertFalse(gate["acceptance_policy"]["raw_full_state_match_required"])
+        self.assertFalse(gate["acceptance_policy"]["speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(gate["acceptance_policy"]["shape_expansion_claim_allowed_by_gate_alone"])
+        self.assertEqual(gate["next_task"], "run_pulp_ita_dotp_shape_expansion_gate")
+        self.assertIn("not shape expansion evidence", gate["non_claims"])
+        self.assertEqual([entry["shape"] for entry in gate["deferred_shapes"]], ["64x1", "1x64"])
+
+        if (REPO_ROOT / measured["coverage_output_compare_report"]).exists():
+            report = json.loads((REPO_ROOT / measured["coverage_output_compare_report"]).read_text(encoding="utf-8"))
+            self.assertTrue(report["selected_acceptance_policy"]["passed"])
+            self.assertEqual(report["selected_acceptance_policy"]["name"], "coverage_output_equivalence")
+            self.assertEqual(report["coverage_output_policy"]["mismatch_count"], 0)
+            self.assertEqual(report["coverage_output_policy"]["compared_word_count"], 29)
+            self.assertEqual(report["coverage_output_policy"]["compared_byte_count"], 116)
+
+        for token in (
+            "pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json",
+            "coverage_output_equivalence` compare pass",
+            "mismatch count: `0`",
+            "raw full-state equality: false",
+            "next_task: run_pulp_ita_dotp_shape_expansion_gate",
         ):
             self.assertIn(token, combined_docs)
 
@@ -1656,13 +1742,15 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "ita_dependency_clean_checkout_boundary_gate.json",
             "ita_first_seed_selection_after_dependency_boundary_gate.json",
             "pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
-            "next_task: run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate",
-            "Review only the first `pulp_ita_dotp` generic-host-probe build/run/compare boundary",
+            "pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json",
+            "next_task: run_pulp_ita_dotp_shape_expansion_gate",
+            "Review only the `pulp_ita_dotp` shape expansion boundary",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
             "records/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json",
             "records/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
+            "records/scaling_gates/pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json",
             "config/slice_launch_templates/pulp_ita_dotp.json",
             "overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv",
             "overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json",
@@ -1693,6 +1781,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "`third_party/ITA/src/ita_dotp.sv` is the only required ITA source path for the first selected seed",
             "PULP ITA dotp overlay/template gate carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "dry-run emits `python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_dotp.json`",
+            "PULP ITA dotp first build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`",
+            "PULP ITA dotp first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch",
             "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "`run_hybrid_template.py` passes template `verilator_defines` into the Verilator command",

@@ -5,6 +5,7 @@
   "status": "promoted_dotp_overlay_template_with_generic_host_probe_builder",
   "source_selection_gate": "config/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json",
   "target": "pulp_ita_dotp",
+  "coverage_domain": "toggle_real_subset_bitmap",
   "upstream": {
     "submodule": "third_party/ITA",
     "commit": "ba96519becce195d64e85eb9a5302e8a1d5487e7",
@@ -21,6 +22,17 @@
     "makefile_target_required": false,
     "verilator_mode": "flattened"
   },
+  "target_scope": [
+    {
+      "target": "pulp_ita_dotp",
+      "status": "promoted_first_ita_seed_boundary",
+      "launch_template": "config/slice_launch_templates/pulp_ita_dotp.json",
+      "coverage_manifest": "overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json",
+      "mdir": "artifacts/pulp_ita_dotp_obj_dir",
+      "cpu_reference_state": "artifacts/pulp_ita_dotp_obj_dir/pulp_ita_dotp_cpu_repeat_1x1.bin",
+      "gpu_candidate_state": "artifacts/pulp_ita_dotp_obj_dir/pulp_ita_dotp_gpu_from_cpu_init_1x1.bin"
+    }
+  ],
   "template_contract": {
     "target": "PULP_ITA.pulp_ita_dotp",
     "top_module": "pulp_ita_dotp_gpu_cov_tb",

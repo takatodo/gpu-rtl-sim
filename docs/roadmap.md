@@ -136,6 +136,17 @@ PULP ITA dotp overlay/template generic host-probe gate:
 - next_task: `run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate`
 - non-claim: this is source-boundary promotion only, not a build/run/compare result, speedup result, or correctness result
 
+PULP ITA dotp first generic host-probe build/run/compare gate:
+
+- `config/scaling_gates/pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json`
+- command: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x1`
+- result: Verilator build, generic host-probe build, GPU cubin build, hybrid run, and CPU-vs-hybrid `coverage_output_equivalence` compare pass
+- mismatch count: `0`
+- compared output: `29` words / `116` bytes
+- raw full-state equality: false, with mismatch limited to Verilator-internal fields
+- next_task: `run_pulp_ita_dotp_shape_expansion_gate`
+- non-claim: this is the minimal `1x1` dotp boundary only, not softmax, full MHA, shape expansion, or broad speedup evidence
+
 Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
@@ -284,23 +295,24 @@ Tracked evidence:
 
 Recommended next gate:
 
-`run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate`
+`run_pulp_ita_dotp_shape_expansion_gate`
 
 Acceptance criteria:
 
-- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x1`
-- build the host probe through `src/tools/build_host_probe.py`, not `src/hybrid/Makefile`
+- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 64x1`
+- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x64`
+- keep the host probe build through `src/tools/build_host_probe.py`, not `src/hybrid/Makefile`
 - compare CPU vs hybrid with `coverage_output_equivalence`
 - require mismatch count `0` before any timing or speedup language
 - validate `third_party/ITA/src/ita_dotp.sv` through the canonical `third_party/ITA` submodule
 - keep recursive Bender dependencies out unless a narrow requirement is recorded
-- keep `ita_softmax_top`, full MHA, KV-cache, LLM SoC, and MobileViT out of the first dotp measurement gate
+- keep `ita_softmax_top`, full MHA, KV-cache, LLM SoC, and MobileViT out of the dotp shape expansion gate
 
 Working tree review boundary:
 
-`next_task: run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate`
+`next_task: run_pulp_ita_dotp_shape_expansion_gate`
 
-Review only the first `pulp_ita_dotp` generic-host-probe build/run/compare boundary. Do not mix in softmax, full MHA, KV-cache, runtime changes, or generated outputs.
+Review only the `pulp_ita_dotp` shape expansion boundary. Do not mix in softmax, full MHA, KV-cache, runtime changes, or generated outputs.
 
 Review/stage boundary:
 
@@ -308,6 +320,7 @@ Review/stage boundary:
 - `docs/status.md`
 - `records/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json`
 - `records/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json`
+- `records/scaling_gates/pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json`
 - `config/slice_launch_templates/pulp_ita_dotp.json`
 - `overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv`
 - `overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json`
@@ -346,6 +359,8 @@ Boundary acceptance:
 - `third_party/ITA/src/ita_dotp.sv` is the only required ITA source path for the first selected seed
 - PULP ITA dotp overlay/template gate carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - dry-run emits `python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_dotp.json`
+- PULP ITA dotp first build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
+- PULP ITA dotp first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command

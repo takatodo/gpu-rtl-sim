@@ -24,6 +24,8 @@ ITA first seed selection state: `config/scaling_gates/ita_first_seed_selection_a
 
 PULP ITA dotp overlay/template state: `config/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json` promotes the selected `pulp_ita_dotp` overlay, coverage manifest, and launch template as source. The template uses `src/tools/build_host_probe.py` with explicit `clk_i` and `reset_like_w` metadata, and `src/hybrid/Makefile` is not expanded with a `pulp_ita_dotp_host_probe` target. This is still not an ITA build/run/compare result; the next_task is `run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate`.
 
+PULP ITA dotp first build/run/compare state: `config/scaling_gates/pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json` records `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x1`. Verilator build, generic host-probe build through `src/tools/build_host_probe.py`, GPU cubin build, hybrid run, and CPU-vs-hybrid compare all completed. The selected policy is `coverage_output_equivalence`; compared output was `29` words / `116` bytes with mismatch count `0`. Raw full-state equality remains false due to Verilator-internal fields only. This is a minimal `1x1` gate, not shape expansion or broad speedup evidence.
+
 ## Goal
 
 `modern_llm_serving_rtl_hybrid_conditions`
