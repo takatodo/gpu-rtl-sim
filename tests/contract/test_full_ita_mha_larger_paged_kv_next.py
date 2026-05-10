@@ -701,7 +701,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             ]
         )
 
-        self.assertEqual(gate["status"], "defined_next_template_shape_expansion_gate")
+        self.assertEqual(
+            gate["status"],
+            "completed_template_shape_expansion_coverage_output_equivalence",
+        )
         self.assertEqual(
             gate["source_minimal_gate"],
             "config/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
@@ -725,17 +728,49 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertFalse(gate["acceptance_policy"]["raw_full_state_match_required"])
         self.assertFalse(gate["acceptance_policy"]["speedup_claim_allowed_by_gate_alone"])
         self.assertIn("not promotion of a second active seed target", gate["non_claims"])
+        self.assertEqual(
+            gate["next_task"],
+            "review_nvdla_cmac_core_mac_shape_expansion_results_then_choose_a2cacc_or_ita_boundary",
+        )
 
         for command in gate["required_commands"]["dry_run_smoke"]:
             self.assertIn("python3 src/tools/run_hybrid_template.py", command)
             self.assertIn("config/slice_launch_templates/nvdla_cmac_core_mac.json", command)
             self.assertIn("--dry-run", command)
 
+        result = gate["result"]
+        self.assertEqual(result["status"], "all_planned_shapes_passed_coverage_output_equivalence")
+        self.assertTrue(result["all_planned_shapes_passed_coverage_output_equivalence"])
+        self.assertEqual(result["max_coverage_output_mismatch_count"], 0)
+        self.assertFalse(result["raw_full_state_match_all_shapes"])
+        self.assertTrue(result["normalized_final_state_equivalence_all_shapes"])
+        self.assertEqual(result["storage_size_bytes"], 24768)
+
+        measured = {shape["shape"]: shape for shape in result["measured_shapes"]}
+        self.assertEqual(set(measured), {"8x1", "32x1", "8x4"})
+        for shape, expected_nstates, expected_steps in (("8x1", 8, 1), ("32x1", 32, 1), ("8x4", 8, 4)):
+            with self.subTest(shape=shape):
+                entry = measured[shape]
+                self.assertEqual(entry["nstates"], expected_nstates)
+                self.assertEqual(entry["steps"], expected_steps)
+                self.assertIn(
+                    f"python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape {shape}",
+                    entry["command"],
+                )
+                self.assertTrue(entry["coverage_output_equivalence_passed"])
+                self.assertEqual(entry["coverage_output_mismatch_count"], 0)
+                self.assertFalse(entry["raw_full_state_match"])
+                self.assertTrue(entry["normalized_final_state_equivalence"])
+                self.assertIn(
+                    f"reports/nvdla_cmac_core_mac_cpu_vs_hybrid_{shape}_coverage_output_compare.json",
+                    entry["coverage_output_compare_report"],
+                )
+
         for token in (
             "nvdla_cmac_core_mac_template_shape_expansion_gate.json",
-            "planned shapes: `8x1`, `32x1`, `8x4`",
-            "keep `NVDLA.nvdla_cmac_core_mac` as the only active seed target",
-            "next_task: nvdla_cmac_core_mac_template_shape_expansion_gate",
+            "`8x1`, `32x1`, and `8x4` all pass CPU-vs-hybrid `coverage_output_equivalence` with mismatch count `0`",
+            "raw full-state equality is false",
+            "next_task: review_nvdla_cmac_core_mac_shape_expansion_results_then_choose_a2cacc_or_ita_boundary",
         ):
             self.assertIn(token, combined_docs)
 
@@ -1329,8 +1364,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "candidate_template_clean_checkout_selection_gate.json",
             "nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
             "nvdla_cmac_core_mac_template_shape_expansion_gate.json",
-            "next_task: nvdla_cmac_core_mac_template_shape_expansion_gate",
-            "Review only the selected NVDLA `cmac_core_mac` template shape expansion gate",
+            "next_task: review_nvdla_cmac_core_mac_shape_expansion_results_then_choose_a2cacc_or_ita_boundary",
+            "Review only the completed NVDLA `cmac_core_mac` template shape expansion result",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",

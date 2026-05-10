@@ -89,10 +89,12 @@ NVDLA minimal build/run/compare gate:
 NVDLA template shape expansion gate:
 
 - `config/scaling_gates/nvdla_cmac_core_mac_template_shape_expansion_gate.json`
-- selected next workstream: keep `NVDLA.nvdla_cmac_core_mac` as the only active seed target and expand through the same template entrypoint
+- result: `8x1`, `32x1`, and `8x4` all pass CPU-vs-hybrid `coverage_output_equivalence` with mismatch count `0`
+- active seed: `NVDLA.nvdla_cmac_core_mac` remains the only active seed target
 - planned shapes: `8x1`, `32x1`, `8x4`
 - required boundary: `run_hybrid_template.py` plus `src/tools/build_host_probe.py`; no Makefile host-probe target and no second active seed target
-- non-claim: historical state-parallel speed evidence is context only until these shapes are rerun through the current template/generic-builder path
+- non-claim: raw full-state equality is false, timing is scoped observed evidence only, and this is not full NVDLA execution
+- usability observation: `run_hybrid_template.py` currently rebuilds the generic host probe and forces GPU cubin regeneration on each measured shape
 
 Config minimization audit:
 
@@ -242,22 +244,22 @@ Tracked evidence:
 
 Recommended next gate:
 
-`nvdla_cmac_core_mac_template_shape_expansion_gate`
+`review_nvdla_cmac_core_mac_shape_expansion_results_then_choose_a2cacc_or_ita_boundary`
 
 Acceptance criteria:
 
-- review the completed `nvdla_cmac_core_mac_minimal_build_run_compare_gate`
-- keep `NVDLA.nvdla_cmac_core_mac` as the only active seed target
-- dry-run the planned `8x1`, `32x1`, and `8x4` template commands before measuring
-- run planned shapes only through `run_hybrid_template.py` and the generic host-probe builder
-- require CPU-vs-hybrid `coverage_output_equivalence` with mismatch count `0` for all planned shapes
-- keep timing as scoped shape evidence; avoid broad speedup claims
+- review the completed `nvdla_cmac_core_mac_template_shape_expansion_gate`
+- keep the result scoped to coverage-output equivalence and observed timing only
+- decide whether the next active workstream is the secondary NVDLA `a2cacc` candidate or the ITA dependency boundary
+- if choosing `a2cacc`, keep the same template/generic-builder boundary before adding performance claims
+- if choosing ITA, first make `third_party/ITA` and `third_party/common_cells` canonical dependency boundaries
+- consider a build-cache or no-force GPU rebuild option separately as a usability optimization
 
 Working tree review boundary:
 
-`next_task: nvdla_cmac_core_mac_template_shape_expansion_gate`
+`next_task: review_nvdla_cmac_core_mac_shape_expansion_results_then_choose_a2cacc_or_ita_boundary`
 
-Review only the selected NVDLA `cmac_core_mac` template shape expansion gate and its source-of-truth alignment.
+Review only the completed NVDLA `cmac_core_mac` template shape expansion result and choose the next active workstream.
 
 Review/stage boundary:
 
@@ -289,7 +291,7 @@ Boundary acceptance:
 
 - candidate selection gate identifies `NVDLA.nvdla_cmac_core_mac` as primary and `NVDLA.nvdla_cmac_a2cacc` as secondary
 - minimal build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
-- shape expansion gate selects only `NVDLA.nvdla_cmac_core_mac` and planned shapes `8x1`, `32x1`, and `8x4`
+- shape expansion gate records `8x1`, `32x1`, and `8x4` coverage-output pass with mismatch count `0`
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command
