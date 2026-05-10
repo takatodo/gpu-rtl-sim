@@ -174,6 +174,12 @@ PULP_ITA_SOFTMAX_TOP_SHAPE_EXPANSION_GATE = (
     / "scaling_gates"
     / "pulp_ita_softmax_top_shape_expansion_gate.json"
 )
+PULP_ITA_SOFTMAX_TOP_SHAPE_EXPANSION_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "pulp_ita_softmax_top_shape_expansion_review_gate.json"
+)
 REPEAT_MEDIAN_RESULTS_SUMMARY = REPO_ROOT / "reports" / "results_reproduction_median_summary.json"
 RESIDENT_BATCH_SWEEP_SUMMARY = REPO_ROOT / "reports" / "resident_batch_sweep_summary.json"
 RESIDENT_STATE_REUSE_SUMMARY = REPO_ROOT / "reports" / "resident_state_reuse_experiment_summary.json"
@@ -1693,6 +1699,83 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         ):
             self.assertIn(token, combined_docs)
 
+    def test_pulp_ita_softmax_top_shape_expansion_review_selects_full_ita_mha_boundary(self) -> None:
+        gate = json.loads(PULP_ITA_SOFTMAX_TOP_SHAPE_EXPANSION_REVIEW_GATE.read_text(encoding="utf-8"))
+        combined_docs = "\n".join(
+            [
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["status"], "selected_full_ita_mha_dependency_template_boundary_next")
+        self.assertEqual(
+            gate["source_gate"],
+            "config/scaling_gates/pulp_ita_softmax_top_shape_expansion_gate.json",
+        )
+        self.assertEqual(gate["reviewed_seed"], "pulp_ita_softmax_top")
+        reviewed = gate["reviewed_result"]
+        self.assertEqual(reviewed["planned_shapes"], ["64x1", "1x64"])
+        self.assertTrue(reviewed["all_planned_shapes_passed_coverage_output_equivalence"])
+        self.assertEqual(reviewed["max_coverage_output_mismatch_count"], 0)
+        self.assertIn("not the full ITA/MHA", reviewed["weakness"])
+
+        options = {entry["option"]: entry for entry in gate["options_reviewed"]}
+        self.assertEqual(options["hold_for_more_softmax_top_evidence"]["decision"], "defer")
+        self.assertEqual(
+            options["move_to_full_ita_mha_dependency_template_boundary"]["decision"],
+            "select_next",
+        )
+        self.assertEqual(options["divert_to_kv_cache_or_mobile_vit_or_runtime"]["decision"], "defer")
+
+        selected = gate["selected_next_workstream"]
+        self.assertEqual(selected["name"], "full_ita_mha_dependency_template_boundary")
+        self.assertEqual(selected["target"], "pulp_ita_mha")
+        self.assertEqual(selected["upstream_source"], "third_party/ITA/src/ita.sv")
+        self.assertEqual(selected["required_next_gate"], "pulp_ita_mha_dependency_template_boundary_gate")
+        self.assertFalse(selected["measurement_allowed_by_review_gate"])
+
+        active_seed_policy = gate["active_seed_policy"]
+        self.assertEqual(active_seed_policy["completed_or_held_seed"], "pulp_ita_softmax_top")
+        self.assertEqual(active_seed_policy["only_next_active_ita_seed"], "pulp_ita_mha")
+        self.assertFalse(active_seed_policy["second_active_seed_measurement_allowed_by_this_gate"])
+
+        dependency = gate["required_dependency_boundary"]
+        self.assertIn("third_party/ITA/src/ita.sv", dependency["required_ita_sources"])
+        self.assertIn("third_party/ITA/src/ita_controller.sv", dependency["required_ita_sources"])
+        self.assertIn("third_party/ITA/src/ita_sumdotp.sv", dependency["required_ita_sources"])
+        self.assertIn("third_party/ITA/src/ita_softmax_top.sv", dependency["required_ita_sources"])
+        self.assertIn("third_party/common_cells/src/cf_math_pkg.sv", dependency["required_common_cells_sources"])
+        self.assertIn("overlays/ITA/src/pulp_ita_tc_sram_sim.sv", dependency["required_overlay_sources"])
+        self.assertIn("do not recursively import all Bender dependencies", dependency["dependency_policy"])
+
+        template = gate["required_template_boundary"]
+        self.assertEqual(template["coverage_tb"], "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv")
+        self.assertEqual(template["coverage_manifest"], "overlays/ITA/tests/pulp_ita_mha_coverage_regions.json")
+        self.assertEqual(template["launch_template"], "config/slice_launch_templates/pulp_ita_mha.json")
+        self.assertEqual(template["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertFalse(template["makefile_target_allowed"])
+        self.assertEqual(template["first_measurement_shapes_after_boundary"], ["1x1", "32x1", "1x32"])
+
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertFalse(policy["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(policy["second_active_seed_measurement_allowed_by_this_gate"])
+        self.assertTrue(policy["full_ita_mha_dependency_boundary_selected"])
+        self.assertFalse(policy["speedup_claim_allowed_by_gate_alone"])
+        self.assertEqual(gate["next_task"], "define_pulp_ita_mha_dependency_template_boundary_gate")
+        self.assertIn("not full ITA/MHA build/run/compare", gate["non_claims"])
+        self.assertIn("not a KV-cache, MobileViT, or runtime workstream switch", gate["non_claims"])
+
+        for token in (
+            "pulp_ita_softmax_top_shape_expansion_review_gate.json",
+            "selects `full_ita_mha_dependency_template_boundary` next",
+            "next_task is `define_pulp_ita_mha_dependency_template_boundary_gate`",
+            "Review only the full ITA/MHA dependency/template boundary definition",
+            "not run full ITA/MHA build/run/compare",
+        ):
+            self.assertIn(token, combined_docs)
+
     def test_candidate_template_clean_checkout_selection_gate_selects_nvdla_first(self) -> None:
         gate = json.loads(CANDIDATE_TEMPLATE_SELECTION_GATE.read_text(encoding="utf-8"))
         combined_docs = "\n".join(
@@ -2293,8 +2376,9 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_softmax_top_dependency_template_boundary_gate.json",
             "pulp_ita_softmax_top_first_generic_host_probe_build_run_compare_gate.json",
             "pulp_ita_softmax_top_shape_expansion_gate.json",
-            "next_task: review_pulp_ita_softmax_top_shape_expansion_and_select_full_ita_or_hold",
-            "Review only the `pulp_ita_softmax_top` shape expansion result and next-workstream choice",
+            "pulp_ita_softmax_top_shape_expansion_review_gate.json",
+            "next_task: define_pulp_ita_mha_dependency_template_boundary_gate",
+            "Review only the full ITA/MHA dependency/template boundary definition",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
@@ -2306,6 +2390,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "records/scaling_gates/pulp_ita_softmax_top_dependency_template_boundary_gate.json",
             "records/scaling_gates/pulp_ita_softmax_top_first_generic_host_probe_build_run_compare_gate.json",
             "records/scaling_gates/pulp_ita_softmax_top_shape_expansion_gate.json",
+            "records/scaling_gates/pulp_ita_softmax_top_shape_expansion_review_gate.json",
+            "config/slice_launch_templates/pulp_ita_mha.json",
+            "overlays/ITA/src/pulp_ita_tc_sram_sim.sv",
+            "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+            "overlays/ITA/tests/pulp_ita_mha_coverage_regions.json",
             "config/slice_launch_templates/pulp_ita_dotp.json",
             "config/slice_launch_templates/pulp_ita_softmax_top.json",
             "overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv",
@@ -2352,6 +2441,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "PULP ITA softmax-top first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch",
             "PULP ITA softmax-top shape expansion gate records `64x1` and `1x64` coverage-output pass with mismatch count `0`",
             "PULP ITA softmax-top shape expansion gate records `64x1` as much more favorable than `1x64` in scoped single-run timing",
+            "PULP ITA softmax-top shape expansion review gate selects `full_ita_mha_dependency_template_boundary` next",
+            "PULP ITA softmax-top shape expansion review gate keeps full MHA measurement separate from boundary definition",
             "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "`run_hybrid_template.py` passes template `verilator_defines` into the Verilator command",

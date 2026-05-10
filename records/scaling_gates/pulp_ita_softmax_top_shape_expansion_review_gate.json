@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "gate": "pulp_ita_softmax_top_shape_expansion_review_gate",
+  "objective": "Review the completed pulp_ita_softmax_top shape expansion and decide whether to move to full ITA/MHA dependency/template promotion, hold for more softmax evidence, or divert to unrelated work.",
+  "status": "selected_full_ita_mha_dependency_template_boundary_next",
+  "source_gate": "config/scaling_gates/pulp_ita_softmax_top_shape_expansion_gate.json",
+  "reviewed_seed": "pulp_ita_softmax_top",
+  "reviewed_result": {
+    "planned_shapes": [
+      "64x1",
+      "1x64"
+    ],
+    "all_planned_shapes_passed_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "trend": "64x1 state-parallel timing is much more favorable than 1x64 single-state repeated-step timing in the scoped softmax-top run.",
+    "weakness": "pulp_ita_softmax_top exercises softmax/reduction behavior after dotp, but it is still not the full ITA/MHA top-level datapath, controller sequence, accumulator path, or end-to-end attention harness."
+  },
+  "options_reviewed": [
+    {
+      "option": "hold_for_more_softmax_top_evidence",
+      "decision": "defer",
+      "reason": "More softmax-only shapes would refine timing, but the main representativeness gap is now full ITA/MHA integration rather than another isolated softmax measurement."
+    },
+    {
+      "option": "move_to_full_ita_mha_dependency_template_boundary",
+      "decision": "select_next",
+      "reason": "dotp covers attention-score arithmetic and softmax_top covers softmax/reduction; the next missing modern-NN RTL condition is the integrated full ITA/MHA harness boundary.",
+      "weakness": "The source surface grows substantially and must be promoted as a boundary before any new full-MHA measurement claim."
+    },
+    {
+      "option": "divert_to_kv_cache_or_mobile_vit_or_runtime",
+      "decision": "defer",
+      "reason": "KV-cache, MobileViT, and runtime work are relevant longer-term, but switching now would skip the planned integrated MHA boundary after completing dotp and softmax subseeds."
+    }
+  ],
+  "selected_next_workstream": {
+    "name": "full_ita_mha_dependency_template_boundary",
+    "target": "pulp_ita_mha",
+    "upstream_module": "ita",
+    "upstream_source": "third_party/ITA/src/ita.sv",
+    "required_next_gate": "pulp_ita_mha_dependency_template_boundary_gate",
+    "measurement_allowed_by_review_gate": false
+  },
+  "active_seed_policy": {
+    "completed_or_held_seed": "pulp_ita_softmax_top",
+    "only_next_active_ita_seed": "pulp_ita_mha",
+    "second_active_seed_measurement_allowed_by_this_gate": false,
+    "reason": "softmax_top has completed the scoped subseed evidence; pulp_ita_mha may become the next active ITA seed only through a separate dependency/template boundary gate before measurement."
+  },
+  "required_dependency_boundary": {
+    "required_common_cells_sources": [
+      "third_party/common_cells/src/cf_math_pkg.sv",
+      "third_party/common_cells/src/lzc.sv",
+      "third_party/common_cells/src/fifo_v3.sv"
+    ],
+    "required_overlay_sources": [
+      "overlays/ITA/src/pulp_ita_cluster_clock_gating_sim.sv",
+      "overlays/ITA/src/pulp_ita_tc_sram_sim.sv",
+      "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv"
+    ],
+    "required_ita_sources": [
+      "third_party/ITA/src/ita_package.sv",
+      "third_party/ITA/src/ita_controller.sv",
+      "third_party/ITA/src/ita_input_sampler.sv",
+      "third_party/ITA/src/ita_inp1_mux.sv",
+      "third_party/ITA/src/ita_inp2_mux.sv",
+      "third_party/ITA/src/ita_dotp.sv",
+      "third_party/ITA/src/ita_sumdotp.sv",
+      "third_party/ITA/src/ita_accumulator.sv",
+      "third_party/ITA/src/ita_max_finder.sv",
+      "third_party/ITA/src/ita_register_file_1w_multi_port_read.sv",
+      "third_party/ITA/src/ita_softmax.sv",
+      "third_party/ITA/src/ita_serdiv.sv",
+      "third_party/ITA/src/ita_softmax_top.sv",
+      "third_party/ITA/src/ita_requantization_controller.sv",
+      "third_party/ITA/src/ita_requantizer.sv",
+      "third_party/ITA/src/ita_gelu.sv",
+      "third_party/ITA/src/ita_relu.sv",
+      "third_party/ITA/src/ita_activation.sv",
+      "third_party/ITA/src/ita_fifo_controller.sv",
+      "third_party/ITA/src/ita_output_controller.sv",
+      "third_party/ITA/src/ita_weight_controller.sv",
+      "third_party/ITA/src/ita_register_file_1w_multi_port_read_we.sv",
+      "third_party/ITA/src/ita.sv"
+    ],
+    "dependency_policy": "Use only canonical third_party/ITA and third_party/common_cells submodule paths plus repo overlays; do not recursively import all Bender dependencies."
+  },
+  "required_template_boundary": {
+    "coverage_tb": "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/ITA/tests/pulp_ita_mha_coverage_regions.json",
+    "launch_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "makefile_target_allowed": false,
+    "first_measurement_shapes_after_boundary": [
+      "1x1",
+      "32x1",
+      "1x32"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "second_active_seed_measurement_allowed_by_this_gate": false,
+    "full_ita_mha_dependency_boundary_selected": true,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "correctness_claim_allowed_by_gate_alone": false
+  },
+  "review_boundary": [
+    "docs/roadmap.md",
+    "docs/status.md",
+    "records/scaling_gates/pulp_ita_softmax_top_shape_expansion_gate.json",
+    "records/scaling_gates/pulp_ita_softmax_top_shape_expansion_review_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+  ],
+  "next_task": "define_pulp_ita_mha_dependency_template_boundary_gate",
+  "non_claims": [
+    "not full ITA/MHA execution",
+    "not full ITA/MHA build/run/compare",
+    "not model-level Transformer inference",
+    "not broad modern-NN speedup",
+    "not production LLM-serving throughput",
+    "not approval to recursively import all Bender dependencies",
+    "not a KV-cache, MobileViT, or runtime workstream switch"
+  ]
+}

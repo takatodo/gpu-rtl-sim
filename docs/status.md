@@ -36,6 +36,8 @@ PULP ITA softmax-top first build/run/compare state: `config/scaling_gates/pulp_i
 
 PULP ITA softmax-top shape expansion state: `config/scaling_gates/pulp_ita_softmax_top_shape_expansion_gate.json` records `64x1` and `1x64` through the generic host-probe path. Both shapes pass CPU-vs-hybrid `coverage_output_equivalence` with mismatch count `0`. Observed single-run timing is scoped to this softmax-top seed: `64x1` has CPU elapsed `149.823 ms` and hybrid wall `0.922 ms`, while `1x64` has CPU elapsed `3.96133 ms` and hybrid wall `1.517 ms`. The trend is that state-parallel `64x1` is much more favorable than single-state repeated-step `1x64`, but this is not a broad modern-NN, full ITA/MHA, or LLM-serving throughput claim. The next_task is `review_pulp_ita_softmax_top_shape_expansion_and_select_full_ita_or_hold`.
 
+PULP ITA softmax-top shape expansion review state: `config/scaling_gates/pulp_ita_softmax_top_shape_expansion_review_gate.json` selects `full_ita_mha_dependency_template_boundary` next. The reason is that dotp has covered attention-score arithmetic and softmax-top has covered softmax/reduction behavior; the remaining representativeness gap is now the integrated full ITA/MHA top-level harness. This review does not run full ITA/MHA build/run/compare, does not switch to KV-cache, MobileViT, or runtime work, and does not allow broad speedup claims. The next_task is `define_pulp_ita_mha_dependency_template_boundary_gate`.
+
 ## Goal
 
 `modern_llm_serving_rtl_hybrid_conditions`
