@@ -2,7 +2,7 @@
   "schema_version": 1,
   "status": "candidate",
   "target": "NVDLA.nvdla_cmac_core_mac",
-  "source_gate": "config/scaling_gates/neural_network_rtl_nvdla_cmac_core_mac_intake_gate.json",
+  "source_gate": "config/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
   "top_module": "nvdla_cmac_core_mac_gpu_cov_tb",
   "build": {
     "mdir": "artifacts/nvdla_cmac_core_mac_flat_obj_dir",
@@ -36,7 +36,11 @@
     "DESIGNWARE_NOEXIST"
   ],
   "verilator_args": [
-    "--flatten"
+    "--flatten",
+    "-Wno-fatal",
+    "-Wno-WIDTHXZEXPAND",
+    "-Wno-WIDTHTRUNC",
+    "-Wno-WIDTHEXPAND"
   ],
   "planned_overlay": {
     "coverage_tb_path": "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_core_mac_gpu_cov_tb.sv",

@@ -20,6 +20,7 @@ class HybridTemplatePlan:
     host_probe_target: str
     source_gate: Path | None
     source_files: list[Path]
+    verilator_defines: list[str]
     verilator_args: list[str]
     cpu_init_state: Path
     cpu_reference_state: Path
@@ -101,6 +102,7 @@ def load_template_plan(
         host_probe_target=host_probe_target,
         source_gate=source_gate_path,
         source_files=source_files,
+        verilator_defines=[str(item) for item in payload.get("verilator_defines") or []],
         verilator_args=[str(item) for item in payload.get("verilator_args") or []],
         cpu_init_state=mdir / f"{target_name}_cpu_repeat_1x1.bin",
         cpu_reference_state=mdir / f"{target_name}_cpu_repeat_{shape_tag}.bin",
@@ -126,6 +128,7 @@ def command_plan(plan: HybridTemplatePlan) -> list[list[str]]:
         "--timing",
         "-Mdir",
         _display_path(plan.mdir),
+        *[f"-D{define}" for define in plan.verilator_defines],
         *plan.verilator_args,
         *[_display_path(path) for path in plan.source_files],
         "--top-module",

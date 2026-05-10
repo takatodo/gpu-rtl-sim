@@ -105,6 +105,9 @@ PERSISTENT_RESIDENT_DEVICE_HANDLE_STORAGE_REVIEW_GATE = (
 CANDIDATE_TEMPLATE_SELECTION_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "candidate_template_clean_checkout_selection_gate.json"
 )
+NVDLA_CMAC_CORE_MAC_MINIMAL_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "nvdla_cmac_core_mac_minimal_build_run_compare_gate.json"
+)
 REPEAT_MEDIAN_RESULTS_SUMMARY = REPO_ROOT / "reports" / "results_reproduction_median_summary.json"
 RESIDENT_BATCH_SWEEP_SUMMARY = REPO_ROOT / "reports" / "resident_batch_sweep_summary.json"
 RESIDENT_STATE_REUSE_SUMMARY = REPO_ROOT / "reports" / "resident_state_reuse_experiment_summary.json"
@@ -589,6 +592,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertEqual(manifest["target"], "NVDLA.nvdla_cmac_core_mac")
         self.assertEqual(manifest["top_module"], template["top_module"])
         self.assertEqual(template["target"], "NVDLA.nvdla_cmac_core_mac")
+        self.assertEqual(
+            template["source_gate"],
+            "config/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
+        )
         self.assertEqual(template["top_module"], "nvdla_cmac_core_mac_gpu_cov_tb")
         self.assertEqual(
             template["source_files"],
@@ -605,7 +612,16 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             self.assertTrue(source_file.startswith("third_party/rtlmeter/"))
             self.assertTrue((REPO_ROOT / source_file).exists())
 
-        self.assertEqual(template["verilator_args"], ["--flatten"])
+        self.assertEqual(
+            template["verilator_args"],
+            [
+                "--flatten",
+                "-Wno-fatal",
+                "-Wno-WIDTHXZEXPAND",
+                "-Wno-WIDTHTRUNC",
+                "-Wno-WIDTHEXPAND",
+            ],
+        )
         self.assertEqual(template["verilator_defines"], ["SYNTHESIS", "DESIGNWARE_NOEXIST"])
         self.assertEqual(
             template["build"]["host_probe_target"],
@@ -619,6 +635,55 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         )
         self.assertFalse(template["build"]["host_probe"]["probe_syms_state"])
         self.assertNotIn("makefile", template["planned_overlay"])
+
+    def test_nvdla_cmac_core_mac_minimal_build_run_compare_gate_is_recorded(self) -> None:
+        gate = json.loads(NVDLA_CMAC_CORE_MAC_MINIMAL_GATE.read_text(encoding="utf-8"))
+        template = json.loads(NVDLA_CMAC_CORE_MAC_TEMPLATE.read_text(encoding="utf-8"))
+        combined_docs = "\n".join(
+            [
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(
+            gate["status"],
+            "minimal_1x1_build_run_compare_passed_coverage_output_equivalence",
+        )
+        self.assertEqual(gate["target_full_name"], "NVDLA.nvdla_cmac_core_mac")
+        self.assertEqual(gate["template"], "config/slice_launch_templates/nvdla_cmac_core_mac.json")
+        self.assertEqual(gate["overlay"]["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertFalse(gate["overlay"]["makefile_target_required"])
+        self.assertEqual(gate["build_contract"]["storage_size_bytes"], 24768)
+        self.assertEqual(gate["build_contract"]["verilator_defines"], template["verilator_defines"])
+        self.assertEqual(gate["build_contract"]["verilator_args"], template["verilator_args"])
+        self.assertIn("-Wno-fatal", gate["build_contract"]["verilator_args"])
+        self.assertEqual(gate["measured_shape"]["nstates"], 1)
+        self.assertEqual(gate["measured_shape"]["steps"], 1)
+        self.assertTrue(gate["measured_shape"]["coverage_output_equivalence_passed"])
+        self.assertEqual(gate["measured_shape"]["coverage_output_mismatch_count"], 0)
+        self.assertTrue(gate["acceptance_policy"]["host_probe_built_with_generic_builder"])
+        self.assertTrue(gate["acceptance_policy"]["gpu_cubin_built"])
+        self.assertTrue(gate["acceptance_policy"]["hybrid_run_completed"])
+        self.assertTrue(gate["acceptance_policy"]["coverage_output_equivalence_gate_passed"])
+        self.assertFalse(gate["acceptance_policy"]["raw_full_state_match_required"])
+        self.assertFalse(gate["acceptance_policy"]["speedup_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            gate["next_task"],
+            "decide_whether_to_expand_nvdla_cmac_core_mac_shapes_or_return_to_ita_dependency_boundary",
+        )
+        self.assertIn("not broad CPU versus hybrid speedup", gate["non_claims"])
+        self.assertIn("not raw full-state equality", gate["non_claims"])
+
+        for token in (
+            "nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 1x1",
+            "coverage_output_equivalence",
+            "mismatch count: `0`",
+            "run_hybrid_template.py` passes template `verilator_defines`",
+            "decide_whether_to_expand_nvdla_cmac_core_mac_shapes_or_return_to_ita_dependency_boundary",
+        ):
+            self.assertIn(token, combined_docs)
 
     def test_candidate_template_clean_checkout_selection_gate_selects_nvdla_first(self) -> None:
         gate = json.loads(CANDIDATE_TEMPLATE_SELECTION_GATE.read_text(encoding="utf-8"))
@@ -1208,15 +1273,19 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "Public archive dry-run:",
             "public_pack_archive_ready",
             "candidate_template_clean_checkout_selection_gate.json",
-            "next_task: nvdla_cmac_core_mac_minimal_build_run_compare_gate",
-            "Review only the NVDLA `cmac_core_mac` minimal build/run/compare surface.",
+            "nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
+            "next_task: decide_whether_to_expand_nvdla_cmac_core_mac_shapes_or_return_to_ita_dependency_boundary",
+            "Review only the completed NVDLA `cmac_core_mac` minimal build/run/compare gate",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
             "records/scaling_gates/candidate_template_clean_checkout_selection_gate.json",
+            "records/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
             "config/slice_launch_templates/nvdla_cmac_core_mac.json",
             "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_core_mac_gpu_cov_tb.sv",
             "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json",
+            "src/tools/hybrid_template_runner.py",
+            "tests/contract/test_hybrid_verilator_like_cli.py",
             "Exclude from this review boundary:",
             "src/hybrid/Makefile",
             "third_party/ITA",
@@ -1228,8 +1297,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`",
             "generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`",
             "candidate selection gate identifies `NVDLA.nvdla_cmac_core_mac` as primary",
+            "minimal build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`",
             "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
+            "`run_hybrid_template.py` passes template `verilator_defines` into the Verilator command",
             "`src/hybrid/Makefile` remains free of generated NVDLA host-probe targets",
             "no generated output is introduced as source of truth",
             "python3 -m unittest tests.contract.test_resident_runtime_contract -q",

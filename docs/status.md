@@ -12,6 +12,8 @@ Hybrid usability state: generated templates now carry generic host-probe build m
 
 Candidate template selection state: `config/scaling_gates/candidate_template_clean_checkout_selection_gate.json` selects `NVDLA.nvdla_cmac_core_mac` as the primary next build/run/compare candidate and `NVDLA.nvdla_cmac_a2cacc` as the secondary reference candidate. Both are clean-checkout-ready through the tracked `third_party/rtlmeter` submodule and `src/tools/build_host_probe.py`; PULP ITA / LLM-serving RTL, MobileViT CPU-kick, and Ibex LLM SoC kick candidates remain deferred until their dependency boundaries and generic host-probe migration status are explicit.
 
+NVDLA minimal build/run/compare state: `config/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json` records the `NVDLA.nvdla_cmac_core_mac` `1x1` minimal flow. `run_hybrid_template.py` now passes template `verilator_defines`, so `SYNTHESIS` and `DESIGNWARE_NOEXIST` select the tracked `NV_DW*` shims. The gate records Verilator build, generic host-probe build, GPU cubin build, hybrid run, and CPU-vs-hybrid `coverage_output_equivalence` compare with mismatch count `0`. This remains a minimal gate, not a broad speedup or full NVDLA claim.
+
 ## Goal
 
 `modern_llm_serving_rtl_hybrid_conditions`

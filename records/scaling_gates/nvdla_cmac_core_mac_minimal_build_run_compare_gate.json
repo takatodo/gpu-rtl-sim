@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "gate": "nvdla_cmac_core_mac_minimal_build_run_compare_gate",
+  "objective": "Advance the selected NVDLA cmac_core_mac candidate from template-only to a minimal build/run/compare boundary using the generic host-probe builder.",
+  "status": "minimal_1x1_build_run_compare_passed_coverage_output_equivalence",
+  "source_selection_gate": "config/scaling_gates/candidate_template_clean_checkout_selection_gate.json",
+  "target": "nvdla_cmac_core_mac",
+  "target_full_name": "NVDLA.nvdla_cmac_core_mac",
+  "template": "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+  "overlay": {
+    "coverage_tb": "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_core_mac_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "makefile_target_required": false
+  },
+  "build_contract": {
+    "verilator_mdir": "artifacts/nvdla_cmac_core_mac_flat_obj_dir",
+    "verilator_defines": [
+      "SYNTHESIS",
+      "DESIGNWARE_NOEXIST"
+    ],
+    "verilator_args": [
+      "--flatten",
+      "-Wno-fatal",
+      "-Wno-WIDTHXZEXPAND",
+      "-Wno-WIDTHTRUNC",
+      "-Wno-WIDTHEXPAND"
+    ],
+    "host_probe": "artifacts/nvdla_cmac_core_mac_flat_obj_dir/tlul_slice_host_probe",
+    "gpu_cubin": "artifacts/nvdla_cmac_core_mac_flat_obj_dir/vl_batch_gpu.cubin",
+    "gpu_meta": "artifacts/nvdla_cmac_core_mac_flat_obj_dir/vl_batch_gpu.meta.json",
+    "storage_size_bytes": 24768
+  },
+  "commands": {
+    "one_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 1x1",
+    "dry_run": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 1x1 --dry-run",
+    "host_probe_dry_run": "python3 src/tools/build_host_probe.py config/slice_launch_templates/nvdla_cmac_core_mac.json --dry-run",
+    "compare_replay": "python3 src/tools/compare_vl_hybrid_modes.py artifacts/nvdla_cmac_core_mac_flat_obj_dir --compare-dumps artifacts/nvdla_cmac_core_mac_flat_obj_dir/nvdla_cmac_core_mac_cpu_repeat_1x1.bin artifacts/nvdla_cmac_core_mac_flat_obj_dir/nvdla_cmac_core_mac_gpu_from_cpu_init_1x1.bin --reference-label cpu_repeat_1x1 --candidate-label hybrid_from_cpu_init_1x1 --acceptance-policy coverage_output_equivalence --coverage-output-gate config/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json --coverage-output-target nvdla_cmac_core_mac --json-out reports/nvdla_cmac_core_mac_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+  },
+  "measured_shape": {
+    "name": "minimum_1x1_build_run_compare",
+    "nstates": 1,
+    "steps": 1,
+    "cpu_report": "reports/nvdla_cmac_core_mac_cpu_repeat_1x1.json",
+    "hybrid_report": "reports/nvdla_cmac_core_mac_hybrid_1x1.txt",
+    "coverage_output_compare_report": "reports/nvdla_cmac_core_mac_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "cpu_elapsed_ms": 4.46262,
+    "hybrid_gpu_kernel_time_ms_total": 1.16224,
+    "hybrid_wall_time_ms": 1.194,
+    "coverage_output_equivalence_passed": true,
+    "coverage_output_mismatch_count": 0
+  },
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "target_scope": [
+    {
+      "target": "nvdla_cmac_core_mac",
+      "status": "minimal_build_run_compare_passed",
+      "launch_template": "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json",
+      "mdir": "artifacts/nvdla_cmac_core_mac_flat_obj_dir",
+      "cpu_reference_state": "artifacts/nvdla_cmac_core_mac_flat_obj_dir/nvdla_cmac_core_mac_cpu_repeat_1x1.bin",
+      "gpu_candidate_state": "artifacts/nvdla_cmac_core_mac_flat_obj_dir/nvdla_cmac_core_mac_gpu_from_cpu_init_1x1.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18
+    },
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance_policy": {
+    "verilator_build_reached": true,
+    "host_probe_built_with_generic_builder": true,
+    "gpu_cubin_built": true,
+    "hybrid_run_completed": true,
+    "cpu_vs_hybrid_compared": true,
+    "coverage_output_equivalence_required": true,
+    "coverage_output_equivalence_gate_passed": true,
+    "raw_full_state_match_required": false,
+    "speedup_claim_allowed_by_gate_alone": false
+  },
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "candidate template to minimal build/run/compare",
+      "status": "satisfied",
+      "evidence": [
+        "commands.one_command",
+        "measured_shape.coverage_output_compare_report"
+      ]
+    },
+    {
+      "requirement": "generic host-probe builder",
+      "status": "satisfied",
+      "evidence": [
+        "overlay.host_probe_builder",
+        "commands.host_probe_dry_run",
+        "acceptance_policy.host_probe_built_with_generic_builder"
+      ]
+    },
+    {
+      "requirement": "clean checkout reproducibility",
+      "status": "satisfied",
+      "evidence": [
+        "source_selection_gate",
+        "template",
+        "overlay.coverage_tb",
+        "overlay.coverage_manifest",
+        "build_contract.verilator_defines",
+        "build_contract.verilator_args"
+      ]
+    },
+    {
+      "requirement": "coverage-output compare",
+      "status": "satisfied",
+      "evidence": [
+        "coverage_output_contract",
+        "measured_shape.coverage_output_equivalence_passed",
+        "measured_shape.coverage_output_mismatch_count"
+      ]
+    }
+  ],
+  "next_task": "decide_whether_to_expand_nvdla_cmac_core_mac_shapes_or_return_to_ita_dependency_boundary",
+  "non_claims": [
+    "not broad CPU versus hybrid speedup",
+    "not raw full-state equality",
+    "not NVDLA full accelerator execution",
+    "not complete CMAC arithmetic validation",
+    "not current Transformer or LLM accelerator completeness"
+  ]
+}

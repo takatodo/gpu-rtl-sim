@@ -779,6 +779,29 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             self.assertIn("-DROOT_RST_FIELD=demo_cov_tb__DOT__reset_like_w", joined)
             self.assertIn("artifacts/demo_cov_obj_dir/*.cpp", joined)
 
+    def test_run_hybrid_template_passes_template_verilator_defines(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                "src/tools/run_hybrid_template.py",
+                "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+                "--shape",
+                "1x1",
+                "--dry-run",
+            ],
+            cwd=REPO_ROOT,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+
+        first_line = result.stdout.splitlines()[0]
+        self.assertIn("-DSYNTHESIS", first_line)
+        self.assertIn("-DDESIGNWARE_NOEXIST", first_line)
+        self.assertIn("--flatten", first_line)
+        self.assertIn("third_party/rtlmeter/designs/NVDLA/src/NV_DW02_tree.v", first_line)
+        self.assertIn("third_party/rtlmeter/designs/NVDLA/src/NV_DW_minmax.v", first_line)
+
 
 if __name__ == "__main__":
     unittest.main()

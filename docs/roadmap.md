@@ -78,6 +78,14 @@ Candidate-template selection gate:
 - deferred before promotion: PULP ITA / LLM-serving RTL, MobileViT CPU-kick, and Ibex LLM SoC kick
 - reason: only the selected NVDLA candidates are clean-checkout-ready in this boundary using tracked `third_party/rtlmeter` plus `src/tools/build_host_probe.py` without adding Makefile host-probe targets
 
+NVDLA minimal build/run/compare gate:
+
+- `config/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json`
+- command: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 1x1`
+- result: Verilator build, generic host-probe build, GPU cubin build, hybrid run, and CPU-vs-hybrid `coverage_output_equivalence` compare pass
+- mismatch count: `0`
+- non-claim: this is the minimal `1x1` boundary only, not broad speedup or full NVDLA execution
+
 Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
@@ -226,34 +234,33 @@ Tracked evidence:
 
 Recommended next gate:
 
-`nvdla_cmac_core_mac_minimal_build_run_compare_gate`
+`decide_whether_to_expand_nvdla_cmac_core_mac_shapes_or_return_to_ita_dependency_boundary`
 
 Acceptance criteria:
 
-- start from the selected candidate in `config/scaling_gates/candidate_template_clean_checkout_selection_gate.json`
-- keep `NVDLA.nvdla_cmac_core_mac` as the primary next candidate
-- use existing `third_party/rtlmeter` NVDLA source only; do not add new third-party submodules
-- use `build.host_probe_builder: src/tools/build_host_probe.py` metadata instead of adding a Makefile target
-- advance from template-only toward minimal build/run/compare evidence
-- keep any result scoped to coverage-output equivalence; do not make a speedup claim from template existence
-- keep the larger flattened DesignWare-dependent source list explicit in the template
-- leave ITA dotp, ITA softmax, KV-cache, LLM SoC, MobileViT, and non-NVDLA targets out of this boundary
+- review the completed `nvdla_cmac_core_mac_minimal_build_run_compare_gate`
+- choose either NVDLA shape expansion or the ITA dependency boundary as the next active workstream
+- if expanding NVDLA, keep the claim scoped to coverage-output equivalence and avoid broad speedup claims
+- if returning to ITA, first make `third_party/ITA` and `third_party/common_cells` canonical dependency boundaries
 
 Working tree review boundary:
 
-`next_task: nvdla_cmac_core_mac_minimal_build_run_compare_gate`
+`next_task: decide_whether_to_expand_nvdla_cmac_core_mac_shapes_or_return_to_ita_dependency_boundary`
 
-Review only the NVDLA `cmac_core_mac` minimal build/run/compare surface. The goal is to exercise a larger CNN-era MAC datapath candidate while preserving the generic host-probe builder policy and clean-checkout reproducibility.
+Review only the completed NVDLA `cmac_core_mac` minimal build/run/compare gate and choose the next workstream.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
 - `docs/status.md`
 - `records/scaling_gates/candidate_template_clean_checkout_selection_gate.json`
+- `records/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json`
 - `config/slice_launch_templates/nvdla_cmac_core_mac.json`
 - `overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_core_mac_gpu_cov_tb.sv`
 - `overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json`
+- `src/tools/hybrid_template_runner.py`
 - `tests/contract/test_full_ita_mha_larger_paged_kv_next.py`
+- `tests/contract/test_hybrid_verilator_like_cli.py`
 
 Exclude from this review boundary:
 
@@ -270,8 +277,10 @@ Exclude from this review boundary:
 Boundary acceptance:
 
 - candidate selection gate identifies `NVDLA.nvdla_cmac_core_mac` as primary and `NVDLA.nvdla_cmac_a2cacc` as secondary
+- minimal build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
+- `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command
 - the overlay and coverage manifest are tracked source files
 - `src/hybrid/Makefile` remains free of generated NVDLA host-probe targets
 - no generated output is introduced as source of truth
