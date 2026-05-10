@@ -10,11 +10,11 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 Current priority:
 
-`select_next_measurement_after_public_benchmark_pack_externalization`
+`define_paged_attention_kv_cache_scale_up_measurement_gate`
 
 Current gate:
 
-`config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json`
+`config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json`
 
 ## Plan
 
@@ -68,7 +68,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-`Select the next measurement after closing the public benchmark pack externalization boundary.`
+`Define the paged-attention/KV-cache scale-up measurement boundary selected after public benchmark pack externalization.`
 
 Candidate-template selection gate:
 
@@ -258,6 +258,7 @@ Record the completed persistent resident state ABI repeat-median measurement and
 - audit: `config/scaling_gates/public_benchmark_pack_goal_completion_audit.json`
 - readiness audit: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
 - externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json`
+- next measurement selection gate: `config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json`
 - next-goal selection gate: `config/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json`
 - completed measurement goal: `persistent_resident_state_abi_repeat_median`
 - completed gate: `persistent_resident_state_abi_repeat_median_measurement_gate`
@@ -349,7 +350,7 @@ Tracked evidence:
 
 Recommended next gate:
 
-`select_next_measurement_after_public_benchmark_pack_externalization`
+`define_paged_attention_kv_cache_scale_up_measurement_gate`
 
 Acceptance criteria:
 
@@ -359,17 +360,18 @@ Acceptance criteria:
 - review `config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json`
 - review `config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json`
 - review `config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json`
+- review `config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json`
 - preserve the measured repeat-median result for the existing `16x64` four-phase path
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
-- refresh the public benchmark pack around the new repeat-median evidence
+- select paged-attention/KV-cache scale-up as the next measurement without importing unreviewed candidate overlays yet
 - keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the externalization pack
 
 Working tree review boundary:
 
-`next_task: select_next_measurement_after_public_benchmark_pack_externalization`
+`next_task: define_paged_attention_kv_cache_scale_up_measurement_gate`
 
-Review only the repeat-median result, next-goal selection, and public-pack refresh boundary. The current pack is ready for externalization; do not mix in runtime, MobileViT, or new workload edits.
+Review only the next-measurement selection boundary after public-pack externalization. Do not mix in runtime, MobileViT, untracked candidate overlays, or new workload measurement edits.
 
 Review/stage boundary:
 

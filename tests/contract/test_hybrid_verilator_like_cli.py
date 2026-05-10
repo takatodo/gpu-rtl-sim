@@ -101,6 +101,7 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             "records/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
             "records/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
             "records/scaling_gates/public_benchmark_pack_externalization_completion_gate.json",
+            "records/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json",
             "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",

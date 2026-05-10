@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "top_level_goal": "modern_llm_serving_rtl_hybrid_conditions",
-  "current_priority": "select_next_measurement_after_public_benchmark_pack_externalization",
-  "current_priority_source_artifact": "config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json",
+  "current_priority": "define_paged_attention_kv_cache_scale_up_measurement_gate",
+  "current_priority_source_artifact": "config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json",
   "active_scope": {
     "active_target_count": 127,
     "active_tlul_target_count": 22,
@@ -260,6 +260,7 @@
     "next_goal_selection_after_persistent_resident_repeat_median_gate": "config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
     "public_results_packaging_refresh_after_persistent_resident_repeat_median_gate": "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
     "public_benchmark_pack_externalization_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json",
+    "next_measurement_selection_after_public_benchmark_pack_externalization_gate": "config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json",
     "goal_review_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_larger_paged_kv_goal_review_gate.json",
     "dependency_audit": "config/scaling_gates/neural_network_rtl_full_ita_mha_dependency_audit_gate.json",
     "generic_hybrid_benchmark_cli_gate": "config/scaling_gates/generic_hybrid_benchmark_cli_gate.json",

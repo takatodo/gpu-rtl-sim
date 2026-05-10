@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_public_benchmark_pack_externalization_gate",
+  "status": "selected_paged_attention_kv_cache_scale_up_next",
+  "objective": "Select the next measurement goal after the public benchmark pack externalization boundary was completed.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json",
+  "source_results_doc": "docs/results.md",
+  "long_term_goal": "Keep hybrid execution close to Verilator usage while making LLM-serving-like RTL workload correctness, speed trends, reproduction commands, and non-claims easy to regenerate and review.",
+  "options_reviewed": [
+    {
+      "option": "paged_attention_kv_cache_scale_up",
+      "decision": "select_next",
+      "reason": "The public pack now closes the persistent resident repeat-median evidence. The remaining serving-state gap is larger paged-attention/KV-cache behavior, which is closer to LLM serving than another MHA-only or runtime-only refinement.",
+      "weakness": "This can broaden workload-specific harness surface, so the first gate must be selection/measurement-boundary work and must avoid importing unreviewed candidate overlays as source of truth."
+    },
+    {
+      "option": "full_ita_mha_or_mha_shape_expansion",
+      "decision": "defer",
+      "reason": "Fresh full ITA/MHA generic-host-probe evidence already covers 1x1, 32x1, and 1x32, while older MHA repeat-median and resident evidence already document the state-parallel versus repeated-step trend.",
+      "weakness": "More MHA shapes improve coverage breadth but do not add KV-cache or paged-attention serving-state behavior."
+    },
+    {
+      "option": "prefill_decode_split_followup",
+      "decision": "defer",
+      "reason": "Prefill/decode split is already represented for the current MHA path. It becomes more valuable after selecting a richer paged-attention/KV-cache serving-state workload.",
+      "weakness": "Would mostly refine an already documented execution-shape distinction."
+    },
+    {
+      "option": "resident_or_persistent_resident_optimization_followup",
+      "decision": "defer",
+      "reason": "Resident, state-reuse, persistent-resident, and repeat-median evidence are now recorded and packaged. Further runtime optimization should follow a richer serving-state target.",
+      "weakness": "Can become runtime-centric and delay the next workload-representativeness step."
+    },
+    {
+      "option": "quantized_kv_cache_boundary",
+      "decision": "defer",
+      "reason": "Quantized KV-cache is important but should follow a cleaner paged-attention/KV-cache scale-up boundary so quantization does not mix with scale-up, paging, and correctness semantics in one gate.",
+      "weakness": "Deferring leaves quantized serving memory behavior outside the next measurement."
+    }
+  ],
+  "selected_next_goal": {
+    "name": "paged_attention_kv_cache_scale_up",
+    "first_gate": "define_paged_attention_kv_cache_scale_up_measurement_gate",
+    "first_gate_objective": "Define a scoped paged-attention/KV-cache scale-up measurement boundary using existing tracked templates and coverage-output equivalence before running or importing additional candidate overlays.",
+    "scope": [
+      "start from tracked paged-attention KV-score and paged KV-cache evidence",
+      "prefer existing tracked templates before adding new overlays",
+      "preserve coverage_output_equivalence as the correctness policy",
+      "keep generated reports and artifacts non-canonical",
+      "do not claim production paged attention, production KV-cache hierarchy, or model-level Transformer inference"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_measurement": true,
+    "contract_tests_required_for_next_public_workflow": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_paged_attention_kv_cache_scale_up_measurement_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not production paged attention",
+    "not production KV-cache memory hierarchy",
+    "not model-level Transformer inference",
+    "not quantized model accuracy",
+    "not production LLM serving throughput",
+    "not broad speedup for arbitrary RTL",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
