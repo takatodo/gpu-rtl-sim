@@ -66,6 +66,12 @@ PUBLIC_RESULTS_MHA_REFRESH_GATE = (
     / "scaling_gates"
     / "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json"
 )
+PUBLIC_RESULTS_PERSISTENT_REPEAT_MEDIAN_REFRESH_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json"
+)
 PUBLIC_BENCHMARK_PACK_COMPLETION_AUDIT = (
     REPO_ROOT / "config" / "scaling_gates" / "public_benchmark_pack_goal_completion_audit.json"
 )
@@ -422,11 +428,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertEqual(selection["top_level_goal"], "modern_llm_serving_rtl_hybrid_conditions")
         self.assertEqual(
             selection["current_priority"],
-            "public_pack_refresh_after_persistent_resident_repeat_median",
+            "public_benchmark_pack_externalization_ready",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
+            "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
         )
 
     def test_gate_records_both_requested_followups_and_selected_first_workstream(self) -> None:
@@ -2843,7 +2849,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
 
         self.assertEqual(
             selection["current_priority"],
-            "public_pack_refresh_after_persistent_resident_repeat_median",
+            "public_benchmark_pack_externalization_ready",
         )
         self.assertEqual(gate["current_priority"], "public_benchmark_pack_externalization_ready")
         self.assertEqual(gate["next_task"], "public_benchmark_pack_externalization_ready")
@@ -2902,7 +2908,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_mha_shape_expansion_gate.json",
             "pulp_ita_mha_shape_expansion_review_gate.json",
             "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
-            "next_task: define_public_results_packaging_refresh_after_persistent_resident_repeat_median_gate",
+            "next_task: public_benchmark_pack_externalization_ready",
             "Review only the repeat-median result, next-goal selection, and public-pack refresh boundary",
             "Review/stage boundary:",
             "docs/roadmap.md",
@@ -3187,7 +3193,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "reports/persistent_resident_state_abi_repeat_median_summary.json",
             "forbids runtime/ABI changes or new workload claims",
             "Median hybrid wall is `4.965 ms`",
-            "define_public_results_packaging_refresh_after_persistent_resident_repeat_median_gate",
+            "public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
         ):
             self.assertIn(token, combined)
 
@@ -3195,7 +3201,6 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         gate = json.loads(
             NEXT_GOAL_AFTER_PERSISTENT_RESIDENT_REPEAT_MEDIAN_GATE.read_text(encoding="utf-8")
         )
-        selection = json.loads(SELECTION.read_text(encoding="utf-8"))
         combined = "\n".join(
             [
                 README.read_text(encoding="utf-8"),
@@ -3236,27 +3241,79 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             gate["next_task"],
             "define_public_results_packaging_refresh_after_persistent_resident_repeat_median_gate",
         )
-        self.assertEqual(
-            selection["current_priority"],
-            "public_pack_refresh_after_persistent_resident_repeat_median",
-        )
-        self.assertEqual(
-            selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
-        )
-        self.assertEqual(
-            selection["completed_goal_evidence"]["next_goal_selection_after_persistent_resident_repeat_median_gate"],
-            "config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
-        )
 
         for token in (
             "next_goal_selection_after_persistent_resident_repeat_median_gate.json",
             "public_pack_refresh_after_persistent_resident_repeat_median",
-            "define_public_results_packaging_refresh_after_persistent_resident_repeat_median_gate",
-            "refresh the public benchmark pack after this repeat-median result",
-            "All point at `public_pack_refresh_after_persistent_resident_repeat_median`",
+            "public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
+            "current selected goal is complete",
         ):
             self.assertIn(token, combined)
+
+    def test_public_results_packaging_refresh_after_persistent_repeat_median_is_defined(self) -> None:
+        gate = json.loads(PUBLIC_RESULTS_PERSISTENT_REPEAT_MEDIAN_REFRESH_GATE.read_text(encoding="utf-8"))
+        selection = json.loads(SELECTION.read_text(encoding="utf-8"))
+        combined_docs = "\n".join(
+            [
+                README.read_text(encoding="utf-8"),
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+                RESULTS.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(
+            gate["status"],
+            "defined_public_results_packaging_refresh_after_persistent_resident_repeat_median",
+        )
+        self.assertEqual(
+            gate["source_selection_gate"],
+            "config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
+        )
+        self.assertEqual(
+            gate["source_measurement_gate"],
+            "config/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+        )
+        self.assertEqual(gate["selected_workstream"], "public_pack_refresh_after_persistent_resident_repeat_median")
+        self.assertEqual(gate["results_doc"], "docs/results.md")
+
+        evidence = gate["persistent_resident_repeat_median_evidence"]
+        self.assertEqual(evidence["correctness_policy"], "coverage_output_equivalence")
+        self.assertTrue(evidence["all_samples_passed"])
+        self.assertEqual(evidence["max_coverage_output_mismatch_count"], 0)
+        self.assertEqual(evidence["shape"], "16x64")
+        self.assertEqual(evidence["repeat_count"], 3)
+        self.assertEqual(evidence["median_hybrid_wall_ms"], 4.965)
+        self.assertEqual(evidence["median_gpu_kernel_total_ms"], 4.934624)
+        self.assertEqual(evidence["summary_report"], "reports/persistent_resident_state_abi_repeat_median_summary.json")
+
+        self.assertTrue(gate["acceptance_policy"]["documentation_refresh_only"])
+        self.assertFalse(gate["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["runtime_or_abi_change_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["new_workload_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["reports_and_artifacts_are_source_of_truth"])
+        self.assertEqual(gate["next_task"], "public_benchmark_pack_externalization_ready")
+        self.assertIn("not a new measurement result", gate["non_claims"])
+        self.assertIn("reports and artifacts are generated evidence, not source of truth", gate["non_claims"])
+
+        self.assertEqual(selection["current_priority"], "public_benchmark_pack_externalization_ready")
+        self.assertEqual(
+            selection["current_priority_source_artifact"],
+            "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
+        )
+        self.assertEqual(
+            selection["completed_goal_evidence"]["public_results_packaging_refresh_after_persistent_resident_repeat_median_gate"],
+            "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
+        )
+
+        for token in (
+            "public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
+            "reports/persistent_resident_state_abi_repeat_median_summary.json",
+            "Persistent resident ABI repeat-median",
+            "All point at `public_benchmark_pack_externalization_ready`",
+            "next_task: public_benchmark_pack_externalization_ready",
+        ):
+            self.assertIn(token, combined_docs)
 
     def test_published_hybrid_benchmark_wrapper_summaries_are_reviewable(self) -> None:
         published_docs = "\n".join(

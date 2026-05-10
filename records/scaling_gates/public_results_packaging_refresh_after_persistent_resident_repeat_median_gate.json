@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_persistent_resident_repeat_median_gate",
+  "objective": "Refresh the public results packaging after the persistent resident state ABI repeat-median measurement passed coverage-output equivalence.",
+  "status": "defined_public_results_packaging_refresh_after_persistent_resident_repeat_median",
+  "source_selection_gate": "config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
+  "source_measurement_gate": "config/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+  "selected_workstream": "public_pack_refresh_after_persistent_resident_repeat_median",
+  "results_doc": "docs/results.md",
+  "persistent_resident_repeat_median_evidence": {
+    "correctness_policy": "coverage_output_equivalence",
+    "all_samples_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "shape": "16x64",
+    "phase_shapes": [
+      "16x64",
+      "16x128",
+      "16x192",
+      "16x256"
+    ],
+    "repeat_count": 3,
+    "summary_report": "reports/persistent_resident_state_abi_repeat_median_summary.json",
+    "sample_reports": [
+      "reports/persistent_resident_state_abi_repeat_median_sample_1.json",
+      "reports/persistent_resident_state_abi_repeat_median_sample_2.json",
+      "reports/persistent_resident_state_abi_repeat_median_sample_3.json"
+    ],
+    "median_hybrid_wall_ms": 4.965,
+    "median_gpu_kernel_total_ms": 4.934624,
+    "median_hybrid_wall_ms_per_final_state_step": 0.001212158203125
+  },
+  "refresh_scope": [
+    "keep docs/results.md aligned with the persistent resident state ABI repeat-median evidence",
+    "keep README.md, docs/status.md, docs/roadmap.md, and config/selection.json aligned",
+    "reference reports/persistent_resident_state_abi_repeat_median_summary.json as generated evidence only",
+    "keep the previous MHA public results refresh separate from this repeat-median refresh",
+    "do not add a new workload measurement",
+    "do not change runtime, ABI, MobileViT, or paged-attention/KV-cache behavior"
+  ],
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "Persistent resident repeat-median evidence appears in public results",
+      "artifact": "docs/results.md",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Repeat-median result is machine-readable",
+      "artifact": "records/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Correctness remains coverage-output equivalence",
+      "artifact": "persistent_resident_repeat_median_evidence.correctness_policy",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Generated reports remain non-canonical",
+      "artifact": "acceptance_policy.reports_and_artifacts_are_source_of_truth",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Contract tests cover the packaging refresh",
+      "artifact": "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+      "status": "satisfied"
+    }
+  ],
+  "acceptance_policy": {
+    "documentation_refresh_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "review_boundary": [
+    "docs/results.md",
+    "docs/roadmap.md",
+    "docs/status.md",
+    "README.md",
+    "config/selection.json",
+    "records/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
+    "records/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+    "tests/contract/test_resident_runtime_contract.py"
+  ],
+  "next_task": "public_benchmark_pack_externalization_ready",
+  "non_claims": [
+    "not a new measurement result",
+    "not a new workload",
+    "not a runtime or ABI change",
+    "not production LLM-serving throughput",
+    "not model-level Transformer inference",
+    "not production paged attention",
+    "not production KV-cache memory hierarchy",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

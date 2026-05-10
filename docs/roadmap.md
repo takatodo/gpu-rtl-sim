@@ -10,11 +10,11 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 Current priority:
 
-`public_pack_refresh_after_persistent_resident_repeat_median`
+`public_benchmark_pack_externalization_ready`
 
 Current gate:
 
-`config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json`
+`config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json`
 
 ## Plan
 
@@ -68,7 +68,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-`Define the public benchmark pack refresh after the persistent resident state ABI repeat-median result.`
+`Hold the public benchmark pack ready for external review after the persistent resident state ABI repeat-median refresh.`
 
 Candidate-template selection gate:
 
@@ -348,7 +348,7 @@ Tracked evidence:
 
 Recommended next gate:
 
-`define_public_results_packaging_refresh_after_persistent_resident_repeat_median_gate`
+`public_benchmark_pack_externalization_ready`
 
 Acceptance criteria:
 
@@ -356,6 +356,7 @@ Acceptance criteria:
 - review `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
 - review `config/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json`
 - review `config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json`
+- review `config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json`
 - preserve the measured repeat-median result for the existing `16x64` four-phase path
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
@@ -364,9 +365,9 @@ Acceptance criteria:
 
 Working tree review boundary:
 
-`next_task: define_public_results_packaging_refresh_after_persistent_resident_repeat_median_gate`
+`next_task: public_benchmark_pack_externalization_ready`
 
-Review only the repeat-median result, next-goal selection, and public-pack refresh boundary. Do not mix in runtime, MobileViT, or new workload edits.
+Review only the repeat-median result, next-goal selection, and public-pack refresh boundary. The current pack is ready for external review; do not mix in runtime, MobileViT, or new workload edits.
 
 Review/stage boundary:
 

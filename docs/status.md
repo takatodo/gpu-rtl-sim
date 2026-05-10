@@ -52,11 +52,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`public_pack_refresh_after_persistent_resident_repeat_median`
+`public_benchmark_pack_externalization_ready`
 
 Current gate:
 
-`config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json`
+`config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json`
 
 ## Current State
 
@@ -84,6 +84,8 @@ Persistent resident state ABI repeat-median state: `config/scaling_gates/persist
 
 Next goal after persistent resident repeat-median: `config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json` selects `public_pack_refresh_after_persistent_resident_repeat_median`. The selected first gate is `public_results_packaging_refresh_after_persistent_resident_repeat_median_gate`; paged attention/KV-cache scale-up remains the strongest later measurement candidate, but it is deferred until the new repeat-median evidence is closed into the public pack. This is selection-only packaging/review work, not a new measurement, runtime/ABI change, or production serving claim.
 
+Public results repeat-median refresh state: `config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json` defines the source-of-truth refresh after the persistent resident state ABI repeat-median result. It keeps `docs/results.md`, README, status, roadmap, and selection aligned around `reports/persistent_resident_state_abi_repeat_median_summary.json` as generated evidence only. The next_task returns to `public_benchmark_pack_externalization_ready`.
+
 Reproduction state: `src/tools/run_results_reproduction.py --dry-run` now prints the representative MHA, resident decode, resident batch-decode, and paged-attention KV-score command sequence from one public entrypoint.
 
 Repeat-median reproduction state: `src/tools/run_results_reproduction.py --repeat-median 3` measured `64x1`, `1x64`, `1x64` resident, `32x64` resident, and paged-attention KV-score `64x1`. The aggregate report is `reports/results_reproduction_median_summary.json`; all five median workloads pass coverage-output equivalence with mismatch count `0`.
@@ -108,7 +110,7 @@ Persistent resident device handle storage gate: `config/scaling_gates/persistent
 
 Persistent resident storage review: `config/scaling_gates/persistent_resident_device_handle_storage_review_gate.json` records the scoped condition goal as satisfied and holds for review. Optional followups are cross-process persistent CUDA state, paged-attention/KV-cache scale-up, repeat-median timing for persistent resident ABI, and public results packaging refresh.
 
-Public benchmark pack externalization state: `config/scaling_gates/public_results_packaging_gate.json` previously pointed the work at `public_benchmark_pack_externalization_ready`: keeping the public pack understandable to external readers by spelling out how to read the evidence, what generated reports mean, what prerequisites each path has, and which non-claims bound the result. The current gate is now the repeat-median follow-up selection gate so this pack can be refreshed around the newest persistent resident ABI timing evidence. `docs/results.md` also carries the MobileViT `limit 128` ImageNet evidence as CPU-kick accuracy plus hybrid RTL control-boundary coverage-output equivalence, with explicit non-claims for RTL logits and full 50k ImageNet. The one-command entrypoint for that evidence is `python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128`.
+Public benchmark pack externalization state: `config/scaling_gates/public_results_packaging_gate.json` previously pointed the work at `public_benchmark_pack_externalization_ready`: keeping the public pack understandable to external readers by spelling out how to read the evidence, what generated reports mean, what prerequisites each path has, and which non-claims bound the result. The current gate is now `config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json`, which closes the newest persistent resident ABI timing evidence into the public pack. `docs/results.md` also carries the MobileViT `limit 128` ImageNet evidence as CPU-kick accuracy plus hybrid RTL control-boundary coverage-output equivalence, with explicit non-claims for RTL logits and full 50k ImageNet. The one-command entrypoint for that evidence is `python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128`.
 
 Public reproduction smoke state: `docs/results.md` now records the first dry-run command set for external readers. This smoke validates public CLI parsing and command expansion only; it is not correctness or timing evidence.
 
