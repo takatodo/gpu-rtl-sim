@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "gate": "nvdla_cmac_core_mac_template_shape_expansion_gate",
+  "objective": "Expand the selected NVDLA cmac_core_mac candidate beyond the minimal 1x1 pass while preserving the Verilator-like template entrypoint and generic host-probe builder boundary.",
+  "status": "defined_next_template_shape_expansion_gate",
+  "source_minimal_gate": "config/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
+  "historical_shape_gate": "config/scaling_gates/neural_network_rtl_nvdla_cmac_core_mac_state_parallel_shape_expansion_gate.json",
+  "target": "nvdla_cmac_core_mac",
+  "target_full_name": "NVDLA.nvdla_cmac_core_mac",
+  "template": "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+  "entrypoint": "src/tools/run_hybrid_template.py",
+  "active_seed_policy": {
+    "active_seed_target": "NVDLA.nvdla_cmac_core_mac",
+    "do_not_add_second_active_seed_before_gate_completion": true,
+    "deferred_targets": [
+      "NVDLA.nvdla_cmac_a2cacc",
+      "PULP ITA",
+      "MobileViT CPU-kick",
+      "Ibex LLM SoC kick"
+    ]
+  },
+  "planned_shapes": [
+    {
+      "shape": "8x1",
+      "purpose": "Small state-parallel smoke beyond the 1x1 minimal gate."
+    },
+    {
+      "shape": "32x1",
+      "purpose": "State-parallel comparison point that stays within the existing cmac_core_mac seed."
+    },
+    {
+      "shape": "8x4",
+      "purpose": "Small repeated-step check with enough independent states to avoid single-state launch-only conclusions."
+    }
+  ],
+  "required_commands": {
+    "dry_run_smoke": [
+      "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 8x1 --dry-run",
+      "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 32x1 --dry-run",
+      "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 8x4 --dry-run"
+    ],
+    "measurement": [
+      "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 8x1",
+      "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 32x1",
+      "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 8x4"
+    ]
+  },
+  "acceptance_policy": {
+    "verilator_like_entrypoint_required": true,
+    "generic_host_probe_builder_required": true,
+    "all_planned_shapes_must_pass_coverage_output_equivalence": true,
+    "coverage_output_gate": "config/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
+    "raw_full_state_match_required": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "historical_state_parallel_results_are_context_not_current_source_of_truth": true
+  },
+  "review_boundary": [
+    "docs/roadmap.md",
+    "docs/status.md",
+    "records/scaling_gates/nvdla_cmac_core_mac_template_shape_expansion_gate.json",
+    "records/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
+    "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+    "src/tools/hybrid_template_runner.py",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+    "tests/contract/test_hybrid_verilator_like_cli.py"
+  ],
+  "exclude_from_boundary": [
+    "AGENTS.md",
+    "src/hybrid/Makefile",
+    "third_party/ITA",
+    "third_party/common_cells",
+    "third_party/ibex",
+    "MobileViT tools/tests",
+    "Ibex or LLM SoC kick templates",
+    "generated output under reports/ or artifacts/"
+  ],
+  "next_task": "run_template_shape_expansion_measurements_or_record_blocker",
+  "non_claims": [
+    "not broad CPU versus hybrid speedup",
+    "not raw full-state equality",
+    "not full NVDLA accelerator execution",
+    "not complete CMAC arithmetic validation",
+    "not current Transformer or LLM accelerator completeness",
+    "not promotion of a second active seed target"
+  ]
+}

@@ -136,7 +136,7 @@
       ]
     }
   ],
-  "next_task": "decide_whether_to_expand_nvdla_cmac_core_mac_shapes_or_return_to_ita_dependency_boundary",
+  "next_task": "nvdla_cmac_core_mac_template_shape_expansion_gate",
   "non_claims": [
     "not broad CPU versus hybrid speedup",
     "not raw full-state equality",

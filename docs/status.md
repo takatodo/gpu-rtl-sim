@@ -14,6 +14,8 @@ Candidate template selection state: `config/scaling_gates/candidate_template_cle
 
 NVDLA minimal build/run/compare state: `config/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json` records the `NVDLA.nvdla_cmac_core_mac` `1x1` minimal flow. `run_hybrid_template.py` now passes template `verilator_defines`, so `SYNTHESIS` and `DESIGNWARE_NOEXIST` select the tracked `NV_DW*` shims. The gate records Verilator build, generic host-probe build, GPU cubin build, hybrid run, and CPU-vs-hybrid `coverage_output_equivalence` compare with mismatch count `0`. This remains a minimal gate, not a broad speedup or full NVDLA claim.
 
+NVDLA next-task state: `config/scaling_gates/nvdla_cmac_core_mac_template_shape_expansion_gate.json` is the selected next workstream. It keeps the active seed target at `NVDLA.nvdla_cmac_core_mac`, keeps `run_hybrid_template.py` as the Verilator-like entrypoint, and plans only `8x1`, `32x1`, and `8x4` shape checks before returning to ITA or adding another active target.
+
 ## Goal
 
 `modern_llm_serving_rtl_hybrid_conditions`
