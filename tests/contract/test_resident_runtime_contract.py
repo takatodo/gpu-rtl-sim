@@ -72,6 +72,14 @@ class ReducedActiveSurfaceContractTest(unittest.TestCase):
             selection["current_priority_source_artifact"],
             "config/scaling_gates/public_results_packaging_gate.json",
         )
+        self.assertEqual(
+            selection["completed_goal_evidence"]["persistent_resident_state_abi_repeat_median_gate"],
+            "config/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+        )
+        self.assertEqual(
+            selection["completed_goal_evidence"]["persistent_resident_state_abi_repeat_median_summary"],
+            "reports/persistent_resident_state_abi_repeat_median_summary.json",
+        )
         self.assertEqual(selection["candidate_targets"], [])
         self.assertEqual(selection["active_scope"]["candidate_targets"], [])
         self.assertEqual(

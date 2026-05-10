@@ -68,7 +68,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-`Define the persistent resident state ABI repeat-median measurement after the public benchmark pack readiness gate.`
+`Select the next measurement boundary after the persistent resident state ABI repeat-median result.`
 
 Candidate-template selection gate:
 
@@ -252,16 +252,20 @@ External-facing synthesis:
 
 ## Next Goal
 
-Define the next measurement boundary after the refreshed public benchmark pack became externalization-ready:
+Record the completed persistent resident state ABI repeat-median measurement and select the next measurement boundary:
 
 - gate: `config/scaling_gates/public_results_packaging_gate.json`
 - audit: `config/scaling_gates/public_benchmark_pack_goal_completion_audit.json`
 - readiness audit: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
 - next-goal selection gate: `config/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json`
-- selected next measurement goal: `persistent_resident_state_abi_repeat_median`
-- first required gate: `persistent_resident_state_abi_repeat_median_measurement_gate`
+- completed measurement goal: `persistent_resident_state_abi_repeat_median`
+- completed gate: `persistent_resident_state_abi_repeat_median_measurement_gate`
 - dry-run: `python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3 --dry-run`
-- planned report: `reports/persistent_resident_state_abi_repeat_median_summary.json`
+- measured report: `reports/persistent_resident_state_abi_repeat_median_summary.json`
+- measured result: all three samples pass coverage-output equivalence, mismatch count `0`
+- median hybrid wall: `4.965 ms`
+- median GPU kernel total: `4.934624 ms`
+- median hybrid wall per final state-step: `0.001212158203125 ms`
 - document: `docs/results.md`
 - newest evidence: `reports/persistent_resident_state_abi_probe_summary.json`
 - latest MobileViT evidence: `reports/mobile_vit_hybrid_128_summary.json`
@@ -286,14 +290,14 @@ Externalization readiness adds:
 - a public archive dry-run that prints package include/exclude paths without creating a source-of-truth archive
 - contract tests that pin these public-pack explanations
 
-Next measurement selection:
+Current measurement selection result:
 
-- select persistent resident state ABI repeat-median because it is the smallest next measurement that improves timing reproducibility for the newest serving-like execution-mode evidence
+- persistent resident state ABI repeat-median was selected and measured because it was the smallest next measurement that improves timing reproducibility for the newest serving-like execution-mode evidence
 - defer paged attention / KV-cache scale-up because the public pack already includes larger paged KV-cache, paged-attention KV-score, and repeat-median paged-attention score evidence
 - defer additional prefill/decode work until the persistent resident timing reproducibility gap is closed
 - keep runtime/ABI changes out of the repeat-median gate
 - keep publish-only as available downstream work, not the next engineering measurement gate
-- do not change runtime ABI or add a new workload while defining `persistent_resident_state_abi_repeat_median_measurement_gate`
+- do not change runtime ABI or add a new workload while selecting the next measurement after `persistent_resident_state_abi_repeat_median`
 
 Representative comparisons:
 
@@ -344,25 +348,24 @@ Tracked evidence:
 
 Recommended next gate:
 
-`define_persistent_resident_state_abi_repeat_median_measurement_gate`
+`select_next_measurement_goal_after_persistent_resident_state_abi_repeat_median`
 
 Acceptance criteria:
 
 - review `config/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json`
 - review `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
-- reuse the existing persistent resident state ABI entrypoint
-- measure repeat-median timing for the existing `16x64` four-phase path before changing runtime ABI
-- write `reports/persistent_resident_state_abi_repeat_median_summary.json`
+- review `config/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json`
+- preserve the measured repeat-median result for the existing `16x64` four-phase path
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
-- keep resident execution optimization deferred to its own runtime/ABI gates
+- choose exactly one next measurement or packaging gate
 - keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the externalization pack
 
 Working tree review boundary:
 
-`next_task: define_persistent_resident_state_abi_repeat_median_measurement_gate`
+`next_task: select_next_measurement_goal_after_persistent_resident_state_abi_repeat_median`
 
-Review only the next-goal selection and repeat-median measurement definition. Do not mix in runtime, MobileViT, or new workload edits.
+Review only the completed repeat-median measurement record and next-goal selection boundary. Do not mix in runtime, MobileViT, or new workload edits.
 
 Review/stage boundary:
 

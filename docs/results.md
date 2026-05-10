@@ -165,6 +165,12 @@ Persistent resident ABI probe:
 | --- | --- | --- | ---: | ---: | --- | --- |
 | Full ITA/MHA persistent resident ABI | `16x64..16x256` | one process, same `d_storage` across four cumulative phases | `4.517` | `4.486688` | all phases pass, mismatch `0` | `reports/persistent_resident_state_abi_probe_summary.json` |
 
+Persistent resident ABI repeat-median:
+
+| Workload | Shape | Interpretation | Hybrid wall ms median | GPU kernel total ms median | Per final state-step wall ms median | Result | Evidence |
+| --- | --- | --- | ---: | ---: | ---: | --- | --- |
+| Full ITA/MHA persistent resident ABI | `16x64..16x256`, repeat `3` | same existing persistent resident ABI path, no runtime/ABI change | `4.965` | `4.934624` | `0.001212158203125` | all samples pass, mismatch `0` | `reports/persistent_resident_state_abi_repeat_median_summary.json` |
+
 ## MobileViT ImageNet Evidence
 
 MobileViT is included as CPU-kick ImageNet evidence plus a hybrid RTL control-boundary check. The model logits and accuracy are produced by CPU-kick MobileViT inference records; the hybrid RTL proxy verifies the CPU-visible `LOAD_MODEL` / `LOAD_IMAGE` / `KICK_INFER` / `POLL_DONE` boundary with coverage-output equivalence.
@@ -202,6 +208,13 @@ For repeat-median timing evidence, use:
 ```bash
 python3 src/tools/run_results_reproduction.py --repeat-median 3 --dry-run
 python3 src/tools/run_results_reproduction.py --repeat-median 3
+```
+
+For persistent resident ABI repeat-median timing evidence, use:
+
+```bash
+python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3 --dry-run
+python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3
 ```
 
 The lower-level template runner remains available for individual slice templates:

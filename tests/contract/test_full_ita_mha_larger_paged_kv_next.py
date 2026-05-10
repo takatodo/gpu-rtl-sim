@@ -2893,8 +2893,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_mha_shape_expansion_gate.json",
             "pulp_ita_mha_shape_expansion_review_gate.json",
             "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
-            "next_task: define_persistent_resident_state_abi_repeat_median_measurement_gate",
-            "Review only the next-goal selection and repeat-median measurement definition",
+            "next_task: select_next_measurement_goal_after_persistent_resident_state_abi_repeat_median",
+            "Review only the completed repeat-median measurement record and next-goal selection boundary",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
@@ -3119,7 +3119,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         for token in (
             "next_measurement_goal_selection_after_public_pack_readiness_gate.json",
             "persistent_resident_state_abi_repeat_median",
-            "define_persistent_resident_state_abi_repeat_median_measurement_gate",
+            "persistent_resident_state_abi_repeat_median_measurement_gate",
             "persistent resident state ABI repeat-median measurement",
             "do not change runtime ABI or add a new workload",
         ):
@@ -3138,7 +3138,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertEqual(gate["gate"], "persistent_resident_state_abi_repeat_median_measurement_gate")
         self.assertEqual(
             gate["status"],
-            "defined_repeat_median_measurement_for_existing_persistent_resident_abi",
+            "measured_repeat_median_for_existing_persistent_resident_abi",
         )
         self.assertEqual(gate["shape"], "16x64")
         self.assertEqual(gate["phases"], 4)
@@ -3157,15 +3157,28 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertFalse(gate["acceptance_policy"]["new_workload_allowed_by_this_gate"])
         self.assertFalse(gate["acceptance_policy"]["generated_reports_are_source_of_truth"])
         self.assertIn("hybrid_wall_ms", gate["summary_schema"]["metric_fields"])
+        self.assertTrue(gate["measured_result"]["all_coverage_output_passed"])
+        self.assertEqual(gate["measured_result"]["max_coverage_output_mismatch_count"], 0)
+        self.assertEqual(gate["measured_result"]["hybrid_wall_ms"]["median"], 4.965)
+        self.assertEqual(gate["measured_result"]["gpu_kernel_total_ms"]["median"], 4.934624)
+        self.assertEqual(
+            gate["measured_result"]["hybrid_wall_ms_per_final_state_step"]["median"],
+            0.001212158203125,
+        )
         self.assertIn("not a runtime or ABI change", gate["non_claims"])
         self.assertIn("not a new workload", gate["non_claims"])
-        self.assertEqual(gate["next_task"], "run_persistent_resident_state_abi_repeat_median_measurement")
+        self.assertEqual(
+            gate["next_task"],
+            "select_next_measurement_goal_after_persistent_resident_state_abi_repeat_median",
+        )
 
         for token in (
             "persistent_resident_state_abi_repeat_median_measurement_gate.json",
             "--persistent-resident-state-abi-repeat-median 3",
             "reports/persistent_resident_state_abi_repeat_median_summary.json",
             "forbids runtime/ABI changes or new workload claims",
+            "Median hybrid wall is `4.965 ms`",
+            "select_next_measurement_goal_after_persistent_resident_state_abi_repeat_median",
         ):
             self.assertIn(token, combined)
 

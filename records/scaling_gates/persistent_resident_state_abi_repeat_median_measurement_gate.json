@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "gate": "persistent_resident_state_abi_repeat_median_measurement_gate",
-  "status": "defined_repeat_median_measurement_for_existing_persistent_resident_abi",
+  "status": "measured_repeat_median_for_existing_persistent_resident_abi",
   "source_selection_gate": "config/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json",
   "source_measurement_gate": "config/scaling_gates/persistent_resident_device_handle_storage_gate.json",
   "objective": "Measure repeat-median timing for the existing persistent resident state ABI path without changing runtime ABI or adding a new workload.",
@@ -45,6 +45,43 @@
       "hybrid_wall_ms_per_final_state_step"
     ]
   },
+  "measured_result": {
+    "summary_report": "reports/persistent_resident_state_abi_repeat_median_summary.json",
+    "sample_reports": [
+      "reports/persistent_resident_state_abi_repeat_median_sample_1.json",
+      "reports/persistent_resident_state_abi_repeat_median_sample_2.json",
+      "reports/persistent_resident_state_abi_repeat_median_sample_3.json"
+    ],
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "phase_shapes": [
+      "16x64",
+      "16x128",
+      "16x192",
+      "16x256"
+    ],
+    "final_state_step_count": 4096,
+    "gpu_kernel_total_ms": {
+      "min": 4.75104,
+      "median": 4.934624,
+      "max": 5.420064
+    },
+    "hybrid_wall_ms": {
+      "min": 4.781,
+      "median": 4.965,
+      "max": 5.45
+    },
+    "gpu_kernel_total_ms_per_final_state_step": {
+      "min": 0.001159921875,
+      "median": 0.0012047421875,
+      "max": 0.0013232578125
+    },
+    "hybrid_wall_ms_per_final_state_step": {
+      "min": 0.001167236328125,
+      "median": 0.001212158203125,
+      "max": 0.00133056640625
+    }
+  },
   "state_authority": "in_process_gpu_d_storage_after_phase_1",
   "non_claims": [
     "not a new workload",
@@ -54,5 +91,5 @@
     "not paper-grade statistical confidence beyond repeat-count 3",
     "not raw full-state equality"
   ],
-  "next_task": "run_persistent_resident_state_abi_repeat_median_measurement"
+  "next_task": "select_next_measurement_goal_after_persistent_resident_state_abi_repeat_median"
 }
