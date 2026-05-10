@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "target": "PULP_ITA.pulp_ita_mha",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "top_module": "pulp_ita_mha_gpu_cov_tb",
+  "regions": [
+    {
+      "name": "ita_mha_handshakes",
+      "words": [
+        "real_toggle_subset_word0_o",
+        "real_toggle_subset_word1_o",
+        "real_toggle_subset_word2_o",
+        "real_toggle_subset_word3_o",
+        "real_toggle_subset_word4_o",
+        "real_toggle_subset_word5_o",
+        "real_toggle_subset_word6_o",
+        "real_toggle_subset_word7_o"
+      ]
+    },
+    {
+      "name": "ita_mha_signatures",
+      "words": [
+        "real_toggle_subset_word8_o",
+        "real_toggle_subset_word9_o",
+        "real_toggle_subset_word10_o",
+        "real_toggle_subset_word11_o",
+        "real_toggle_subset_word12_o",
+        "real_toggle_subset_word13_o"
+      ]
+    },
+    {
+      "name": "ita_mha_samples",
+      "words": [
+        "real_toggle_subset_word14_o",
+        "real_toggle_subset_word15_o",
+        "real_toggle_subset_word16_o",
+        "real_toggle_subset_word17_o"
+      ]
+    }
+  ],
+  "non_claims": [
+    "not full production ITA/MHA integration",
+    "not model-level Transformer inference",
+    "not production memory hierarchy",
+    "not numerical ML accuracy",
+    "not correctness equivalence beyond scoped output words"
+  ]
+}

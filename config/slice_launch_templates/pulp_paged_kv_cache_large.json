@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "target": "PULP_ITA.pulp_paged_kv_cache_large",
+  "source_gate": "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+  "top_module": "pulp_paged_kv_cache_large_gpu_cov_tb",
+  "build": {
+    "mdir": "artifacts/pulp_paged_kv_cache_large_obj_dir",
+    "work_dir": "work/slice_pilots/pulp_paged_kv_cache_large",
+    "host_probe_target": "pulp_paged_kv_cache_large_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "host_probe": {
+      "output": "tlul_slice_host_probe",
+      "clock_field": "pulp_paged_kv_cache_large_gpu_cov_tb__DOT__clk_i",
+      "clock_report_name": "clk_i",
+      "reset_field": "pulp_paged_kv_cache_large_gpu_cov_tb__DOT__reset_like_w",
+      "reset_report_name": "reset_like_w",
+      "reset_asserted_value": "1U",
+      "reset_deasserted_value": "0U",
+      "host_clock_control": true,
+      "host_reset_control": false,
+      "probe_syms_state": false
+    },
+    "verilator_mode": "flattened"
+  },
+  "source_files": [],
+  "verilator_args": [
+    "--flatten"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/ITA/src/pulp_paged_kv_cache_large_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/ITA/tests/pulp_paged_kv_cache_large_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+    "host_probe_target": "pulp_paged_kv_cache_large_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "status": "implemented"
+  },
+  "scaleup_contract": {
+    "page_count": 8,
+    "slots_per_page": 16,
+    "total_logical_slots": 128,
+    "base_target": "PULP_ITA.pulp_paged_kv_cache",
+    "base_total_logical_slots": 32
+  },
+  "acceptance": {
+    "candidate_only_until_first_cpu_vs_hybrid_benchmark": true,
+    "next_gate_must_build_cpu_reference": true,
+    "next_gate_must_build_gpu_cubin": true,
+    "next_gate_must_compare_cpu_vs_hybrid": true,
+    "speedup_claim_allowed_by_template_alone": false
+  },
+  "non_claims": [
+    "not full paged attention",
+    "not full ITA/MHA execution",
+    "not model-level Transformer inference",
+    "not production KV-cache memory hierarchy",
+    "not low-precision KV cache compression",
+    "not broad modern-NN speedup"
+  ]
+}

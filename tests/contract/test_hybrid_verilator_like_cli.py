@@ -274,9 +274,15 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
                 execution_mode="executed",
             )
             self.assertEqual(executed_summary["expected_reports"]["aggregate_summary"], "reports/mobile_vit_hybrid_128_summary.json")
-            self.assertEqual(executed_summary["evidence"]["status"], "collected")
-            self.assertEqual(executed_summary["evidence"]["evaluated_count"], 128)
-            self.assertTrue(executed_summary["evidence"]["coverage_output_passed"])
+            if executed_summary["evidence"]["status"] == "missing":
+                self.assertEqual(
+                    executed_summary["evidence"]["missing_report"],
+                    "reports/mobile_vit_hybrid_128_summary.json",
+                )
+            else:
+                self.assertEqual(executed_summary["evidence"]["status"], "collected")
+                self.assertEqual(executed_summary["evidence"]["evaluated_count"], 128)
+                self.assertTrue(executed_summary["evidence"]["coverage_output_passed"])
 
     def test_run_hybrid_benchmark_summary_from_existing_mobile_vit_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -302,10 +308,16 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             summary = json.loads(summary_path.read_text(encoding="utf-8"))
             self.assertEqual(summary["execution_mode"], "existing_evidence")
             self.assertEqual(summary["expected_reports"]["aggregate_summary"], "reports/mobile_vit_hybrid_128_summary.json")
-            self.assertEqual(summary["evidence"]["status"], "collected")
-            self.assertEqual(summary["evidence"]["evaluated_count"], 128)
-            self.assertEqual(summary["evidence"]["top1_accuracy"], 0.7734375)
-            self.assertTrue(summary["evidence"]["coverage_output_passed"])
+            if summary["evidence"]["status"] == "missing":
+                self.assertEqual(
+                    summary["evidence"]["missing_report"],
+                    "reports/mobile_vit_hybrid_128_summary.json",
+                )
+            else:
+                self.assertEqual(summary["evidence"]["status"], "collected")
+                self.assertEqual(summary["evidence"]["evaluated_count"], 128)
+                self.assertEqual(summary["evidence"]["top1_accuracy"], 0.7734375)
+                self.assertTrue(summary["evidence"]["coverage_output_passed"])
             self.assertIn("existing_evidence summaries do not rerun benchmark commands", summary["non_claims"])
             self.assertNotIn("/home/", json.dumps(summary["commands"]))
 

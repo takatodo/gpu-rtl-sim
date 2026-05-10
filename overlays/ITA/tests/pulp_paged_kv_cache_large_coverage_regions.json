@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "target": "PULP_ITA.pulp_paged_kv_cache_large",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "top_module": "pulp_paged_kv_cache_large_gpu_cov_tb",
+  "regions": [
+    {
+      "name": "large_paged_kv_cache_counts",
+      "words": [
+        "real_toggle_subset_word0_o",
+        "real_toggle_subset_word1_o",
+        "real_toggle_subset_word2_o",
+        "real_toggle_subset_word3_o",
+        "real_toggle_subset_word4_o",
+        "real_toggle_subset_word5_o",
+        "real_toggle_subset_word6_o",
+        "real_toggle_subset_word7_o"
+      ]
+    },
+    {
+      "name": "large_paged_kv_cache_signatures",
+      "words": [
+        "real_toggle_subset_word8_o",
+        "real_toggle_subset_word9_o",
+        "real_toggle_subset_word10_o",
+        "real_toggle_subset_word11_o",
+        "real_toggle_subset_word12_o",
+        "real_toggle_subset_word13_o"
+      ]
+    },
+    {
+      "name": "large_paged_kv_cache_samples",
+      "words": [
+        "real_toggle_subset_word14_o",
+        "real_toggle_subset_word15_o",
+        "real_toggle_subset_word16_o",
+        "real_toggle_subset_word17_o"
+      ]
+    }
+  ],
+  "non_claims": [
+    "not full paged attention",
+    "not full ITA/MHA execution",
+    "not model-level Transformer inference",
+    "not production KV-cache memory hierarchy",
+    "not low-precision KV cache compression",
+    "not correctness equivalence beyond scoped output words"
+  ]
+}

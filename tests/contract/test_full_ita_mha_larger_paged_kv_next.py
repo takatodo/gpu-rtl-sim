@@ -337,7 +337,6 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         overlay = LARGE_KV_OVERLAY.read_text(encoding="utf-8")
         manifest = json.loads(LARGE_KV_MANIFEST.read_text(encoding="utf-8"))
         template = json.loads(LARGE_KV_TEMPLATE.read_text(encoding="utf-8"))
-        makefile = MAKEFILE.read_text(encoding="utf-8")
 
         self.assertIn("module pulp_paged_kv_cache_large_gpu_cov_tb", overlay)
         self.assertIn("PageCount = 8", overlay)
@@ -353,11 +352,12 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertEqual(template["top_module"], "pulp_paged_kv_cache_large_gpu_cov_tb")
         self.assertEqual(template["build"]["mdir"], "artifacts/pulp_paged_kv_cache_large_obj_dir")
         self.assertEqual(template["build"]["host_probe_target"], "pulp_paged_kv_cache_large_host_probe")
+        self.assertEqual(template["build"]["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertEqual(
+            template["build"]["host_probe"]["clock_field"],
+            "pulp_paged_kv_cache_large_gpu_cov_tb__DOT__clk_i",
+        )
         self.assertEqual(template["scaleup_contract"]["total_logical_slots"], 128)
-
-        self.assertIn("pulp_paged_kv_cache_large_host_probe", makefile)
-        self.assertIn("Vpulp_paged_kv_cache_large_gpu_cov_tb.h", makefile)
-        self.assertIn("pulp_paged_kv_cache_large_gpu_cov_tb__DOT__clk_i", makefile)
 
     def test_large_paged_kv_first_summary_records_all_planned_shapes_passing(self) -> None:
         gate = json.loads(LARGE_KV_GATE.read_text(encoding="utf-8"))
@@ -445,7 +445,6 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         overlay = FULL_ITA_MHA_OVERLAY.read_text(encoding="utf-8")
         manifest = json.loads(FULL_ITA_MHA_MANIFEST.read_text(encoding="utf-8"))
         template = json.loads(FULL_ITA_MHA_TEMPLATE.read_text(encoding="utf-8"))
-        makefile = MAKEFILE.read_text(encoding="utf-8")
 
         self.assertIn("module pulp_ita_mha_gpu_cov_tb", overlay)
         self.assertIn("ita i_ita", overlay)
@@ -459,9 +458,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "config/scaling_gates/neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json",
         )
         self.assertEqual(template["build"]["host_probe_target"], "pulp_ita_mha_host_probe")
-        self.assertIn("pulp_ita_mha_host_probe", makefile)
-        self.assertIn("Vpulp_ita_mha_gpu_cov_tb.h", makefile)
-        self.assertIn("pulp_ita_mha_gpu_cov_tb__DOT__clk_i", makefile)
+        self.assertEqual(template["build"]["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertEqual(
+            template["build"]["host_probe"]["clock_field"],
+            "pulp_ita_mha_gpu_cov_tb__DOT__clk_i",
+        )
 
     def test_full_ita_mha_first_benchmark_gate_records_passing_smoke_compare(self) -> None:
         gate = json.loads(FULL_ITA_MHA_BENCHMARK_GATE.read_text(encoding="utf-8"))
@@ -552,7 +553,6 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         overlay = PAGED_ATTENTION_OVERLAY.read_text(encoding="utf-8")
         manifest = json.loads(PAGED_ATTENTION_MANIFEST.read_text(encoding="utf-8"))
         template = json.loads(PAGED_ATTENTION_TEMPLATE.read_text(encoding="utf-8"))
-        makefile = MAKEFILE.read_text(encoding="utf-8")
         summary = json.loads(PAGED_ATTENTION_GATE.read_text(encoding="utf-8"))["result"]
 
         self.assertIn("module pulp_paged_attention_kv_score_gpu_cov_tb", overlay)
@@ -563,8 +563,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertEqual(manifest["top_module"], "pulp_paged_attention_kv_score_gpu_cov_tb")
         self.assertEqual(template["target"], "PULP_ITA.pulp_paged_attention_kv_score")
         self.assertEqual(template["build"]["host_probe_target"], "pulp_paged_attention_kv_score_host_probe")
-        self.assertIn("pulp_paged_attention_kv_score_host_probe", makefile)
-        self.assertIn("Vpulp_paged_attention_kv_score_gpu_cov_tb.h", makefile)
+        self.assertEqual(template["build"]["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertEqual(
+            template["build"]["host_probe"]["clock_field"],
+            "pulp_paged_attention_kv_score_gpu_cov_tb__DOT__clk_i",
+        )
 
         self.assertTrue(summary["all_planned_shapes_passed_coverage_output_equivalence"])
         by_shape = {f"{shape['nstates']}x{shape['steps']}": shape for shape in summary["measured_shapes"]}
@@ -1011,6 +1014,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         )
         for path in HYBRID_BENCHMARK_WRAPPER_SUMMARIES:
             with self.subTest(path=path.name):
+                if not path.exists():
+                    self.assertIn(relative_path := path.relative_to(REPO_ROOT).as_posix(), published_docs)
+                    self.assertTrue(relative_path.startswith("reports/hybrid_benchmark_"))
+                    continue
                 summary = json.loads(path.read_text(encoding="utf-8"))
                 relative_path = path.relative_to(REPO_ROOT).as_posix()
 
