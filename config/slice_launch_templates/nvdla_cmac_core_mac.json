@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "target": "NVDLA.nvdla_cmac_core_mac",
+  "source_gate": "config/scaling_gates/neural_network_rtl_nvdla_cmac_core_mac_intake_gate.json",
+  "top_module": "nvdla_cmac_core_mac_gpu_cov_tb",
+  "build": {
+    "mdir": "artifacts/nvdla_cmac_core_mac_flat_obj_dir",
+    "work_dir": "work/slice_pilots/nvdla_cmac_core_mac",
+    "host_probe_target": "nvdla_cmac_core_mac_flat_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "host_probe": {
+      "output": "tlul_slice_host_probe",
+      "clock_field": "nvdla_cmac_core_mac_gpu_cov_tb__DOT__nvdla_core_clk",
+      "clock_report_name": "nvdla_core_clk",
+      "reset_field": "nvdla_cmac_core_mac_gpu_cov_tb__DOT__nvdla_core_rstn",
+      "reset_report_name": "nvdla_core_rstn",
+      "reset_asserted_value": "0U",
+      "reset_deasserted_value": "1U",
+      "host_clock_control": true,
+      "host_reset_control": false,
+      "probe_syms_state": false
+    },
+    "verilator_mode": "flattened"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_CMAC_CORE_mac.v",
+    "third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_CMAC_CORE_MAC_mul.v",
+    "third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_CMAC_CORE_MAC_exp.v",
+    "third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_CMAC_CORE_MAC_nan.v",
+    "third_party/rtlmeter/designs/NVDLA/src/NV_DW02_tree.v",
+    "third_party/rtlmeter/designs/NVDLA/src/NV_DW_minmax.v"
+  ],
+  "verilator_defines": [
+    "SYNTHESIS",
+    "DESIGNWARE_NOEXIST"
+  ],
+  "verilator_args": [
+    "--flatten"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_core_mac_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+    "host_probe_target": "nvdla_cmac_core_mac_flat_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "status": "implemented"
+  },
+  "acceptance": {
+    "candidate_only_until_first_cpu_vs_hybrid_benchmark": true,
+    "next_gate_must_build_cpu_reference": true,
+    "next_gate_must_build_gpu_cubin": true,
+    "next_gate_must_compare_cpu_vs_hybrid": true,
+    "speedup_claim_allowed_by_template_alone": false
+  },
+  "non_claims": [
+    "not neural-network model execution",
+    "not NVDLA full accelerator execution",
+    "not complete CMAC arithmetic validation",
+    "not current LLM accelerator completeness",
+    "not CPU versus hybrid speedup claim",
+    "not correctness equivalence beyond the scoped output words"
+  ]
+}

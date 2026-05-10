@@ -134,6 +134,27 @@ NVDLA_CMAC_A2CACC_MANIFEST = (
 NVDLA_CMAC_A2CACC_TEMPLATE = (
     REPO_ROOT / "config" / "slice_launch_templates" / "nvdla_cmac_a2cacc.json"
 )
+NVDLA_CMAC_CORE_MAC_OVERLAY = (
+    REPO_ROOT
+    / "overlays"
+    / "rtlmeter"
+    / "designs"
+    / "NVDLA"
+    / "src"
+    / "nvdla_cmac_core_mac_gpu_cov_tb.sv"
+)
+NVDLA_CMAC_CORE_MAC_MANIFEST = (
+    REPO_ROOT
+    / "overlays"
+    / "rtlmeter"
+    / "designs"
+    / "NVDLA"
+    / "tests"
+    / "nvdla_cmac_core_mac_coverage_regions.json"
+)
+NVDLA_CMAC_CORE_MAC_TEMPLATE = (
+    REPO_ROOT / "config" / "slice_launch_templates" / "nvdla_cmac_core_mac.json"
+)
 LARGE_KV_OVERLAY = REPO_ROOT / "overlays" / "ITA" / "src" / "pulp_paged_kv_cache_large_gpu_cov_tb.sv"
 LARGE_KV_MANIFEST = (
     REPO_ROOT / "overlays" / "ITA" / "tests" / "pulp_paged_kv_cache_large_coverage_regions.json"
@@ -490,6 +511,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         generated_targets = (
             "nvdla_cmac_a2cacc_host_probe",
             "nvdla_cmac_core_mac_host_probe",
+            "nvdla_cmac_core_mac_flat_host_probe",
             "pulp_ita_dotp_host_probe",
             "pulp_ita_softmax_top_host_probe",
             "pulp_ita_mha_host_probe",
@@ -539,6 +561,51 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             template["build"]["host_probe"]["clock_field"],
             "nvdla_cmac_a2cacc_gpu_cov_tb__DOT__nvdla_core_clk",
         )
+        self.assertNotIn("makefile", template["planned_overlay"])
+
+    def test_nvdla_cmac_core_mac_candidate_template_uses_generic_host_probe_builder(self) -> None:
+        self.assertTrue(NVDLA_CMAC_CORE_MAC_OVERLAY.exists())
+        self.assertTrue(NVDLA_CMAC_CORE_MAC_MANIFEST.exists())
+        self.assertTrue(NVDLA_CMAC_CORE_MAC_TEMPLATE.exists())
+
+        overlay = NVDLA_CMAC_CORE_MAC_OVERLAY.read_text(encoding="utf-8")
+        manifest = json.loads(NVDLA_CMAC_CORE_MAC_MANIFEST.read_text(encoding="utf-8"))
+        template = json.loads(NVDLA_CMAC_CORE_MAC_TEMPLATE.read_text(encoding="utf-8"))
+
+        self.assertIn("module nvdla_cmac_core_mac_gpu_cov_tb", overlay)
+        self.assertIn("NV_NVDLA_CMAC_CORE_mac", overlay)
+        self.assertEqual(manifest["target"], "NVDLA.nvdla_cmac_core_mac")
+        self.assertEqual(manifest["top_module"], template["top_module"])
+        self.assertEqual(template["target"], "NVDLA.nvdla_cmac_core_mac")
+        self.assertEqual(template["top_module"], "nvdla_cmac_core_mac_gpu_cov_tb")
+        self.assertEqual(
+            template["source_files"],
+            [
+                "third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_CMAC_CORE_mac.v",
+                "third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_CMAC_CORE_MAC_mul.v",
+                "third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_CMAC_CORE_MAC_exp.v",
+                "third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_CMAC_CORE_MAC_nan.v",
+                "third_party/rtlmeter/designs/NVDLA/src/NV_DW02_tree.v",
+                "third_party/rtlmeter/designs/NVDLA/src/NV_DW_minmax.v",
+            ],
+        )
+        for source_file in template["source_files"]:
+            self.assertTrue(source_file.startswith("third_party/rtlmeter/"))
+            self.assertTrue((REPO_ROOT / source_file).exists())
+
+        self.assertEqual(template["verilator_args"], ["--flatten"])
+        self.assertEqual(template["verilator_defines"], ["SYNTHESIS", "DESIGNWARE_NOEXIST"])
+        self.assertEqual(
+            template["build"]["host_probe_target"],
+            "nvdla_cmac_core_mac_flat_host_probe",
+        )
+        self.assertEqual(template["build"]["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertEqual(template["build"]["verilator_mode"], "flattened")
+        self.assertEqual(
+            template["build"]["host_probe"]["clock_field"],
+            "nvdla_cmac_core_mac_gpu_cov_tb__DOT__nvdla_core_clk",
+        )
+        self.assertFalse(template["build"]["host_probe"]["probe_syms_state"])
         self.assertNotIn("makefile", template["planned_overlay"])
 
     def test_full_ita_mha_first_benchmark_gate_records_passing_smoke_compare(self) -> None:
@@ -1044,24 +1111,24 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run",
             "Public archive dry-run:",
             "public_pack_archive_ready",
-            "next_task: nvdla_cmac_a2cacc_candidate_template_boundary",
-            "Review only the NVDLA `cmac_a2cacc` candidate template surface.",
+            "next_task: nvdla_cmac_core_mac_candidate_template_boundary",
+            "Review only the NVDLA `cmac_core_mac` candidate template surface.",
             "Review/stage boundary:",
             "docs/roadmap.md",
-            "config/slice_launch_templates/nvdla_cmac_a2cacc.json",
-            "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_a2cacc_gpu_cov_tb.sv",
-            "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_a2cacc_coverage_regions.json",
+            "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+            "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_core_mac_gpu_cov_tb.sv",
+            "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json",
             "Exclude from this review boundary:",
             "src/hybrid/Makefile",
             "third_party/ITA",
             "third_party/common_cells",
             "third_party/ibex",
-            "additional NVDLA targets such as `nvdla_cmac_core_mac`",
+            "additional NVDLA targets beyond `nvdla_cmac_core_mac`",
             "ITA, KV-cache, LLM SoC, and MobileViT candidate templates and overlays",
             "MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests",
             "runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`",
             "generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`",
-            "the NVDLA `cmac_a2cacc` template references only present source files",
+            "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "`src/hybrid/Makefile` remains free of generated NVDLA host-probe targets",
             "no generated output is introduced as source of truth",

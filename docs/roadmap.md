@@ -218,28 +218,29 @@ Tracked evidence:
 
 Recommended next gate:
 
-`nvdla_cmac_a2cacc_candidate_template_boundary`
+`nvdla_cmac_core_mac_candidate_template_boundary`
 
 Acceptance criteria:
 
-- add the NVDLA `cmac_a2cacc` candidate launch template, overlay, and coverage manifest as a small source-backed candidate
+- add the NVDLA `cmac_core_mac` candidate launch template, overlay, and coverage manifest as a source-backed candidate
 - use existing `third_party/rtlmeter` NVDLA source only; do not add new third-party submodules
 - use `build.host_probe_builder: src/tools/build_host_probe.py` metadata instead of adding a Makefile target
 - keep this as a candidate template, not a CPU-vs-hybrid benchmark or speedup claim
-- leave ITA dotp, ITA softmax, KV-cache, LLM SoC, MobileViT, and additional NVDLA targets out of this boundary
+- keep the larger flattened DesignWare-dependent source list explicit in the template
+- leave ITA dotp, ITA softmax, KV-cache, LLM SoC, MobileViT, and non-NVDLA targets out of this boundary
 
 Working tree review boundary:
 
-`next_task: nvdla_cmac_a2cacc_candidate_template_boundary`
+`next_task: nvdla_cmac_core_mac_candidate_template_boundary`
 
-Review only the NVDLA `cmac_a2cacc` candidate template surface. The goal is to keep the next NN candidate small and source-backed while preserving the generic host-probe builder policy.
+Review only the NVDLA `cmac_core_mac` candidate template surface. The goal is to exercise a larger CNN-era MAC datapath candidate while preserving the generic host-probe builder policy.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
-- `config/slice_launch_templates/nvdla_cmac_a2cacc.json`
-- `overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_a2cacc_gpu_cov_tb.sv`
-- `overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_a2cacc_coverage_regions.json`
+- `config/slice_launch_templates/nvdla_cmac_core_mac.json`
+- `overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_core_mac_gpu_cov_tb.sv`
+- `overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json`
 - `tests/contract/test_full_ita_mha_larger_paged_kv_next.py`
 
 Exclude from this review boundary:
@@ -247,7 +248,7 @@ Exclude from this review boundary:
 - `AGENTS.md`
 - `src/hybrid/Makefile`
 - `third_party/ITA`, `third_party/common_cells`, and `third_party/ibex`
-- additional NVDLA targets such as `nvdla_cmac_core_mac`
+- additional NVDLA targets beyond `nvdla_cmac_core_mac`
 - ITA, KV-cache, LLM SoC, and MobileViT candidate templates and overlays
 - MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests
 - runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`
@@ -256,7 +257,7 @@ Exclude from this review boundary:
 
 Boundary acceptance:
 
-- the NVDLA `cmac_a2cacc` template references only present source files
+- the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - the overlay and coverage manifest are tracked source files
 - `src/hybrid/Makefile` remains free of generated NVDLA host-probe targets
