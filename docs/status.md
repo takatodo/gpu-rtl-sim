@@ -44,6 +44,8 @@ PULP ITA MHA first build/run/compare state: `config/scaling_gates/pulp_ita_mha_f
 
 PULP ITA MHA shape expansion state: `config/scaling_gates/pulp_ita_mha_shape_expansion_gate.json` records `32x1` and `1x32` through the generic host-probe path. Both shapes pass CPU-vs-hybrid `coverage_output_equivalence` with mismatch count `0`. Observed single-run timing is scoped to this full ITA/MHA seed: `32x1` has CPU elapsed `72.0539 ms` and hybrid wall `0.877 ms`, while `1x32` has CPU elapsed `2.93625 ms` and hybrid wall `1.453 ms`. The trend is that state-parallel `32x1` is much more favorable than single-state repeated-step `1x32`, but this is not a broad modern-NN or production LLM-serving throughput claim. The next_task is `review_pulp_ita_mha_shape_expansion_and_select_next_workload_or_hold`.
 
+PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json` selects `result_packaging_refresh` next. The reason is that the fresh full ITA/MHA generic-host-probe chain is complete through `1x1`, `32x1`, and `1x32`, while paged attention/KV-cache scale-up and resident execution optimization already have separate historical evidence and would broaden this review boundary. The next_task is `define_public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate`; this review does not run a new workload, change runtime/ABI behavior, or claim production LLM-serving throughput.
+
 ## Goal
 
 `modern_llm_serving_rtl_hybrid_conditions`

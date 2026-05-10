@@ -329,21 +329,21 @@ Tracked evidence:
 
 Recommended next gate:
 
-`review_pulp_ita_mha_shape_expansion_and_select_next_workload_or_hold`
+`define_public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate`
 
 Acceptance criteria:
 
-- review `config/scaling_gates/pulp_ita_mha_shape_expansion_gate.json`
-- confirm `32x1` and `1x32` both passed `coverage_output_equivalence` with mismatch count `0`
-- confirm the timing trend is scoped to this full ITA/MHA seed only
-- decide whether the next workload should be paged attention/KV-cache scale-up, resident execution optimization, or result packaging
-- keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the review
+- refresh the public/result packaging path after `config/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json`
+- include the fresh full ITA/MHA `1x1`, `32x1`, and `1x32` generic-host-probe chain in source-of-truth result references
+- keep reports and artifacts as generated evidence, not source of truth
+- keep paged attention/KV-cache scale-up and resident execution optimization deferred to their own gates
+- keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the packaging refresh
 
 Working tree review boundary:
 
-`next_task: review_pulp_ita_mha_shape_expansion_and_select_next_workload_or_hold`
+`next_task: define_public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate`
 
-Review only the completed `pulp_ita_mha` shape expansion evidence and choose the next gate. Do not mix in new KV-cache, runtime, or MobileViT edits until the next workload is selected explicitly.
+Review only public/result packaging references for the completed `pulp_ita_mha` generic-host-probe chain. Do not mix in new KV-cache, runtime, or MobileViT edits.
 
 Review/stage boundary:
 
@@ -361,6 +361,7 @@ Review/stage boundary:
 - `records/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json`
 - `records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`
 - `records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json`
+- `records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json`
 - `config/slice_launch_templates/pulp_ita_mha.json`
 - `overlays/ITA/src/pulp_ita_tc_sram_sim.sv`
 - `overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv`
