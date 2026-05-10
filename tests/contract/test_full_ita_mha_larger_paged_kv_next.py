@@ -464,6 +464,36 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_mha_gpu_cov_tb__DOT__clk_i",
         )
 
+    def test_generated_host_probe_targets_do_not_expand_makefile_surface(self) -> None:
+        makefile = MAKEFILE.read_text(encoding="utf-8")
+        generated_targets = (
+            "nvdla_cmac_a2cacc_host_probe",
+            "nvdla_cmac_core_mac_host_probe",
+            "pulp_ita_dotp_host_probe",
+            "pulp_ita_softmax_top_host_probe",
+            "pulp_ita_mha_host_probe",
+            "pulp_kv_cache_host_probe",
+            "pulp_paged_kv_cache_host_probe",
+            "pulp_paged_kv_cache_large_host_probe",
+            "pulp_paged_attention_kv_score_host_probe",
+            "mobile_vit_cpu_kick_rtl_proxy_host_probe",
+        )
+        for target in generated_targets:
+            with self.subTest(target=target):
+                self.assertNotIn(target, makefile)
+
+        for template_path in (
+            LARGE_KV_TEMPLATE,
+            FULL_ITA_MHA_TEMPLATE,
+            PAGED_ATTENTION_TEMPLATE,
+        ):
+            with self.subTest(template=template_path.name):
+                template = json.loads(template_path.read_text(encoding="utf-8"))
+                self.assertEqual(
+                    template["build"]["host_probe_builder"],
+                    "src/tools/build_host_probe.py",
+                )
+
     def test_full_ita_mha_first_benchmark_gate_records_passing_smoke_compare(self) -> None:
         gate = json.loads(FULL_ITA_MHA_BENCHMARK_GATE.read_text(encoding="utf-8"))
 
@@ -967,26 +997,24 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run",
             "Public archive dry-run:",
             "public_pack_archive_ready",
-            "next_task: resident_runtime_contract_completion_boundary",
-            "Review only the resident runtime/pass/tool contract completion needed to make the current contract tests reproducible from HEAD.",
+            "next_task: makefile_generated_host_probe_target_retirement_boundary",
+            "Review only the Makefile surface cleanup after moving generated host-probe builds to template metadata.",
             "Review/stage boundary:",
-            "config/resident_patch_script_semantics.json",
-            "src/hybrid/run_vl_hybrid.c",
-            "src/tools/run_vl_hybrid.py",
-            "tests/contract/test_resident_runtime_contract.py",
-            "Exclude from this review boundary:",
+            "docs/roadmap.md",
             "src/hybrid/Makefile",
+            "contract tests only if they still assert hand-maintained Makefile targets for generated host probes",
+            "Exclude from this review boundary:",
             "third_party/ITA",
             "third_party/common_cells",
             "third_party/ibex",
             "new NN target templates such as NVDLA, ITA, KV-cache, and LLM SoC kick templates",
             "non-rtlmeter overlays such as ITA, ibex, MobileViT, and NVDLA",
             "MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests",
+            "runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`",
             "generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`",
-            "clean HEAD plus this boundary passes the resident runtime contract tests",
-            "persistent resident ABI flags in `src/tools/run_vl_hybrid.py` map to matching `RUN_VL_HYBRID_*` runtime variables",
-            "Syms-state metadata in `src/tools/build_vl_gpu.py` is sufficient for `src/tools/run_vl_hybrid.py` to allow or reject unsafe Syms dereferences deterministically",
-            "program-image and XuanTie DMEM one-off initialization helpers are not part of the reduced active TL-UL resident surface",
+            "`src/hybrid/Makefile` does not contain generated host-probe targets for NVDLA, ITA, KV-cache, paged-attention, MobileViT, or broad primitive inventory",
+            "launch templates that need generated host probes carry `build.host_probe_builder: src/tools/build_host_probe.py`",
+            "no generated output is introduced as source of truth",
             "python3 -m unittest tests.contract.test_resident_runtime_contract -q",
             "tar -czf <generated-output>/public-benchmark-pack.tgz <listed paths>",
             "reports/` and `artifacts/` as generated evidence/output only",

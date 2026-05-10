@@ -218,61 +218,45 @@ Tracked evidence:
 
 Recommended next gate:
 
-`resident_runtime_contract_completion_boundary`
+`makefile_generated_host_probe_target_retirement_boundary`
 
 Acceptance criteria:
 
-- make the already-committed resident runtime contract tests pass from a clean HEAD checkout
-- keep the persistent resident ABI wrapper and C runtime environment surface aligned
-- reject unsupported non-flat Verilator `__Syms` state before CUDA launch unless metadata proves a covering Syms state image
-- record hierarchy-state metadata for root-state and Syms-state builds
-- keep TL-UL repeat-state CPU dumps and GPU timing metric parsing reproducible
-- keep coverage-output equivalence as the accepted comparison policy
-- retire legacy program-image and XuanTie DMEM init surfaces from this active TL-UL resident boundary
-- keep NN target imports, MobileViT tooling, third-party submodules, and huge per-target Makefile additions out of this review boundary
+- keep `src/hybrid/Makefile` focused on the core CUDA runner and active legacy TL-UL probe targets
+- do not add per-target generated host-probe rules for NN, MobileViT, NVDLA, ITA, KV-cache, or primitive inventory
+- use launch-template `build.host_probe_builder: src/tools/build_host_probe.py` metadata for generated host probes
+- keep generated host-probe build behavior in reusable tooling, not in a hand-maintained Makefile target list
+- verify contract tests pass without the huge Makefile target expansion
+- leave unrelated NN/MobileViT/third-party candidate files out of this boundary
 
 Working tree review boundary:
 
-`next_task: resident_runtime_contract_completion_boundary`
+`next_task: makefile_generated_host_probe_target_retirement_boundary`
 
-Review only the resident runtime/pass/tool contract completion needed to make the current contract tests reproducible from HEAD. The goal is to finish the implementation side of persistent-resident, Syms-state, TL-UL dump, timing, and coverage-output policy contracts without pulling in new NN target inventory or generated outputs.
+Review only the Makefile surface cleanup after moving generated host-probe builds to template metadata. The goal is to prevent thousands of generated per-target rules from becoming source of truth while preserving the Verilator-like `build_host_probe.py` path.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
-- `config/resident_patch_script_semantics.json`
-- `src/hybrid/run_vl_hybrid.c`
-- `src/hybrid/tlul_slice_host_probe.cpp`
-- `src/passes/VlGpuPasses.cpp`
-- `src/passes/vlgpugen.cpp`
-- `src/tools/build_vl_gpu.py`
-- `src/tools/compare_vl_hybrid_modes.py`
-- `src/tools/gen_vl_gpu_kernel.py`
-- `src/tools/named_patch_lowering.py`
-- `src/tools/run_tlul_fifo_sync_cpu_baseline.py`
-- `src/tools/run_tlul_fifo_sync_scaling_validation.py`
-- `src/tools/run_vl_hybrid.py`
-- `tests/contract/test_resident_runtime_contract.py`
+- `src/hybrid/Makefile`
+- contract tests only if they still assert hand-maintained Makefile targets for generated host probes
 
 Exclude from this review boundary:
 
 - `AGENTS.md`
-- `src/hybrid/Makefile`
 - `third_party/ITA`, `third_party/common_cells`, and `third_party/ibex`
 - new NN target templates such as NVDLA, ITA, KV-cache, and LLM SoC kick templates
 - non-rtlmeter overlays such as ITA, ibex, MobileViT, and NVDLA
 - MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests
+- runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`
 - generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`
 - generated output under `reports/`, `artifacts/`, and `work/`
 
 Boundary acceptance:
 
-- clean HEAD plus this boundary passes the resident runtime contract tests
-- persistent resident ABI flags in `src/tools/run_vl_hybrid.py` map to matching `RUN_VL_HYBRID_*` runtime variables
-- Syms-state metadata in `src/tools/build_vl_gpu.py` is sufficient for `src/tools/run_vl_hybrid.py` to allow or reject unsafe Syms dereferences deterministically
-- `src/hybrid/tlul_slice_host_probe.cpp` supports `--repeat-state-out` for CPU final-state dump evidence
-- timing repeat metrics remain parseable by `src/tools/run_tlul_fifo_sync_scaling_validation.py`
-- program-image and XuanTie DMEM one-off initialization helpers are not part of the reduced active TL-UL resident surface
+- `src/hybrid/Makefile` does not contain generated host-probe targets for NVDLA, ITA, KV-cache, paged-attention, MobileViT, or broad primitive inventory
+- launch templates that need generated host probes carry `build.host_probe_builder: src/tools/build_host_probe.py`
+- no generated output is introduced as source of truth
 - `python3 -m unittest tests.contract.test_resident_runtime_contract -q` passes
 - `python3 -m unittest discover -s tests/contract -q` passes
 
