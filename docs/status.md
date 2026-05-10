@@ -26,6 +26,8 @@ PULP ITA dotp overlay/template state: `config/scaling_gates/pulp_ita_dotp_overla
 
 PULP ITA dotp first build/run/compare state: `config/scaling_gates/pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json` records `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x1`. Verilator build, generic host-probe build through `src/tools/build_host_probe.py`, GPU cubin build, hybrid run, and CPU-vs-hybrid compare all completed. The selected policy is `coverage_output_equivalence`; compared output was `29` words / `116` bytes with mismatch count `0`. Raw full-state equality remains false due to Verilator-internal fields only. This is a minimal `1x1` gate, not shape expansion or broad speedup evidence.
 
+PULP ITA dotp shape expansion state: `config/scaling_gates/pulp_ita_dotp_shape_expansion_gate.json` records `64x1` and `1x64` through the generic host-probe path. Both shapes pass CPU-vs-hybrid `coverage_output_equivalence` with mismatch count `0`. Observed single-run timing is scoped to this dotp seed: `64x1` has CPU elapsed `150.04 ms` and hybrid wall `1.321 ms`, while `1x64` has CPU elapsed `3.23146 ms` and hybrid wall `1.600 ms`. The trend is that state-parallel `64x1` is much more favorable than single-state repeated-step `1x64`, but this is not a broad modern-NN, softmax, MHA, or LLM-serving throughput claim.
+
 ## Goal
 
 `modern_llm_serving_rtl_hybrid_conditions`

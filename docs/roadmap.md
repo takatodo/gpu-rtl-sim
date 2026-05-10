@@ -147,6 +147,17 @@ PULP ITA dotp first generic host-probe build/run/compare gate:
 - next_task: `run_pulp_ita_dotp_shape_expansion_gate`
 - non-claim: this is the minimal `1x1` dotp boundary only, not softmax, full MHA, shape expansion, or broad speedup evidence
 
+PULP ITA dotp shape expansion gate:
+
+- `config/scaling_gates/pulp_ita_dotp_shape_expansion_gate.json`
+- commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 64x1` and `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x64`
+- result: both planned shapes pass CPU-vs-hybrid `coverage_output_equivalence` with mismatch count `0`
+- `64x1`: CPU elapsed `150.04 ms`, hybrid GPU kernel total `1.29024 ms`, hybrid wall `1.321 ms`
+- `1x64`: CPU elapsed `3.23146 ms`, hybrid GPU kernel total `1.543168 ms`, hybrid wall `1.600 ms`
+- trend: `64x1` state-parallel timing is much more favorable than `1x64` single-state repeated-step timing in this run
+- next_task: `review_pulp_ita_dotp_shape_expansion_and_select_softmax_or_hold`
+- non-claim: this is scoped dotp timing evidence only, not softmax, full MHA, production LLM-serving throughput, or broad modern-NN speedup
+
 Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
@@ -295,24 +306,21 @@ Tracked evidence:
 
 Recommended next gate:
 
-`run_pulp_ita_dotp_shape_expansion_gate`
+`review_pulp_ita_dotp_shape_expansion_and_select_softmax_or_hold`
 
 Acceptance criteria:
 
-- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 64x1`
-- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x64`
-- keep the host probe build through `src/tools/build_host_probe.py`, not `src/hybrid/Makefile`
-- compare CPU vs hybrid with `coverage_output_equivalence`
-- require mismatch count `0` before any timing or speedup language
-- validate `third_party/ITA/src/ita_dotp.sv` through the canonical `third_party/ITA` submodule
+- review the `pulp_ita_dotp` `64x1` and `1x64` timing trend before expanding the active seed
+- decide explicitly whether to promote `ita_softmax_top` next or hold for more dotp evidence
+- keep `ita_softmax_top` measurement separate from the dotp shape expansion result
 - keep recursive Bender dependencies out unless a narrow requirement is recorded
-- keep `ita_softmax_top`, full MHA, KV-cache, LLM SoC, and MobileViT out of the dotp shape expansion gate
+- keep full MHA, KV-cache, LLM SoC, and MobileViT out of the softmax selection review
 
 Working tree review boundary:
 
-`next_task: run_pulp_ita_dotp_shape_expansion_gate`
+`next_task: review_pulp_ita_dotp_shape_expansion_and_select_softmax_or_hold`
 
-Review only the `pulp_ita_dotp` shape expansion boundary. Do not mix in softmax, full MHA, KV-cache, runtime changes, or generated outputs.
+Review only whether the next active ITA work should move from `pulp_ita_dotp` to `ita_softmax_top` or hold. Do not mix in softmax measurement, full MHA, KV-cache, runtime changes, or generated outputs.
 
 Review/stage boundary:
 
@@ -321,6 +329,7 @@ Review/stage boundary:
 - `records/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json`
 - `records/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json`
 - `records/scaling_gates/pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json`
+- `records/scaling_gates/pulp_ita_dotp_shape_expansion_gate.json`
 - `config/slice_launch_templates/pulp_ita_dotp.json`
 - `overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv`
 - `overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json`
@@ -361,6 +370,8 @@ Boundary acceptance:
 - dry-run emits `python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_dotp.json`
 - PULP ITA dotp first build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
 - PULP ITA dotp first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch
+- PULP ITA dotp shape expansion gate records `64x1` and `1x64` coverage-output pass with mismatch count `0`
+- PULP ITA dotp shape expansion gate records `64x1` as much more favorable than `1x64` in scoped single-run timing
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command
