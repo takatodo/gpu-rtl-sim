@@ -253,14 +253,16 @@ Do not put canonical decisions in generated outputs. If a generated result matte
 
 ## Next Direction
 
-The next useful goal is review of the refreshed public benchmark pack:
+The public benchmark pack is ready for external review. The next useful measurement goal is `persistent_resident_state_abi_repeat_median`:
 
 - use `config/scaling_gates/public_results_packaging_gate.json` as the current gate
 - use `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` as the external review readiness audit
+- use `config/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json` as the next-goal selection gate
 - use `docs/results.md` as the external-facing benchmark pack
 - use `config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json` for the fresh MHA `1x1`, `32x1`, and `1x32` generic-host-probe chain
 - use `reports/persistent_resident_state_abi_probe_summary.json` as the newest persistent resident ABI evidence
 - keep `coverage_output_equivalence` as the correctness policy
+- define `persistent_resident_state_abi_repeat_median_measurement_gate` before changing any runtime or ABI behavior
 - keep the long-term goal: make hybrid execution close to Verilator usage while preserving reproducible correctness and speed evidence for LLM-serving-like RTL workloads
 - keep config current-state-only and historical evidence in gates; regenerate reports/artifacts only when needed
 - keep public CLIs thin and tested

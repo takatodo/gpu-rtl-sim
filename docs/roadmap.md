@@ -68,7 +68,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-`Run the public release checklist against the externalization-ready benchmark pack, then choose whether to publish the pack or open a new measurement goal.`
+`Define the persistent resident state ABI repeat-median measurement after the public benchmark pack readiness gate.`
 
 Candidate-template selection gate:
 
@@ -252,11 +252,14 @@ External-facing synthesis:
 
 ## Next Goal
 
-Make the refreshed public benchmark pack externalization-ready:
+Define the next measurement boundary after the refreshed public benchmark pack became externalization-ready:
 
 - gate: `config/scaling_gates/public_results_packaging_gate.json`
 - audit: `config/scaling_gates/public_benchmark_pack_goal_completion_audit.json`
 - readiness audit: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
+- next-goal selection gate: `config/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json`
+- selected next measurement goal: `persistent_resident_state_abi_repeat_median`
+- first required gate: `persistent_resident_state_abi_repeat_median_measurement_gate`
 - document: `docs/results.md`
 - newest evidence: `reports/persistent_resident_state_abi_probe_summary.json`
 - latest MobileViT evidence: `reports/mobile_vit_hybrid_128_summary.json`
@@ -280,6 +283,15 @@ Externalization readiness adds:
 - a public release checklist for source-of-truth alignment, path hygiene, smoke, evidence scope, non-claims, and tests
 - a public archive dry-run that prints package include/exclude paths without creating a source-of-truth archive
 - contract tests that pin these public-pack explanations
+
+Next measurement selection:
+
+- select persistent resident state ABI repeat-median because it is the smallest next measurement that improves timing reproducibility for the newest serving-like execution-mode evidence
+- defer paged attention / KV-cache scale-up because the public pack already includes larger paged KV-cache, paged-attention KV-score, and repeat-median paged-attention score evidence
+- defer additional prefill/decode work until the persistent resident timing reproducibility gap is closed
+- keep runtime/ABI changes out of the repeat-median gate
+- keep publish-only as available downstream work, not the next engineering measurement gate
+- do not change runtime ABI or add a new workload while defining `persistent_resident_state_abi_repeat_median_measurement_gate`
 
 Representative comparisons:
 
@@ -330,22 +342,24 @@ Tracked evidence:
 
 Recommended next gate:
 
-`public_benchmark_pack_externalization_ready`
+`define_persistent_resident_state_abi_repeat_median_measurement_gate`
 
 Acceptance criteria:
 
+- review `config/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json`
 - review `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
-- review `config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`
-- confirm the fresh full ITA/MHA `1x1`, `32x1`, and `1x32` generic-host-probe chain appears in `docs/results.md`
+- reuse the existing persistent resident state ABI entrypoint
+- measure repeat-median timing for the existing `16x64` four-phase path before changing runtime ABI
+- preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
-- keep paged attention/KV-cache scale-up and resident execution optimization deferred to their own gates
+- keep resident execution optimization deferred to its own runtime/ABI gates
 - keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the externalization pack
 
 Working tree review boundary:
 
-`next_task: public_benchmark_pack_externalization_ready`
+`next_task: define_persistent_resident_state_abi_repeat_median_measurement_gate`
 
-Review only the public benchmark pack and source-of-truth references. Do not mix in new KV-cache, runtime, or MobileViT edits.
+Review only the next-goal selection and repeat-median measurement definition. Do not mix in runtime, MobileViT, or new workload edits.
 
 Review/stage boundary:
 
@@ -366,6 +380,7 @@ Review/stage boundary:
 - `records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json`
 - `records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`
 - `records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
+- `records/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json`
 - `docs/results.md`
 - `config/slice_launch_templates/pulp_ita_mha.json`
 - `overlays/ITA/src/pulp_ita_tc_sram_sim.sv`

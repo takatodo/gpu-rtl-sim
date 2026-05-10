@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_goal_selection_after_public_pack_readiness_gate",
+  "status": "selected_persistent_resident_state_abi_repeat_median_next",
+  "source_readiness_audit": "config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json",
+  "source_results_doc": "docs/results.md",
+  "objective": "Select the next measurement goal after the public benchmark pack became ready for external review.",
+  "long_term_goal": "Keep hybrid execution close to Verilator usage while making LLM-serving-like RTL workload correctness, speed trends, reproduction commands, and non-claims easy to regenerate and review.",
+  "options_reviewed": [
+    {
+      "option": "paged_attention_kv_cache_scale_up",
+      "decision": "defer",
+      "reason": "Paged-attention and KV-cache scale-up remain important, but the public pack already includes larger paged KV-cache, paged-attention KV-score, and repeat-median paged-attention score evidence. Reopening this first would increase workload surface before closing the smaller persistent-resident timing reproducibility gap.",
+      "weakness": "Would add or revive workload-specific templates and overlays instead of tightening the newest persistent resident ABI evidence."
+    },
+    {
+      "option": "prefill_decode_additional_benchmark",
+      "decision": "defer",
+      "reason": "Prefill/decode split evidence already exists for the current MHA path. More prefill/decode work is useful after the next KV/paged-attention scale-up gives a richer serving-state workload.",
+      "weakness": "Would mostly refine an already documented MHA execution-shape distinction."
+    },
+    {
+      "option": "resident_execution_optimization",
+      "decision": "select_next",
+      "reason": "Persistent resident ABI is the newest serving-like execution-mode evidence, but it is currently a scoped single measurement. A repeat-median gate is the smallest next step that improves timing reproducibility without changing runtime ABI or adding a new workload.",
+      "weakness": "It remains a runtime/execution-mode measurement, not a new production KV-cache or paged-attention workload."
+    },
+    {
+      "option": "publish_only",
+      "decision": "defer",
+      "reason": "The public benchmark pack is ready for external review. The next engineering work should reopen a narrow measurement goal while keeping publication as an available downstream action.",
+      "weakness": "Does not add new workload evidence."
+    }
+  ],
+  "selected_next_goal": {
+    "name": "persistent_resident_state_abi_repeat_median",
+    "first_gate": "persistent_resident_state_abi_repeat_median_measurement_gate",
+    "first_gate_objective": "Measure repeat-median timing for the existing persistent resident state ABI path without changing runtime ABI or adding a new workload.",
+    "scope": [
+      "reuse the existing persistent resident state ABI entrypoint",
+      "measure repeat-median timing for the existing 16x64 four-phase path",
+      "preserve coverage_output_equivalence as the correctness policy",
+      "keep generated reports and artifacts non-canonical",
+      "avoid runtime/ABI changes in the measurement gate"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_measurement": true,
+    "raw_full_state_equality_required": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "non_claims": [
+    "not a new measurement result",
+    "not production paged attention",
+    "not production KV-cache memory hierarchy",
+    "not a new workload",
+    "not model-level Transformer inference",
+    "not production LLM serving throughput",
+    "not broad speedup for arbitrary RTL",
+    "not raw full-state equality"
+  ],
+  "next_task": "define_persistent_resident_state_abi_repeat_median_measurement_gate"
+}

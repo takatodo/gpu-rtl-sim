@@ -75,6 +75,12 @@ PUBLIC_BENCHMARK_PACK_EXTERNALIZATION_AUDIT = (
     / "scaling_gates"
     / "public_benchmark_pack_externalization_readiness_audit.json"
 )
+NEXT_MEASUREMENT_GOAL_SELECTION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "next_measurement_goal_selection_after_public_pack_readiness_gate.json"
+)
 ONE_COMMAND_REPRODUCTION_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "one_command_reproduction_flow_gate.json"
 )
@@ -2881,8 +2887,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_mha_shape_expansion_gate.json",
             "pulp_ita_mha_shape_expansion_review_gate.json",
             "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
-            "next_task: public_benchmark_pack_externalization_ready",
-            "Review only the public benchmark pack and source-of-truth references",
+            "next_task: define_persistent_resident_state_abi_repeat_median_measurement_gate",
+            "Review only the next-goal selection and repeat-median measurement definition",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
@@ -3063,6 +3069,53 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json",
             "reports/hybrid_benchmark_mobile_vit_template_limit128.json",
             "not a new measurement result",
+        ):
+            self.assertIn(token, combined)
+
+    def test_next_measurement_goal_selection_after_public_pack_readiness_is_defined(self) -> None:
+        gate = json.loads(NEXT_MEASUREMENT_GOAL_SELECTION_GATE.read_text(encoding="utf-8"))
+        combined = "\n".join(
+            [
+                README.read_text(encoding="utf-8"),
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["gate"], "next_measurement_goal_selection_after_public_pack_readiness_gate")
+        self.assertEqual(gate["status"], "selected_persistent_resident_state_abi_repeat_median_next")
+        self.assertEqual(
+            gate["source_readiness_audit"],
+            "config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json",
+        )
+        self.assertEqual(gate["selected_next_goal"]["name"], "persistent_resident_state_abi_repeat_median")
+        self.assertEqual(
+            gate["selected_next_goal"]["first_gate"],
+            "persistent_resident_state_abi_repeat_median_measurement_gate",
+        )
+        self.assertEqual(gate["next_task"], "define_persistent_resident_state_abi_repeat_median_measurement_gate")
+        self.assertTrue(gate["acceptance_policy"]["selection_only"])
+        self.assertFalse(gate["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["runtime_or_abi_change_allowed_by_this_gate"])
+        self.assertTrue(gate["acceptance_policy"]["coverage_output_equivalence_required_for_later_measurement"])
+
+        options = {entry["option"]: entry for entry in gate["options_reviewed"]}
+        self.assertEqual(options["paged_attention_kv_cache_scale_up"]["decision"], "defer")
+        self.assertEqual(options["prefill_decode_additional_benchmark"]["decision"], "defer")
+        self.assertEqual(options["resident_execution_optimization"]["decision"], "select_next")
+        self.assertEqual(options["publish_only"]["decision"], "defer")
+        self.assertIn("timing reproducibility", options["resident_execution_optimization"]["reason"])
+        self.assertIn("not production paged attention", gate["non_claims"])
+        self.assertIn("not production KV-cache memory hierarchy", gate["non_claims"])
+        self.assertIn("not a new workload", gate["non_claims"])
+        self.assertIn("not model-level Transformer inference", gate["non_claims"])
+
+        for token in (
+            "next_measurement_goal_selection_after_public_pack_readiness_gate.json",
+            "persistent_resident_state_abi_repeat_median",
+            "define_persistent_resident_state_abi_repeat_median_measurement_gate",
+            "persistent resident state ABI repeat-median measurement",
+            "do not change runtime ABI or add a new workload",
         ):
             self.assertIn(token, combined)
 
