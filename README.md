@@ -49,6 +49,7 @@ How to read the public benchmark pack:
 - Public pack manifest: `docs/results.md` lists the minimum source-of-truth files, `records/scaling_gates` gate/audit records, tools, templates, contract tests, and optional generated evidence snapshots to include for review.
 - Public reproduction smoke: `docs/results.md` lists the first dry-run commands to run before attempting full measurements.
 - Public release checklist: `docs/results.md` lists the final source-of-truth, path hygiene, smoke, evidence, non-claim, and contract-test checks before handoff.
+- Externalization readiness audit: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for external review.
 - Public archive dry-run: `python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run` prints the include/exclude plan without creating an archive.
 
 ## Source Of Truth
@@ -61,6 +62,8 @@ Canonical project state lives in:
 - `docs/status.md`
 - `docs/roadmap.md`
 - `README.md`
+
+`docs/results.md` is the external-facing result pack and reader guide. It summarizes current evidence, reproduction commands, and non-claims, but canonical project-state decisions stay in the files above.
 
 Historical gate details live under `records/scaling_gates/`, with `config/scaling_gates` kept as a compatibility link. Generated outputs are reproducible under `reports/` and `artifacts/`; they may be present in a local working tree as evidence, but they are never source of truth.
 
@@ -179,6 +182,7 @@ Current goal evidence includes:
 - `resident_decode_batch_parallel_probe_gate.json`
 - `modern_llm_serving_rtl_hybrid_conditions_goal_completion_audit.json`
 - `public_results_packaging_gate.json`
+- `public_benchmark_pack_externalization_readiness_audit.json`
 - `public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`
 - `pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`
 - `pulp_ita_mha_shape_expansion_gate.json`
@@ -252,6 +256,7 @@ Do not put canonical decisions in generated outputs. If a generated result matte
 The next useful goal is review of the refreshed public benchmark pack:
 
 - use `config/scaling_gates/public_results_packaging_gate.json` as the current gate
+- use `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` as the external review readiness audit
 - use `docs/results.md` as the external-facing benchmark pack
 - use `config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json` for the fresh MHA `1x1`, `32x1`, and `1x32` generic-host-probe chain
 - use `reports/persistent_resident_state_abi_probe_summary.json` as the newest persistent resident ABI evidence

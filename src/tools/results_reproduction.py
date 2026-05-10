@@ -42,6 +42,7 @@ PUBLIC_PACK_ARCHIVE_PATHS = (
     "docs/roadmap.md",
     "docs/results.md",
     "records/scaling_gates/public_results_packaging_gate.json",
+    "records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json",
     "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
     "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
     "src/tools/run_results_reproduction.py",

@@ -68,7 +68,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-`Hold the refreshed public benchmark pack for review after publishing the wrapper summary schema, then choose whether to externalize results or open a new measurement goal.`
+`Run the public release checklist against the externalization-ready benchmark pack, then choose whether to publish the pack or open a new measurement goal.`
 
 Candidate-template selection gate:
 
@@ -256,6 +256,7 @@ Make the refreshed public benchmark pack externalization-ready:
 
 - gate: `config/scaling_gates/public_results_packaging_gate.json`
 - audit: `config/scaling_gates/public_benchmark_pack_goal_completion_audit.json`
+- readiness audit: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
 - document: `docs/results.md`
 - newest evidence: `reports/persistent_resident_state_abi_probe_summary.json`
 - latest MobileViT evidence: `reports/mobile_vit_hybrid_128_summary.json`
@@ -333,6 +334,7 @@ Recommended next gate:
 
 Acceptance criteria:
 
+- review `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
 - review `config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`
 - confirm the fresh full ITA/MHA `1x1`, `32x1`, and `1x32` generic-host-probe chain appears in `docs/results.md`
 - keep reports and artifacts as generated evidence, not source of truth
@@ -363,6 +365,7 @@ Review/stage boundary:
 - `records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json`
 - `records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json`
 - `records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`
+- `records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
 - `docs/results.md`
 - `config/slice_launch_templates/pulp_ita_mha.json`
 - `overlays/ITA/src/pulp_ita_tc_sram_sim.sv`

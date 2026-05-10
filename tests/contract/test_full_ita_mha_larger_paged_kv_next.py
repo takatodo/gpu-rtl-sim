@@ -69,6 +69,12 @@ PUBLIC_RESULTS_MHA_REFRESH_GATE = (
 PUBLIC_BENCHMARK_PACK_COMPLETION_AUDIT = (
     REPO_ROOT / "config" / "scaling_gates" / "public_benchmark_pack_goal_completion_audit.json"
 )
+PUBLIC_BENCHMARK_PACK_EXTERNALIZATION_AUDIT = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "public_benchmark_pack_externalization_readiness_audit.json"
+)
 ONE_COMMAND_REPRODUCTION_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "one_command_reproduction_flow_gate.json"
 )
@@ -2670,6 +2676,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "## Public Release Checklist",
             "public_release_checklist_ready",
             "Current source of truth",
+            "Current source of truth and reader pack",
+            "this document is the external-facing result pack",
             "Gate and audit evidence",
             "Reproduction tools",
             "Target templates",
@@ -2970,6 +2978,86 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "python3 -m unittest discover -s tests/contract -q",
             "coverage_output_equivalence",
             "not raw full-state equality",
+        ):
+            self.assertIn(token, combined)
+
+    def test_public_benchmark_pack_externalization_readiness_audit_is_defined(self) -> None:
+        audit = json.loads(PUBLIC_BENCHMARK_PACK_EXTERNALIZATION_AUDIT.read_text(encoding="utf-8"))
+        combined = "\n".join(
+            [
+                README.read_text(encoding="utf-8"),
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+                RESULTS.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(audit["audit"], "public_benchmark_pack_externalization_readiness")
+        self.assertEqual(audit["status"], "ready_for_external_review")
+        self.assertEqual(audit["current_priority"], "public_benchmark_pack_externalization_ready")
+        self.assertEqual(audit["source_packaging_gate"], "config/scaling_gates/public_results_packaging_gate.json")
+        self.assertEqual(
+            audit["source_refresh_gate"],
+            "config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+        )
+        self.assertTrue(audit["decision"]["externalization_ready"])
+        self.assertEqual(audit["results_doc"], "docs/results.md")
+        self.assertEqual(audit["evidence_policy"]["correctness_policy"], "coverage_output_equivalence")
+        self.assertTrue(audit["evidence_policy"]["generated_reports_are_evidence_only"])
+        self.assertFalse(audit["evidence_policy"]["generated_artifacts_are_source_of_truth"])
+        self.assertFalse(audit["evidence_policy"]["existing_evidence_is_fresh_execution"])
+        self.assertEqual(
+            audit["minimum_public_dry_run_smoke"],
+            [
+                "python3 src/tools/run_results_reproduction.py --dry-run",
+                "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+                "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run",
+                "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run",
+                "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run",
+                "python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run",
+            ],
+        )
+        for check in (
+            "source_of_truth_alignment",
+            "reader_guide_and_boundaries",
+            "local_path_hygiene",
+            "public_smoke_commands",
+            "archive_dry_run",
+            "evidence_claim_scope",
+            "non_claims",
+            "contract_tests",
+        ):
+            self.assertIn(check, audit["release_checks"])
+        for path in (
+            "README.md",
+            "config/selection.json",
+            "docs/status.md",
+            "docs/roadmap.md",
+            "docs/results.md",
+            "records/scaling_gates/public_results_packaging_gate.json",
+            "records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+            "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
+            "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
+        ):
+            self.assertIn(path, audit["required_review_surfaces"])
+        for non_claim in (
+            "not a new measurement result",
+            "not production LLM serving throughput",
+            "not raw full-state equality",
+            "not ImageNet accuracy from RTL logits",
+        ):
+            self.assertIn(non_claim, audit["non_claims"])
+        self.assertEqual(audit["next_task"], "run_public_release_checklist_or_choose_next_measurement_goal")
+
+        for token in (
+            "public_benchmark_pack_externalization_readiness_audit.json",
+            "ready_for_external_review",
+            "Externalization readiness audit:",
+            "minimum review surfaces, smoke commands, release checks, and evidence policy",
+            "`docs/results.md` is the external-facing result pack and reader guide",
+            "reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json",
+            "reports/hybrid_benchmark_mobile_vit_template_limit128.json",
+            "not a new measurement result",
         ):
             self.assertIn(token, combined)
 

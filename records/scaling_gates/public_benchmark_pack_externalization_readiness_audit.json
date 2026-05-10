@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "audit": "public_benchmark_pack_externalization_readiness",
+  "status": "ready_for_external_review",
+  "current_priority": "public_benchmark_pack_externalization_ready",
+  "source_packaging_gate": "config/scaling_gates/public_results_packaging_gate.json",
+  "source_refresh_gate": "config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+  "results_doc": "docs/results.md",
+  "decision": {
+    "externalization_ready": true,
+    "reason": "The public benchmark pack has a reader guide, manifest, dry-run smoke set, release checklist, scoped correctness policy, representative evidence paths, and explicit non-claims."
+  },
+  "required_review_surfaces": [
+    "README.md",
+    "config/selection.json",
+    "docs/status.md",
+    "docs/roadmap.md",
+    "docs/results.md",
+    "records/scaling_gates/public_results_packaging_gate.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+    "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
+    "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json"
+  ],
+  "minimum_public_dry_run_smoke": [
+    "python3 src/tools/run_results_reproduction.py --dry-run",
+    "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+    "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run",
+    "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run",
+    "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run",
+    "python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run"
+  ],
+  "release_checks": [
+    "source_of_truth_alignment",
+    "reader_guide_and_boundaries",
+    "local_path_hygiene",
+    "public_smoke_commands",
+    "archive_dry_run",
+    "evidence_claim_scope",
+    "non_claims",
+    "contract_tests"
+  ],
+  "evidence_policy": {
+    "correctness_policy": "coverage_output_equivalence",
+    "generated_reports_are_evidence_only": true,
+    "generated_artifacts_are_source_of_truth": false,
+    "existing_evidence_is_fresh_execution": false
+  },
+  "non_claims": [
+    "not a new measurement result",
+    "not production LLM serving throughput",
+    "not paper-grade statistical confidence",
+    "not raw full-state equality",
+    "not MobileViT numerical inference in RTL",
+    "not ImageNet accuracy from RTL logits"
+  ],
+  "next_task": "run_public_release_checklist_or_choose_next_measurement_goal"
+}

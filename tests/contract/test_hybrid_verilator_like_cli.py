@@ -95,6 +95,7 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             "config/selection.json",
             "docs/results.md",
             "records/scaling_gates/public_results_packaging_gate.json",
+            "records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json",
             "src/tools/run_results_reproduction.py",
             "src/tools/results_reproduction.py",
             "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",

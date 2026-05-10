@@ -50,8 +50,8 @@ Public pack manifest:
 
 | Group | Include | Reason |
 | --- | --- | --- |
-| Current source of truth | `README.md`, `config/selection.json`, `docs/status.md`, `docs/roadmap.md`, `docs/results.md` | Current objective, status, roadmap, result narrative, and reader guide. |
-| Gate and audit evidence | `records/scaling_gates/public_results_packaging_gate.json`, `records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`, `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json`, `records/scaling_gates/generic_hybrid_benchmark_cli_gate.json`, `records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`, `records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json`, `records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json` | Machine-readable benchmark-pack scope, completion audit, wrapper summary schema, and the fresh full ITA/MHA generic-host-probe chain; these are also available through the `config/scaling_gates` compatibility symlink. |
+| Current source of truth and reader pack | `README.md`, `config/selection.json`, `docs/status.md`, `docs/roadmap.md`, `docs/results.md` | Current objective, status, roadmap, result narrative, and reader guide. Canonical project-state decisions remain in `README.md`, `config/selection.json`, `docs/status.md`, and `docs/roadmap.md`; this document is the external-facing result pack. |
+| Gate and audit evidence | `records/scaling_gates/public_results_packaging_gate.json`, `records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`, `records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`, `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json`, `records/scaling_gates/generic_hybrid_benchmark_cli_gate.json`, `records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`, `records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json`, `records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json` | Machine-readable benchmark-pack scope, externalization readiness, completion audit, wrapper summary schema, and the fresh full ITA/MHA generic-host-probe chain; these are also available through the `config/scaling_gates` compatibility symlink. |
 | Reproduction tools | `src/tools/run_results_reproduction.py`, `src/tools/results_reproduction.py`, `src/tools/run_hybrid_benchmark.py`, `src/tools/hybrid_benchmark.py`, `src/tools/run_hybrid_template.py` | Public CLI entrypoints and shared logic needed to regenerate evidence. |
 | Target templates | `config/slice_launch_templates/pulp_ita_mha.json`, `config/slice_launch_templates/pulp_paged_attention_kv_score.json`, `config/slice_launch_templates/mobile_vit_cpu_kick_rtl_proxy.json` | Supported representative workload templates. |
 | Contract tests | `tests/contract/test_full_ita_mha_larger_paged_kv_next.py`, `tests/contract/test_hybrid_verilator_like_cli.py` | Public pack, wrapper summary, CLI, and local-path policy checks. |
@@ -101,6 +101,12 @@ Before publishing or handing off the benchmark pack, verify:
 | Evidence claims | Inspect `docs/results.md` and `reports/hybrid_benchmark_*.json`. | Correctness claims are scoped to `coverage_output_equivalence`; `existing_evidence` is not presented as fresh execution. |
 | Non-claims | Inspect `docs/results.md:Non-Claims`. | Production serving, raw full-state equality, RTL logits/ImageNet accuracy, and paper-grade confidence are not claimed. |
 | Contract tests | Run `python3 -m unittest discover -s tests/contract -q`. | All contract tests pass, with expected skips only. |
+
+Externalization readiness audit:
+
+`config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
+
+The audit records the minimum review surfaces, smoke commands, release checks, and evidence policy for handing this pack to an external reader. Its `ready_for_external_review` status means the pack is organized for review; it is not a new measurement result and does not strengthen the timing or correctness claims beyond the referenced evidence.
 
 ## Correctness Condition
 
@@ -295,12 +301,18 @@ This repository does not claim:
 
 Canonical state and completion audit:
 
+- `README.md`
 - `config/selection.json`
+- `docs/results.md`
 - `docs/status.md`
 - `docs/roadmap.md`
+- `config/scaling_gates/public_results_packaging_gate.json`
+- `config/scaling_gates/public_benchmark_pack_goal_completion_audit.json`
+- `config/scaling_gates/generic_hybrid_benchmark_cli_gate.json`
 - `config/scaling_gates/one_command_reproduction_flow_gate.json`
 - `config/scaling_gates/repeat_median_results_reproduction_gate.json`
 - `config/scaling_gates/modern_llm_serving_rtl_hybrid_conditions_goal_completion_audit.json`
+- `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
 - `config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`
 - `config/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`
 - `config/scaling_gates/pulp_ita_mha_shape_expansion_gate.json`
