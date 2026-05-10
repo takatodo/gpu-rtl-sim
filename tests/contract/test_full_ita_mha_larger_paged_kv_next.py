@@ -150,6 +150,12 @@ PULP_ITA_DOTP_SHAPE_EXPANSION_GATE = (
     / "scaling_gates"
     / "pulp_ita_dotp_shape_expansion_gate.json"
 )
+PULP_ITA_DOTP_SHAPE_EXPANSION_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "pulp_ita_dotp_shape_expansion_review_gate.json"
+)
 REPEAT_MEDIAN_RESULTS_SUMMARY = REPO_ROOT / "reports" / "results_reproduction_median_summary.json"
 RESIDENT_BATCH_SWEEP_SUMMARY = REPO_ROOT / "reports" / "resident_batch_sweep_summary.json"
 RESIDENT_STATE_REUSE_SUMMARY = REPO_ROOT / "reports" / "resident_state_reuse_experiment_summary.json"
@@ -1264,7 +1270,80 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "both planned shapes pass CPU-vs-hybrid `coverage_output_equivalence` with mismatch count `0`",
             "`64x1`: CPU elapsed `150.04 ms`, hybrid GPU kernel total `1.29024 ms`, hybrid wall `1.321 ms`",
             "`1x64`: CPU elapsed `3.23146 ms`, hybrid GPU kernel total `1.543168 ms`, hybrid wall `1.600 ms`",
-            "next_task: review_pulp_ita_dotp_shape_expansion_and_select_softmax_or_hold",
+            "pulp_ita_dotp_shape_expansion_review_gate.json",
+        ):
+            self.assertIn(token, combined_docs)
+
+    def test_pulp_ita_dotp_shape_expansion_review_selects_softmax_boundary(self) -> None:
+        gate = json.loads(PULP_ITA_DOTP_SHAPE_EXPANSION_REVIEW_GATE.read_text(encoding="utf-8"))
+        combined_docs = "\n".join(
+            [
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["status"], "selected_ita_softmax_top_dependency_template_boundary_next")
+        self.assertEqual(gate["source_gate"], "config/scaling_gates/pulp_ita_dotp_shape_expansion_gate.json")
+        self.assertEqual(gate["reviewed_seed"], "pulp_ita_dotp")
+        reviewed = gate["reviewed_result"]
+        self.assertEqual(reviewed["planned_shapes"], ["64x1", "1x64"])
+        self.assertTrue(reviewed["all_planned_shapes_passed_coverage_output_equivalence"])
+        self.assertEqual(reviewed["max_coverage_output_mismatch_count"], 0)
+        self.assertIn("does not exercise softmax", reviewed["weakness"])
+
+        options = {entry["option"]: entry for entry in gate["options_reviewed"]}
+        self.assertEqual(options["hold_for_more_dotp_evidence"]["decision"], "defer")
+        self.assertEqual(
+            options["move_to_ita_softmax_top_dependency_template_boundary"]["decision"],
+            "select_next",
+        )
+        self.assertEqual(options["jump_to_full_ita_mha"]["decision"], "defer")
+
+        selected = gate["selected_next_workstream"]
+        self.assertEqual(selected["name"], "ita_softmax_top_dependency_template_boundary")
+        self.assertEqual(selected["target"], "pulp_ita_softmax_top")
+        self.assertEqual(selected["upstream_source"], "third_party/ITA/src/ita_softmax_top.sv")
+        self.assertEqual(
+            selected["required_next_gate"],
+            "pulp_ita_softmax_top_dependency_template_boundary_gate",
+        )
+        self.assertFalse(selected["measurement_allowed_by_review_gate"])
+        active_seed_policy = gate["active_seed_policy"]
+        self.assertEqual(active_seed_policy["completed_or_held_seed"], "pulp_ita_dotp")
+        self.assertEqual(active_seed_policy["only_next_active_ita_seed"], "pulp_ita_softmax_top")
+        self.assertFalse(active_seed_policy["second_active_seed_measurement_allowed_by_this_gate"])
+
+        dependency = gate["required_dependency_boundary"]
+        self.assertIn("third_party/ITA/src/ita_softmax_top.sv", dependency["required_ita_sources"])
+        self.assertIn("third_party/ITA/src/ita_serdiv.sv", dependency["required_ita_sources"])
+        self.assertIn("third_party/common_cells/src/cf_math_pkg.sv", dependency["required_common_cells_sources"])
+        self.assertIn("third_party/common_cells/src/fifo_v3.sv", dependency["required_common_cells_sources"])
+        self.assertIn("third_party/common_cells/src/lzc.sv", dependency["required_common_cells_sources"])
+        self.assertIn("Do not recursively import all Bender dependencies", dependency["dependency_policy"])
+
+        template = gate["required_template_boundary"]
+        self.assertEqual(template["coverage_tb"], "overlays/ITA/src/pulp_ita_softmax_top_gpu_cov_tb.sv")
+        self.assertEqual(template["coverage_manifest"], "overlays/ITA/tests/pulp_ita_softmax_top_coverage_regions.json")
+        self.assertEqual(template["launch_template"], "config/slice_launch_templates/pulp_ita_softmax_top.json")
+        self.assertEqual(template["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertFalse(template["makefile_target_allowed"])
+
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertFalse(policy["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(policy["second_active_seed_measurement_allowed_by_this_gate"])
+        self.assertFalse(policy["speedup_claim_allowed_by_gate_alone"])
+        self.assertEqual(gate["next_task"], "define_pulp_ita_softmax_top_dependency_template_boundary_gate")
+        self.assertIn("not softmax build/run/compare", gate["non_claims"])
+        self.assertIn("not approval to recursively import all Bender dependencies", gate["non_claims"])
+
+        for token in (
+            "pulp_ita_dotp_shape_expansion_review_gate.json",
+            "selected next workstream: `ita_softmax_top_dependency_template_boundary`",
+            "required next boundary: `pulp_ita_softmax_top_dependency_template_boundary_gate`",
+            "next_task: define_pulp_ita_softmax_top_dependency_template_boundary_gate",
+            "not softmax build/run/compare",
         ):
             self.assertIn(token, combined_docs)
 
@@ -1864,8 +1943,9 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
             "pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json",
             "pulp_ita_dotp_shape_expansion_gate.json",
-            "next_task: review_pulp_ita_dotp_shape_expansion_and_select_softmax_or_hold",
-            "Review only whether the next active ITA work should move from `pulp_ita_dotp` to `ita_softmax_top` or hold",
+            "pulp_ita_dotp_shape_expansion_review_gate.json",
+            "next_task: define_pulp_ita_softmax_top_dependency_template_boundary_gate",
+            "Review only the `ita_softmax_top` dependency/template boundary",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
@@ -1873,6 +1953,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "records/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
             "records/scaling_gates/pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json",
             "records/scaling_gates/pulp_ita_dotp_shape_expansion_gate.json",
+            "records/scaling_gates/pulp_ita_dotp_shape_expansion_review_gate.json",
             "config/slice_launch_templates/pulp_ita_dotp.json",
             "overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv",
             "overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json",
@@ -1907,6 +1988,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "PULP ITA dotp first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch",
             "PULP ITA dotp shape expansion gate records `64x1` and `1x64` coverage-output pass with mismatch count `0`",
             "PULP ITA dotp shape expansion gate records `64x1` as much more favorable than `1x64` in scoped single-run timing",
+            "PULP ITA dotp shape expansion review gate selects `ita_softmax_top_dependency_template_boundary` next",
+            "PULP ITA dotp shape expansion review gate keeps softmax measurement separate from boundary definition",
             "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "`run_hybrid_template.py` passes template `verilator_defines` into the Verilator command",

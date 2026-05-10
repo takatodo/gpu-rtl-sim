@@ -158,6 +158,17 @@ PULP ITA dotp shape expansion gate:
 - next_task: `review_pulp_ita_dotp_shape_expansion_and_select_softmax_or_hold`
 - non-claim: this is scoped dotp timing evidence only, not softmax, full MHA, production LLM-serving throughput, or broad modern-NN speedup
 
+PULP ITA dotp shape expansion review gate:
+
+- `config/scaling_gates/pulp_ita_dotp_shape_expansion_review_gate.json`
+- reviewed result: `pulp_ita_dotp` `64x1` and `1x64` both pass `coverage_output_equivalence` with mismatch count `0`
+- selected next workstream: `ita_softmax_top_dependency_template_boundary`
+- reason: dotp covers attention-score arithmetic, but the modern attention gap now is softmax/reduction behavior
+- required next boundary: `pulp_ita_softmax_top_dependency_template_boundary_gate`
+- required source boundary: `ita_softmax_top`, `ita_package`, `ita_max_finder`, `ita_register_file_1w_multi_port_read`, `ita_softmax`, `ita_serdiv`, `cf_math_pkg`, `fifo_v3`, and `lzc`
+- required execution boundary: use `src/tools/build_host_probe.py`; do not add a `src/hybrid/Makefile` host-probe target and do not recursively import all Bender dependencies
+- non-claim: this is a review-only selection, not softmax build/run/compare or speedup evidence
+
 Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
@@ -306,21 +317,22 @@ Tracked evidence:
 
 Recommended next gate:
 
-`review_pulp_ita_dotp_shape_expansion_and_select_softmax_or_hold`
+`define_pulp_ita_softmax_top_dependency_template_boundary_gate`
 
 Acceptance criteria:
 
-- review the `pulp_ita_dotp` `64x1` and `1x64` timing trend before expanding the active seed
-- decide explicitly whether to promote `ita_softmax_top` next or hold for more dotp evidence
-- keep `ita_softmax_top` measurement separate from the dotp shape expansion result
+- define the `ita_softmax_top` source/template boundary before measurement
+- verify required ITA and common_cells source paths are present through canonical submodule gitlinks
+- keep `ita_softmax_top` measurement separate from the boundary definition
+- use `src/tools/build_host_probe.py`, not a new `src/hybrid/Makefile` host-probe target
 - keep recursive Bender dependencies out unless a narrow requirement is recorded
-- keep full MHA, KV-cache, LLM SoC, and MobileViT out of the softmax selection review
+- keep full MHA, KV-cache, LLM SoC, and MobileViT out of the softmax boundary gate
 
 Working tree review boundary:
 
-`next_task: review_pulp_ita_dotp_shape_expansion_and_select_softmax_or_hold`
+`next_task: define_pulp_ita_softmax_top_dependency_template_boundary_gate`
 
-Review only whether the next active ITA work should move from `pulp_ita_dotp` to `ita_softmax_top` or hold. Do not mix in softmax measurement, full MHA, KV-cache, runtime changes, or generated outputs.
+Review only the `ita_softmax_top` dependency/template boundary. Do not mix in softmax measurement, full MHA, KV-cache, runtime changes, or generated outputs.
 
 Review/stage boundary:
 
@@ -330,6 +342,7 @@ Review/stage boundary:
 - `records/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json`
 - `records/scaling_gates/pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json`
 - `records/scaling_gates/pulp_ita_dotp_shape_expansion_gate.json`
+- `records/scaling_gates/pulp_ita_dotp_shape_expansion_review_gate.json`
 - `config/slice_launch_templates/pulp_ita_dotp.json`
 - `overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv`
 - `overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json`
@@ -372,6 +385,8 @@ Boundary acceptance:
 - PULP ITA dotp first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch
 - PULP ITA dotp shape expansion gate records `64x1` and `1x64` coverage-output pass with mismatch count `0`
 - PULP ITA dotp shape expansion gate records `64x1` as much more favorable than `1x64` in scoped single-run timing
+- PULP ITA dotp shape expansion review gate selects `ita_softmax_top_dependency_template_boundary` next
+- PULP ITA dotp shape expansion review gate keeps softmax measurement separate from boundary definition
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command

@@ -28,6 +28,8 @@ PULP ITA dotp first build/run/compare state: `config/scaling_gates/pulp_ita_dotp
 
 PULP ITA dotp shape expansion state: `config/scaling_gates/pulp_ita_dotp_shape_expansion_gate.json` records `64x1` and `1x64` through the generic host-probe path. Both shapes pass CPU-vs-hybrid `coverage_output_equivalence` with mismatch count `0`. Observed single-run timing is scoped to this dotp seed: `64x1` has CPU elapsed `150.04 ms` and hybrid wall `1.321 ms`, while `1x64` has CPU elapsed `3.23146 ms` and hybrid wall `1.600 ms`. The trend is that state-parallel `64x1` is much more favorable than single-state repeated-step `1x64`, but this is not a broad modern-NN, softmax, MHA, or LLM-serving throughput claim.
 
+PULP ITA dotp shape expansion review state: `config/scaling_gates/pulp_ita_dotp_shape_expansion_review_gate.json` selects `ita_softmax_top_dependency_template_boundary` next. The reason is not that dotp proves broad NN speedup; the reason is that dotp has answered the minimal attention-score datapath question while still missing softmax/reduction behavior. The next_task is `define_pulp_ita_softmax_top_dependency_template_boundary_gate`, and the review explicitly does not run softmax build/run/compare or permit recursive Bender imports.
+
 ## Goal
 
 `modern_llm_serving_rtl_hybrid_conditions`
