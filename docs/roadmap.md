@@ -329,22 +329,22 @@ Tracked evidence:
 
 Recommended next gate:
 
-`define_pulp_ita_mha_dependency_template_boundary_gate`
+`run_pulp_ita_mha_first_generic_host_probe_build_run_compare_gate`
 
 Acceptance criteria:
 
-- review `config/scaling_gates/pulp_ita_softmax_top_shape_expansion_review_gate.json`
-- promote only the full ITA/MHA source/template boundary for `pulp_ita_mha`
-- keep the host-probe path on `src/tools/build_host_probe.py`, not a new `src/hybrid/Makefile` target
-- require `overlays/ITA/src/pulp_ita_tc_sram_sim.sv` and `overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv` as repo-specific overlays
-- do not run or claim full ITA/MHA build/run/compare until the boundary gate is recorded
-- keep KV-cache, LLM SoC, MobileViT, and runtime changes out of the boundary gate
+- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1`
+- build the host probe through `src/tools/build_host_probe.py`, not `src/hybrid/Makefile`
+- compare CPU vs hybrid with `coverage_output_equivalence`
+- require mismatch count `0` before any timing or speedup language
+- keep `32x1` and `1x32` as planned followup shapes after `1x1` passes
+- keep KV-cache, LLM SoC, MobileViT, and runtime changes out of the first full ITA/MHA measurement gate
 
 Working tree review boundary:
 
-`next_task: define_pulp_ita_mha_dependency_template_boundary_gate`
+`next_task: run_pulp_ita_mha_first_generic_host_probe_build_run_compare_gate`
 
-Review only the full ITA/MHA dependency/template boundary definition. Do not mix in full MHA measurement, KV-cache, runtime changes, or generated outputs.
+Review only the first `pulp_ita_mha` generic-host-probe build/run/compare boundary. Do not mix in KV-cache, runtime changes, or generated outputs.
 
 Review/stage boundary:
 
@@ -359,6 +359,7 @@ Review/stage boundary:
 - `records/scaling_gates/pulp_ita_softmax_top_first_generic_host_probe_build_run_compare_gate.json`
 - `records/scaling_gates/pulp_ita_softmax_top_shape_expansion_gate.json`
 - `records/scaling_gates/pulp_ita_softmax_top_shape_expansion_review_gate.json`
+- `records/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json`
 - `config/slice_launch_templates/pulp_ita_mha.json`
 - `overlays/ITA/src/pulp_ita_tc_sram_sim.sv`
 - `overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv`
@@ -419,6 +420,8 @@ Boundary acceptance:
 - PULP ITA softmax-top shape expansion gate records `64x1` as much more favorable than `1x64` in scoped single-run timing
 - PULP ITA softmax-top shape expansion review gate selects `full_ita_mha_dependency_template_boundary` next
 - PULP ITA softmax-top shape expansion review gate keeps full MHA measurement separate from boundary definition
+- PULP ITA MHA dependency/template boundary gate carries `build.host_probe_builder: src/tools/build_host_probe.py`
+- PULP ITA MHA dependency/template boundary gate keeps first full MHA measurement separate from boundary definition
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command

@@ -38,6 +38,8 @@ PULP ITA softmax-top shape expansion state: `config/scaling_gates/pulp_ita_softm
 
 PULP ITA softmax-top shape expansion review state: `config/scaling_gates/pulp_ita_softmax_top_shape_expansion_review_gate.json` selects `full_ita_mha_dependency_template_boundary` next. The reason is that dotp has covered attention-score arithmetic and softmax-top has covered softmax/reduction behavior; the remaining representativeness gap is now the integrated full ITA/MHA top-level harness. This review does not run full ITA/MHA build/run/compare, does not switch to KV-cache, MobileViT, or runtime work, and does not allow broad speedup claims. The next_task is `define_pulp_ita_mha_dependency_template_boundary_gate`.
 
+PULP ITA MHA dependency/template boundary state: `config/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json` promotes the `pulp_ita_mha` source boundary before fresh measurement. It uses canonical `third_party/ITA` and `third_party/common_cells` sources plus repo overlays for `pulp_ita_cluster_clock_gating_sim.sv`, `pulp_ita_tc_sram_sim.sv`, and `pulp_ita_mha_gpu_cov_tb.sv`. The launch template now records `promoted_full_ita_mha_dependency_template_boundary` and uses `src/tools/build_host_probe.py` with explicit `clk_i` and `reset_like_w` metadata; no `src/hybrid/Makefile` host-probe target is added. This is not full ITA/MHA build/run/compare yet; the next_task is `run_pulp_ita_mha_first_generic_host_probe_build_run_compare_gate`.
+
 ## Goal
 
 `modern_llm_serving_rtl_hybrid_conditions`

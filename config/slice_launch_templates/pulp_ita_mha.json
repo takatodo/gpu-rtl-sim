@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "status": "candidate",
+  "status": "promoted_full_ita_mha_dependency_template_boundary",
   "target": "PULP_ITA.pulp_ita_mha",
-  "source_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json",
+  "source_gate": "config/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
   "top_module": "pulp_ita_mha_gpu_cov_tb",
   "build": {
     "mdir": "artifacts/pulp_ita_mha_obj_dir",
@@ -77,7 +77,7 @@
     "status": "implemented"
   },
   "acceptance": {
-    "candidate_only_until_first_cpu_vs_hybrid_benchmark": true,
+    "candidate_only_until_first_cpu_vs_hybrid_benchmark": false,
     "next_gate_must_build_cpu_reference": true,
     "next_gate_must_build_gpu_cubin": true,
     "next_gate_must_compare_cpu_vs_hybrid": true,
