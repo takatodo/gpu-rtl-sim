@@ -60,6 +60,12 @@ MODERN_LLM_COMPLETION_AUDIT = (
     / "modern_llm_serving_rtl_hybrid_conditions_goal_completion_audit.json"
 )
 PUBLIC_RESULTS_GATE = REPO_ROOT / "config" / "scaling_gates" / "public_results_packaging_gate.json"
+PUBLIC_RESULTS_MHA_REFRESH_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json"
+)
 PUBLIC_BENCHMARK_PACK_COMPLETION_AUDIT = (
     REPO_ROOT / "config" / "scaling_gates" / "public_benchmark_pack_goal_completion_audit.json"
 )
@@ -2619,7 +2625,21 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             self.assertIn(heading, results)
         for token in (
             "coverage_output_equivalence",
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1 --dry-run",
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 32x1 --dry-run",
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x32 --dry-run",
             "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 64x1 --dry-run",
+            "Fresh full ITA/MHA generic-host-probe chain",
+            "pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
+            "pulp_ita_mha_shape_expansion_gate.json",
+            "pulp_ita_mha_shape_expansion_review_gate.json",
+            "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+            "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+            "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+            "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+            "`32x1` | state-parallel | `72.0539` | `0.877`",
+            "`1x32` | single-state repeated-step | `2.93625` | `1.453`",
+            "not a paper-ready statistical benchmark",
             "reports/pulp_ita_mha_resident_decode_batch_parallel_summary.json",
             "reports/pulp_paged_attention_kv_score_first_hybrid_benchmark_summary.json",
             "reports/results_reproduction_median_summary.json",
@@ -2667,6 +2687,71 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         ):
             self.assertIn(token, results)
         self.assertEqual(gate["next_task"], "public_benchmark_pack_externalization_ready")
+
+    def test_public_results_packaging_refresh_after_mha_shape_expansion_is_defined(self) -> None:
+        gate = json.loads(PUBLIC_RESULTS_MHA_REFRESH_GATE.read_text(encoding="utf-8"))
+        results = RESULTS.read_text(encoding="utf-8")
+        combined_docs = "\n".join(
+            [
+                README.read_text(encoding="utf-8"),
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+                results,
+            ]
+        )
+
+        self.assertEqual(
+            gate["status"],
+            "defined_public_results_packaging_refresh_after_fresh_mha_shape_expansion",
+        )
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",
+        )
+        self.assertEqual(gate["selected_workstream"], "result_packaging_refresh")
+        self.assertEqual(gate["results_doc"], "docs/results.md")
+        self.assertEqual(
+            gate["fresh_mha_gate_chain"],
+            [
+                "config/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
+                "config/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
+                "config/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
+                "config/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",
+            ],
+        )
+
+        evidence = gate["fresh_mha_evidence"]
+        self.assertEqual(evidence["correctness_policy"], "coverage_output_equivalence")
+        self.assertTrue(evidence["all_listed_shapes_passed"])
+        self.assertEqual(evidence["max_coverage_output_mismatch_count"], 0)
+        shapes = {entry["shape"]: entry for entry in evidence["shapes"]}
+        self.assertEqual(set(shapes), {"1x1", "32x1", "1x32"})
+        self.assertEqual(shapes["1x1"]["hybrid_wall_time_ms"], 0.891)
+        self.assertEqual(shapes["32x1"]["cpu_elapsed_ms"], 72.0539)
+        self.assertEqual(shapes["32x1"]["hybrid_wall_time_ms"], 0.877)
+        self.assertEqual(shapes["1x32"]["cpu_elapsed_ms"], 2.93625)
+        self.assertEqual(shapes["1x32"]["hybrid_wall_time_ms"], 1.453)
+
+        self.assertTrue(gate["acceptance_policy"]["documentation_refresh_only"])
+        self.assertFalse(gate["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["runtime_or_abi_change_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["reports_and_artifacts_are_source_of_truth"])
+        self.assertEqual(gate["next_task"], "public_benchmark_pack_externalization_ready")
+        self.assertIn("not repeat-median statistical evidence", gate["non_claims"])
+        self.assertIn("reports and artifacts are generated evidence, not source of truth", gate["non_claims"])
+
+        for token in (
+            "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+            "Fresh full ITA/MHA generic-host-probe chain",
+            "pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
+            "pulp_ita_mha_shape_expansion_gate.json",
+            "pulp_ita_mha_shape_expansion_review_gate.json",
+            "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+            "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+            "This fresh chain is single-run evidence",
+            "public_benchmark_pack_externalization_ready",
+        ):
+            self.assertIn(token, combined_docs)
 
     def test_public_benchmark_pack_completion_audit_maps_objective_to_evidence(self) -> None:
         audit = json.loads(PUBLIC_BENCHMARK_PACK_COMPLETION_AUDIT.read_text(encoding="utf-8"))
@@ -2787,8 +2872,9 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
             "pulp_ita_mha_shape_expansion_gate.json",
             "pulp_ita_mha_shape_expansion_review_gate.json",
-            "next_task: define_public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate",
-            "Review only public/result packaging references for the completed `pulp_ita_mha` generic-host-probe chain",
+            "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+            "next_task: public_benchmark_pack_externalization_ready",
+            "Review only the public benchmark pack and source-of-truth references",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
@@ -2805,6 +2891,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",
+            "records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+            "docs/results.md",
             "config/slice_launch_templates/pulp_ita_mha.json",
             "overlays/ITA/src/pulp_ita_tc_sram_sim.sv",
             "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",

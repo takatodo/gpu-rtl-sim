@@ -179,6 +179,10 @@ Current goal evidence includes:
 - `resident_decode_batch_parallel_probe_gate.json`
 - `modern_llm_serving_rtl_hybrid_conditions_goal_completion_audit.json`
 - `public_results_packaging_gate.json`
+- `public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`
+- `pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`
+- `pulp_ita_mha_shape_expansion_gate.json`
+- `pulp_ita_mha_shape_expansion_review_gate.json`
 - `public_benchmark_pack_goal_completion_audit.json`
 - `one_command_reproduction_flow_gate.json`
 - `repeat_median_results_reproduction_gate.json`
@@ -249,6 +253,7 @@ The next useful goal is review of the refreshed public benchmark pack:
 
 - use `config/scaling_gates/public_results_packaging_gate.json` as the current gate
 - use `docs/results.md` as the external-facing benchmark pack
+- use `config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json` for the fresh MHA `1x1`, `32x1`, and `1x32` generic-host-probe chain
 - use `reports/persistent_resident_state_abi_probe_summary.json` as the newest persistent resident ABI evidence
 - keep `coverage_output_equivalence` as the correctness policy
 - keep the long-term goal: make hybrid execution close to Verilator usage while preserving reproducible correctness and speed evidence for LLM-serving-like RTL workloads

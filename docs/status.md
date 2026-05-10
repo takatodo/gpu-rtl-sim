@@ -74,6 +74,8 @@ Long-goal audit state: `config/scaling_gates/modern_llm_serving_rtl_hybrid_condi
 
 Public results state: `config/scaling_gates/public_results_packaging_gate.json` now refreshes `docs/results.md` after the persistent resident ABI measurement, MobileViT limit-128 evidence, and wrapper summary schema publication. The public benchmark pack presents the conclusion, reproduction commands, result tables, wrapper summary reports, source evidence, and non-claims for external readers.
 
+Public results MHA refresh state: `config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json` defines the source-of-truth refresh after the fresh `pulp_ita_mha` generic-host-probe chain. `docs/results.md` now includes the `1x1`, `32x1`, and `1x32` compare reports, single-run timing table, and gate chain references while keeping reports/artifacts generated-only. This is not a new workload measurement, not repeat-median evidence, and not a production LLM-serving throughput claim; the next_task returns to `public_benchmark_pack_externalization_ready`.
+
 Reproduction state: `src/tools/run_results_reproduction.py --dry-run` now prints the representative MHA, resident decode, resident batch-decode, and paged-attention KV-score command sequence from one public entrypoint.
 
 Repeat-median reproduction state: `src/tools/run_results_reproduction.py --repeat-median 3` measured `64x1`, `1x64`, `1x64` resident, `32x64` resident, and paged-attention KV-score `64x1`. The aggregate report is `reports/results_reproduction_median_summary.json`; all five median workloads pass coverage-output equivalence with mismatch count `0`.

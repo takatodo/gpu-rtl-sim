@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate",
+  "objective": "Refresh the public results packaging after the fresh full ITA/MHA generic-host-probe chain passed 1x1, 32x1, and 1x32 coverage-output equivalence.",
+  "status": "defined_public_results_packaging_refresh_after_fresh_mha_shape_expansion",
+  "source_review_gate": "config/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",
+  "selected_workstream": "result_packaging_refresh",
+  "results_doc": "docs/results.md",
+  "fresh_mha_gate_chain": [
+    "config/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
+    "config/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
+    "config/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
+    "config/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json"
+  ],
+  "fresh_mha_evidence": {
+    "correctness_policy": "coverage_output_equivalence",
+    "all_listed_shapes_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "shapes": [
+      {
+        "shape": "1x1",
+        "interpretation": "minimal generic-host-probe smoke",
+        "cpu_elapsed_ms": 2.91612,
+        "hybrid_wall_time_ms": 0.891,
+        "compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "gate": "config/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json"
+      },
+      {
+        "shape": "32x1",
+        "interpretation": "state-parallel fresh full ITA/MHA probe",
+        "cpu_elapsed_ms": 72.0539,
+        "hybrid_wall_time_ms": 0.877,
+        "compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+        "gate": "config/scaling_gates/pulp_ita_mha_shape_expansion_gate.json"
+      },
+      {
+        "shape": "1x32",
+        "interpretation": "single-state repeated-step fresh full ITA/MHA probe",
+        "cpu_elapsed_ms": 2.93625,
+        "hybrid_wall_time_ms": 1.453,
+        "compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+        "gate": "config/scaling_gates/pulp_ita_mha_shape_expansion_gate.json"
+      }
+    ]
+  },
+  "refresh_scope": [
+    "add the fresh MHA generic-host-probe chain to docs/results.md public evidence",
+    "keep the older repeat-median and resident evidence clearly separate from the fresh single-run chain",
+    "keep reports and artifacts generated evidence only",
+    "do not add a new workload measurement",
+    "do not change runtime, ABI, or MobileViT behavior"
+  ],
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "Fresh MHA chain appears in public results",
+      "artifact": "docs/results.md",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Fresh MHA gate chain is machine-readable",
+      "artifact": "records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Correctness remains coverage-output equivalence",
+      "artifact": "fresh_mha_evidence.correctness_policy",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Non-claims remain explicit",
+      "artifact": "docs/results.md:Non-Claims",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Contract tests cover the packaging refresh",
+      "artifact": "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+      "status": "satisfied"
+    }
+  ],
+  "acceptance_policy": {
+    "documentation_refresh_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "review_boundary": [
+    "docs/results.md",
+    "docs/roadmap.md",
+    "docs/status.md",
+    "README.md",
+    "records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+  ],
+  "next_task": "public_benchmark_pack_externalization_ready",
+  "non_claims": [
+    "not a new workload measurement",
+    "not repeat-median statistical evidence",
+    "not production LLM-serving throughput",
+    "not model-level Transformer inference",
+    "not raw full-state equality",
+    "not runtime or ABI behavior change",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

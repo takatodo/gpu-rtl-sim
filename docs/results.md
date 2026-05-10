@@ -51,11 +51,11 @@ Public pack manifest:
 | Group | Include | Reason |
 | --- | --- | --- |
 | Current source of truth | `README.md`, `config/selection.json`, `docs/status.md`, `docs/roadmap.md`, `docs/results.md` | Current objective, status, roadmap, result narrative, and reader guide. |
-| Gate and audit evidence | `records/scaling_gates/public_results_packaging_gate.json`, `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json`, `records/scaling_gates/generic_hybrid_benchmark_cli_gate.json` | Machine-readable benchmark-pack scope, completion audit, and wrapper summary schema; these are also available through the `config/scaling_gates` compatibility symlink. |
+| Gate and audit evidence | `records/scaling_gates/public_results_packaging_gate.json`, `records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`, `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json`, `records/scaling_gates/generic_hybrid_benchmark_cli_gate.json`, `records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`, `records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json`, `records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json` | Machine-readable benchmark-pack scope, completion audit, wrapper summary schema, and the fresh full ITA/MHA generic-host-probe chain; these are also available through the `config/scaling_gates` compatibility symlink. |
 | Reproduction tools | `src/tools/run_results_reproduction.py`, `src/tools/results_reproduction.py`, `src/tools/run_hybrid_benchmark.py`, `src/tools/hybrid_benchmark.py`, `src/tools/run_hybrid_template.py` | Public CLI entrypoints and shared logic needed to regenerate evidence. |
 | Target templates | `config/slice_launch_templates/pulp_ita_mha.json`, `config/slice_launch_templates/pulp_paged_attention_kv_score.json`, `config/slice_launch_templates/mobile_vit_cpu_kick_rtl_proxy.json` | Supported representative workload templates. |
 | Contract tests | `tests/contract/test_full_ita_mha_larger_paged_kv_next.py`, `tests/contract/test_hybrid_verilator_like_cli.py` | Public pack, wrapper summary, CLI, and local-path policy checks. |
-| Generated review evidence | `reports/results_reproduction_median_summary.json`, `reports/persistent_resident_state_abi_probe_summary.json`, `reports/mobile_vit_hybrid_128_summary.json`, `reports/hybrid_benchmark_*.json` | Optional evidence snapshots for review; regenerate from documented commands when absent. |
+| Generated review evidence | `reports/results_reproduction_median_summary.json`, `reports/persistent_resident_state_abi_probe_summary.json`, `reports/mobile_vit_hybrid_128_summary.json`, `reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json`, `reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json`, `reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json`, `reports/hybrid_benchmark_*.json` | Optional evidence snapshots for review; regenerate from documented commands when absent. |
 | Non-pack outputs | `artifacts/` raw dumps and build trees | Reproducible local outputs; do not treat as canonical pack content. |
 
 Public archive dry-run:
@@ -119,6 +119,8 @@ Representative compare evidence:
 | Workload | Shape | Compare report | Result |
 | --- | --- | --- | --- |
 | Full ITA/MHA | `1x1` | `reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json` | pass, mismatch `0` |
+| Full ITA/MHA fresh generic-host-probe | `32x1` | `reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json` | pass, mismatch `0` |
+| Full ITA/MHA fresh generic-host-probe | `1x32` | `reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json` | pass, mismatch `0` |
 | Full ITA/MHA | `64x1` | `reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json` | pass, mismatch `0` |
 | Full ITA/MHA | `1x64` | `reports/pulp_ita_mha_cpu_vs_hybrid_1x64_coverage_output_compare.json` | pass, mismatch `0` |
 | Full ITA/MHA resident | `1x64` | `reports/pulp_ita_mha_cpu_vs_hybrid_1x64_resident_coverage_output_compare.json` | pass, mismatch `0` |
@@ -140,6 +142,16 @@ Repeat-median timing highlights, generated with `python3 src/tools/run_results_r
 | Paged-attention KV score | `64x1` | state-parallel attention-score proxy | `145.323` | `1.199` | CPU / hybrid wall `121.20x` | `reports/pulp_paged_attention_kv_score_64x1_median.json` |
 
 All five repeat-median workloads passed coverage-output equivalence with mismatch count `0`. The aggregate report is `reports/results_reproduction_median_summary.json`.
+
+Fresh full ITA/MHA generic-host-probe chain:
+
+| Workload | Shape | Interpretation | CPU elapsed ms | Hybrid wall ms | Result | Gate |
+| --- | --- | --- | ---: | ---: | --- | --- |
+| Full ITA/MHA fresh generic-host-probe | `1x1` | minimal smoke | `2.91612` | `0.891` | pass, mismatch `0` | `config/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json` |
+| Full ITA/MHA fresh generic-host-probe | `32x1` | state-parallel | `72.0539` | `0.877` | pass, mismatch `0` | `config/scaling_gates/pulp_ita_mha_shape_expansion_gate.json` |
+| Full ITA/MHA fresh generic-host-probe | `1x32` | single-state repeated-step | `2.93625` | `1.453` | pass, mismatch `0` | `config/scaling_gates/pulp_ita_mha_shape_expansion_gate.json` |
+
+This fresh chain is single-run evidence for the generic host-probe path. It is separate from the repeat-median table above and is not a paper-ready statistical benchmark.
 
 Persistent resident ABI probe:
 
@@ -189,6 +201,9 @@ python3 src/tools/run_results_reproduction.py --repeat-median 3
 The lower-level template runner remains available for individual slice templates:
 
 ```bash
+python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1 --dry-run
+python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 32x1 --dry-run
+python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x32 --dry-run
 python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 64x1 --dry-run
 python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x64 --dry-run
 python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_attention_kv_score.json --shape 64x1 --dry-run
@@ -286,12 +301,19 @@ Canonical state and completion audit:
 - `config/scaling_gates/one_command_reproduction_flow_gate.json`
 - `config/scaling_gates/repeat_median_results_reproduction_gate.json`
 - `config/scaling_gates/modern_llm_serving_rtl_hybrid_conditions_goal_completion_audit.json`
+- `config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`
+- `config/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`
+- `config/scaling_gates/pulp_ita_mha_shape_expansion_gate.json`
+- `config/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json`
 - `config/scaling_gates/mobile_vit_hybrid_imagenet_eval_gate.json`
 - `config/scaling_gates/mobile_vit_hybrid_imagenet_limit_128_scaleup_completion_audit.json`
 
 Result summaries:
 
 - `reports/pulp_ita_mha_first_hybrid_benchmark_summary.json`
+- `reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json`
+- `reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json`
+- `reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json`
 - `reports/pulp_ita_mha_64x1_1x64_scaling_summary.json`
 - `reports/pulp_ita_mha_prefill_decode_split_summary.json`
 - `reports/pulp_ita_mha_resident_decode_1x64_summary.json`
