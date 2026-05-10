@@ -38,9 +38,15 @@
 #include "llvm/IR/PassManager.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/raw_ostream.h"
 
 using namespace llvm;
+
+static cl::opt<bool> PreserveConvergenceThreshold(
+    "vl-preserve-convergence-threshold",
+    cl::desc("Preserve Verilator convergence loop threshold instead of forcing the first trip to the fatal/exit path"),
+    cl::init(false));
 
 // ─── VlStripX86AttrsPass ──────────────────────────────────────────────────────
 //
@@ -319,7 +325,7 @@ struct VlSanitizeHostIoNullWritesPass
 //
 // Patches:
 //   1. fatal block: unconditional br to %body → br to %exit
-//   2. icmp threshold 100 → 0 (fatal after first body iteration; ≤2 iterations to exit)
+//   2. leave the convergence threshold intact so normal settling semantics are preserved
 
 static BasicBlock *findLoopExit(BasicBlock *HeaderBB) {
     // Find a conditional branch that targets HeaderBB; the other successor is treated as exit.
@@ -385,11 +391,15 @@ struct VlPatchConvergencePass : public PassInfoMixin<VlPatchConvergencePass> {
                 }
             }
 
-            // Threshold 100 → 0 (exit soon after first ico/act/nba pass)
-            Cmp->setOperand(1, ConstantInt::get(Cmp->getOperand(1)->getType(), 0));
-            errs() << "[vl-patch-convergence] " << F.getName()
-                   << ": threshold 100→0\n";
-            Changed = true;
+            if (PreserveConvergenceThreshold) {
+                errs() << "[vl-patch-convergence] " << F.getName()
+                       << ": threshold preserved\n";
+            } else {
+                Cmp->setOperand(1, ConstantInt::get(Cmp->getOperand(1)->getType(), 0));
+                errs() << "[vl-patch-convergence] " << F.getName()
+                       << ": threshold forced to zero\n";
+                Changed = true;
+            }
         }
 
         return Changed ? PreservedAnalyses::none() : PreservedAnalyses::all();

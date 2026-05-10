@@ -10,6 +10,7 @@ Usage:
   python3 build_vl_gpu.py <mdir> [--reuse-gpu-patched-ll] [--gpu-opt-level O0]
   python3 build_vl_gpu.py <mdir> [--reuse-ptx] [--ptxas-opt-level 0]
   python3 build_vl_gpu.py <mdir> --kernel-split-phases --kernel-probe-act-sequent-chunk-size N
+  python3 build_vl_gpu.py <mdir> --syms-state-image --syms-storage-size N --state-root-offset N
 
 Steps:
   1. {mdir}/*_classes.mk から VM_CLASSES_FAST + VM_CLASSES_SLOW を読み込む
@@ -17,6 +18,7 @@ Steps:
   3. llvm-link-18 → merged.ll
   4. C++ probe で storage_size (sizeof root struct) を自動検出
   5. vlgpugen merged.ll --storage-size=N → vl_batch_gpu.ll
+     (or Syms image mode: --storage-size=<sizeof __Syms> --state-root-offset=<root offset>)
   6. opt (lowerinvoke,simplifycfg,vl-strip-x86-attrs,vl-stub-host-io-calls,vl-stub-timing-scheduler-context,vl-patch-convergence,cleanup) → patched
   7. host cleanup → optional opt → vl-sanitize-host-io-null-writes → vl_batch_gpu_opt.ll → optional VlWide lifetime retiming → llc-18 → vl_batch_gpu.ptx → ptxas → vl_batch_gpu.cubin
      (or skip ptxas and use vl_batch_gpu.ptx directly when --emit-ptx-module is set)
@@ -219,6 +221,81 @@ def detect_storage_size(mdir: Path, prefix: str) -> int:
         return int(result.stdout.strip())
 
 
+def detect_hierarchy_state_metadata(mdir: Path, storage_size: int) -> dict[str, object]:
+    """Summarize whether generated GPU IR needs Verilator __Syms state."""
+    ir_paths = [path for path in (mdir / 'vl_batch_gpu_opt.ll', mdir / 'vl_batch_gpu.ll') if path.is_file()]
+    if not ir_paths:
+        return {
+            "state_image_kind": "root_image",
+            "root_storage_size": storage_size,
+            "unsafe_syms_gep_count": 0,
+            "unsafe_syms_gep_covered_by_state_image": True,
+            "metadata_source": None,
+        }
+    primary_path = ir_paths[0]
+    primary_text = primary_path.read_text(encoding='utf-8')
+    all_texts = [(path, path.read_text(encoding='utf-8')) for path in ir_paths]
+    syms_size = None
+    for _, text in all_texts:
+        for line in text.splitlines():
+            if "__Syms" not in line:
+                continue
+            for match in re.finditer(r'dereferenceable\((\d+)\)', line):
+                syms_size = max(syms_size or 0, int(match.group(1)))
+    unsafe_count = len(UNSAFE_SYMS_GEP_RE.findall(primary_text))
+    root_offset = None
+    for _, text in all_texts:
+        for line in text.splitlines():
+            match = SYMS_TBAA_RE.match(line)
+            if not match:
+                continue
+            offsets = [int(raw) for raw in re.findall(r'i64\s+(\d+)', match.group('body'))]
+            for left, right in zip(offsets, offsets[1:]):
+                if right - left == storage_size:
+                    root_offset = left
+                    break
+            if root_offset is not None:
+                break
+        if root_offset is not None:
+            break
+    covered = unsafe_count == 0
+    if syms_size is not None and syms_size <= storage_size:
+        covered = True
+    return {
+        "state_image_kind": "root_image",
+        "root_storage_size": storage_size,
+        "syms_storage_size": syms_size,
+        "root_offset_in_syms": root_offset,
+        "unsafe_syms_gep_count": unsafe_count,
+        "unsafe_syms_gep_covered_by_state_image": covered,
+        "prelaunch_rejection_required": not covered,
+        "metadata_source": primary_path.name,
+    }
+
+
+def syms_image_hierarchy_metadata(
+    mdir: Path,
+    *,
+    root_storage_size: int,
+    syms_storage_size: int,
+    state_root_offset: int,
+) -> dict[str, object]:
+    """Metadata for a per-state Verilator __Syms image with root embedded inside it."""
+    metadata = detect_hierarchy_state_metadata(mdir, root_storage_size)
+    metadata.update(
+        {
+            "state_image_kind": "verilator_syms_image",
+            "root_storage_size": root_storage_size,
+            "syms_storage_size": syms_storage_size,
+            "root_offset_in_syms": state_root_offset,
+            "root_offset_in_state": state_root_offset,
+            "unsafe_syms_gep_covered_by_state_image": True,
+            "prelaunch_rejection_required": False,
+        }
+    )
+    return metadata
+
+
 # ---------------------------------------------------------------------------
 # Compile .cpp → .ll
 # ---------------------------------------------------------------------------
@@ -266,6 +343,10 @@ PTR_DERIVED_ASSIGN_RE = re.compile(
     r'(?P<base>%\d+)\b'
 )
 SSA_VALUE_RE = re.compile(r'%\d+')
+UNSAFE_SYMS_GEP_RE = re.compile(
+    r'getelementptr\s+inbounds\s+%class\.[^,\n]*__Syms[^,\n]*,'
+)
+SYMS_TBAA_RE = re.compile(r'^!\d+\s*=\s*!\{!"[^"]*__Syms",(?P<body>.*)\}$')
 
 
 def should_apply_vortex_tls_slot_bypass(*, prefix: str, ir_text: str) -> bool:
@@ -504,6 +585,9 @@ def build_vl_gpu(
     kernel_probe_act_sequent_chunk_size: int = 0,
     reuse_gpu_patched_ll: bool = False,
     reuse_ptx: bool = False,
+    syms_state_image: bool = False,
+    syms_storage_size: int | None = None,
+    state_root_offset: int | None = None,
     jobs: int = 1,
 ) -> tuple[Path, int]:
 
@@ -521,6 +605,15 @@ def build_vl_gpu(
         raise ValueError('--kernel-probe-act-sequent-chunk-size requires --kernel-split-phases')
     if (reuse_gpu_patched_ll or reuse_ptx) and kernel_probe_act_sequent_chunk_size:
         raise ValueError('--kernel-probe-act-sequent-chunk-size requires a full rebuild from merged.ll')
+    if syms_state_image and (reuse_gpu_patched_ll or reuse_ptx):
+        raise ValueError('--syms-state-image requires a full rebuild from merged.ll')
+    if syms_state_image:
+        if syms_storage_size is None or syms_storage_size <= 0:
+            raise ValueError('--syms-state-image requires --syms-storage-size > 0')
+        if state_root_offset is None or state_root_offset < 0:
+            raise ValueError('--syms-state-image requires --state-root-offset >= 0')
+    elif syms_storage_size is not None or state_root_offset is not None:
+        raise ValueError('--syms-storage-size/--state-root-offset require --syms-state-image')
 
     mdir = mdir.resolve()
     classes_mk = find_classes_mk(mdir)
@@ -630,8 +723,16 @@ def build_vl_gpu(
             print(f'  [meta] reuse storage_size = {storage_size} bytes')
         else:
             print('  [probe] detecting storage_size...')
-            storage_size = detect_storage_size(mdir, prefix)
-            print(f'  storage_size = {storage_size} bytes')
+            root_storage_size = detect_storage_size(mdir, prefix)
+            storage_size = syms_storage_size if syms_state_image else root_storage_size
+            print(f'  root_storage_size = {root_storage_size} bytes')
+            if syms_state_image:
+                print(
+                    f'  syms_storage_size = {storage_size} bytes; '
+                    f'root_offset_in_state = {state_root_offset} bytes'
+                )
+            else:
+                print(f'  storage_size = {storage_size} bytes')
 
         gpu_patched = mdir / 'vl_batch_gpu_patched.ll'
         if reuse_gpu_patched_ll:
@@ -654,6 +755,9 @@ def build_vl_gpu(
                 f'--storage-size={storage_size}', f'--out={gpu_ll}',
                 f'--classifier-report-out={classifier_report}',
             ]
+            if syms_state_image:
+                vg_cmd.append('--syms-state-image')
+                vg_cmd.append(f'--state-root-offset={state_root_offset}')
             if kernel_split_phases:
                 vg_cmd.append('--kernel-split=phases')
                 vg_cmd.append(f'--kernel-manifest-out={kernel_manifest}')
@@ -670,8 +774,18 @@ def build_vl_gpu(
             # Step 5b: EH lowering + x86 属性除去 + host I/O callsite stub + 収束パッチ
             print('  [opt] lowerinvoke,simplifycfg,vl-strip-x86-attrs,vl-stub-host-io-calls,vl-stub-timing-scheduler-context,vl-patch-convergence,dce,adce,simplifycfg,dce')
             vl_passes = 'lowerinvoke,simplifycfg,vl-strip-x86-attrs,vl-stub-host-io-calls,vl-stub-timing-scheduler-context,vl-patch-convergence,dce,adce,simplifycfg,dce'
-            run([OPT, f'--load-pass-plugin={PASSES_SO}',
-                 f'-passes={vl_passes}', '-S', str(gpu_ll), '-o', str(gpu_patched)])
+            opt_cmd = [
+                OPT,
+                f'--load-pass-plugin={PASSES_SO}',
+                f'-passes={vl_passes}',
+                '-S',
+                str(gpu_ll),
+                '-o',
+                str(gpu_patched),
+            ]
+            if syms_state_image:
+                opt_cmd.insert(2, '--vl-preserve-convergence-threshold')
+            run(opt_cmd)
 
         gpu_opt = mdir / 'vl_batch_gpu_opt.ll'
         gpu_opt_input, gpu_opt_workarounds = maybe_prepare_gpu_opt_input(
@@ -755,6 +869,16 @@ def build_vl_gpu(
         meta["launch_sequence"] = launch_sequence
     if gpu_ir_workarounds:
         meta["gpu_ir_workarounds"] = gpu_ir_workarounds
+    if syms_state_image:
+        hierarchy_state = syms_image_hierarchy_metadata(
+            mdir,
+            root_storage_size=root_storage_size,
+            syms_storage_size=storage_size,
+            state_root_offset=state_root_offset,
+        )
+    else:
+        hierarchy_state = detect_hierarchy_state_metadata(mdir, storage_size)
+    meta["hierarchy_state"] = hierarchy_state
     meta_path.write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
     if incremental_mode != 'reuse_ptx':
         opt_marker.write_text(clang_opt + "\n", encoding='utf-8')
@@ -837,6 +961,26 @@ def main():
         help='Skip llc/vlgpugen and rebuild only from an existing vl_batch_gpu.ptx.',
     )
     p.add_argument(
+        '--syms-state-image',
+        action='store_true',
+        help=(
+            'Generate a non-flattened Verilator __Syms state-image kernel. '
+            'Requires --syms-storage-size and --state-root-offset.'
+        ),
+    )
+    p.add_argument(
+        '--syms-storage-size',
+        type=int,
+        default=None,
+        help='Bytes per __Syms state image when --syms-state-image is used.',
+    )
+    p.add_argument(
+        '--state-root-offset',
+        type=int,
+        default=None,
+        help='Byte offset of the root object inside each __Syms state image.',
+    )
+    p.add_argument(
         '--jobs',
         type=int,
         default=int(os.environ.get('BUILD_VL_GPU_JOBS', '1')),
@@ -858,6 +1002,9 @@ def main():
         kernel_probe_act_sequent_chunk_size=args.kernel_probe_act_sequent_chunk_size,
         reuse_gpu_patched_ll=args.reuse_gpu_patched_ll,
         reuse_ptx=args.reuse_ptx,
+        syms_state_image=args.syms_state_image,
+        syms_storage_size=args.syms_storage_size,
+        state_root_offset=args.state_root_offset,
         jobs=args.jobs,
     )
     print(f'\nstorage_size={sz}')

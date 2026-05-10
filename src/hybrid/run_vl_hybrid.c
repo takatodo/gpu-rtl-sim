@@ -45,25 +45,21 @@
 #define ENV_GPU_REPLICATE_INIT_STATE "RUN_VL_HYBRID_GPU_REPLICATE_INIT_STATE"
 /* Optional per-step patch script file; each non-comment line is one step of patch tokens. */
 #define ENV_PATCH_SCRIPT "RUN_VL_HYBRID_PATCH_SCRIPT"
-/* Optional source-backed program-image initialization records. */
-#define ENV_PROGRAM_IMAGE_INIT_RECORDS "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS"
-/* Optional word-packed source-backed program-image initialization input. */
-#define ENV_PROGRAM_IMAGE_WORDS "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS"
-/* Optional word-packed IAHB lane base offsets: ram0,ram1,ram2,ram3. */
-#define ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS "RUN_VL_HYBRID_PROGRAM_IMAGE_LANE_BASE_OFFSETS"
-/* Optional deterministic XuanTie-E902 DMEM zero-fill construction. */
-#define ENV_DMEM_ZERO_FILL "RUN_VL_HYBRID_DMEM_ZERO_FILL"
-/* Optional XuanTie-E902 DMEM zero-fill lane base offsets: ram0,ram1,ram2,ram3. */
-#define ENV_DMEM_ZERO_FILL_LANE_BASE_OFFSETS "RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS"
-/* Optional XuanTie-E902 DMEM zero-fill per-lane word count. */
-#define ENV_DMEM_ZERO_FILL_WORD_COUNT "RUN_VL_HYBRID_DMEM_ZERO_FILL_WORD_COUNT"
 /* Explicit resident repeated-step mode; keeps state on device across eval steps. */
 #define ENV_RESIDENT_STEPS "RUN_VL_HYBRID_RESIDENT_STEPS"
+/* Probe-only persistent resident state ABI surface. */
+#define ENV_PERSISTENT_RESIDENT_HANDLE "RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_HANDLE"
+#define ENV_PERSISTENT_RESIDENT_PHASE "RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_PHASE"
+#define ENV_PERSISTENT_RESIDENT_PHASE_COUNT "RUN_VL_HYBRID_PERSISTENT_RESIDENT_PHASE_COUNT"
+#define ENV_PERSISTENT_RESIDENT_PHASE_DUMPS "RUN_VL_HYBRID_PERSISTENT_RESIDENT_PHASE_DUMPS"
+#define MAX_PERSISTENT_RESIDENT_PHASES 64
 
 /* Set to force one cuCtxSynchronize per step (slower wall clock; old behavior). */
 #define ENV_SYNC_EACH_STEP "RUN_VL_HYBRID_SYNC_EACH_STEP"
 /* Optional untimed launch after init to absorb first-launch / driver latency. */
 #define ENV_WARMUP "RUN_VL_HYBRID_WARMUP"
+/* Optional in-process repeated GPU-event timing samples. */
+#define ENV_TIMING_REPEATS "RUN_VL_HYBRID_TIMING_REPEATS"
 /* Optional stage trace to help localize runtime kills / hangs. */
 #define ENV_TRACE_STAGES "RUN_VL_HYBRID_TRACE_STAGES"
 /* Optional override of the requested CUDA stack limit in bytes. */
@@ -124,28 +120,6 @@ typedef struct {
   CUdeviceptr d_offsets;
   CUdeviceptr d_values;
 } ResidentPatchSchedule;
-
-typedef struct {
-  size_t *offsets;
-  unsigned char *values;
-  unsigned record_count;
-  CUdeviceptr d_offsets;
-  CUdeviceptr d_values;
-} ProgramImageInitRecords;
-
-typedef struct {
-  uint32_t *words;
-  size_t lane_base_offsets[4];
-  unsigned word_count;
-  CUdeviceptr d_words;
-  CUdeviceptr d_lane_base_offsets;
-} ProgramImageWords;
-
-typedef struct {
-  size_t lane_base_offsets[4];
-  unsigned word_count;
-  CUdeviceptr d_lane_base_offsets;
-} DmemZeroFill;
 
 static int parse_byte(const char *s, unsigned char *out) {
   if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))
@@ -211,290 +185,6 @@ static void free_resident_patch_schedule(ResidentPatchSchedule *schedule) {
   free(schedule->values);
   free(schedule->step_offsets);
   memset(schedule, 0, sizeof(*schedule));
-}
-
-static void free_program_image_init_records(ProgramImageInitRecords *records) {
-  if (!records)
-    return;
-  if (records->d_offsets)
-    CUDA_CHECK(cuMemFree(records->d_offsets));
-  if (records->d_values)
-    CUDA_CHECK(cuMemFree(records->d_values));
-  free(records->offsets);
-  free(records->values);
-  memset(records, 0, sizeof(*records));
-}
-
-static void free_program_image_words(ProgramImageWords *program_words) {
-  if (!program_words)
-    return;
-  if (program_words->d_words)
-    CUDA_CHECK(cuMemFree(program_words->d_words));
-  if (program_words->d_lane_base_offsets)
-    CUDA_CHECK(cuMemFree(program_words->d_lane_base_offsets));
-  free(program_words->words);
-  memset(program_words, 0, sizeof(*program_words));
-}
-
-static void free_dmem_zero_fill(DmemZeroFill *zero_fill) {
-  if (!zero_fill)
-    return;
-  if (zero_fill->d_lane_base_offsets)
-    CUDA_CHECK(cuMemFree(zero_fill->d_lane_base_offsets));
-  memset(zero_fill, 0, sizeof(*zero_fill));
-}
-
-static int parse_lane_base_offsets(const char *text, size_t lane_base_offsets[4],
-                                   const char *env_name,
-                                   const char *owner_env_name) {
-  char *buf = NULL;
-  char *token = NULL;
-  unsigned count = 0U;
-  if (!text || text[0] == '\0') {
-    fprintf(stderr, "%s is required when %s is set\n", env_name, owner_env_name);
-    return -1;
-  }
-  buf = strdup(text);
-  if (!buf)
-    return -1;
-  for (token = strtok(buf, ","); token != NULL; token = strtok(NULL, ",")) {
-    char *cursor = token;
-    char *end = NULL;
-    unsigned long long value = 0ULL;
-    while (*cursor != '\0' && isspace((unsigned char)*cursor))
-      cursor++;
-    if (count >= 4U) {
-      fprintf(stderr, "%s has more than four offsets\n", env_name);
-      free(buf);
-      return -1;
-    }
-    value = strtoull(cursor, &end, 0);
-    while (end && *end != '\0' && isspace((unsigned char)*end))
-      end++;
-    if (end == cursor || (end && *end != '\0')) {
-      fprintf(stderr, "%s has bad offset token '%s'\n", env_name, token);
-      free(buf);
-      return -1;
-    }
-    lane_base_offsets[count] = (size_t)value;
-    count++;
-  }
-  free(buf);
-  if (count != 4U) {
-    fprintf(stderr, "%s requires exactly four offsets\n", env_name);
-    return -1;
-  }
-  return 0;
-}
-
-static int parse_program_image_lane_base_offsets(const char *text,
-                                                 ProgramImageWords *program_words) {
-  return parse_lane_base_offsets(text, program_words->lane_base_offsets,
-                                 ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS,
-                                 ENV_PROGRAM_IMAGE_WORDS);
-}
-
-static int parse_dmem_zero_fill_word_count(const char *text,
-                                           DmemZeroFill *zero_fill) {
-  char *end = NULL;
-  unsigned long value = 0UL;
-  if (!text || text[0] == '\0') {
-    fprintf(stderr, "%s is required when %s is set\n",
-            ENV_DMEM_ZERO_FILL_WORD_COUNT, ENV_DMEM_ZERO_FILL);
-    return -1;
-  }
-  value = strtoul(text, &end, 0);
-  while (end && *end != '\0' && isspace((unsigned char)*end))
-    end++;
-  if (end == text || (end && *end != '\0') || value == 0UL ||
-      value > 2147483647UL) {
-    fprintf(stderr, "%s has invalid word count '%s'\n",
-            ENV_DMEM_ZERO_FILL_WORD_COUNT, text);
-    return -1;
-  }
-  zero_fill->word_count = (unsigned)value;
-  return 0;
-}
-
-static int append_program_image_word(ProgramImageWords *program_words,
-                                     unsigned *capacity, uint32_t word) {
-  if (program_words->word_count == *capacity) {
-    unsigned new_capacity = *capacity ? (*capacity * 2U) : 1024U;
-    uint32_t *grown_words =
-        (uint32_t *)realloc(program_words->words,
-                            new_capacity * sizeof(*program_words->words));
-    if (!grown_words)
-      return -1;
-    program_words->words = grown_words;
-    *capacity = new_capacity;
-  }
-  program_words->words[program_words->word_count] = word;
-  program_words->word_count++;
-  return 0;
-}
-
-static int load_program_image_words(const char *path, ProgramImageWords *out) {
-  FILE *fp = fopen(path, "r");
-  char line[4096];
-  unsigned capacity = 0U;
-  unsigned line_no = 0U;
-  memset(out, 0, sizeof(*out));
-  if (!fp) {
-    fprintf(stderr, "failed to open %s=%s\n", ENV_PROGRAM_IMAGE_WORDS, path);
-    return -1;
-  }
-  while (fgets(line, sizeof(line), fp) != NULL) {
-    char *cursor = line;
-    char *comment = NULL;
-    char *token = NULL;
-    line_no++;
-    if (strchr(line, '\n') == NULL && !feof(fp)) {
-      fprintf(stderr, "%s line %u exceeds internal parser buffer\n", path, line_no);
-      fclose(fp);
-      free_program_image_words(out);
-      return -1;
-    }
-    while (*cursor != '\0' && isspace((unsigned char)*cursor))
-      cursor++;
-    if (*cursor == '\0' || *cursor == '\n' || *cursor == '#')
-      continue;
-    comment = strchr(cursor, '#');
-    if (comment)
-      *comment = '\0';
-    if (cursor[0] == '@') {
-      token = strtok(cursor, " \t\r\n");
-      token = strtok(NULL, " \t\r\n");
-    } else {
-      token = strtok(cursor, " \t\r\n");
-    }
-    for (; token != NULL; token = strtok(NULL, " \t\r\n")) {
-      char *end = NULL;
-      unsigned long value = strtoul(token, &end, 16);
-      if (end == token || *end != '\0' || value > 0xffffffffUL) {
-        fprintf(stderr,
-                "%s line %u has bad program-image word token '%s' (want 32-bit hex word)\n",
-                path, line_no, token);
-        fclose(fp);
-        free_program_image_words(out);
-        return -1;
-      }
-      if (append_program_image_word(out, &capacity, (uint32_t)value) != 0) {
-        fclose(fp);
-        free_program_image_words(out);
-        return -1;
-      }
-    }
-  }
-  if (ferror(fp)) {
-    fprintf(stderr, "failed while reading %s\n", path);
-    fclose(fp);
-    free_program_image_words(out);
-    return -1;
-  }
-  fclose(fp);
-  if (out->word_count == 0U) {
-    fprintf(stderr, "%s contained no program-image words\n", path);
-    free_program_image_words(out);
-    return -1;
-  }
-  return 0;
-}
-
-static int append_program_image_init_record(ProgramImageInitRecords *records,
-                                            unsigned *capacity, size_t storage,
-                                            const Patch *patch) {
-  if (patch->global_off >= storage) {
-    fprintf(stderr, "program image init offset %zu >= storage_size %zu\n",
-            patch->global_off, storage);
-    return -1;
-  }
-  for (unsigned i = 0; i < records->record_count; i++) {
-    if (records->offsets[i] == patch->global_off) {
-      fprintf(stderr, "duplicate program image init offset %zu\n",
-              patch->global_off);
-      return -1;
-    }
-  }
-  if (records->record_count == *capacity) {
-    unsigned new_capacity = *capacity ? (*capacity * 2U) : 256U;
-    size_t *grown_offsets =
-        (size_t *)realloc(records->offsets, new_capacity * sizeof(*records->offsets));
-    if (!grown_offsets)
-      return -1;
-    records->offsets = grown_offsets;
-    unsigned char *grown_values = (unsigned char *)realloc(
-        records->values, new_capacity * sizeof(*records->values));
-    if (!grown_values)
-      return -1;
-    records->values = grown_values;
-    *capacity = new_capacity;
-  }
-  records->offsets[records->record_count] = patch->global_off;
-  records->values[records->record_count] = patch->val;
-  records->record_count++;
-  return 0;
-}
-
-static int load_program_image_init_records(const char *path, size_t storage,
-                                           ProgramImageInitRecords *out) {
-  FILE *fp = fopen(path, "r");
-  char line[4096];
-  unsigned capacity = 0U;
-  unsigned line_no = 0U;
-  memset(out, 0, sizeof(*out));
-  if (!fp) {
-    fprintf(stderr, "failed to open %s=%s\n", ENV_PROGRAM_IMAGE_INIT_RECORDS, path);
-    return -1;
-  }
-  while (fgets(line, sizeof(line), fp) != NULL) {
-    char *cursor = line;
-    char *comment = NULL;
-    char *token = NULL;
-    line_no++;
-    if (strchr(line, '\n') == NULL && !feof(fp)) {
-      fprintf(stderr, "%s line %u exceeds internal parser buffer\n", path, line_no);
-      fclose(fp);
-      free_program_image_init_records(out);
-      return -1;
-    }
-    while (*cursor != '\0' && isspace((unsigned char)*cursor))
-      cursor++;
-    if (*cursor == '\0' || *cursor == '\n' || *cursor == '#')
-      continue;
-    comment = strchr(cursor, '#');
-    if (comment)
-      *comment = '\0';
-    for (token = strtok(cursor, " \t\r\n"); token != NULL;
-         token = strtok(NULL, " \t\r\n")) {
-      Patch patch;
-      if (parse_patch(token, &patch) != 0) {
-        fprintf(stderr,
-                "%s line %u has bad program-image init token '%s' (want target_root_offset:byte)\n",
-                path, line_no, token);
-        fclose(fp);
-        free_program_image_init_records(out);
-        return -1;
-      }
-      if (append_program_image_init_record(out, &capacity, storage, &patch) != 0) {
-        fclose(fp);
-        free_program_image_init_records(out);
-        return -1;
-      }
-    }
-  }
-  if (ferror(fp)) {
-    fprintf(stderr, "failed while reading %s\n", path);
-    fclose(fp);
-    free_program_image_init_records(out);
-    return -1;
-  }
-  fclose(fp);
-  if (out->record_count == 0U) {
-    fprintf(stderr, "%s contained no program-image initialization records\n", path);
-    free_program_image_init_records(out);
-    return -1;
-  }
-  return 0;
 }
 
 static int append_resident_patch_record(ResidentPatchSchedule *schedule,
@@ -850,6 +540,119 @@ static int parse_size_t_env(const char *name, size_t *out) {
   return 1;
 }
 
+static int parse_unsigned_env(const char *name, unsigned *out) {
+  const char *raw = getenv(name);
+  char *end = NULL;
+  unsigned long value = 0UL;
+  if (raw == NULL || raw[0] == '\0')
+    return 0;
+  value = strtoul(raw, &end, 0);
+  if (end == raw || *end != '\0' || value > 1000UL)
+    return -1;
+  *out = (unsigned)value;
+  return 1;
+}
+
+static int split_csv_dup(const char *raw, char **out, unsigned *out_count,
+                         unsigned max_count) {
+  char *buf = NULL;
+  unsigned count = 0U;
+  if (raw == NULL || raw[0] == '\0') {
+    *out_count = 0U;
+    return 0;
+  }
+  buf = strdup(raw);
+  if (!buf) {
+    fprintf(stderr, "strdup failed for csv env\n");
+    return -1;
+  }
+  for (char *tok = strtok(buf, ","); tok != NULL; tok = strtok(NULL, ",")) {
+    while (*tok && isspace((unsigned char)*tok))
+      tok++;
+    char *end = tok + strlen(tok);
+    while (end > tok && isspace((unsigned char)end[-1]))
+      *--end = '\0';
+    if (*tok == '\0')
+      continue;
+    if (count >= max_count) {
+      fprintf(stderr, "too many csv entries (max %u)\n", max_count);
+      free(buf);
+      return -1;
+    }
+    out[count] = strdup(tok);
+    if (!out[count]) {
+      fprintf(stderr, "strdup failed for csv token\n");
+      free(buf);
+      return -1;
+    }
+    count++;
+  }
+  free(buf);
+  *out_count = count;
+  return 0;
+}
+
+static void free_string_list(char **items, unsigned count) {
+  for (unsigned i = 0U; i < count; i++) {
+    free(items[i]);
+    items[i] = NULL;
+  }
+}
+
+static int dump_device_storage(CUdeviceptr d_storage, size_t total,
+                               const char *dump_path) {
+  unsigned char *host = NULL;
+  FILE *fp = NULL;
+  size_t nw = 0U;
+  if (dump_path == NULL || dump_path[0] == '\0')
+    return 0;
+  host = (unsigned char *)malloc(total);
+  if (!host) {
+    fprintf(stderr, "malloc failed for %zu-byte state dump\n", total);
+    return 1;
+  }
+  CUDA_CHECK(cuMemcpyDtoH(host, d_storage, total));
+  fp = fopen(dump_path, "wb");
+  if (!fp) {
+    fprintf(stderr, "fopen(%s) failed\n", dump_path);
+    free(host);
+    return 1;
+  }
+  nw = fwrite(host, 1, total, fp);
+  fclose(fp);
+  free(host);
+  if (nw != total) {
+    fprintf(stderr, "short write to %s: wrote %zu / %zu bytes\n", dump_path,
+            nw, total);
+    return 1;
+  }
+  return 0;
+}
+
+static int compare_float_ascending(const void *lhs, const void *rhs) {
+  const float a = *(const float *)lhs;
+  const float b = *(const float *)rhs;
+  return (a > b) - (a < b);
+}
+
+static float median_float_copy(const float *values, unsigned count) {
+  if (count == 0U)
+    return 0.f;
+  float *copy = (float *)malloc((size_t)count * sizeof(*copy));
+  if (!copy)
+    return values[count - 1U];
+  memcpy(copy, values, (size_t)count * sizeof(*copy));
+  qsort(copy, count, sizeof(*copy), compare_float_ascending);
+  float median = 0.f;
+  if ((count % 2U) == 1U) {
+    median = copy[count / 2U];
+  } else {
+    median = (copy[(count / 2U) - 1U] + copy[count / 2U]) / 2.f;
+  }
+  free(copy);
+  return median;
+}
+
 static void trace_stage(const char *stage) {
   if (!trace_stages_enabled())
     return;
@@ -980,118 +783,6 @@ static int launch_init_state_replication(CUfunction init_kfn,
   trace_kernel_launch("vl_replicate_init_state_gpu", 0, -1);
   CUDA_CHECK(cuLaunchKernel(init_kfn, grid, 1, 1, (unsigned)block, 1, 1, 0, 0,
                             params, NULL));
-  return 0;
-}
-
-static int launch_program_image_init(CUfunction init_kfn,
-                                     CUdeviceptr d_storage,
-                                     const ProgramImageInitRecords *records,
-                                     size_t storage,
-                                     unsigned nstates) {
-  if (!records || records->record_count == 0U)
-    return 0;
-  if (records->record_count > 2147483647U || nstates > 2147483647U) {
-    fprintf(stderr, "program-image init launch shape out of range: records=%u nstates=%u\n",
-            records->record_count, nstates);
-    return -1;
-  }
-  unsigned long long total_work =
-      (unsigned long long)records->record_count * (unsigned long long)nstates;
-  unsigned block = 256U;
-  unsigned long long grid_ull =
-      (total_work + (unsigned long long)block - 1ULL) / (unsigned long long)block;
-  if (grid_ull == 0ULL || grid_ull > 2147483647ULL) {
-    fprintf(stderr, "program-image init grid out of range: %llu\n", grid_ull);
-    return -1;
-  }
-  unsigned grid = (unsigned)grid_ull;
-  CUdeviceptr d_offsets = records->d_offsets;
-  CUdeviceptr d_values = records->d_values;
-  int record_count_i = (int)records->record_count;
-  unsigned long long storage_arg = (unsigned long long)storage;
-  int nstates_i = (int)nstates;
-  void *params[] = {&d_storage,
-                    &d_offsets,
-                    &d_values,
-                    &record_count_i,
-                    &storage_arg,
-                    &nstates_i};
-  trace_kernel_launch("vl_apply_program_image_init_gpu", 0, -1);
-  CUDA_CHECK(cuLaunchKernel(init_kfn, grid, 1, 1, block, 1, 1, 0, 0, params, NULL));
-  return 0;
-}
-
-static int launch_program_image_words(CUfunction words_kfn,
-                                      CUdeviceptr d_storage,
-                                      const ProgramImageWords *program_words,
-                                      size_t storage,
-                                      unsigned nstates) {
-  if (!program_words || program_words->word_count == 0U)
-    return 0;
-  if (program_words->word_count > 2147483647U || nstates > 2147483647U) {
-    fprintf(stderr, "program-image word launch shape out of range: words=%u nstates=%u\n",
-            program_words->word_count, nstates);
-    return -1;
-  }
-  unsigned long long total_work =
-      (unsigned long long)program_words->word_count * (unsigned long long)nstates;
-  unsigned block = 256U;
-  unsigned long long grid_ull =
-      (total_work + (unsigned long long)block - 1ULL) / (unsigned long long)block;
-  if (grid_ull == 0ULL || grid_ull > 2147483647ULL) {
-    fprintf(stderr, "program-image word grid out of range: %llu\n", grid_ull);
-    return -1;
-  }
-  unsigned grid = (unsigned)grid_ull;
-  CUdeviceptr d_words = program_words->d_words;
-  CUdeviceptr d_lane_base_offsets = program_words->d_lane_base_offsets;
-  int word_count_i = (int)program_words->word_count;
-  unsigned long long storage_arg = (unsigned long long)storage;
-  int nstates_i = (int)nstates;
-  void *params[] = {&d_storage,
-                    &d_words,
-                    &d_lane_base_offsets,
-                    &word_count_i,
-                    &storage_arg,
-                    &nstates_i};
-  trace_kernel_launch("vl_apply_program_image_words_gpu", 0, -1);
-  CUDA_CHECK(cuLaunchKernel(words_kfn, grid, 1, 1, block, 1, 1, 0, 0, params, NULL));
-  return 0;
-}
-
-static int launch_dmem_zero_fill(CUfunction zero_kfn,
-                                 CUdeviceptr d_storage,
-                                 const DmemZeroFill *zero_fill,
-                                 size_t storage,
-                                 unsigned nstates) {
-  if (!zero_fill || zero_fill->word_count == 0U)
-    return 0;
-  if (zero_fill->word_count > 2147483647U || nstates > 2147483647U) {
-    fprintf(stderr, "DMEM zero-fill launch shape out of range: words=%u nstates=%u\n",
-            zero_fill->word_count, nstates);
-    return -1;
-  }
-  unsigned long long total_work =
-      (unsigned long long)zero_fill->word_count * (unsigned long long)nstates;
-  unsigned block = 256U;
-  unsigned long long grid_ull =
-      (total_work + (unsigned long long)block - 1ULL) / (unsigned long long)block;
-  if (grid_ull == 0ULL || grid_ull > 2147483647ULL) {
-    fprintf(stderr, "DMEM zero-fill grid out of range: %llu\n", grid_ull);
-    return -1;
-  }
-  unsigned grid = (unsigned)grid_ull;
-  CUdeviceptr d_lane_base_offsets = zero_fill->d_lane_base_offsets;
-  int word_count_i = (int)zero_fill->word_count;
-  unsigned long long storage_arg = (unsigned long long)storage;
-  int nstates_i = (int)nstates;
-  void *params[] = {&d_storage,
-                    &d_lane_base_offsets,
-                    &word_count_i,
-                    &storage_arg,
-                    &nstates_i};
-  trace_kernel_launch("vl_zero_dmem_words_gpu", 0, -1);
-  CUDA_CHECK(cuLaunchKernel(zero_kfn, grid, 1, 1, block, 1, 1, 0, 0, params, NULL));
   return 0;
 }
 
@@ -1346,17 +1037,8 @@ int main(int argc, char **argv) {
   unsigned resident_patch_script_block_count = 0U;
   ResidentPatchSchedule resident_patch_schedule;
   memset(&resident_patch_schedule, 0, sizeof(resident_patch_schedule));
-  ProgramImageInitRecords program_image_init_records;
-  memset(&program_image_init_records, 0, sizeof(program_image_init_records));
-  ProgramImageWords program_image_words;
-  memset(&program_image_words, 0, sizeof(program_image_words));
-  DmemZeroFill dmem_zero_fill;
-  memset(&dmem_zero_fill, 0, sizeof(dmem_zero_fill));
   CUfunction resident_patch_kfn = NULL;
   CUfunction init_replication_kfn = NULL;
-  CUfunction program_image_init_kfn = NULL;
-  CUfunction program_image_words_kfn = NULL;
-  CUfunction dmem_zero_fill_kfn = NULL;
 
   int pi = 4;
   if (argc > 4 && strchr(argv[4], ':') == NULL && strlen(argv[4]) > 0) {
@@ -1384,18 +1066,66 @@ int main(int argc, char **argv) {
   }
 
   const int resident_steps = getenv(ENV_RESIDENT_STEPS) != NULL;
+  const char *persistent_resident_handle = getenv(ENV_PERSISTENT_RESIDENT_HANDLE);
+  const int persistent_resident_requested =
+      persistent_resident_handle != NULL && persistent_resident_handle[0] != '\0';
+  unsigned persistent_resident_phase = 0U;
+  unsigned persistent_resident_phase_count = 1U;
+  char *persistent_phase_dumps[MAX_PERSISTENT_RESIDENT_PHASES];
+  unsigned persistent_phase_dump_count = 0U;
+  memset(persistent_phase_dumps, 0, sizeof(persistent_phase_dumps));
   const int gpu_replicate_init_state = getenv(ENV_GPU_REPLICATE_INIT_STATE) != NULL;
-  const char *program_image_init_records_path = getenv(ENV_PROGRAM_IMAGE_INIT_RECORDS);
-  const int program_image_init_records_enabled =
-      program_image_init_records_path != NULL && program_image_init_records_path[0] != '\0';
-  const char *program_image_words_path = getenv(ENV_PROGRAM_IMAGE_WORDS);
-  const int program_image_words_enabled =
-      program_image_words_path != NULL && program_image_words_path[0] != '\0';
-  const char *program_image_lane_base_offsets = getenv(ENV_PROGRAM_IMAGE_LANE_BASE_OFFSETS);
-  const int dmem_zero_fill_enabled = getenv(ENV_DMEM_ZERO_FILL) != NULL;
-  const char *dmem_zero_fill_lane_base_offsets =
-      getenv(ENV_DMEM_ZERO_FILL_LANE_BASE_OFFSETS);
-  const char *dmem_zero_fill_word_count = getenv(ENV_DMEM_ZERO_FILL_WORD_COUNT);
+  unsigned timing_repeats = 1U;
+  {
+    int repeat_status = parse_unsigned_env(ENV_TIMING_REPEATS, &timing_repeats);
+    if (repeat_status < 0 || timing_repeats == 0U || timing_repeats > 64U) {
+      fprintf(stderr, "invalid %s (expected 1..64)\n", ENV_TIMING_REPEATS);
+      return 1;
+    }
+  }
+  if (persistent_resident_requested) {
+    int phase_status = parse_unsigned_env(ENV_PERSISTENT_RESIDENT_PHASE,
+                                          &persistent_resident_phase);
+    int phase_count_status = parse_unsigned_env(ENV_PERSISTENT_RESIDENT_PHASE_COUNT,
+                                                &persistent_resident_phase_count);
+    if (!resident_steps) {
+      fprintf(stderr, "%s requires %s=1\n", ENV_PERSISTENT_RESIDENT_HANDLE,
+              ENV_RESIDENT_STEPS);
+      return 1;
+    }
+    if (phase_status <= 0 || persistent_resident_phase == 0U) {
+      fprintf(stderr, "%s requires a positive %s\n",
+              ENV_PERSISTENT_RESIDENT_HANDLE, ENV_PERSISTENT_RESIDENT_PHASE);
+      return 1;
+    }
+    if (phase_count_status < 0 || persistent_resident_phase_count == 0U ||
+        persistent_resident_phase_count > MAX_PERSISTENT_RESIDENT_PHASES) {
+      fprintf(stderr, "%s must be 1..%u\n", ENV_PERSISTENT_RESIDENT_PHASE_COUNT,
+              MAX_PERSISTENT_RESIDENT_PHASES);
+      return 1;
+    }
+    if (persistent_resident_phase > 1U && persistent_resident_phase_count <= 1U) {
+      fprintf(stderr,
+              "persistent resident state ABI phase %u for handle '%s' is not "
+              "implemented yet; refusing to fall back to a previous phase "
+              "--init-state reload\n",
+              persistent_resident_phase, persistent_resident_handle);
+      return 1;
+    }
+    if (split_csv_dup(getenv(ENV_PERSISTENT_RESIDENT_PHASE_DUMPS),
+                      persistent_phase_dumps, &persistent_phase_dump_count,
+                      MAX_PERSISTENT_RESIDENT_PHASES) != 0) {
+      return 1;
+    }
+    if (persistent_phase_dump_count != 0U &&
+        persistent_phase_dump_count != persistent_resident_phase_count) {
+      fprintf(stderr, "%s count %u does not match %s %u\n",
+              ENV_PERSISTENT_RESIDENT_PHASE_DUMPS, persistent_phase_dump_count,
+              ENV_PERSISTENT_RESIDENT_PHASE_COUNT, persistent_resident_phase_count);
+      free_string_list(persistent_phase_dumps, persistent_phase_dump_count);
+      return 1;
+    }
+  }
 
   {
     const char *patch_script_path = getenv(ENV_PATCH_SCRIPT);
@@ -1414,6 +1144,32 @@ int main(int argc, char **argv) {
     free_step_patch_blocks(script_blocks, script_block_count);
     return 1;
   }
+  if (timing_repeats > 1U &&
+      (resident_steps || npatch > 0 || script_blocks ||
+       env_flag_enabled(ENV_INIT_STATE))) {
+    fprintf(stderr,
+            "%s > 1 is currently limited to zero-init, no-patch, "
+            "non-resident timing captures\n",
+            ENV_TIMING_REPEATS);
+    free_step_patch_blocks(script_blocks, script_block_count);
+    return 1;
+  }
+  if (persistent_resident_requested && persistent_resident_phase_count > 1U) {
+    if (npatch > 0 || script_blocks) {
+      fprintf(stderr,
+              "%s multi-phase mode currently supports no argv patches or patch scripts\n",
+              ENV_PERSISTENT_RESIDENT_HANDLE);
+      free_step_patch_blocks(script_blocks, script_block_count);
+      free_string_list(persistent_phase_dumps, persistent_phase_dump_count);
+      return 1;
+    }
+    if (timing_repeats > 1U) {
+      fprintf(stderr, "%s multi-phase mode requires %s unset or 1\n",
+              ENV_PERSISTENT_RESIDENT_HANDLE, ENV_TIMING_REPEATS);
+      free_string_list(persistent_phase_dumps, persistent_phase_dump_count);
+      return 1;
+    }
+  }
 
   if (storage_ull == 0ULL || storage_ull > (1ULL << 40)) {
     fprintf(stderr, "invalid storage_bytes\n");
@@ -1426,46 +1182,6 @@ int main(int argc, char **argv) {
 
   size_t storage = (size_t)storage_ull;
   size_t total = storage * (size_t)nstates;
-  if (program_image_init_records_enabled) {
-    if (load_program_image_init_records(program_image_init_records_path, storage,
-                                        &program_image_init_records) != 0) {
-      free_step_patch_blocks(script_blocks, script_block_count);
-      return 1;
-    }
-  }
-  if (program_image_words_enabled) {
-    if (load_program_image_words(program_image_words_path, &program_image_words) != 0) {
-      free_step_patch_blocks(script_blocks, script_block_count);
-      free_program_image_init_records(&program_image_init_records);
-      return 1;
-    }
-    if (parse_program_image_lane_base_offsets(program_image_lane_base_offsets,
-                                              &program_image_words) != 0) {
-      free_step_patch_blocks(script_blocks, script_block_count);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
-      return 1;
-    }
-  }
-  if (dmem_zero_fill_enabled) {
-    if (parse_lane_base_offsets(dmem_zero_fill_lane_base_offsets,
-                                dmem_zero_fill.lane_base_offsets,
-                                ENV_DMEM_ZERO_FILL_LANE_BASE_OFFSETS,
-                                ENV_DMEM_ZERO_FILL) != 0) {
-      free_step_patch_blocks(script_blocks, script_block_count);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
-      return 1;
-    }
-    if (parse_dmem_zero_fill_word_count(dmem_zero_fill_word_count,
-                                        &dmem_zero_fill) != 0) {
-      free_step_patch_blocks(script_blocks, script_block_count);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
-      return 1;
-    }
-  }
-
   trace_stage("before_cuInit");
   {
     CUresult err = cuInit(0);
@@ -1497,8 +1213,6 @@ int main(int argc, char **argv) {
   int nmods = 0;
   if (load_module_chain(cubin_path, mods, &nmods) != 0) {
     free_step_patch_blocks(script_blocks, script_block_count);
-    free_program_image_init_records(&program_image_init_records);
-    free_program_image_words(&program_image_words);
     return 1;
   }
 
@@ -1569,53 +1283,12 @@ int main(int argc, char **argv) {
     }
     trace_function_attrs(init_replication_kfn, "vl_replicate_init_state_gpu");
   }
-  if (program_image_init_records_enabled) {
-    if (resolve_function_across_modules(&program_image_init_kfn, mods, nmods,
-                                        "vl_apply_program_image_init_gpu") != 0) {
-      fprintf(stderr,
-              "%s requires a cubin regenerated with vl_apply_program_image_init_gpu\n",
-              ENV_PROGRAM_IMAGE_INIT_RECORDS);
-      free_step_patch_blocks(script_blocks, script_block_count);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
-      return 1;
-    }
-    trace_function_attrs(program_image_init_kfn, "vl_apply_program_image_init_gpu");
-  }
-  if (program_image_words_enabled) {
-    if (resolve_function_across_modules(&program_image_words_kfn, mods, nmods,
-                                        "vl_apply_program_image_words_gpu") != 0) {
-      fprintf(stderr,
-              "%s requires a cubin regenerated with vl_apply_program_image_words_gpu\n",
-              ENV_PROGRAM_IMAGE_WORDS);
-      free_step_patch_blocks(script_blocks, script_block_count);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
-      return 1;
-    }
-    trace_function_attrs(program_image_words_kfn, "vl_apply_program_image_words_gpu");
-  }
-  if (dmem_zero_fill_enabled) {
-    if (resolve_function_across_modules(&dmem_zero_fill_kfn, mods, nmods,
-                                        "vl_zero_dmem_words_gpu") != 0) {
-      fprintf(stderr,
-              "%s requires a cubin regenerated with vl_zero_dmem_words_gpu\n",
-              ENV_DMEM_ZERO_FILL);
-      free_step_patch_blocks(script_blocks, script_block_count);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
-      return 1;
-    }
-    trace_function_attrs(dmem_zero_fill_kfn, "vl_zero_dmem_words_gpu");
-  }
   {
     int stack_limit_status = maybe_raise_stack_limit_for_kernels(kfns, nk);
     if (env_flag_enabled(ENV_STACK_LIMIT_PROBE_ONLY))
       return stack_limit_status;
     if (stack_limit_status != 0) {
       fprintf(stderr, "stack-limit setup failed with status=%d\n", stack_limit_status);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
       return stack_limit_status;
     }
   }
@@ -1733,71 +1406,6 @@ int main(int argc, char **argv) {
     script_block_count = 0U;
   }
 
-  if (program_image_init_records.record_count > 0U) {
-    CUDA_CHECK(cuMemAlloc(&program_image_init_records.d_offsets,
-                          (size_t)program_image_init_records.record_count *
-                              sizeof(*program_image_init_records.offsets)));
-    CUDA_CHECK(cuMemAlloc(&program_image_init_records.d_values,
-                          (size_t)program_image_init_records.record_count *
-                              sizeof(*program_image_init_records.values)));
-    CUDA_CHECK(cuMemcpyHtoD(program_image_init_records.d_offsets,
-                            program_image_init_records.offsets,
-                            (size_t)program_image_init_records.record_count *
-                                sizeof(*program_image_init_records.offsets)));
-    CUDA_CHECK(cuMemcpyHtoD(program_image_init_records.d_values,
-                            program_image_init_records.values,
-                            (size_t)program_image_init_records.record_count *
-                                sizeof(*program_image_init_records.values)));
-    if (launch_program_image_init(program_image_init_kfn, d_storage,
-                                  &program_image_init_records, storage, nstates) != 0) {
-      free_step_patch_blocks(script_blocks, script_block_count);
-      free_resident_patch_schedule(&resident_patch_schedule);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
-      return 1;
-    }
-    CUDA_CHECK(cuCtxSynchronize());
-  }
-  if (program_image_words.word_count > 0U) {
-    CUDA_CHECK(cuMemAlloc(&program_image_words.d_words,
-                          (size_t)program_image_words.word_count *
-                              sizeof(*program_image_words.words)));
-    CUDA_CHECK(cuMemAlloc(&program_image_words.d_lane_base_offsets,
-                          sizeof(program_image_words.lane_base_offsets)));
-    CUDA_CHECK(cuMemcpyHtoD(program_image_words.d_words, program_image_words.words,
-                            (size_t)program_image_words.word_count *
-                                sizeof(*program_image_words.words)));
-    CUDA_CHECK(cuMemcpyHtoD(program_image_words.d_lane_base_offsets,
-                            program_image_words.lane_base_offsets,
-                            sizeof(program_image_words.lane_base_offsets)));
-    if (launch_program_image_words(program_image_words_kfn, d_storage,
-                                   &program_image_words, storage, nstates) != 0) {
-      free_step_patch_blocks(script_blocks, script_block_count);
-      free_resident_patch_schedule(&resident_patch_schedule);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
-      return 1;
-    }
-    CUDA_CHECK(cuCtxSynchronize());
-  }
-  if (dmem_zero_fill_enabled) {
-    CUDA_CHECK(cuMemAlloc(&dmem_zero_fill.d_lane_base_offsets,
-                          sizeof(dmem_zero_fill.lane_base_offsets)));
-    CUDA_CHECK(cuMemcpyHtoD(dmem_zero_fill.d_lane_base_offsets,
-                            dmem_zero_fill.lane_base_offsets,
-                            sizeof(dmem_zero_fill.lane_base_offsets)));
-    if (launch_dmem_zero_fill(dmem_zero_fill_kfn, d_storage,
-                              &dmem_zero_fill, storage, nstates) != 0) {
-      free_step_patch_blocks(script_blocks, script_block_count);
-      free_resident_patch_schedule(&resident_patch_schedule);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
-      free_dmem_zero_fill(&dmem_zero_fill);
-      return 1;
-    }
-    CUDA_CHECK(cuCtxSynchronize());
-  }
-
   int nstates_i = (int)nstates;
   void *params[] = {&d_storage, &nstates_i};
   unsigned grid = (nstates + block - 1) / block;
@@ -1805,6 +1413,13 @@ int main(int argc, char **argv) {
   CUevent ev_start, ev_stop;
   CUDA_CHECK(cuEventCreate(&ev_start, CU_EVENT_DEFAULT));
   CUDA_CHECK(cuEventCreate(&ev_stop, CU_EVENT_DEFAULT));
+  float *timing_repeat_ms = (float *)calloc(timing_repeats, sizeof(*timing_repeat_ms));
+  if (!timing_repeat_ms) {
+    fprintf(stderr, "calloc failed for %u timing repeats\n", timing_repeats);
+    free_step_patch_blocks(script_blocks, script_block_count);
+    free_resident_patch_schedule(&resident_patch_schedule);
+    return 1;
+  }
 
   struct timespec wall0, wall1;
   clock_gettime(CLOCK_MONOTONIC, &wall0);
@@ -1813,49 +1428,91 @@ int main(int argc, char **argv) {
   float gpu_kernel_ms_sum = 0.f;
   const int sync_each_step = getenv(ENV_SYNC_EACH_STEP) != NULL;
 
-  if (getenv(ENV_WARMUP) != NULL) {
-    trace_stage("before_warmup");
-    for (int k = 0; k < nk; k++) {
-      trace_kernel_launch(kernel_names[k], 0U, k);
-      CUDA_CHECK(cuLaunchKernel(kfns[k], grid, 1, 1, block, 1, 1, 0, 0, params,
-                                NULL));
+  for (unsigned timing_repeat = 0U; timing_repeat < timing_repeats;
+       timing_repeat++) {
+    gpu_kernel_ms_sum = 0.f;
+    if (timing_repeats > 1U) {
+      CUDA_CHECK(cuMemsetD8(d_storage, 0, total));
     }
-    CUDA_CHECK(cuCtxSynchronize());
-    trace_stage("after_warmup");
-  }
 
-  if (sync_each_step) {
-    unsigned logical_step = 0U;
-    if (script_blocks) {
-      for (unsigned block_idx = 0; block_idx < script_block_count; block_idx++) {
-        StepPatchBlock *block_desc = &script_blocks[block_idx];
-        for (unsigned repeat_idx = 0; repeat_idx < block_desc->repeat_count; repeat_idx++) {
-          for (unsigned step_idx = 0; step_idx < block_desc->step_count; step_idx++, logical_step++) {
-            if (apply_patch_array(d_storage, total, patches, npatch) != 0) {
-              free_step_patch_blocks(script_blocks, script_block_count);
-              return 1;
+    if (getenv(ENV_WARMUP) != NULL) {
+      trace_stage("before_warmup");
+      for (int k = 0; k < nk; k++) {
+        trace_kernel_launch(kernel_names[k], 0U, k);
+        CUDA_CHECK(cuLaunchKernel(kfns[k], grid, 1, 1, block, 1, 1, 0, 0, params,
+                                  NULL));
+      }
+      CUDA_CHECK(cuCtxSynchronize());
+      trace_stage("after_warmup");
+    }
+
+    if (sync_each_step) {
+      unsigned logical_step = 0U;
+      if (script_blocks) {
+        for (unsigned block_idx = 0; block_idx < script_block_count; block_idx++) {
+          StepPatchBlock *block_desc = &script_blocks[block_idx];
+          for (unsigned repeat_idx = 0; repeat_idx < block_desc->repeat_count; repeat_idx++) {
+            for (unsigned step_idx = 0; step_idx < block_desc->step_count; step_idx++, logical_step++) {
+              if (apply_patch_array(d_storage, total, patches, npatch) != 0) {
+                free_step_patch_blocks(script_blocks, script_block_count);
+                return 1;
+              }
+              if (apply_patch_array(d_storage, total, block_desc->steps[step_idx].items,
+                                    block_desc->steps[step_idx].count) != 0) {
+                free_step_patch_blocks(script_blocks, script_block_count);
+                return 1;
+              }
+              CUDA_CHECK(cuEventRecord(ev_start, 0));
+              if (logical_step == 0U)
+                trace_stage("before_first_kernel_launch");
+              for (int k = 0; k < nk; k++) {
+                trace_kernel_launch(kernel_names[k], logical_step, k);
+                CUDA_CHECK(cuLaunchKernel(kfns[k], grid, 1, 1, block, 1, 1, 0, 0,
+                                          params, NULL));
+              }
+              if (logical_step == 0U)
+                trace_stage("after_first_kernel_launch");
+              CUDA_CHECK(cuEventRecord(ev_stop, 0));
+              if (logical_step == 0U)
+                trace_stage("before_first_step_sync");
+              CUDA_CHECK(cuCtxSynchronize());
+              if (logical_step == 0U)
+                trace_stage("after_first_step_sync");
+              float step_ms = 0.f;
+              CUDA_CHECK(cuEventElapsedTime(&step_ms, ev_start, ev_stop));
+              gpu_kernel_ms_sum += step_ms;
             }
-            if (apply_patch_array(d_storage, total, block_desc->steps[step_idx].items,
-                                  block_desc->steps[step_idx].count) != 0) {
-              free_step_patch_blocks(script_blocks, script_block_count);
-              return 1;
-            }
-            CUDA_CHECK(cuEventRecord(ev_start, 0));
-            if (logical_step == 0U)
-              trace_stage("before_first_kernel_launch");
-            for (int k = 0; k < nk; k++) {
-              trace_kernel_launch(kernel_names[k], logical_step, k);
-              CUDA_CHECK(cuLaunchKernel(kfns[k], grid, 1, 1, block, 1, 1, 0, 0,
-                                        params, NULL));
-            }
-            if (logical_step == 0U)
-              trace_stage("after_first_kernel_launch");
-            CUDA_CHECK(cuEventRecord(ev_stop, 0));
-            if (logical_step == 0U)
-              trace_stage("before_first_step_sync");
-            CUDA_CHECK(cuCtxSynchronize());
-            if (logical_step == 0U)
-              trace_stage("after_first_step_sync");
+          }
+        }
+      } else {
+        for (unsigned step = 0; step < steps; step++) {
+          if (apply_patch_array(d_storage, total, patches, npatch) != 0) {
+            free_step_patch_blocks(script_blocks, script_block_count);
+            free_resident_patch_schedule(&resident_patch_schedule);
+            return 1;
+          }
+          CUDA_CHECK(cuEventRecord(ev_start, 0));
+          if (launch_resident_patch_step(resident_patch_kfn, &resident_patch_schedule,
+                                         d_storage, step) != 0) {
+            free_resident_patch_schedule(&resident_patch_schedule);
+            return 1;
+          }
+          if (step == 0U)
+            trace_stage("before_first_kernel_launch");
+          for (int k = 0; k < nk; k++) {
+            trace_kernel_launch(kernel_names[k], step, k);
+            CUDA_CHECK(cuLaunchKernel(kfns[k], grid, 1, 1, block, 1, 1, 0, 0,
+                                      params, NULL));
+          }
+          if (step == 0U)
+            trace_stage("after_first_kernel_launch");
+          CUDA_CHECK(cuEventRecord(ev_stop, 0));
+          if (step == 0U)
+            trace_stage("before_first_step_sync");
+          CUDA_CHECK(cuCtxSynchronize());
+          if (step == 0U)
+            trace_stage("after_first_step_sync");
+          {
             float step_ms = 0.f;
             CUDA_CHECK(cuEventElapsedTime(&step_ms, ev_start, ev_stop));
             gpu_kernel_ms_sum += step_ms;
@@ -1863,107 +1520,97 @@ int main(int argc, char **argv) {
         }
       }
     } else {
-      for (unsigned step = 0; step < steps; step++) {
-        if (apply_patch_array(d_storage, total, patches, npatch) != 0) {
-          free_step_patch_blocks(script_blocks, script_block_count);
-          free_resident_patch_schedule(&resident_patch_schedule);
-          return 1;
+      /* One sync after all work: much lower wall latency when steps > 1. */
+      int recorded_start = 0;
+      unsigned logical_step = 0U;
+      if (script_blocks) {
+        for (unsigned block_idx = 0; block_idx < script_block_count; block_idx++) {
+          StepPatchBlock *block_desc = &script_blocks[block_idx];
+          for (unsigned repeat_idx = 0; repeat_idx < block_desc->repeat_count; repeat_idx++) {
+            for (unsigned step_idx = 0; step_idx < block_desc->step_count; step_idx++, logical_step++) {
+              if (apply_patch_array(d_storage, total, patches, npatch) != 0) {
+                free_step_patch_blocks(script_blocks, script_block_count);
+                return 1;
+              }
+              if (apply_patch_array(d_storage, total, block_desc->steps[step_idx].items,
+                                    block_desc->steps[step_idx].count) != 0) {
+                free_step_patch_blocks(script_blocks, script_block_count);
+                return 1;
+              }
+              if (!recorded_start) {
+                CUDA_CHECK(cuEventRecord(ev_start, 0));
+                recorded_start = 1;
+              }
+              if (logical_step == 0U)
+                trace_stage("before_first_kernel_launch");
+              for (int k = 0; k < nk; k++) {
+                trace_kernel_launch(kernel_names[k], logical_step, k);
+                CUDA_CHECK(cuLaunchKernel(kfns[k], grid, 1, 1, block, 1, 1, 0, 0,
+                                          params, NULL));
+              }
+              if (logical_step == 0U)
+                trace_stage("after_first_kernel_launch");
+            }
+          }
         }
-        CUDA_CHECK(cuEventRecord(ev_start, 0));
-        if (launch_resident_patch_step(resident_patch_kfn, &resident_patch_schedule,
-                                       d_storage, step) != 0) {
-          free_resident_patch_schedule(&resident_patch_schedule);
-          return 1;
-        }
-        if (step == 0U)
-          trace_stage("before_first_kernel_launch");
-        for (int k = 0; k < nk; k++) {
-          trace_kernel_launch(kernel_names[k], step, k);
-          CUDA_CHECK(cuLaunchKernel(kfns[k], grid, 1, 1, block, 1, 1, 0, 0,
-                                    params, NULL));
-        }
-        if (step == 0U)
-          trace_stage("after_first_kernel_launch");
-        CUDA_CHECK(cuEventRecord(ev_stop, 0));
-        if (step == 0U)
-          trace_stage("before_first_step_sync");
-        CUDA_CHECK(cuCtxSynchronize());
-        if (step == 0U)
-          trace_stage("after_first_step_sync");
-        {
-          float step_ms = 0.f;
-          CUDA_CHECK(cuEventElapsedTime(&step_ms, ev_start, ev_stop));
-          gpu_kernel_ms_sum += step_ms;
-        }
-      }
-    }
-  } else {
-    /* One sync after all work: much lower wall latency when steps > 1. */
-    int recorded_start = 0;
-    unsigned logical_step = 0U;
-    if (script_blocks) {
-      for (unsigned block_idx = 0; block_idx < script_block_count; block_idx++) {
-        StepPatchBlock *block_desc = &script_blocks[block_idx];
-        for (unsigned repeat_idx = 0; repeat_idx < block_desc->repeat_count; repeat_idx++) {
-          for (unsigned step_idx = 0; step_idx < block_desc->step_count; step_idx++, logical_step++) {
+      } else {
+        unsigned total_phases =
+            (persistent_resident_requested && persistent_resident_phase_count > 1U)
+                ? persistent_resident_phase_count
+                : 1U;
+        unsigned logical_step_index = 0U;
+        for (unsigned phase_idx = 0U; phase_idx < total_phases; phase_idx++) {
+          for (unsigned step = 0; step < steps; step++, logical_step_index++) {
             if (apply_patch_array(d_storage, total, patches, npatch) != 0) {
               free_step_patch_blocks(script_blocks, script_block_count);
-              return 1;
-            }
-            if (apply_patch_array(d_storage, total, block_desc->steps[step_idx].items,
-                                  block_desc->steps[step_idx].count) != 0) {
-              free_step_patch_blocks(script_blocks, script_block_count);
+              free_resident_patch_schedule(&resident_patch_schedule);
               return 1;
             }
             if (!recorded_start) {
               CUDA_CHECK(cuEventRecord(ev_start, 0));
               recorded_start = 1;
             }
-            if (logical_step == 0U)
+            if (launch_resident_patch_step(resident_patch_kfn, &resident_patch_schedule,
+                                           d_storage, logical_step_index) != 0) {
+              free_resident_patch_schedule(&resident_patch_schedule);
+              return 1;
+            }
+            if (logical_step_index == 0U)
               trace_stage("before_first_kernel_launch");
             for (int k = 0; k < nk; k++) {
-              trace_kernel_launch(kernel_names[k], logical_step, k);
+              trace_kernel_launch(kernel_names[k], logical_step_index, k);
               CUDA_CHECK(cuLaunchKernel(kfns[k], grid, 1, 1, block, 1, 1, 0, 0,
                                         params, NULL));
             }
-            if (logical_step == 0U)
+            if (logical_step_index == 0U)
               trace_stage("after_first_kernel_launch");
+          }
+          if (total_phases > 1U) {
+            CUDA_CHECK(cuCtxSynchronize());
+            if (persistent_phase_dump_count > phase_idx &&
+                persistent_phase_dumps[phase_idx] != NULL) {
+              if (dump_device_storage(d_storage, total,
+                                      persistent_phase_dumps[phase_idx]) != 0) {
+                free_resident_patch_schedule(&resident_patch_schedule);
+                free_string_list(persistent_phase_dumps, persistent_phase_dump_count);
+                return 1;
+              }
+              printf("persistent_phase_state_dump: phase=%u path=%s (%zu bytes)\n",
+                     phase_idx + 1U, persistent_phase_dumps[phase_idx], total);
+            }
           }
         }
       }
-    } else {
-      for (unsigned step = 0; step < steps; step++) {
-        if (apply_patch_array(d_storage, total, patches, npatch) != 0) {
-          free_step_patch_blocks(script_blocks, script_block_count);
-          free_resident_patch_schedule(&resident_patch_schedule);
-          return 1;
-        }
-        if (!recorded_start) {
-          CUDA_CHECK(cuEventRecord(ev_start, 0));
-          recorded_start = 1;
-        }
-        if (launch_resident_patch_step(resident_patch_kfn, &resident_patch_schedule,
-                                       d_storage, step) != 0) {
-          free_resident_patch_schedule(&resident_patch_schedule);
-          return 1;
-        }
-        if (step == 0U)
-          trace_stage("before_first_kernel_launch");
-        for (int k = 0; k < nk; k++) {
-          trace_kernel_launch(kernel_names[k], step, k);
-          CUDA_CHECK(cuLaunchKernel(kfns[k], grid, 1, 1, block, 1, 1, 0, 0,
-                                    params, NULL));
-        }
-        if (step == 0U)
-          trace_stage("after_first_kernel_launch");
-      }
+      CUDA_CHECK(cuEventRecord(ev_stop, 0));
+      trace_stage("before_final_sync");
+      CUDA_CHECK(cuCtxSynchronize());
+      trace_stage("after_final_sync");
+      CUDA_CHECK(cuEventElapsedTime(&gpu_kernel_ms_sum, ev_start, ev_stop));
     }
-    CUDA_CHECK(cuEventRecord(ev_stop, 0));
-    trace_stage("before_final_sync");
-    CUDA_CHECK(cuCtxSynchronize());
-    trace_stage("after_final_sync");
-    CUDA_CHECK(cuEventElapsedTime(&gpu_kernel_ms_sum, ev_start, ev_stop));
+
+    timing_repeat_ms[timing_repeat] = gpu_kernel_ms_sum;
   }
+  gpu_kernel_ms_sum = median_float_copy(timing_repeat_ms, timing_repeats);
 
   clock_gettime(CLOCK_MONOTONIC, &wall1);
   double wall_ms =
@@ -1973,39 +1620,37 @@ int main(int argc, char **argv) {
   CUDA_CHECK(cuEventDestroy(ev_start));
   CUDA_CHECK(cuEventDestroy(ev_stop));
 
+  unsigned timing_launch_count =
+      (persistent_resident_requested && persistent_resident_phase_count > 1U)
+          ? steps * persistent_resident_phase_count
+          : steps;
   double ms_per_launch =
-      steps > 0 ? (double)gpu_kernel_ms_sum / (double)steps : 0.0;
+      timing_launch_count > 0 ? (double)gpu_kernel_ms_sum / (double)timing_launch_count : 0.0;
   double us_per_state =
       (nstates > 0) ? (ms_per_launch / (double)nstates) * 1000.0 : 0.0;
+  float timing_repeat_min_ms = timing_repeat_ms[0];
+  float timing_repeat_max_ms = timing_repeat_ms[0];
+  for (unsigned i = 1U; i < timing_repeats; i++) {
+    if (timing_repeat_ms[i] < timing_repeat_min_ms)
+      timing_repeat_min_ms = timing_repeat_ms[i];
+    if (timing_repeat_ms[i] > timing_repeat_max_ms)
+      timing_repeat_max_ms = timing_repeat_ms[i];
+  }
 
   printf("ok: steps=%u kernels_per_step=%d patches_per_step=%d grid=%u block=%u "
          "nstates=%u storage=%zu B\n",
          steps, nk, npatch, grid, block, nstates, storage);
   printf("resident_mode: %s\n", resident_steps ? "true" : "false");
+  if (persistent_resident_requested) {
+    printf("persistent_resident_state_abi: handle=%s phase=%u status=probe_surface_phase1_only\n",
+           persistent_resident_handle, persistent_resident_phase);
+    if (persistent_resident_phase_count > 1U) {
+      printf("persistent_resident_state_abi_phases: count=%u steps_per_phase=%u authority=device_d_storage\n",
+             persistent_resident_phase_count, steps);
+    }
+  }
   printf("gpu_init_state_replication: %s\n",
          gpu_replicate_init_state ? "true" : "false");
-  printf("program_image_init_records: %s\n",
-         program_image_init_records_enabled ? program_image_init_records_path : "none");
-  printf("program_image_words: %s\n",
-         program_image_words_enabled ? program_image_words_path : "none");
-  printf("dmem_zero_fill: %s\n", dmem_zero_fill_enabled ? "true" : "false");
-  if (dmem_zero_fill_enabled) {
-    printf("dmem_zero_fill_offset_upload: offsets=4 layout=lane_base_offsets\n");
-    printf("dmem_zero_fill_launch: kernel=vl_zero_dmem_words_gpu words=%u nstates=%u\n",
-           dmem_zero_fill.word_count, nstates);
-  }
-  if (program_image_init_records.record_count > 0U) {
-    printf("program_image_init_record_upload: records=%u layout=offsets_values_soa\n",
-           program_image_init_records.record_count);
-    printf("program_image_init_launch: kernel=vl_apply_program_image_init_gpu records=%u nstates=%u\n",
-           program_image_init_records.record_count, nstates);
-  }
-  if (program_image_words.word_count > 0U) {
-    printf("program_image_word_upload: words=%u layout=uint32_words_lane_base_offsets\n",
-           program_image_words.word_count);
-    printf("program_image_word_launch: kernel=vl_apply_program_image_words_gpu words=%u nstates=%u\n",
-           program_image_words.word_count, nstates);
-  }
   if (script_blocks) {
     printf("patch_script_steps: logical=%u records=%u blocks=%u\n",
            script_logical_step_count, script_record_count, script_block_count);
@@ -2035,6 +1680,17 @@ int main(int argc, char **argv) {
   }
   printf("gpu_kernel_time: per_state=%.3f us  (per_launch / nstates)\n",
          us_per_state);
+  if (timing_repeats > 1U) {
+    printf("gpu_kernel_time_repeat_ms: count=%u min=%.6f median=%.6f max=%.6f samples=",
+           timing_repeats, timing_repeat_min_ms, gpu_kernel_ms_sum,
+           timing_repeat_max_ms);
+    for (unsigned i = 0U; i < timing_repeats; i++) {
+      if (i > 0U)
+        printf(",");
+      printf("%.6f", timing_repeat_ms[i]);
+    }
+    printf("\n");
+  }
   printf("wall_time_ms: %.3f  (host; one GPU sync unless %s=1)\n", wall_ms,
          ENV_SYNC_EACH_STEP);
   trace_stage("after_launch_loop");
@@ -2042,36 +1698,10 @@ int main(int argc, char **argv) {
   const char *dump_path = getenv(ENV_DUMP_STATE);
   if (dump_path && dump_path[0] != '\0') {
     trace_stage("before_dump_state");
-    unsigned char *host = (unsigned char *)malloc(total);
-    if (!host) {
-      fprintf(stderr, "malloc failed for %zu-byte state dump\n", total);
+    if (dump_device_storage(d_storage, total, dump_path) != 0) {
       free_step_patch_blocks(script_blocks, script_block_count);
       free_resident_patch_schedule(&resident_patch_schedule);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
-      return 1;
-    }
-    CUDA_CHECK(cuMemcpyDtoH(host, d_storage, total));
-    FILE *fp = fopen(dump_path, "wb");
-    if (!fp) {
-      fprintf(stderr, "fopen(%s) failed\n", dump_path);
-      free(host);
-      free_step_patch_blocks(script_blocks, script_block_count);
-      free_resident_patch_schedule(&resident_patch_schedule);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
-      return 1;
-    }
-    size_t nw = fwrite(host, 1, total, fp);
-    fclose(fp);
-    free(host);
-    if (nw != total) {
-      fprintf(stderr, "short write to %s: wrote %zu / %zu bytes\n", dump_path,
-              nw, total);
-      free_step_patch_blocks(script_blocks, script_block_count);
-      free_resident_patch_schedule(&resident_patch_schedule);
-      free_program_image_init_records(&program_image_init_records);
-      free_program_image_words(&program_image_words);
+      free_string_list(persistent_phase_dumps, persistent_phase_dump_count);
       return 1;
     }
     printf("state_dump: %s (%zu bytes)\n", dump_path, total);
@@ -2085,6 +1715,7 @@ int main(int argc, char **argv) {
       if (dump_device_global_specs(mods, nmods, dump_globals) != 0) {
         free_step_patch_blocks(script_blocks, script_block_count);
         free_resident_patch_schedule(&resident_patch_schedule);
+        free_string_list(persistent_phase_dumps, persistent_phase_dump_count);
         return 1;
       }
       trace_stage("after_dump_globals");
@@ -2092,10 +1723,9 @@ int main(int argc, char **argv) {
   }
 
   trace_stage("before_cleanup");
+  free(timing_repeat_ms);
   free_resident_patch_schedule(&resident_patch_schedule);
-  free_program_image_init_records(&program_image_init_records);
-  free_program_image_words(&program_image_words);
-  free_dmem_zero_fill(&dmem_zero_fill);
+  free_string_list(persistent_phase_dumps, persistent_phase_dump_count);
   CUDA_CHECK(cuMemFree(d_storage));
   CUDA_CHECK(cuCtxDestroy(ctx));
   free_step_patch_blocks(script_blocks, script_block_count);

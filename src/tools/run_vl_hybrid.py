@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import struct
 import subprocess
 import sys
@@ -44,12 +45,11 @@ HYBRID_BIN = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid"
 _CUBIN_CHAIN_ENV = "RUN_VL_HYBRID_CUBINS"
 _RESIDENT_STEPS_ENV = "RUN_VL_HYBRID_RESIDENT_STEPS"
 _GPU_REPLICATE_INIT_STATE_ENV = "RUN_VL_HYBRID_GPU_REPLICATE_INIT_STATE"
-_PROGRAM_IMAGE_INIT_RECORDS_ENV = "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS"
-_PROGRAM_IMAGE_WORDS_ENV = "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS"
-_PROGRAM_IMAGE_LANE_BASE_OFFSETS_ENV = "RUN_VL_HYBRID_PROGRAM_IMAGE_LANE_BASE_OFFSETS"
-_DMEM_ZERO_FILL_ENV = "RUN_VL_HYBRID_DMEM_ZERO_FILL"
-_DMEM_ZERO_FILL_LANE_BASE_OFFSETS_ENV = "RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS"
-_DMEM_ZERO_FILL_WORD_COUNT_ENV = "RUN_VL_HYBRID_DMEM_ZERO_FILL_WORD_COUNT"
+_TIMING_REPEATS_ENV = "RUN_VL_HYBRID_TIMING_REPEATS"
+_PERSISTENT_RESIDENT_HANDLE_ENV = "RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_HANDLE"
+_PERSISTENT_RESIDENT_PHASE_ENV = "RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_PHASE"
+_PERSISTENT_RESIDENT_PHASE_COUNT_ENV = "RUN_VL_HYBRID_PERSISTENT_RESIDENT_PHASE_COUNT"
+_PERSISTENT_RESIDENT_PHASE_DUMPS_ENV = "RUN_VL_HYBRID_PERSISTENT_RESIDENT_PHASE_DUMPS"
 _POINTER_SIZED_HOST_ONLY_FIELDS = {"__VdlySched"}
 _FULLY_ZEROED_HOST_ONLY_FIELDS = {"vlNamep"}
 _TRANSIENT_VERILATOR_RUNTIME_FIELDS = {
@@ -73,6 +73,9 @@ _TRANSIENT_VERILATOR_RUNTIME_PREFIXES = (
     "__Vfunc_",
 )
 _PATCH_SCRIPT_ENV = "RUN_VL_HYBRID_PATCH_SCRIPT"
+_UNSAFE_SYMS_GEP_RE = re.compile(
+    r"getelementptr\s+inbounds\s+%class\.[^,\n]*__Syms[^,\n]*,"
+)
 
 
 def _parse_kernel_list(raw: str | None) -> list[str] | None:
@@ -120,6 +123,8 @@ def _sanitize_host_only_internals(
         name = str(entry["name"])
         offset = int(entry["offset"])
         size = int(entry["size"])
+        if offset < 0 or size <= 0 or offset + size > len(patched):
+            continue
         if _is_transient_verilator_runtime_field(name):
             end = offset + size
             patched[offset:end] = b"\x00" * size
@@ -169,6 +174,52 @@ def _sanitize_host_only_internals(
     return bytes(patched), applied
 
 
+def _root_offset_in_state_from_meta(meta: dict[str, object] | None) -> int:
+    if not _syms_state_is_covered_by_meta(meta):
+        return 0
+    hierarchy_state = meta.get("hierarchy_state") if isinstance(meta, dict) else None
+    if not isinstance(hierarchy_state, dict):
+        return 0
+    if hierarchy_state.get("state_image_kind") != "verilator_syms_image":
+        return 0
+    raw_offset = hierarchy_state.get("root_offset_in_state")
+    if raw_offset is None:
+        raw_offset = hierarchy_state.get("root_offset_in_syms")
+    try:
+        offset = int(raw_offset)
+    except (TypeError, ValueError):
+        return 0
+    return offset if offset > 0 else 0
+
+
+def _sanitize_host_only_internals_at_root_offset(
+    blob: bytes,
+    layout: list[dict[str, int | str]],
+    *,
+    root_offset: int,
+) -> tuple[bytes, list[dict[str, int]]]:
+    if root_offset <= 0:
+        return _sanitize_host_only_internals(blob, layout)
+    if root_offset >= len(blob):
+        return bytes(blob), []
+    patched = bytearray(blob)
+    root_blob, applied = _sanitize_host_only_internals(bytes(patched[root_offset:]), layout)
+    patched[root_offset:] = root_blob
+    shifted = []
+    for entry in applied:
+        shifted.append(
+            {
+                "field_name": str(entry["field_name"]),
+                "offset": int(entry["offset"]) + root_offset,
+                "size": int(entry["size"]),
+                "sanitized_start": int(entry["sanitized_start"]) + root_offset,
+                "sanitized_end": int(entry["sanitized_end"]) + root_offset,
+                "preserved_prefix_bytes": int(entry["preserved_prefix_bytes"]),
+            }
+        )
+    return bytes(patched), shifted
+
+
 def _prepare_sanitized_init_state(
     *, mdir: Path, init_state: Path
 ) -> tuple[Path, list[dict[str, int]]] | None:
@@ -176,23 +227,29 @@ def _prepare_sanitized_init_state(
     if not layout:
         return None
     meta_path = mdir / "vl_batch_gpu.meta.json"
+    meta = None
     storage_size = None
     if meta_path.is_file():
         try:
-            storage_size = int(json.loads(meta_path.read_text(encoding="utf-8"))["storage_size"])
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            storage_size = int(meta["storage_size"])
         except (KeyError, ValueError, TypeError, json.JSONDecodeError):
+            meta = None
             storage_size = None
+    root_offset = _root_offset_in_state_from_meta(meta)
     blob = init_state.read_bytes()
     if storage_size is None or storage_size <= 0 or len(blob) <= storage_size:
-        sanitized_blob, applied = _sanitize_host_only_internals(blob, layout)
+        sanitized_blob, applied = _sanitize_host_only_internals_at_root_offset(
+            blob, layout, root_offset=root_offset
+        )
     elif len(blob) % storage_size == 0:
         chunk_count = len(blob) // storage_size
         sanitized_parts: list[bytes] = []
         applied = []
         for state_idx in range(chunk_count):
             base = state_idx * storage_size
-            part, part_applied = _sanitize_host_only_internals(
-                blob[base : base + storage_size], layout
+            part, part_applied = _sanitize_host_only_internals_at_root_offset(
+                blob[base : base + storage_size], layout, root_offset=root_offset
             )
             sanitized_parts.append(part)
             for entry in part_applied:
@@ -217,6 +274,51 @@ def _prepare_sanitized_init_state(
     tmp = Path(tmp_path)
     tmp.write_bytes(sanitized_blob)
     return tmp, applied
+
+
+def _syms_state_is_covered_by_meta(meta: dict[str, object] | None) -> bool:
+    if not isinstance(meta, dict):
+        return False
+    hierarchy_state = meta.get("hierarchy_state")
+    if not isinstance(hierarchy_state, dict):
+        return False
+    if (
+        hierarchy_state.get("unsafe_syms_gep_count") == 0
+        and hierarchy_state.get("prelaunch_rejection_required") is False
+    ):
+        return True
+    return (
+        hierarchy_state.get("state_image_kind") == "verilator_syms_image"
+        and hierarchy_state.get("unsafe_syms_gep_covered_by_state_image") is True
+        and hierarchy_state.get("prelaunch_rejection_required") is False
+    )
+
+
+def _detect_unsupported_nonflat_syms_state(
+    mdir: Path,
+    meta: dict[str, object] | None = None,
+) -> dict[str, object] | None:
+    """Detect non-flattened Verilator Syms state dereferences before CUDA launch."""
+    if _syms_state_is_covered_by_meta(meta):
+        return None
+    for ir_name in ("vl_batch_gpu_opt.ll", "vl_batch_gpu.ll"):
+        ir_path = mdir / ir_name
+        if not ir_path.is_file():
+            continue
+        for line_no, line in enumerate(ir_path.read_text(encoding="utf-8").splitlines(), 1):
+            if _UNSAFE_SYMS_GEP_RE.search(line):
+                return {
+                    "reason": "unsupported_nonflat_verilator_syms_state",
+                    "ir": str(ir_path),
+                    "line": line_no,
+                    "detail": (
+                        "GPU IR dereferences Verilator __Syms/submodule state, but "
+                        "the current metadata does not prove a covering Syms state "
+                        "image ABI. Rebuild this target with --flatten or with "
+                        "--syms-state-image metadata before launching."
+                    ),
+                }
+    return None
 
 
 def main() -> None:
@@ -305,51 +407,64 @@ def main() -> None:
         ),
     )
     p.add_argument(
-        "--program-image-init-records",
-        type=Path,
+        "--persistent-resident-state-abi-handle",
         help=(
-            "Optional source-backed program-image initialization record file. "
-            "Forwarded to the hybrid runtime through RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS."
+            "Logical persistent resident state handle for ABI probing. "
+            "Phase 1 may use --init-state; later phases must not reload a previous GPU dump."
         ),
     )
     p.add_argument(
-        "--program-image-words",
-        type=Path,
-        help=(
-            "Optional word-packed source-backed program-image file. "
-            "Forwarded to the hybrid runtime through RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS."
-        ),
-    )
-    p.add_argument(
-        "--program-image-lane-base-offsets",
-        help=(
-            "Comma-separated ram0,ram1,ram2,ram3 root-storage base offsets for "
-            "word-packed program-image expansion."
-        ),
-    )
-    p.add_argument(
-        "--dmem-zero-fill",
-        action="store_true",
-        help=(
-            "Enable XuanTie-E902 deterministic DMEM zero-fill construction. "
-            "Forwarded to the hybrid runtime through RUN_VL_HYBRID_DMEM_ZERO_FILL."
-        ),
-    )
-    p.add_argument(
-        "--dmem-zero-fill-lane-base-offsets",
-        help=(
-            "Comma-separated ram0,ram1,ram2,ram3 root-storage base offsets for "
-            "XuanTie-E902 DMEM zero-fill construction."
-        ),
-    )
-    p.add_argument(
-        "--dmem-zero-fill-word-count",
+        "--persistent-resident-state-abi-phase",
         type=int,
-        help="Number of per-lane DMEM byte entries to zero for each state.",
+        help="1-based persistent resident state ABI probe phase.",
+    )
+    p.add_argument(
+        "--persistent-resident-state-abi-phases",
+        type=int,
+        help="Run multiple persistent resident ABI phases inside one process.",
+    )
+    p.add_argument(
+        "--persistent-resident-state-abi-phase-dumps",
+        help="Comma-separated per-phase state dump paths for multi-phase persistent ABI mode.",
+    )
+    p.add_argument(
+        "--timing-repeats",
+        type=int,
+        default=1,
+        help=(
+            "Repeat GPU-event timing samples inside one process. Values above 1 are "
+            "limited by the C runner to zero-init, no-patch, non-resident captures."
+        ),
     )
     args = p.parse_args()
     if args.resident_steps and args.patch:
         p.error("--resident-steps rejects --patch; use --patch-script for a resident schedule")
+    if (args.persistent_resident_state_abi_handle is None) != (
+        args.persistent_resident_state_abi_phase is None
+    ):
+        p.error(
+            "--persistent-resident-state-abi-handle and "
+            "--persistent-resident-state-abi-phase must be provided together"
+        )
+    if args.persistent_resident_state_abi_phase is not None and args.persistent_resident_state_abi_phase < 1:
+        p.error("--persistent-resident-state-abi-phase must be >= 1")
+    if args.persistent_resident_state_abi_phase is not None and not args.resident_steps:
+        p.error("--persistent-resident-state-abi-* requires --resident-steps")
+    if args.persistent_resident_state_abi_phase is not None and args.persistent_resident_state_abi_phase > 1 and args.init_state:
+        p.error("persistent resident state ABI phases after 1 must not use --init-state")
+    if args.persistent_resident_state_abi_phases is not None:
+        if args.persistent_resident_state_abi_phase is None:
+            p.error("--persistent-resident-state-abi-phases requires persistent ABI handle and phase")
+        if args.persistent_resident_state_abi_phases < 1:
+            p.error("--persistent-resident-state-abi-phases must be >= 1")
+        if args.persistent_resident_state_abi_phase != 1:
+            p.error("multi-phase persistent resident ABI mode must start at phase 1")
+        if args.persistent_resident_state_abi_phase_dumps is not None:
+            phase_dumps = [part.strip() for part in args.persistent_resident_state_abi_phase_dumps.split(",") if part.strip()]
+            if len(phase_dumps) != args.persistent_resident_state_abi_phases:
+                p.error("--persistent-resident-state-abi-phase-dumps count must match --persistent-resident-state-abi-phases")
+    if args.timing_repeats < 1:
+        p.error("--timing-repeats must be >= 1")
     launch_sequence = None
     cubin_override = _parse_path_list(args.cubins)
     cubin_paths: list[Path]
@@ -390,6 +505,12 @@ def main() -> None:
             file=sys.stderr,
         )
         sys.exit(1)
+    if args.mdir:
+        unsupported = _detect_unsupported_nonflat_syms_state(mdir, meta)
+        if unsupported is not None:
+            print("error: unsupported_hybrid_target", file=sys.stderr)
+            print(json.dumps(unsupported, sort_keys=True), file=sys.stderr)
+            sys.exit(2)
 
     cmd = [
         str(HYBRID_BIN),
@@ -440,44 +561,29 @@ def main() -> None:
         env[_GPU_REPLICATE_INIT_STATE_ENV] = "1"
     else:
         env.pop(_GPU_REPLICATE_INIT_STATE_ENV, None)
-    if args.program_image_init_records:
-        program_image_init_records = args.program_image_init_records.resolve()
-        if not program_image_init_records.is_file():
-            print(
-                f"error: program image init records not found: {program_image_init_records}",
-                file=sys.stderr,
-            )
-            sys.exit(1)
-        env[_PROGRAM_IMAGE_INIT_RECORDS_ENV] = str(program_image_init_records)
+    if args.timing_repeats > 1:
+        env[_TIMING_REPEATS_ENV] = str(args.timing_repeats)
     else:
-        env.pop(_PROGRAM_IMAGE_INIT_RECORDS_ENV, None)
-    if args.program_image_words:
-        program_image_words = args.program_image_words.resolve()
-        if not program_image_words.is_file():
-            print(
-                f"error: program image words not found: {program_image_words}",
-                file=sys.stderr,
-            )
-            sys.exit(1)
-        env[_PROGRAM_IMAGE_WORDS_ENV] = str(program_image_words)
+        env.pop(_TIMING_REPEATS_ENV, None)
+    if args.persistent_resident_state_abi_handle is not None:
+        env[_PERSISTENT_RESIDENT_HANDLE_ENV] = args.persistent_resident_state_abi_handle
+        env[_PERSISTENT_RESIDENT_PHASE_ENV] = str(args.persistent_resident_state_abi_phase)
+        if args.persistent_resident_state_abi_phases is not None:
+            env[_PERSISTENT_RESIDENT_PHASE_COUNT_ENV] = str(args.persistent_resident_state_abi_phases)
+        else:
+            env.pop(_PERSISTENT_RESIDENT_PHASE_COUNT_ENV, None)
+        if args.persistent_resident_state_abi_phase_dumps is not None:
+            dump_paths = [str(Path(part.strip()).resolve()) for part in args.persistent_resident_state_abi_phase_dumps.split(",") if part.strip()]
+            for dump_path in dump_paths:
+                Path(dump_path).parent.mkdir(parents=True, exist_ok=True)
+            env[_PERSISTENT_RESIDENT_PHASE_DUMPS_ENV] = ",".join(dump_paths)
+        else:
+            env.pop(_PERSISTENT_RESIDENT_PHASE_DUMPS_ENV, None)
     else:
-        env.pop(_PROGRAM_IMAGE_WORDS_ENV, None)
-    if args.program_image_lane_base_offsets:
-        env[_PROGRAM_IMAGE_LANE_BASE_OFFSETS_ENV] = args.program_image_lane_base_offsets
-    else:
-        env.pop(_PROGRAM_IMAGE_LANE_BASE_OFFSETS_ENV, None)
-    if args.dmem_zero_fill:
-        env[_DMEM_ZERO_FILL_ENV] = "1"
-    else:
-        env.pop(_DMEM_ZERO_FILL_ENV, None)
-    if args.dmem_zero_fill_lane_base_offsets:
-        env[_DMEM_ZERO_FILL_LANE_BASE_OFFSETS_ENV] = args.dmem_zero_fill_lane_base_offsets
-    else:
-        env.pop(_DMEM_ZERO_FILL_LANE_BASE_OFFSETS_ENV, None)
-    if args.dmem_zero_fill_word_count is not None:
-        env[_DMEM_ZERO_FILL_WORD_COUNT_ENV] = str(args.dmem_zero_fill_word_count)
-    else:
-        env.pop(_DMEM_ZERO_FILL_WORD_COUNT_ENV, None)
+        env.pop(_PERSISTENT_RESIDENT_HANDLE_ENV, None)
+        env.pop(_PERSISTENT_RESIDENT_PHASE_ENV, None)
+        env.pop(_PERSISTENT_RESIDENT_PHASE_COUNT_ENV, None)
+        env.pop(_PERSISTENT_RESIDENT_PHASE_DUMPS_ENV, None)
     sanitized_init_tmp: Path | None = None
     if args.init_state:
         init_state = args.init_state.resolve()

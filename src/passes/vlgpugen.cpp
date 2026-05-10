@@ -30,6 +30,7 @@
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/IR/Constants.h"
+#include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/GlobalAlias.h"
 #include "llvm/IR/GlobalVariable.h"
@@ -60,6 +61,14 @@ using namespace llvm;
 
 static cl::opt<std::string> InputFilename(cl::Positional, cl::desc("<merged.ll>"), cl::init(""));
 static cl::opt<uint64_t> StorageSize("storage-size", cl::desc("sizeof(root struct) in bytes"), cl::init(0));
+static cl::opt<uint64_t> StateRootOffset(
+    "state-root-offset",
+    cl::desc("Byte offset of the Verilator root object inside each per-state image"),
+    cl::init(0));
+static cl::opt<bool> SymsStateImage(
+    "syms-state-image",
+    cl::desc("Treat each per-state image as a Verilator __Syms image and bind root.vlSymsp to the state base"),
+    cl::init(false));
 static cl::opt<std::string> OutFile("out", cl::desc("Output .ll (enables generation mode)"), cl::init(""));
 static cl::opt<std::string> Sm("sm", cl::desc("PTX GPU arch label"), cl::init("sm_89"));
 static cl::opt<bool> Quiet("q", cl::desc("Minimal output"), cl::init(false));
@@ -308,6 +317,50 @@ static uint64_t detectSymsBufferSize(StringRef FileText, uint64_t Minimum = 4096
             Size = std::max<uint64_t>(Size, std::stoull((*Dit).str(1)));
     }
     return Size;
+}
+
+static std::optional<uint64_t> firstTopLevelPointerFieldOffset(const DataLayout &DL,
+                                                               StructType *ST) {
+    if (!ST || ST->isOpaque())
+        return std::nullopt;
+    const StructLayout *Layout = DL.getStructLayout(ST);
+    for (unsigned I = 0, E = ST->getNumElements(); I != E; ++I) {
+        if (ST->getElementType(I)->isPointerTy())
+            return Layout->getElementOffset(I);
+    }
+    return std::nullopt;
+}
+
+static SmallVector<uint64_t, 128> collectSymsSubmoduleVlSymspOffsets(Module &M) {
+    SmallVector<uint64_t, 128> Offsets;
+    DenseSet<uint64_t> Seen;
+    if (!SymsStateImage)
+        return Offsets;
+
+    const DataLayout &DL = M.getDataLayout();
+    for (StructType *SymsTy : M.getIdentifiedStructTypes()) {
+        if (!SymsTy || !SymsTy->hasName() || !SymsTy->getName().contains("__Syms") ||
+            SymsTy->isOpaque())
+            continue;
+        const StructLayout *SymsLayout = DL.getStructLayout(SymsTy);
+        for (unsigned I = 0, E = SymsTy->getNumElements(); I != E; ++I) {
+            auto *SubTy = dyn_cast<StructType>(SymsTy->getElementType(I));
+            if (!SubTy || !SubTy->hasName() || SubTy->isOpaque())
+                continue;
+            StringRef SubName = SubTy->getName();
+            if (SubName.contains("__Syms") || SubName.contains("___024root") ||
+                SubName.contains("VerilatedSyms"))
+                continue;
+            auto FieldOff = firstTopLevelPointerFieldOffset(DL, SubTy);
+            if (!FieldOff)
+                continue;
+            uint64_t AbsOff = SymsLayout->getElementOffset(I) + *FieldOff;
+            if (Seen.insert(AbsOff).second)
+                Offsets.push_back(AbsOff);
+        }
+    }
+    llvm::sort(Offsets);
+    return Offsets;
 }
 
 // ---------------------------------------------------------------------------
@@ -1160,6 +1213,37 @@ static void collectReachable(Function *Root, DenseSet<Function *> &Out) {
     }
 }
 
+static bool isTopLevelEvalPhaseHelper(StringRef Name) {
+    return Name.contains("___eval_phase__") ||
+           Name.contains("___eval_triggers__") ||
+           Name.contains("___eval_ico") ||
+           Name.contains("___eval_nba");
+}
+
+static void collectTopLevelEvalPhaseClosures(Module &M, Function *EvalFn,
+                                             DenseSet<Function *> &Out) {
+    StringRef EvalName = EvalFn->getName();
+    size_t RootPos = EvalName.find("___024root___");
+    if (RootPos == StringRef::npos)
+        return;
+    size_t StemStart = EvalName.find('V');
+    if (StemStart == StringRef::npos || StemStart >= RootPos)
+        return;
+    StringRef EvalStem = EvalName.slice(StemStart, RootPos + StringRef("___024root___").size());
+    for (Function &F : M) {
+        if (F.isDeclaration())
+            continue;
+        StringRef Name = F.getName();
+        if (!Name.contains(EvalStem))
+            continue;
+        if (!Name.contains("___024root___"))
+            continue;
+        if (!isTopLevelEvalPhaseHelper(Name))
+            continue;
+        collectReachable(&F, Out);
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Generation: stub creation
 // ---------------------------------------------------------------------------
@@ -1240,7 +1324,8 @@ static GlobalVariable *injectFakeSymsBuf(Module &M, uint64_t SizeBytes) {
 /// One NVPTX kernel: for each active thread, optionally store fake vlSyms, then call each Callee(state_ptr).
 static void injectBatchKernel(Module &M, StringRef KernelName, ArrayRef<Function *> Callees,
                               uint64_t Storage, std::optional<int64_t> VlSymsOff,
-                              GlobalVariable *FakeSymsBuf) {
+                              GlobalVariable *FakeSymsBuf,
+                              ArrayRef<uint64_t> SymsSelfPointerOffsets = {}) {
     LLVMContext &Ctx = M.getContext();
     Type *I8Ty  = Type::getInt8Ty(Ctx);
     Type *I32Ty = Type::getInt32Ty(Ctx);
@@ -1274,13 +1359,28 @@ static void injectBatchKernel(Module &M, StringRef KernelName, ArrayRef<Function
         {B.CreateMul(B.CreateZExt(Gid32, I64Ty, "gid"),
                      ConstantInt::get(I64Ty, Storage), "offset")},
         "state_ptr", true);
-    if (VlSymsOff && FakeSymsBuf)
-        B.CreateAlignedStore(FakeSymsBuf,
-            B.CreateGEP(I8Ty, StatePtr, {ConstantInt::get(I64Ty, *VlSymsOff)},
+    Value *RootPtr = StatePtr;
+    if (StateRootOffset != 0)
+        RootPtr = B.CreateGEP(I8Ty, StatePtr, {ConstantInt::get(I64Ty, StateRootOffset)},
+                              "root_ptr", true);
+    if (VlSymsOff && (FakeSymsBuf || SymsStateImage)) {
+        Value *SymsValue = SymsStateImage ? static_cast<Value *>(StatePtr)
+                                          : static_cast<Value *>(FakeSymsBuf);
+        B.CreateAlignedStore(SymsValue,
+            B.CreateGEP(I8Ty, RootPtr, {ConstantInt::get(I64Ty, *VlSymsOff)},
                         "vlsyms_gep", true),
             Align(8));
+    }
+    if (SymsStateImage) {
+        for (uint64_t Off : SymsSelfPointerOffsets) {
+            B.CreateAlignedStore(StatePtr,
+                B.CreateGEP(I8Ty, StatePtr, {ConstantInt::get(I64Ty, Off)},
+                            "submodule_vlsyms_gep", true),
+                Align(8));
+        }
+    }
     for (Function *Callee : Callees)
-        B.CreateCall(Callee, {StatePtr});
+        B.CreateCall(Callee, {RootPtr});
     B.CreateBr(ExitBB);
 
     B.SetInsertPoint(ExitBB);
@@ -1337,224 +1437,6 @@ static void injectResidentPatchScheduleKernel(Module &M) {
     auto *Value = B.CreateAlignedLoad(I8Ty, ValuePtr, Align(1), "value");
     auto *Dst = B.CreateGEP(I8Ty, Kernel->getArg(0), {Offset}, "dst", true);
     B.CreateAlignedStore(Value, Dst, Align(1));
-    B.CreateBr(ExitBB);
-
-    B.SetInsertPoint(ExitBB);
-    B.CreateRetVoid();
-
-    M.getOrInsertNamedMetadata("nvvm.annotations")->addOperand(
-        MDNode::get(Ctx, {ValueAsMetadata::get(Kernel),
-                          MDString::get(Ctx, "kernel"),
-                          ConstantAsMetadata::get(ConstantInt::get(I32Ty, 1))}));
-}
-
-static void injectProgramImageInitKernel(Module &M) {
-    LLVMContext &Ctx = M.getContext();
-    Type *I8Ty = Type::getInt8Ty(Ctx);
-    Type *I32Ty = Type::getInt32Ty(Ctx);
-    Type *I64Ty = Type::getInt64Ty(Ctx);
-    auto *PtrTy = PointerType::get(Ctx, 0);
-    auto *IntrTy = FunctionType::get(I32Ty, {}, false);
-
-    auto *TidX = cast<Function>(
-        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.tid.x", IntrTy).getCallee());
-    auto *CtaidX = cast<Function>(
-        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ctaid.x", IntrTy).getCallee());
-    auto *NtidX = cast<Function>(
-        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ntid.x", IntrTy).getCallee());
-
-    auto *Kernel = Function::Create(
-        FunctionType::get(Type::getVoidTy(Ctx),
-                          {PtrTy, PtrTy, PtrTy, I32Ty, I64Ty, I32Ty}, false),
-        GlobalValue::ExternalLinkage, "vl_apply_program_image_init_gpu", &M);
-    Kernel->getArg(0)->setName("storage_base");
-    Kernel->getArg(1)->setName("record_offsets");
-    Kernel->getArg(2)->setName("record_values");
-    Kernel->getArg(3)->setName("record_count");
-    Kernel->getArg(4)->setName("storage_bytes");
-    Kernel->getArg(5)->setName("nstates");
-
-    auto *EntryBB = BasicBlock::Create(Ctx, "entry", Kernel);
-    auto *BodyBB = BasicBlock::Create(Ctx, "body", Kernel);
-    auto *ExitBB = BasicBlock::Create(Ctx, "exit", Kernel);
-
-    IRBuilder<> B(EntryBB);
-    auto *Gid32 = B.CreateAdd(
-        B.CreateMul(B.CreateCall(CtaidX, {}, "bid"),
-                    B.CreateCall(NtidX, {}, "bdim"), "gid_mul"),
-        B.CreateCall(TidX, {}, "tid"), "gid32");
-    auto *Gid64 = B.CreateZExt(Gid32, I64Ty, "gid");
-    auto *RecordCount64 = B.CreateZExt(Kernel->getArg(3), I64Ty, "record_count64");
-    auto *Nstates64 = B.CreateZExt(Kernel->getArg(5), I64Ty, "nstates64");
-    auto *TotalRecords = B.CreateMul(RecordCount64, Nstates64, "total_records");
-    B.CreateCondBr(B.CreateICmpULT(Gid64, TotalRecords, "in_range"), BodyBB,
-                   ExitBB);
-
-    B.SetInsertPoint(BodyBB);
-    auto *StateIdx = B.CreateUDiv(Gid64, RecordCount64, "state_idx");
-    auto *RecordIdx = B.CreateURem(Gid64, RecordCount64, "record_idx");
-    auto *StateBaseOff =
-        B.CreateMul(StateIdx, Kernel->getArg(4), "state_base_off");
-    auto *OffsetPtr =
-        B.CreateGEP(I64Ty, Kernel->getArg(1), {RecordIdx}, "offset_ptr", true);
-    auto *RecordOff = B.CreateAlignedLoad(I64Ty, OffsetPtr, Align(8), "record_off");
-    auto *ValuePtr =
-        B.CreateGEP(I8Ty, Kernel->getArg(2), {RecordIdx}, "value_ptr", true);
-    auto *Value = B.CreateAlignedLoad(I8Ty, ValuePtr, Align(1), "value");
-    auto *DstOff = B.CreateAdd(StateBaseOff, RecordOff, "dst_off");
-    auto *Dst = B.CreateGEP(I8Ty, Kernel->getArg(0), {DstOff}, "dst", true);
-    B.CreateAlignedStore(Value, Dst, Align(1));
-    B.CreateBr(ExitBB);
-
-    B.SetInsertPoint(ExitBB);
-    B.CreateRetVoid();
-
-    M.getOrInsertNamedMetadata("nvvm.annotations")->addOperand(
-        MDNode::get(Ctx, {ValueAsMetadata::get(Kernel),
-                          MDString::get(Ctx, "kernel"),
-                          ConstantAsMetadata::get(ConstantInt::get(I32Ty, 1))}));
-}
-
-static void injectProgramImageWordsKernel(Module &M) {
-    LLVMContext &Ctx = M.getContext();
-    Type *I8Ty = Type::getInt8Ty(Ctx);
-    Type *I32Ty = Type::getInt32Ty(Ctx);
-    Type *I64Ty = Type::getInt64Ty(Ctx);
-    auto *PtrTy = PointerType::get(Ctx, 0);
-    auto *IntrTy = FunctionType::get(I32Ty, {}, false);
-
-    auto *TidX = cast<Function>(
-        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.tid.x", IntrTy).getCallee());
-    auto *CtaidX = cast<Function>(
-        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ctaid.x", IntrTy).getCallee());
-    auto *NtidX = cast<Function>(
-        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ntid.x", IntrTy).getCallee());
-
-    auto *Kernel = Function::Create(
-        FunctionType::get(Type::getVoidTy(Ctx),
-                          {PtrTy, PtrTy, PtrTy, I32Ty, I64Ty, I32Ty}, false),
-        GlobalValue::ExternalLinkage, "vl_apply_program_image_words_gpu", &M);
-    Kernel->getArg(0)->setName("storage_base");
-    Kernel->getArg(1)->setName("program_words");
-    Kernel->getArg(2)->setName("lane_base_offsets");
-    Kernel->getArg(3)->setName("word_count");
-    Kernel->getArg(4)->setName("storage_bytes");
-    Kernel->getArg(5)->setName("nstates");
-
-    auto *EntryBB = BasicBlock::Create(Ctx, "entry", Kernel);
-    auto *BodyBB = BasicBlock::Create(Ctx, "body", Kernel);
-    auto *ExitBB = BasicBlock::Create(Ctx, "exit", Kernel);
-
-    IRBuilder<> B(EntryBB);
-    auto *Gid32 = B.CreateAdd(
-        B.CreateMul(B.CreateCall(CtaidX, {}, "bid"),
-                    B.CreateCall(NtidX, {}, "bdim"), "gid_mul"),
-        B.CreateCall(TidX, {}, "tid"), "gid32");
-    auto *Gid64 = B.CreateZExt(Gid32, I64Ty, "gid");
-    auto *WordCount64 = B.CreateZExt(Kernel->getArg(3), I64Ty, "word_count64");
-    auto *Nstates64 = B.CreateZExt(Kernel->getArg(5), I64Ty, "nstates64");
-    auto *TotalWords = B.CreateMul(WordCount64, Nstates64, "total_words");
-    B.CreateCondBr(B.CreateICmpULT(Gid64, TotalWords, "in_range"), BodyBB,
-                   ExitBB);
-
-    B.SetInsertPoint(BodyBB);
-    auto *StateIdx = B.CreateUDiv(Gid64, WordCount64, "state_idx");
-    auto *WordIdx = B.CreateURem(Gid64, WordCount64, "word_idx");
-    auto *StateBaseOff =
-        B.CreateMul(StateIdx, Kernel->getArg(4), "state_base_off");
-    auto *WordPtr =
-        B.CreateGEP(I32Ty, Kernel->getArg(1), {WordIdx}, "word_ptr", true);
-    auto *Word = B.CreateAlignedLoad(I32Ty, WordPtr, Align(4), "word");
-
-    Value *LaneValues[4] = {
-        B.CreateTrunc(B.CreateLShr(Word, ConstantInt::get(I32Ty, 24), "ram0_shift"),
-                      I8Ty, "ram0_byte"),
-        B.CreateTrunc(B.CreateLShr(Word, ConstantInt::get(I32Ty, 16), "ram1_shift"),
-                      I8Ty, "ram1_byte"),
-        B.CreateTrunc(B.CreateLShr(Word, ConstantInt::get(I32Ty, 8), "ram2_shift"),
-                      I8Ty, "ram2_byte"),
-        B.CreateTrunc(Word, I8Ty, "ram3_byte"),
-    };
-
-    for (uint64_t Lane = 0; Lane < 4; ++Lane) {
-        auto *LaneBasePtr = B.CreateGEP(
-            I64Ty, Kernel->getArg(2), {ConstantInt::get(I64Ty, Lane)},
-            "lane_base_ptr", true);
-        auto *LaneBase =
-            B.CreateAlignedLoad(I64Ty, LaneBasePtr, Align(8), "lane_base");
-        auto *LaneRel = B.CreateAdd(LaneBase, WordIdx, "lane_rel");
-        auto *DstOff = B.CreateAdd(StateBaseOff, LaneRel, "dst_off");
-        auto *Dst = B.CreateGEP(I8Ty, Kernel->getArg(0), {DstOff}, "dst", true);
-        B.CreateAlignedStore(LaneValues[Lane], Dst, Align(1));
-    }
-    B.CreateBr(ExitBB);
-
-    B.SetInsertPoint(ExitBB);
-    B.CreateRetVoid();
-
-    M.getOrInsertNamedMetadata("nvvm.annotations")->addOperand(
-        MDNode::get(Ctx, {ValueAsMetadata::get(Kernel),
-                          MDString::get(Ctx, "kernel"),
-                          ConstantAsMetadata::get(ConstantInt::get(I32Ty, 1))}));
-}
-
-static void injectDmemZeroFillKernel(Module &M) {
-    LLVMContext &Ctx = M.getContext();
-    Type *I8Ty = Type::getInt8Ty(Ctx);
-    Type *I32Ty = Type::getInt32Ty(Ctx);
-    Type *I64Ty = Type::getInt64Ty(Ctx);
-    auto *PtrTy = PointerType::get(Ctx, 0);
-    auto *IntrTy = FunctionType::get(I32Ty, {}, false);
-
-    auto *TidX = cast<Function>(
-        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.tid.x", IntrTy).getCallee());
-    auto *CtaidX = cast<Function>(
-        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ctaid.x", IntrTy).getCallee());
-    auto *NtidX = cast<Function>(
-        M.getOrInsertFunction("llvm.nvvm.read.ptx.sreg.ntid.x", IntrTy).getCallee());
-
-    auto *Kernel = Function::Create(
-        FunctionType::get(Type::getVoidTy(Ctx), {PtrTy, PtrTy, I32Ty, I64Ty, I32Ty}, false),
-        GlobalValue::ExternalLinkage, "vl_zero_dmem_words_gpu", &M);
-    Kernel->getArg(0)->setName("storage_base");
-    Kernel->getArg(1)->setName("lane_base_offsets");
-    Kernel->getArg(2)->setName("word_count");
-    Kernel->getArg(3)->setName("storage_bytes");
-    Kernel->getArg(4)->setName("nstates");
-
-    auto *EntryBB = BasicBlock::Create(Ctx, "entry", Kernel);
-    auto *BodyBB = BasicBlock::Create(Ctx, "body", Kernel);
-    auto *ExitBB = BasicBlock::Create(Ctx, "exit", Kernel);
-
-    IRBuilder<> B(EntryBB);
-    auto *Gid32 = B.CreateAdd(
-        B.CreateMul(B.CreateCall(CtaidX, {}, "bid"),
-                    B.CreateCall(NtidX, {}, "bdim"), "gid_mul"),
-        B.CreateCall(TidX, {}, "tid"), "gid32");
-    auto *Gid64 = B.CreateZExt(Gid32, I64Ty, "gid");
-    auto *WordCount64 = B.CreateZExt(Kernel->getArg(2), I64Ty, "word_count64");
-    auto *Nstates64 = B.CreateZExt(Kernel->getArg(4), I64Ty, "nstates64");
-    auto *TotalWords = B.CreateMul(WordCount64, Nstates64, "total_words");
-    B.CreateCondBr(B.CreateICmpULT(Gid64, TotalWords, "in_range"), BodyBB,
-                   ExitBB);
-
-    B.SetInsertPoint(BodyBB);
-    auto *StateIdx = B.CreateUDiv(Gid64, WordCount64, "state_idx");
-    auto *WordIdx = B.CreateURem(Gid64, WordCount64, "word_idx");
-    auto *StateBaseOff =
-        B.CreateMul(StateIdx, Kernel->getArg(3), "state_base_off");
-    for (uint64_t Lane = 0; Lane < 4; ++Lane) {
-        auto *LaneBasePtr = B.CreateGEP(
-            I64Ty, Kernel->getArg(1), {ConstantInt::get(I64Ty, Lane)},
-            "dmem_lane_base_ptr", true);
-        auto *LaneBase =
-            B.CreateAlignedLoad(I64Ty, LaneBasePtr, Align(8), "dmem_lane_base");
-        auto *LaneRel = B.CreateAdd(LaneBase, WordIdx, "dmem_lane_rel");
-        auto *DstOff = B.CreateAdd(StateBaseOff, LaneRel, "dmem_lane_dst_off");
-        auto *Dst =
-            B.CreateGEP(I8Ty, Kernel->getArg(0), {DstOff}, "dmem_lane_dst", true);
-        B.CreateAlignedStore(ConstantInt::get(I8Ty, 0), Dst, Align(1));
-    }
     B.CreateBr(ExitBB);
 
     B.SetInsertPoint(ExitBB);
@@ -1781,6 +1663,8 @@ int main(int argc, char **argv) {
 
     DenseSet<Function *> Reach;
     collectReachable(EvalFn, Reach);
+    if (StateRootOffset != 0)
+        collectTopLevelEvalPhaseClosures(*M, EvalFn, Reach);
 
     DenseSet<Function *> RuntimeFuncs;
     DenseMap<Function *, ClassificationReason> RuntimeReasons;
@@ -1878,6 +1762,10 @@ int main(int argc, char **argv) {
     if (!HostGVs.empty() && !Quiet)
         outs() << "removed host globals: " << HostGVs.size() << "\n";
 
+    SmallVector<uint64_t, 128> SymsSelfPointerOffsets = collectSymsSubmoduleVlSymspOffsets(*M);
+    if (SymsStateImage && !Quiet)
+        outs() << "syms submodule vlSymsp fields: " << SymsSelfPointerOffsets.size() << "\n";
+
     auto *FakeSymsBuf = VlOff ? injectFakeSymsBuf(*M, SymsBufferSize) : nullptr;
 
     M->setTargetTriple(NVPTX_TRIPLE);
@@ -1891,11 +1779,8 @@ int main(int argc, char **argv) {
     EvalFn->addFnAttr(Attribute::NoInline);
 
     injectBatchKernel(*M, "vl_eval_batch_gpu", ArrayRef(&EvalFn, 1), StorageSize, VlOff,
-                      FakeSymsBuf);
+                      FakeSymsBuf, SymsSelfPointerOffsets);
     injectResidentPatchScheduleKernel(*M);
-    injectProgramImageInitKernel(*M);
-    injectProgramImageWordsKernel(*M);
-    injectDmemZeroFillKernel(*M);
     injectInitStateReplicationKernel(*M);
 
     if (KernelSplit == "phases") {
@@ -1904,7 +1789,8 @@ int main(int argc, char **argv) {
 
         SmallVector<Function *, 8> IcoFns;
         collectPhaseReachable(*M, Reach, "___ico_sequent", IcoFns);
-        injectBatchKernel(*M, "vl_ico_batch_gpu", IcoFns, StorageSize, VlOff, FakeSymsBuf);
+        injectBatchKernel(*M, "vl_ico_batch_gpu", IcoFns, StorageSize, VlOff, FakeSymsBuf,
+                          SymsSelfPointerOffsets);
         Manifest.push_back({"___ico_sequent", "vl_ico_batch_gpu"});
 
         bool UsedActLoop = injectPhaseLoopKernelIfReachable(

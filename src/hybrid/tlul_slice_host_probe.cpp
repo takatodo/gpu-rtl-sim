@@ -79,7 +79,20 @@
 #define EXTRA_WATCH_FIELDS(X)
 #endif
 
+#if PROBE_SYMS_STATE
+#ifndef SYMS_HEADER
+#error "SYMS_HEADER must be defined when PROBE_SYMS_STATE=1"
+#endif
+#ifndef SYMS_CLASS
+#error "SYMS_CLASS must be defined when PROBE_SYMS_STATE=1"
+#endif
+#define private public
 #include MODEL_HEADER
+#undef private
+#include SYMS_HEADER
+#else
+#include MODEL_HEADER
+#endif
 #include ROOT_HEADER
 
 #ifdef ROOT_EVAL_FN
@@ -91,6 +104,9 @@ namespace {
 
 using Model = MODEL_CLASS;
 using Root = ROOT_CLASS;
+#if PROBE_SYMS_STATE
+using Syms = SYMS_CLASS;
+#endif
 
 constexpr int kMaxEventDrains = 100000;
 
@@ -101,6 +117,7 @@ struct ProbeConfig {
   uint32_t repeat_eval_steps = 1;
   bool repeat_states_requested = false;
   std::string state_out;
+  std::string repeat_state_out;
   std::string program_entries_bin;
   std::string memory_image;
   std::vector<uint32_t> clock_sequence;
@@ -321,6 +338,11 @@ ProbeConfig parse_args(int argc, char** argv) {
       if (cfg.state_out.empty()) fail("missing value for --state-out");
       continue;
     }
+    if (arg == "--repeat-state-out") {
+      cfg.repeat_state_out = (i + 1) < argc ? argv[++i] : "";
+      if (cfg.repeat_state_out.empty()) fail("missing value for --repeat-state-out");
+      continue;
+    }
     if (arg == "--program-entries-bin") {
       cfg.program_entries_bin = (i + 1) < argc ? argv[++i] : "";
       if (cfg.program_entries_bin.empty()) fail("missing value for --program-entries-bin");
@@ -369,6 +391,7 @@ ProbeConfig parse_args(int argc, char** argv) {
           << "                             [--repeat-states N]\n"
           << "                             [--repeat-eval-steps N]\n"
           << "                             [--set field=value ...] [--state-out path]\n"
+          << "                             [--repeat-state-out path]\n"
           << "                             [--program-entries-bin path]\n"
           << "                             [--memory-image path]\n"
           << "                             [--clock-sequence 1,0,...] [--edge-state-dir path]\n"
@@ -394,6 +417,9 @@ ProbeConfig parse_args(int argc, char** argv) {
   }
   if (!cfg.patch_script.empty() && !cfg.repeat_states_requested) {
     fail("--patch-script requires --repeat-states");
+  }
+  if (!cfg.repeat_state_out.empty() && !cfg.repeat_states_requested) {
+    fail("--repeat-state-out requires --repeat-states");
   }
   if (cfg.raw_root_eval_steps != 0U && cfg.raw_root_eval_state_out.empty()) {
     fail("--raw-root-eval-steps requires --raw-root-eval-state-out");
@@ -646,11 +672,40 @@ std::ptrdiff_t byte_offset(const Root* root, const T* field) {
   return ptr - base;
 }
 
+size_t state_image_size() {
+#if PROBE_SYMS_STATE
+  return sizeof(Syms);
+#else
+  return sizeof(Root);
+#endif
+}
+
+const void* state_image_ptr(Model& model, Root* root) {
+#if PROBE_SYMS_STATE
+  return model.vlSymsp;
+#else
+  (void)model;
+  return root;
+#endif
+}
+
+void write_state_file(const std::string& path, Model& model, Root* root) {
+  std::ofstream out(path, std::ios::binary);
+  if (!out) fail("failed to open --state-out for writing");
+  out.write(reinterpret_cast<const char*>(state_image_ptr(model, root)), state_image_size());
+  if (!out) fail("failed to write --state-out");
+}
+
 void write_state_file(const std::string& path, const Root* root) {
   std::ofstream out(path, std::ios::binary);
   if (!out) fail("failed to open --state-out for writing");
   out.write(reinterpret_cast<const char*>(root), sizeof(Root));
   if (!out) fail("failed to write --state-out");
+}
+
+void append_state(std::ostream& out, Model& model, Root* root) {
+  out.write(reinterpret_cast<const char*>(state_image_ptr(model, root)), state_image_size());
+  if (!out) fail("failed to write --repeat-state-out");
 }
 
 EdgeSummary run_raw_root_eval(
@@ -864,7 +919,11 @@ void emit_summary(const ProbeSummary& summary, const Root* root) {
   std::cout << "}\n";
 }
 
-ProbeSummary run_one_probe_state(const ProbeConfig& cfg, int argc, char** argv) {
+ProbeSummary run_one_probe_state(
+    const ProbeConfig& cfg,
+    int argc,
+    char** argv,
+    std::ostream* repeat_state_out) {
   VerilatedContext context;
   context.commandArgs(argc, argv);
   context.randReset(0);
@@ -878,7 +937,7 @@ ProbeSummary run_one_probe_state(const ProbeConfig& cfg, int argc, char** argv) 
   summary.constructor_ok = true;
   summary.reset_cycles = cfg.reset_cycles;
   summary.post_reset_cycles = cfg.post_reset_cycles;
-  summary.root_size = static_cast<uint32_t>(sizeof(Root));
+  summary.root_size = static_cast<uint32_t>(state_image_size());
 
   configure_defaults(model);
   for (const auto& entry : cfg.sets) {
@@ -952,6 +1011,9 @@ ProbeSummary run_one_probe_state(const ProbeConfig& cfg, int argc, char** argv) 
   summary.final_reset_field_value = root->ROOT_RST_FIELD;
   summary.final_rst_ni =
       (summary.final_reset_field_value == ROOT_RST_DEASSERTED_VALUE) ? 1U : 0U;
+  if (repeat_state_out != nullptr) {
+    append_state(*repeat_state_out, model, root);
+  }
 
   model.final();
   return summary;
@@ -980,6 +1042,16 @@ void emit_repeat_summary(
   std::cout << "  \"constructor_ok\": " << (all_ok ? "true" : "false") << ",\n";
   std::cout << "  \"repeat_states\": " << cfg.repeat_states << ",\n";
   std::cout << "  \"repeat_eval_steps\": " << cfg.repeat_eval_steps << ",\n";
+  std::cout << "  \"repeat_state_out\": ";
+  if (cfg.repeat_state_out.empty()) {
+    std::cout << "null,\n";
+  } else {
+    std::cout << "\"" << cfg.repeat_state_out << "\",\n";
+  }
+  std::cout << "  \"repeat_state_bytes\": "
+            << (cfg.repeat_state_out.empty()
+                    ? 0ULL
+                    : (static_cast<uint64_t>(root_size) * cfg.repeat_states)) << ",\n";
   std::cout << "  \"reset_cycles\": " << cfg.reset_cycles << ",\n";
   std::cout << "  \"post_reset_cycles\": " << cfg.post_reset_cycles << ",\n";
   std::cout << "  \"root_size\": " << root_size << ",\n";
@@ -999,9 +1071,23 @@ int main(int argc, char** argv) {
     if (cfg.repeat_states_requested) {
       std::vector<ProbeSummary> summaries;
       summaries.reserve(cfg.repeat_states);
+      std::ofstream repeat_state_out;
+      if (!cfg.repeat_state_out.empty()) {
+        repeat_state_out.open(cfg.repeat_state_out, std::ios::binary);
+        if (!repeat_state_out) fail("failed to open --repeat-state-out for writing");
+      }
       const auto started = std::chrono::steady_clock::now();
       for (uint32_t index = 0; index < cfg.repeat_states; ++index) {
-        summaries.push_back(run_one_probe_state(cfg, argc, argv));
+        summaries.push_back(
+            run_one_probe_state(
+                cfg,
+                argc,
+                argv,
+                repeat_state_out.is_open() ? &repeat_state_out : nullptr));
+      }
+      if (repeat_state_out.is_open()) {
+        repeat_state_out.close();
+        if (!repeat_state_out) fail("failed to close --repeat-state-out");
       }
       const auto finished = std::chrono::steady_clock::now();
       const double elapsed_ms =
@@ -1019,11 +1105,11 @@ int main(int argc, char** argv) {
     Model model(&context, TARGET_NAME);
     Root* const root = model.rootp;
 
-    ProbeSummary summary;
-    summary.constructor_ok = true;
-    summary.reset_cycles = cfg.reset_cycles;
-    summary.post_reset_cycles = cfg.post_reset_cycles;
-    summary.root_size = static_cast<uint32_t>(sizeof(Root));
+  ProbeSummary summary;
+  summary.constructor_ok = true;
+  summary.reset_cycles = cfg.reset_cycles;
+  summary.post_reset_cycles = cfg.post_reset_cycles;
+  summary.root_size = static_cast<uint32_t>(state_image_size());
 
     configure_defaults(model);
     for (const auto& entry : cfg.sets) {
@@ -1088,7 +1174,7 @@ int main(int argc, char** argv) {
     summary.final_rst_ni =
         (summary.final_reset_field_value == ROOT_RST_DEASSERTED_VALUE) ? 1U : 0U;
     if (!cfg.state_out.empty()) {
-      write_state_file(cfg.state_out, root);
+      write_state_file(cfg.state_out, model, root);
     }
     if (cfg.raw_root_eval_steps != 0U) {
       summary.raw_root_eval_present = true;

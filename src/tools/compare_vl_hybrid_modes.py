@@ -25,6 +25,7 @@ from build_vl_gpu import CLANG, CXX_STANDARD, build_vl_gpu, find_prefix, verilat
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent.parent
 RUN_VL_HYBRID = SCRIPT_DIR / "run_vl_hybrid.py"
 FIELD_MACRO_RE = re.compile(r"^\s*VL_(?:IN|OUT)\d*\(\s*([A-Za-z_]\w*)\s*,")
 FIELD_DECL_RE = re.compile(r"([A-Za-z_]\w*)\s*;\s*$")
@@ -37,7 +38,12 @@ ACCEPTANCE_POLICY_STRICT = "strict_final_state"
 ACCEPTANCE_POLICY_IGNORE_INTERNAL = "ignore_verilator_internal_final_state"
 ACCEPTANCE_POLICY_PHASE_B_ENDPOINT = "phase_b_endpoint"
 ACCEPTANCE_POLICY_NORMALIZED_FINAL_STATE = "normalized_final_state_equivalence"
+ACCEPTANCE_POLICY_COVERAGE_OUTPUT = "coverage_output_equivalence"
 NORMALIZED_FINAL_STATE_POLICY_NAME = "primitive_design_state_fields_only"
+COVERAGE_OUTPUT_POLICY_NAME = "tlul_coverage_output_strict_equality"
+COVERAGE_OUTPUT_REQUIRED_DOMAIN = "toggle_real_subset_bitmap"
+COVERAGE_OUTPUT_REQUIRED_PREFIX = "real_toggle_subset_word"
+COVERAGE_OUTPUT_REQUIRED_COUNT = 18
 NORMALIZED_FINAL_STATE_EXCLUSIONS = [
     "CELLS pointer fields",
     "std::string",
@@ -543,6 +549,217 @@ def build_normalized_final_state_policy_summary(
     return summary
 
 
+def derive_strict_output_field_names(gate: dict) -> list[str]:
+    contract = gate.get("coverage_output_contract") or {}
+    entries = contract.get("strict_output_words") or []
+    words: list[str] = []
+    for entry in entries:
+        prefix = str(entry["prefix"])
+        count = int(entry["count"])
+        for idx in range(count):
+            words.append(f"{prefix}{idx}_o")
+    return words
+
+
+def validate_coverage_output_manifest(
+    manifest: dict,
+    *,
+    expected_prefix: str = COVERAGE_OUTPUT_REQUIRED_PREFIX,
+    expected_count: int = COVERAGE_OUTPUT_REQUIRED_COUNT,
+) -> dict:
+    coverage_domain = manifest.get("coverage_domain")
+    domain_ok = coverage_domain == COVERAGE_OUTPUT_REQUIRED_DOMAIN
+    regions = manifest.get("regions") or []
+    words: list[str] = []
+    for region in regions:
+        for word in region.get("words") or []:
+            words.append(str(word))
+    expected = {
+        f"{expected_prefix}{idx}_o"
+        for idx in range(expected_count)
+    }
+    actual = set(words)
+    duplicates = sorted({word for word in words if words.count(word) > 1})
+    missing_required = sorted(expected - actual)
+    extra_unexpected = sorted(actual - expected)
+    return {
+        "coverage_domain": coverage_domain,
+        "coverage_domain_ok": domain_ok,
+        "region_count": len(regions),
+        "covered_word_count": len(words),
+        "covered_unique_word_count": len(actual),
+        "missing_required_words": missing_required,
+        "extra_unexpected_words": extra_unexpected,
+        "duplicate_words": duplicates,
+        "valid": (
+            domain_ok
+            and len(words) == expected_count
+            and not missing_required
+            and not extra_unexpected
+            and not duplicates
+        ),
+    }
+
+
+def select_coverage_output_target(gate: dict, target_name: str) -> dict:
+    target_scope = gate.get("target_scope") or []
+    matches = [entry for entry in target_scope if entry.get("target") == target_name]
+    if not matches:
+        names = [str(entry.get("target")) for entry in target_scope]
+        raise ValueError(
+            f"target {target_name!r} not in coverage gate target_scope; available: {names}"
+        )
+    return dict(matches[0])
+
+
+def validate_coverage_output_gate(gate: dict) -> None:
+    if gate.get("coverage_domain") != COVERAGE_OUTPUT_REQUIRED_DOMAIN:
+        raise ValueError(
+            f"coverage gate coverage_domain must be {COVERAGE_OUTPUT_REQUIRED_DOMAIN!r}, "
+            f"got {gate.get('coverage_domain')!r}"
+        )
+    if not (gate.get("target_scope") or []):
+        raise ValueError("coverage gate target_scope must be non-empty")
+    contract = gate.get("coverage_output_contract") or {}
+    entries = contract.get("strict_output_words") or []
+    if not entries:
+        raise ValueError(
+            "coverage gate coverage_output_contract.strict_output_words must be non-empty"
+        )
+
+
+def build_coverage_output_policy_summary(
+    reference: bytes,
+    candidate: bytes,
+    *,
+    storage_size: int,
+    layout: list[dict[str, int | str]],
+    gate: dict,
+    target_entry: dict,
+    manifest: dict | None,
+    manifest_path: str | None = None,
+    limit: int = 16,
+) -> dict[str, object]:
+    contract = gate.get("coverage_output_contract") or {}
+    strict_words = derive_strict_output_field_names(gate)
+    summary: dict[str, object] = {
+        "name": COVERAGE_OUTPUT_POLICY_NAME,
+        "acceptance_policy": ACCEPTANCE_POLICY_COVERAGE_OUTPUT,
+        "gate": gate.get("gate"),
+        "coverage_domain": gate.get("coverage_domain"),
+        "target": target_entry.get("target"),
+        "manifest_path": manifest_path,
+        "strict_output_word_prefixes": [
+            {"prefix": str(entry["prefix"]), "count": int(entry["count"])}
+            for entry in (contract.get("strict_output_words") or [])
+        ],
+        "expected_total_words_per_state": contract.get("total_words_per_state"),
+        "expected_total_bytes_per_state": contract.get("total_bytes_per_state"),
+        "strict_output_word_count": len(strict_words),
+        "missing_fields": [],
+        "compared_state_pair_count": 0,
+        "compared_word_count": 0,
+        "compared_byte_count": 0,
+        "mismatches": [],
+        "mismatch_count": 0,
+    }
+
+    if manifest is None:
+        summary["manifest_validation"] = None
+        summary["passed"] = False
+        summary["blocked_reason"] = "coverage_manifest_not_loaded"
+        return summary
+    manifest_region_words = contract.get("manifest_region_words") or {}
+    manifest_validation = validate_coverage_output_manifest(
+        manifest,
+        expected_prefix=str(
+            manifest_region_words.get("prefix", COVERAGE_OUTPUT_REQUIRED_PREFIX)
+        ),
+        expected_count=int(
+            manifest_region_words.get("count", COVERAGE_OUTPUT_REQUIRED_COUNT)
+        ),
+    )
+    summary["manifest_validation"] = manifest_validation
+    if not manifest_validation["valid"]:
+        summary["passed"] = False
+        summary["blocked_reason"] = "coverage_manifest_real_toggle_word_coverage_invalid"
+        return summary
+
+    layout_by_name = {str(entry["name"]): entry for entry in layout}
+    missing_fields = [name for name in strict_words if name not in layout_by_name]
+    if missing_fields:
+        summary["missing_fields"] = missing_fields
+        summary["passed"] = False
+        summary["blocked_reason"] = "missing_coverage_output_fields"
+        return summary
+
+    plan = _state_pair_plan(len(reference), len(candidate), storage_size)
+    summary["comparison_mode"] = plan["comparison_mode"]
+    summary["compatible"] = bool(plan["compatible"])
+    summary["reference_state_count"] = plan["reference_state_count"]
+    summary["candidate_state_count"] = plan["candidate_state_count"]
+    if not plan["compatible"]:
+        summary["passed"] = False
+        summary["blocked_reason"] = plan["reason"]
+        return summary
+
+    pairs = list(plan["pairs"])
+    mismatches: list[dict[str, object]] = []
+    compared_byte_count = 0
+    compared_word_count = 0
+    for reference_state_index, candidate_state_index in pairs:
+        reference_base = int(reference_state_index) * storage_size
+        candidate_base = int(candidate_state_index) * storage_size
+        for word_name in strict_words:
+            entry = layout_by_name[word_name]
+            offset = int(entry["offset"])
+            size = int(entry["size"])
+            reference_slice = reference[reference_base + offset : reference_base + offset + size]
+            candidate_slice = candidate[candidate_base + offset : candidate_base + offset + size]
+            compared_byte_count += size
+            compared_word_count += 1
+            if reference_slice == candidate_slice:
+                continue
+            mismatch_byte_offsets = [
+                idx
+                for idx, (reference_byte, candidate_byte) in enumerate(
+                    zip(reference_slice, candidate_slice)
+                )
+                if reference_byte != candidate_byte
+            ]
+            first_field_byte_offset = mismatch_byte_offsets[0] if mismatch_byte_offsets else 0
+            mismatches.append(
+                {
+                    "field_name": word_name,
+                    "field_offset": offset,
+                    "field_size": size,
+                    "reference_state_index": int(reference_state_index),
+                    "candidate_state_index": int(candidate_state_index),
+                    "mismatch_bytes": len(mismatch_byte_offsets)
+                    + abs(len(reference_slice) - len(candidate_slice)),
+                    "first_field_byte_offset": first_field_byte_offset,
+                    "reference_first_byte": (
+                        reference_slice[first_field_byte_offset]
+                        if first_field_byte_offset < len(reference_slice)
+                        else None
+                    ),
+                    "candidate_first_byte": (
+                        candidate_slice[first_field_byte_offset]
+                        if first_field_byte_offset < len(candidate_slice)
+                        else None
+                    ),
+                }
+            )
+    summary["compared_state_pair_count"] = len(pairs)
+    summary["compared_word_count"] = compared_word_count
+    summary["compared_byte_count"] = compared_byte_count
+    summary["mismatches"] = mismatches[:limit]
+    summary["mismatch_count"] = len(mismatches)
+    summary["passed"] = not mismatches
+    summary["blocked_reason"] = None
+    return summary
+
+
 def has_only_phase_b_residual_fields(summary: dict[str, object]) -> bool:
     mismatch_fields = list(summary.get("mismatch_fields") or [])
     if not mismatch_fields:
@@ -563,6 +780,8 @@ def build_acceptance_policies(summary: dict[str, object]) -> dict[str, dict[str,
     phase_b_endpoint_passed = ignore_internal_passed and has_only_phase_b_residual_fields(summary)
     normalized_summary = dict(summary.get("normalized_final_state_policy") or {})
     normalized_passed = bool(normalized_summary.get("passed", False))
+    coverage_output_summary = dict(summary.get("coverage_output_policy") or {})
+    coverage_output_passed = bool(coverage_output_summary.get("passed", False))
     return {
         ACCEPTANCE_POLICY_STRICT: {
             "passed": strict_passed,
@@ -603,6 +822,29 @@ def build_acceptance_policies(summary: dict[str, object]) -> dict[str, dict[str,
                 "exclusions": normalized_summary.get(
                     "exclusions", list(NORMALIZED_FINAL_STATE_EXCLUSIONS)
                 ),
+            },
+        },
+        ACCEPTANCE_POLICY_COVERAGE_OUTPUT: {
+            "passed": coverage_output_passed,
+            "description": (
+                "Coverage-output words derived from a coverage-output gate must match "
+                "byte-for-byte for compatible CPU/GPU state pairs. This policy is separate "
+                "from normalized_final_state_equivalence and only inspects the strict "
+                "output fields named by the gate."
+            ),
+            "diagnostic_only_prefixes": True,
+            "comparison_policy": {
+                "name": coverage_output_summary.get("name", COVERAGE_OUTPUT_POLICY_NAME),
+                "gate": coverage_output_summary.get("gate"),
+                "target": coverage_output_summary.get("target"),
+                "coverage_domain": coverage_output_summary.get("coverage_domain"),
+                "strict_output_word_count": coverage_output_summary.get(
+                    "strict_output_word_count"
+                ),
+                "compared_word_count": coverage_output_summary.get("compared_word_count"),
+                "compared_byte_count": coverage_output_summary.get("compared_byte_count"),
+                "missing_fields": coverage_output_summary.get("missing_fields") or [],
+                "blocked_reason": coverage_output_summary.get("blocked_reason"),
             },
         },
     }
@@ -726,6 +968,8 @@ def compare_dump_files(
     acceptance_policy: str,
     reference_label: str,
     candidate_label: str,
+    coverage_output_gate_path: Path | None = None,
+    coverage_output_target: str | None = None,
 ) -> dict[str, object]:
     effective_storage_size = (
         storage_size if storage_size is not None else read_storage_size_from_meta(mdir)
@@ -737,6 +981,49 @@ def compare_dump_files(
         effective_storage_size,
         layout=layout,
     )
+    if coverage_output_gate_path is not None:
+        gate_path = coverage_output_gate_path.resolve()
+        gate = json.loads(gate_path.read_text(encoding="utf-8"))
+        validate_coverage_output_gate(gate)
+        target_scope = gate.get("target_scope") or []
+        if coverage_output_target is None:
+            if len(target_scope) != 1:
+                names = [str(entry.get("target")) for entry in target_scope]
+                raise SystemExit(
+                    "--coverage-output-target is required when the gate has multiple "
+                    f"target_scope entries; available: {names}"
+                )
+            target_entry = dict(target_scope[0])
+        else:
+            target_entry = select_coverage_output_target(gate, coverage_output_target)
+        manifest_relative = target_entry.get("coverage_manifest")
+        manifest_path: Path | None = None
+        manifest: dict | None = None
+        if manifest_relative:
+            manifest_candidate = Path(str(manifest_relative))
+            candidate_paths = [
+                manifest_candidate,
+                REPO_ROOT / manifest_candidate,
+                gate_path.parent / manifest_candidate,
+            ]
+            for candidate in candidate_paths:
+                if candidate.exists():
+                    manifest_path = candidate
+                    break
+            if manifest_path is not None:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        summary["coverage_output_policy"] = build_coverage_output_policy_summary(
+            reference_dump.read_bytes(),
+            candidate_dump.read_bytes(),
+            storage_size=effective_storage_size,
+            layout=layout,
+            gate=gate,
+            target_entry=target_entry,
+            manifest=manifest,
+            manifest_path=str(manifest_path) if manifest_path is not None else (
+                str(manifest_relative) if manifest_relative else None
+            ),
+        )
     summary["acceptance_policies"] = build_acceptance_policies(summary)
     summary["selected_acceptance_policy"] = select_acceptance_policy(summary, acceptance_policy)
     summary.update(
@@ -850,8 +1137,28 @@ def main() -> int:
             ACCEPTANCE_POLICY_IGNORE_INTERNAL,
             ACCEPTANCE_POLICY_PHASE_B_ENDPOINT,
             ACCEPTANCE_POLICY_NORMALIZED_FINAL_STATE,
+            ACCEPTANCE_POLICY_COVERAGE_OUTPUT,
         ],
         help="Pass/fail policy for the tool exit code (default: strict_final_state)",
+    )
+    p.add_argument(
+        "--coverage-output-gate",
+        type=Path,
+        default=None,
+        help=(
+            "Path to a coverage-output equivalence gate JSON; required for "
+            "--acceptance-policy coverage_output_equivalence. The gate is validated "
+            "and its strict_output_words are compared field-by-field between the two "
+            "--compare-dumps inputs using the probed root layout."
+        ),
+    )
+    p.add_argument(
+        "--coverage-output-target",
+        default=None,
+        help=(
+            "Name of the target_scope entry in the coverage-output gate to use; "
+            "required when the gate exposes more than one target."
+        ),
     )
     args = p.parse_args()
 
@@ -859,6 +1166,14 @@ def main() -> int:
 
     if args.compare_dumps is not None:
         reference_dump, candidate_dump = args.compare_dumps
+        if (
+            args.acceptance_policy == ACCEPTANCE_POLICY_COVERAGE_OUTPUT
+            and args.coverage_output_gate is None
+        ):
+            raise SystemExit(
+                "--acceptance-policy coverage_output_equivalence requires "
+                "--coverage-output-gate PATH"
+            )
         summary = compare_dump_files(
             mdir=mdir,
             display_mdir=args.mdir,
@@ -868,6 +1183,8 @@ def main() -> int:
             acceptance_policy=args.acceptance_policy,
             reference_label=args.reference_label,
             candidate_label=args.candidate_label,
+            coverage_output_gate_path=args.coverage_output_gate,
+            coverage_output_target=args.coverage_output_target,
         )
         if args.json_out is not None:
             args.json_out.parent.mkdir(parents=True, exist_ok=True)

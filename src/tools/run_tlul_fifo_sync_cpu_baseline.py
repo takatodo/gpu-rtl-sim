@@ -131,6 +131,7 @@ def _run_exact_loop_case(
     probe: Path,
     run_cfg: dict[str, object],
     storage_size: int,
+    dump_dir: Path,
 ) -> dict[str, object]:
     nstates = int(run_cfg["nstates"])
     steps = int(run_cfg["steps"])
@@ -148,6 +149,8 @@ def _run_exact_loop_case(
         "--repeat-eval-steps",
         str(steps),
     ]
+    dump_state = dump_dir / f"{run_cfg['name']}_cpu_final_state.bin"
+    cmd.extend(["--repeat-state-out", str(dump_state)])
     patch_script_tmp: Path | None = None
     if patch_script_lines is not None:
         if not isinstance(patch_script_lines, list) or not all(
@@ -166,6 +169,8 @@ def _run_exact_loop_case(
         if patch_script_tmp is not None:
             patch_script_tmp.unlink(missing_ok=True)
     parsed = _parse_probe_json(completed.stdout)
+    expected_dump_bytes = storage_size * nstates
+    dump_bytes = dump_state.stat().st_size if dump_state.is_file() else 0
     elapsed_ms = float(parsed.get("elapsed_ms", 0.0)) if parsed else 0.0
     states_per_second = (
         float(parsed.get("state_steps_per_second", parsed.get("states_per_second", 0.0)))
@@ -174,7 +179,12 @@ def _run_exact_loop_case(
     )
     constructor_ok = bool(parsed and parsed.get("constructor_ok") is True)
     root_size = int(parsed.get("root_size", 0)) if parsed else 0
-    passed = completed.returncode == 0 and constructor_ok and root_size == storage_size
+    passed = (
+        completed.returncode == 0
+        and constructor_ok
+        and root_size == storage_size
+        and dump_bytes == expected_dump_bytes
+    )
     return {
         "name": str(run_cfg["name"]),
         "nstates": nstates,
@@ -188,6 +198,10 @@ def _run_exact_loop_case(
         "states_per_second": states_per_second,
         "constructor_ok": constructor_ok,
         "root_size": root_size,
+        "cpu_final_state_dump": str(dump_state.relative_to(REPO_ROOT)),
+        "dump_bytes": dump_bytes,
+        "expected_dump_bytes": expected_dump_bytes,
+        "dump_contract": "concat_root_storage_by_state",
         "throughput_unit": "state_steps_per_second",
         "passed": passed,
         "stdout_tail": completed.stdout.splitlines()[-20:],
@@ -321,9 +335,17 @@ def _run_exact_loop_gate(
     probe: Path,
     storage_size: int,
     gpu_scaling_report: Path,
+    dump_dir: Path,
 ) -> dict[str, object]:
     results = [
-        _run_exact_loop_case(gate=gate, mdir=mdir, probe=probe, run_cfg=run, storage_size=storage_size)
+        _run_exact_loop_case(
+            gate=gate,
+            mdir=mdir,
+            probe=probe,
+            run_cfg=run,
+            storage_size=storage_size,
+            dump_dir=dump_dir,
+        )
         for run in gate["runs"]
     ]
     results = _attach_gpu_comparison(cpu_results=results, gpu_scaling_report=gpu_scaling_report)
@@ -334,6 +356,12 @@ def _run_exact_loop_gate(
         "target": gate["target"],
         "status": "ok" if passed else "fail",
         "storage_size": storage_size,
+        "cpu_final_state_dump_contract": {
+            "status": "defined",
+            "layout": "concat_root_storage_by_state",
+            "dump_dir": str(dump_dir.relative_to(REPO_ROOT)),
+            "expected_bytes_per_run": "storage_size * nstates",
+        },
         "runs": results,
         "acceptance": {
             "all_required_runs_passed": passed,
@@ -389,12 +417,15 @@ def main() -> None:
     json_out.parent.mkdir(parents=True, exist_ok=True)
 
     if args.exact_loop:
+        dump_dir = mdir / "cpu_exact_loop_final_states"
+        dump_dir.mkdir(parents=True, exist_ok=True)
         report = _run_exact_loop_gate(
             gate=gate,
             mdir=mdir,
             probe=probe,
             storage_size=storage_size,
             gpu_scaling_report=gpu_scaling_report,
+            dump_dir=dump_dir,
         )
     elif args.multi_state:
         report = _run_multistate_gate(

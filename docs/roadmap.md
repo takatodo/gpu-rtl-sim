@@ -218,44 +218,61 @@ Tracked evidence:
 
 Recommended next gate:
 
-`legacy_cpu_seed_template_retirement_boundary`
+`resident_runtime_contract_completion_boundary`
 
 Acceptance criteria:
 
-- remove legacy CPU seed launch templates that are no longer active targets
-- keep VeeR EL2 and XuanTie E902 represented only in `config/archived_targets.json`
-- verify active target metadata does not reference retired template paths or retired target names
-- keep runtime/pass changes, submodule imports, NN target additions, and MobileViT tooling out of this review boundary
+- make the already-committed resident runtime contract tests pass from a clean HEAD checkout
+- keep the persistent resident ABI wrapper and C runtime environment surface aligned
+- reject unsupported non-flat Verilator `__Syms` state before CUDA launch unless metadata proves a covering Syms state image
+- record hierarchy-state metadata for root-state and Syms-state builds
+- keep TL-UL repeat-state CPU dumps and GPU timing metric parsing reproducible
+- keep coverage-output equivalence as the accepted comparison policy
+- retire legacy program-image and XuanTie DMEM init surfaces from this active TL-UL resident boundary
+- keep NN target imports, MobileViT tooling, third-party submodules, and huge per-target Makefile additions out of this review boundary
 
 Working tree review boundary:
 
-`next_task: legacy_cpu_seed_template_retirement_boundary`
+`next_task: resident_runtime_contract_completion_boundary`
 
-Review only the retirement of the old CPU seed launch-template files. The goal is to keep the active `config/slice_launch_templates/` surface aligned with `config/targets.json` while preserving historical context in `config/archived_targets.json`.
+Review only the resident runtime/pass/tool contract completion needed to make the current contract tests reproducible from HEAD. The goal is to finish the implementation side of persistent-resident, Syms-state, TL-UL dump, timing, and coverage-output policy contracts without pulling in new NN target inventory or generated outputs.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
-- remove `config/slice_launch_templates/veer_el2.json`
-- remove `config/slice_launch_templates/xuantie_e902.json`
+- `config/resident_patch_script_semantics.json`
+- `src/hybrid/run_vl_hybrid.c`
+- `src/hybrid/tlul_slice_host_probe.cpp`
+- `src/passes/VlGpuPasses.cpp`
+- `src/passes/vlgpugen.cpp`
+- `src/tools/build_vl_gpu.py`
+- `src/tools/compare_vl_hybrid_modes.py`
+- `src/tools/gen_vl_gpu_kernel.py`
+- `src/tools/named_patch_lowering.py`
+- `src/tools/run_tlul_fifo_sync_cpu_baseline.py`
+- `src/tools/run_tlul_fifo_sync_scaling_validation.py`
+- `src/tools/run_vl_hybrid.py`
 - `tests/contract/test_resident_runtime_contract.py`
 
 Exclude from this review boundary:
 
+- `AGENTS.md`
+- `src/hybrid/Makefile`
 - `third_party/ITA`, `third_party/common_cells`, and `third_party/ibex`
 - new NN target templates such as NVDLA, ITA, KV-cache, and LLM SoC kick templates
 - non-rtlmeter overlays such as ITA, ibex, MobileViT, and NVDLA
-- runtime/pass implementation changes under `src/hybrid/` and `src/passes/`
-- broad existing-runner changes such as `build_vl_gpu.py`, `run_vl_hybrid.py`, `compare_vl_hybrid_modes.py`, and `gen_vl_gpu_kernel.py`
+- MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests
 - generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`
 - generated output under `reports/`, `artifacts/`, and `work/`
 
 Boundary acceptance:
 
-- `config/slice_launch_templates/veer_el2.json` is absent
-- `config/slice_launch_templates/xuantie_e902.json` is absent
-- `config/targets.json` and `config/selection.json` do not reference `veer_el2`, `xuantie_e902`, or their retired launch-template paths
-- `config/archived_targets.json` remains the place that records why VeeR EL2 and XuanTie E902 are archived
+- clean HEAD plus this boundary passes the resident runtime contract tests
+- persistent resident ABI flags in `src/tools/run_vl_hybrid.py` map to matching `RUN_VL_HYBRID_*` runtime variables
+- Syms-state metadata in `src/tools/build_vl_gpu.py` is sufficient for `src/tools/run_vl_hybrid.py` to allow or reject unsafe Syms dereferences deterministically
+- `src/hybrid/tlul_slice_host_probe.cpp` supports `--repeat-state-out` for CPU final-state dump evidence
+- timing repeat metrics remain parseable by `src/tools/run_tlul_fifo_sync_scaling_validation.py`
+- program-image and XuanTie DMEM one-off initialization helpers are not part of the reduced active TL-UL resident surface
 - `python3 -m unittest tests.contract.test_resident_runtime_contract -q` passes
 - `python3 -m unittest discover -s tests/contract -q` passes
 
