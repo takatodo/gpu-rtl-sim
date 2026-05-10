@@ -81,6 +81,12 @@ PUBLIC_BENCHMARK_PACK_EXTERNALIZATION_AUDIT = (
     / "scaling_gates"
     / "public_benchmark_pack_externalization_readiness_audit.json"
 )
+PUBLIC_BENCHMARK_PACK_EXTERNALIZATION_COMPLETION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "public_benchmark_pack_externalization_completion_gate.json"
+)
 NEXT_MEASUREMENT_GOAL_SELECTION_GATE = (
     REPO_ROOT
     / "config"
@@ -428,11 +434,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertEqual(selection["top_level_goal"], "modern_llm_serving_rtl_hybrid_conditions")
         self.assertEqual(
             selection["current_priority"],
-            "public_benchmark_pack_externalization_ready",
+            "select_next_measurement_after_public_benchmark_pack_externalization",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
+            "config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json",
         )
 
     def test_gate_records_both_requested_followups_and_selected_first_workstream(self) -> None:
@@ -2849,7 +2855,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
 
         self.assertEqual(
             selection["current_priority"],
-            "public_benchmark_pack_externalization_ready",
+            "select_next_measurement_after_public_benchmark_pack_externalization",
         )
         self.assertEqual(gate["current_priority"], "public_benchmark_pack_externalization_ready")
         self.assertEqual(gate["next_task"], "public_benchmark_pack_externalization_ready")
@@ -2908,7 +2914,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_mha_shape_expansion_gate.json",
             "pulp_ita_mha_shape_expansion_review_gate.json",
             "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
-            "next_task: public_benchmark_pack_externalization_ready",
+            "next_task: select_next_measurement_after_public_benchmark_pack_externalization",
             "Review only the repeat-median result, next-goal selection, and public-pack refresh boundary",
             "Review/stage boundary:",
             "docs/roadmap.md",
@@ -3097,6 +3103,74 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "persistent resident repeat-median refresh",
             "reports/persistent_resident_state_abi_repeat_median_summary.json",
             "not a new measurement result",
+        ):
+            self.assertIn(token, combined)
+
+    def test_public_benchmark_pack_externalization_completion_gate_is_defined(self) -> None:
+        gate = json.loads(PUBLIC_BENCHMARK_PACK_EXTERNALIZATION_COMPLETION_GATE.read_text(encoding="utf-8"))
+        selection = json.loads(SELECTION.read_text(encoding="utf-8"))
+        combined = "\n".join(
+            [
+                README.read_text(encoding="utf-8"),
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+                RESULTS.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["gate"], "public_benchmark_pack_externalization_completion_gate")
+        self.assertEqual(
+            gate["status"],
+            "complete_public_benchmark_pack_externalization_boundary_after_repeat_median_refresh",
+        )
+        self.assertEqual(gate["completed_priority"], "public_benchmark_pack_externalization_ready")
+        self.assertEqual(
+            gate["source_readiness_audit"],
+            "config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json",
+        )
+        self.assertEqual(
+            gate["source_refresh_gate"],
+            "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
+        )
+        self.assertEqual(gate["results_doc"], "docs/results.md")
+        self.assertTrue(gate["decision"]["externalization_boundary_complete"])
+        self.assertTrue(gate["release_check_evidence"]["archive_dry_run_includes_repeat_median_refresh"])
+        self.assertEqual(
+            gate["release_check_evidence"]["latest_generated_evidence"],
+            "reports/persistent_resident_state_abi_repeat_median_summary.json",
+        )
+        self.assertTrue(gate["acceptance_policy"]["completion_only"])
+        self.assertFalse(gate["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["runtime_or_abi_change_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["new_workload_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["reports_and_artifacts_are_source_of_truth"])
+        self.assertEqual(
+            gate["next_task"],
+            "select_next_measurement_after_public_benchmark_pack_externalization",
+        )
+        self.assertIn("paged_attention_kv_cache_scale_up", gate["candidate_next_measurement_options"])
+        self.assertIn("not a new measurement result", gate["non_claims"])
+        self.assertIn("reports and artifacts are generated evidence, not source of truth", gate["non_claims"])
+
+        self.assertEqual(
+            selection["current_priority"],
+            "select_next_measurement_after_public_benchmark_pack_externalization",
+        )
+        self.assertEqual(
+            selection["current_priority_source_artifact"],
+            "config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json",
+        )
+        self.assertEqual(
+            selection["completed_goal_evidence"]["public_benchmark_pack_externalization_completion_gate"],
+            "config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json",
+        )
+
+        for token in (
+            "public_benchmark_pack_externalization_completion_gate.json",
+            "select_next_measurement_after_public_benchmark_pack_externalization",
+            "public benchmark pack externalization boundary",
+            "next task: select the next measurement after public benchmark pack externalization",
+            "All point at `select_next_measurement_after_public_benchmark_pack_externalization`",
         ):
             self.assertIn(token, combined)
 
@@ -3305,10 +3379,13 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertIn("not paper-grade statistical confidence beyond repeat-count 3 representative medians", gate["non_claims"])
         self.assertIn("reports and artifacts are generated evidence, not source of truth", gate["non_claims"])
 
-        self.assertEqual(selection["current_priority"], "public_benchmark_pack_externalization_ready")
+        self.assertEqual(
+            selection["current_priority"],
+            "select_next_measurement_after_public_benchmark_pack_externalization",
+        )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
+            "config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["public_results_packaging_refresh_after_persistent_resident_repeat_median_gate"],
@@ -3317,10 +3394,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
 
         for token in (
             "public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
+            "public_benchmark_pack_externalization_completion_gate.json",
             "reports/persistent_resident_state_abi_repeat_median_summary.json",
             "Persistent resident ABI repeat-median",
-            "All point at `public_benchmark_pack_externalization_ready`",
-            "next_task: public_benchmark_pack_externalization_ready",
+            "All point at `select_next_measurement_after_public_benchmark_pack_externalization`",
+            "next task: select the next measurement after public benchmark pack externalization",
         ):
             self.assertIn(token, combined_docs)
 

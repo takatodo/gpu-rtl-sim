@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`public_benchmark_pack_externalization_ready`
+`select_next_measurement_after_public_benchmark_pack_externalization`
 
 Current gate:
 
-`config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json`
+`config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -49,7 +49,7 @@ How to read the public benchmark pack:
 - Public pack manifest: `docs/results.md` lists the minimum source-of-truth files, `records/scaling_gates` gate/audit records, tools, templates, contract tests, and optional generated evidence snapshots to include for review.
 - Public reproduction smoke: `docs/results.md` lists the first dry-run commands to run before attempting full measurements.
 - Public release checklist: `docs/results.md` lists the final source-of-truth, path hygiene, smoke, evidence, non-claim, and contract-test checks before handoff.
-- Externalization readiness audit: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for external review.
+- Externalization readiness audit: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for externalization.
 - Public archive dry-run: `python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run` prints the include/exclude plan without creating an archive.
 
 ## Source Of Truth
@@ -185,6 +185,7 @@ Current goal evidence includes:
 - `public_benchmark_pack_externalization_readiness_audit.json`
 - `public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`
 - `public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json`
+- `public_benchmark_pack_externalization_completion_gate.json`
 - `pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`
 - `pulp_ita_mha_shape_expansion_gate.json`
 - `pulp_ita_mha_shape_expansion_review_gate.json`
@@ -254,10 +255,10 @@ Do not put canonical decisions in generated outputs. If a generated result matte
 
 ## Next Direction
 
-The public benchmark pack is ready for external review. The newest completed measurement goal is `persistent_resident_state_abi_repeat_median`:
+The public benchmark pack externalization boundary is complete. The newest completed measurement goal is `persistent_resident_state_abi_repeat_median`:
 
-- use `config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json` as the current gate
-- use `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` as the external review readiness audit
+- use `config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json` as the current gate
+- use `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` as the externalization readiness audit
 - use `config/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json` as the next-goal selection gate
 - use `config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json` as the current next-goal selection gate after the repeat-median result
 - use `docs/results.md` as the external-facing benchmark pack
@@ -266,7 +267,8 @@ The public benchmark pack is ready for external review. The newest completed mea
 - keep `coverage_output_equivalence` as the correctness policy
 - run `python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3 --dry-run` to inspect the persistent resident repeat-median flow
 - run `python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3` to regenerate the report; the current median hybrid wall is `4.965 ms`, median GPU kernel total is `4.934624 ms`, and all samples pass coverage-output equivalence with mismatch count `0`
-- current selected goal is complete: the public benchmark pack refresh after this repeat-median result is defined without changing runtime or ABI behavior
+- current selected goal is complete: the public benchmark pack externalization boundary is closed without changing runtime or ABI behavior
+- next task: select the next measurement after public benchmark pack externalization
 - keep the long-term goal: make hybrid execution close to Verilator usage while preserving reproducible correctness and speed evidence for LLM-serving-like RTL workloads
 - keep config current-state-only and historical evidence in gates; regenerate reports/artifacts only when needed
 - keep public CLIs thin and tested
