@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "gate": "ita_first_seed_selection_after_dependency_boundary_gate",
+  "objective": "Select exactly one first ITA active seed after the canonical ITA/common_cells dependency boundary, without running a new build/run/compare measurement.",
+  "status": "selected_ita_dotp_first_seed_after_dependency_boundary",
+  "source_dependency_boundary_gate": "config/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json",
+  "source_audit_gate": "config/scaling_gates/neural_network_rtl_pulp_ita_first_seed_dependency_audit_gate.json",
+  "selection_rule": {
+    "only_one_active_ita_seed": true,
+    "measurement_performed_by_this_gate": false,
+    "prefer_smallest_source_backed_attention_datapath": true,
+    "avoid_recursive_bender_import": true,
+    "do_not_promote_reports_or_artifacts_as_source_of_truth": true
+  },
+  "options_reviewed": [
+    {
+      "candidate": "ita_dotp",
+      "target": "pulp_ita_dotp",
+      "upstream_source": "third_party/ITA/src/ita_dotp.sv",
+      "line_count": 34,
+      "dependency_surface": {
+        "local_ita_dependencies": [],
+        "external_common_cells_dependencies": []
+      },
+      "llm_serving_relevance": "attention score QK-style dot-product datapath",
+      "decision": "select_first_active_seed",
+      "reason": "Smallest source-backed ITA attention datapath; it keeps the active surface narrow and avoids pulling common_cells or recursive Bender dependencies into the first seed gate.",
+      "weakness": "Less representative than softmax, full MHA, paged attention, or decode serving state; it does not exercise reduction/normalization behavior."
+    },
+    {
+      "candidate": "ita_softmax_top",
+      "target": "pulp_ita_softmax_top",
+      "upstream_source": "third_party/ITA/src/ita_softmax_top.sv",
+      "line_count": 160,
+      "dependency_surface": {
+        "local_ita_dependencies": [
+          "ita_package",
+          "ita_max_finder",
+          "ita_register_file_1w_multi_port_read",
+          "ita_softmax",
+          "ita_serdiv"
+        ],
+        "external_common_cells_dependencies": [
+          "cf_math_pkg",
+          "fifo_v3",
+          "lzc"
+        ]
+      },
+      "llm_serving_relevance": "attention softmax and reduction datapath",
+      "decision": "defer_until_after_dotp_boundary",
+      "reason": "More LLM-serving-relevant than dotp, but it expands the dependency boundary too much for the first ITA active seed after submodule canonicalization.",
+      "weakness": "Selecting it first would mix dependency expansion, overlay/template formalization, and first measurement risk into one gate."
+    }
+  ],
+  "selected_seed": {
+    "target": "pulp_ita_dotp",
+    "upstream_module": "ita_dotp",
+    "upstream_source": "third_party/ITA/src/ita_dotp.sv",
+    "required_submodule": "third_party/ITA",
+    "required_submodule_commit": "ba96519becce195d64e85eb9a5302e8a1d5487e7",
+    "required_source_paths": [
+      "third_party/ITA/src/ita_dotp.sv"
+    ],
+    "source_line_count": 34,
+    "classification": "minimal attention-score dot-product datapath seed",
+    "active_seed_after_this_gate": true
+  },
+  "deferred_seed": {
+    "target": "pulp_ita_softmax_top",
+    "upstream_module": "ita_softmax_top",
+    "upstream_source": "third_party/ITA/src/ita_softmax_top.sv",
+    "required_sources_before_measurement": [
+      "third_party/ITA/src/ita_softmax_top.sv",
+      "third_party/ITA/src/ita_package.sv",
+      "third_party/ITA/src/ita_max_finder.sv",
+      "third_party/ITA/src/ita_register_file_1w_multi_port_read.sv",
+      "third_party/ITA/src/ita_softmax.sv",
+      "third_party/ITA/src/ita_serdiv.sv",
+      "third_party/common_cells/src/cf_math_pkg.sv",
+      "third_party/common_cells/src/fifo_v3.sv",
+      "third_party/common_cells/src/lzc.sv"
+    ],
+    "defer_reason": "Use after dotp proves the overlay/template/generic-host-probe path for a single ITA seed."
+  },
+  "required_next_gate": {
+    "name": "implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate",
+    "scope": [
+      "formalize overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv only if it is promoted from candidate work",
+      "formalize overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json only if it is promoted from candidate work",
+      "formalize config/slice_launch_templates/pulp_ita_dotp.json only if it is promoted from candidate work",
+      "use src/tools/build_host_probe.py rather than adding a src/hybrid/Makefile host-probe target",
+      "keep ita_softmax_top, full ITA/MHA, KV-cache, MobileViT, and Ibex out of the active measurement boundary"
+    ],
+    "first_allowed_measurement_policy": "coverage_output_equivalence must pass before any timing classification or speedup language"
+  },
+  "acceptance_policy": {
+    "define_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "overlay_or_template_import_performed_by_this_gate": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "correctness_claim_allowed_by_gate_alone": false
+  },
+  "review_boundary": [
+    "docs/roadmap.md",
+    "docs/status.md",
+    "records/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json",
+    "records/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+  ],
+  "next_task": "implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate",
+  "non_claims": [
+    "not an ITA build/run/compare result",
+    "not a speedup result",
+    "not a correctness result",
+    "not softmax execution",
+    "not full ITA or MHA execution",
+    "not paged attention or KV-cache execution",
+    "not approval to recursively import all Bender dependencies"
+  ]
+}

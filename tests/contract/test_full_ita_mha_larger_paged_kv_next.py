@@ -126,6 +126,12 @@ ITA_DEPENDENCY_CLEAN_CHECKOUT_BOUNDARY_GATE = (
     / "scaling_gates"
     / "ita_dependency_clean_checkout_boundary_gate.json"
 )
+ITA_FIRST_SEED_SELECTION_AFTER_DEPENDENCY_BOUNDARY_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "ita_first_seed_selection_after_dependency_boundary_gate.json"
+)
 REPEAT_MEDIAN_RESULTS_SUMMARY = REPO_ROOT / "reports" / "results_reproduction_median_summary.json"
 RESIDENT_BATCH_SWEEP_SUMMARY = REPO_ROOT / "reports" / "resident_batch_sweep_summary.json"
 RESIDENT_STATE_REUSE_SUMMARY = REPO_ROOT / "reports" / "resident_state_reuse_experiment_summary.json"
@@ -897,7 +903,67 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         for token in (
             "ita_dependency_clean_checkout_boundary_gate.json",
             "`third_party/ITA` and `third_party/common_cells` are canonical gitlink submodules",
-            "next_task: select_one_first_ita_seed_after_dependency_boundary",
+            "pulp_ita_dotp",
+        ):
+            self.assertIn(token, combined_docs)
+
+    def test_ita_first_seed_selection_after_dependency_boundary_selects_dotp_only(self) -> None:
+        gate = json.loads(ITA_FIRST_SEED_SELECTION_AFTER_DEPENDENCY_BOUNDARY_GATE.read_text(encoding="utf-8"))
+        combined_docs = "\n".join(
+            [
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["status"], "selected_ita_dotp_first_seed_after_dependency_boundary")
+        self.assertEqual(
+            gate["source_dependency_boundary_gate"],
+            "config/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json",
+        )
+        self.assertTrue(gate["selection_rule"]["only_one_active_ita_seed"])
+        self.assertFalse(gate["selection_rule"]["measurement_performed_by_this_gate"])
+        self.assertTrue(gate["selection_rule"]["avoid_recursive_bender_import"])
+
+        options = {entry["candidate"]: entry for entry in gate["options_reviewed"]}
+        self.assertEqual(options["ita_dotp"]["decision"], "select_first_active_seed")
+        self.assertEqual(options["ita_dotp"]["target"], "pulp_ita_dotp")
+        self.assertEqual(options["ita_dotp"]["line_count"], 34)
+        self.assertEqual(options["ita_dotp"]["dependency_surface"]["local_ita_dependencies"], [])
+        self.assertEqual(options["ita_dotp"]["dependency_surface"]["external_common_cells_dependencies"], [])
+        self.assertIn("Less representative than softmax", options["ita_dotp"]["weakness"])
+        self.assertEqual(options["ita_softmax_top"]["decision"], "defer_until_after_dotp_boundary")
+        self.assertIn("cf_math_pkg", options["ita_softmax_top"]["dependency_surface"]["external_common_cells_dependencies"])
+        self.assertIn("fifo_v3", options["ita_softmax_top"]["dependency_surface"]["external_common_cells_dependencies"])
+        self.assertIn("lzc", options["ita_softmax_top"]["dependency_surface"]["external_common_cells_dependencies"])
+
+        selected = gate["selected_seed"]
+        self.assertEqual(selected["target"], "pulp_ita_dotp")
+        self.assertEqual(selected["upstream_source"], "third_party/ITA/src/ita_dotp.sv")
+        self.assertEqual(selected["required_submodule"], "third_party/ITA")
+        self.assertEqual(selected["source_line_count"], 34)
+        self.assertTrue((REPO_ROOT / selected["upstream_source"]).exists())
+        self.assertEqual(gate["deferred_seed"]["target"], "pulp_ita_softmax_top")
+        self.assertIn("third_party/common_cells/src/fifo_v3.sv", gate["deferred_seed"]["required_sources_before_measurement"])
+        self.assertEqual(
+            gate["required_next_gate"]["name"],
+            "implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate",
+        )
+        self.assertIn("use src/tools/build_host_probe.py", " ".join(gate["required_next_gate"]["scope"]))
+        self.assertFalse(gate["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["overlay_or_template_import_performed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["speedup_claim_allowed_by_gate_alone"])
+        self.assertEqual(gate["next_task"], "implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate")
+        self.assertIn("not softmax execution", gate["non_claims"])
+        self.assertIn("not a correctness result", gate["non_claims"])
+
+        for token in (
+            "ita_first_seed_selection_after_dependency_boundary_gate.json",
+            "selected first ITA active seed: `pulp_ita_dotp`",
+            "third_party/ITA/src/ita_dotp.sv",
+            "defers `pulp_ita_softmax_top`",
+            "next_task: implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate",
+            "not an ITA build/run/compare result",
         ):
             self.assertIn(token, combined_docs)
 
@@ -1493,14 +1559,13 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "nvdla_cmac_core_mac_template_shape_expansion_gate.json",
             "nvdla_shape_expansion_next_workstream_review_gate.json",
             "ita_dependency_clean_checkout_boundary_gate.json",
-            "next_task: select_one_first_ita_seed_after_dependency_boundary",
-            "Review only the first ITA seed selection",
+            "ita_first_seed_selection_after_dependency_boundary_gate.json",
+            "next_task: implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate",
+            "Review only the `pulp_ita_dotp` overlay/template/generic-host-probe promotion boundary",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
-            ".gitmodules",
-            "third_party/ITA",
-            "third_party/common_cells",
+            "records/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json",
             "records/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json",
             "records/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json",
             "records/scaling_gates/candidate_template_clean_checkout_selection_gate.json",
@@ -1513,11 +1578,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "tests/contract/test_hybrid_verilator_like_cli.py",
             "Exclude from this review boundary:",
             "src/hybrid/Makefile",
-            "third_party/ITA",
-            "third_party/common_cells",
+            "third_party/ITA`, `third_party/common_cells`, and `third_party/ibex` edits beyond validating required source paths",
             "third_party/ibex",
             "additional NVDLA targets beyond `nvdla_cmac_core_mac`",
-            "ITA, KV-cache, LLM SoC, and MobileViT candidate templates and overlays",
+            "`ita_softmax_top`, full MHA, KV-cache, LLM SoC, and MobileViT candidate templates and overlays",
             "MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests",
             "runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`",
             "generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`",
@@ -1525,6 +1589,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "minimal build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`",
             "next workstream review selects `ita_dependency_clean_checkout_boundary`",
             "ITA dependency boundary gate records canonical `.gitmodules` entries and gitlinks for `third_party/ITA` and `third_party/common_cells`",
+            "ITA first seed selection gate selects `pulp_ita_dotp` and defers `pulp_ita_softmax_top`",
+            "`third_party/ITA/src/ita_dotp.sv` is the only required ITA source path for the first selected seed",
             "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "`run_hybrid_template.py` passes template `verilator_defines` into the Verilator command",

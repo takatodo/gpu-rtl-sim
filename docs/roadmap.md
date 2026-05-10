@@ -112,6 +112,18 @@ ITA dependency clean-checkout boundary gate:
 - required before ITA measurement: validate required source paths in a clean-checkout contract, keep repo-specific harnesses under `overlays/ITA`, and select exactly one first ITA seed
 - non-claim: this is not an ITA build/run/compare result or approval to recursively import all Bender dependencies
 
+ITA first seed selection after dependency boundary:
+
+- `config/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json`
+- selected first ITA active seed: `pulp_ita_dotp`
+- selected upstream source: `third_party/ITA/src/ita_dotp.sv`
+- selected reason: smallest source-backed ITA attention-score datapath with no local ITA dependency and no external `common_cells` dependency
+- weak point: this is less representative than `ita_softmax_top`, full ITA/MHA, paged attention, or KV-cache serving state because it does not exercise softmax/reduction or decode-state behavior
+- deferred first alternative: `pulp_ita_softmax_top`, because it pulls `ita_package`, `ita_max_finder`, `ita_register_file_1w_multi_port_read`, `ita_softmax`, `ita_serdiv`, `cf_math_pkg`, `fifo_v3`, and `lzc` into the boundary
+- next_task: `implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate`
+- required boundary: use `src/tools/build_host_probe.py`; do not add a `src/hybrid/Makefile` host-probe target for the ITA seed
+- non-claim: this is a selection-only gate, not an ITA build/run/compare result, speedup result, or correctness result
+
 Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
@@ -260,29 +272,28 @@ Tracked evidence:
 
 Recommended next gate:
 
-`select_one_first_ita_seed_after_dependency_boundary`
+`implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate`
 
 Acceptance criteria:
 
-- choose exactly one first ITA seed, either `ita_dotp` or `ita_softmax_top`
-- keep the first ITA measurement gate separate from the dependency boundary
-- validate required source paths through the canonical submodules
+- promote only the `pulp_ita_dotp` overlay, coverage manifest, and launch template from candidate work if they are used
+- keep the first measurement boundary separate from this seed-selection gate
+- validate `third_party/ITA/src/ita_dotp.sv` through the canonical `third_party/ITA` submodule
+- use `src/tools/build_host_probe.py` rather than adding a `src/hybrid/Makefile` host-probe target
 - keep recursive Bender dependencies out unless a narrow requirement is recorded
-- keep full MHA, KV-cache, LLM SoC, and MobileViT out of the first ITA seed gate
+- keep `ita_softmax_top`, full MHA, KV-cache, LLM SoC, and MobileViT out of the dotp first-seed gate
 
 Working tree review boundary:
 
-`next_task: select_one_first_ita_seed_after_dependency_boundary`
+`next_task: implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate`
 
-Review only the first ITA seed selection. Do not mix in ITA measurement, runtime changes, or generated outputs.
+Review only the `pulp_ita_dotp` overlay/template/generic-host-probe promotion boundary. Do not mix in softmax, full MHA, KV-cache, runtime changes, or generated outputs.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
 - `docs/status.md`
-- `.gitmodules`
-- `third_party/ITA`
-- `third_party/common_cells`
+- `records/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json`
 - `records/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json`
 - `records/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json`
 - `records/scaling_gates/candidate_template_clean_checkout_selection_gate.json`
@@ -299,9 +310,9 @@ Exclude from this review boundary:
 
 - `AGENTS.md`
 - `src/hybrid/Makefile`
-- `third_party/ITA`, `third_party/common_cells`, and `third_party/ibex`
+- `third_party/ITA`, `third_party/common_cells`, and `third_party/ibex` edits beyond validating required source paths
 - additional NVDLA targets beyond `nvdla_cmac_core_mac`
-- ITA, KV-cache, LLM SoC, and MobileViT candidate templates and overlays
+- `ita_softmax_top`, full MHA, KV-cache, LLM SoC, and MobileViT candidate templates and overlays
 - MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests
 - runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`
 - generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`
@@ -314,6 +325,8 @@ Boundary acceptance:
 - shape expansion gate records `8x1`, `32x1`, and `8x4` coverage-output pass with mismatch count `0`
 - next workstream review selects `ita_dependency_clean_checkout_boundary`
 - ITA dependency boundary gate records canonical `.gitmodules` entries and gitlinks for `third_party/ITA` and `third_party/common_cells`
+- ITA first seed selection gate selects `pulp_ita_dotp` and defers `pulp_ita_softmax_top`
+- `third_party/ITA/src/ita_dotp.sv` is the only required ITA source path for the first selected seed
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command
