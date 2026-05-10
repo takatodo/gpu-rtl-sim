@@ -96,9 +96,16 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             "docs/results.md",
             "records/scaling_gates/public_results_packaging_gate.json",
             "records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json",
+            "records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+            "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
+            "records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
+            "records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",
             "src/tools/run_results_reproduction.py",
             "src/tools/results_reproduction.py",
             "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+            "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+            "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+            "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
             "reports/hybrid_benchmark_mobile_vit_template_limit128.json",
         ):
             self.assertIn(f"include: {path}", stdout)
@@ -110,6 +117,7 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             self.assertNotIn(excluded, include_lines)
         for marker in ("/home/", "/tmp/", "/Users/", "/var/", "/mnt/", "/workspace/", "/root/"):
             self.assertNotIn(marker, stdout)
+            self.assertNotIn(marker, (REPO_ROOT / "src" / "tools" / "results_reproduction.py").read_text(encoding="utf-8"))
 
         result = subprocess.run(
             [

@@ -3035,6 +3035,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "docs/roadmap.md",
             "docs/results.md",
             "records/scaling_gates/public_results_packaging_gate.json",
+            "records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json",
             "records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
             "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
             "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
@@ -3044,6 +3045,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "not a new measurement result",
             "not production LLM serving throughput",
             "not raw full-state equality",
+            "not cross-process persistent CUDA state",
+            "not full 50k ImageNet hybrid execution",
+            "not production paged attention",
+            "not broad speedup for arbitrary RTL",
             "not ImageNet accuracy from RTL logits",
         ):
             self.assertIn(non_claim, audit["non_claims"])

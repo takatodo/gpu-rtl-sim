@@ -35,6 +35,7 @@ GPU_TOTAL_RE = re.compile(r"gpu_kernel_time_ms:\s+total=([0-9.]+)\s+per_launch=(
 GPU_PER_STATE_RE = re.compile(r"gpu_kernel_time:\s+per_state=([0-9.]+)\s+us")
 WALL_RE = re.compile(r"wall_time_ms:\s+([0-9.]+)")
 LOCAL_ABSOLUTE_PATH_RE = re.compile(r"(?<!\S)/(?:home|tmp|Users|var|mnt|workspace|root)/\S+")
+DEFAULT_HF_CACHE_DATASET_DIR = Path.home() / ".cache" / "huggingface" / "hub" / "datasets--ILSVRC--imagenet-1k"
 PUBLIC_PACK_ARCHIVE_PATHS = (
     "README.md",
     "config/selection.json",
@@ -43,8 +44,12 @@ PUBLIC_PACK_ARCHIVE_PATHS = (
     "docs/results.md",
     "records/scaling_gates/public_results_packaging_gate.json",
     "records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
     "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
     "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
+    "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
+    "records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
+    "records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",
     "src/tools/run_results_reproduction.py",
     "src/tools/results_reproduction.py",
     "src/tools/run_hybrid_benchmark.py",
@@ -58,6 +63,9 @@ PUBLIC_PACK_ARCHIVE_PATHS = (
     "reports/results_reproduction_median_summary.json",
     "reports/persistent_resident_state_abi_probe_summary.json",
     "reports/mobile_vit_hybrid_128_summary.json",
+    "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+    "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
     "reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json",
     "reports/hybrid_benchmark_paged_attention_kv_score_template_1x1.json",
     "reports/hybrid_benchmark_pulp_ita_mha_resident_state_reuse_1x1.json",
@@ -243,7 +251,7 @@ def mobile_vit_imagenet_128_plan() -> list[ReproductionCommand]:
                 "artifacts/mobile_vit/venv/bin/python",
                 "src/tools/mobile_vit_imagenet_manifest.py",
                 "--hf-cache-dir",
-                "/home/takatodo/.cache/huggingface/hub/datasets--ILSVRC--imagenet-1k",
+                str(DEFAULT_HF_CACHE_DATASET_DIR),
                 "--hf-output-dir",
                 "artifacts/mobile_vit/apple_mobilevit_small/hf_imagenet_val_128",
                 "--dataset-scope",
