@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "gate": "pulp_ita_dotp_overlay_template_generic_host_probe_gate",
+  "objective": "Promote the selected pulp_ita_dotp first ITA seed overlay, coverage manifest, and launch template to a clean source boundary using the generic host-probe builder, without claiming measurement.",
+  "status": "promoted_dotp_overlay_template_with_generic_host_probe_builder",
+  "source_selection_gate": "config/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json",
+  "target": "pulp_ita_dotp",
+  "upstream": {
+    "submodule": "third_party/ITA",
+    "commit": "ba96519becce195d64e85eb9a5302e8a1d5487e7",
+    "module": "ita_dotp",
+    "source": "third_party/ITA/src/ita_dotp.sv",
+    "line_count": 34
+  },
+  "promoted_source_boundary": {
+    "coverage_tb": "overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json",
+    "launch_template": "config/slice_launch_templates/pulp_ita_dotp.json",
+    "template_status": "promoted_first_ita_seed_boundary",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "makefile_target_required": false,
+    "verilator_mode": "flattened"
+  },
+  "template_contract": {
+    "target": "PULP_ITA.pulp_ita_dotp",
+    "top_module": "pulp_ita_dotp_gpu_cov_tb",
+    "source_files": [
+      "third_party/ITA/src/ita_dotp.sv"
+    ],
+    "overlay_source_is_loaded_from_planned_overlay": true,
+    "verilator_args": [
+      "--flatten"
+    ],
+    "host_probe_target": "pulp_ita_dotp_host_probe",
+    "host_probe_output": "tlul_slice_host_probe",
+    "host_probe_clock_field": "pulp_ita_dotp_gpu_cov_tb__DOT__clk_i",
+    "host_probe_reset_field": "pulp_ita_dotp_gpu_cov_tb__DOT__reset_like_w",
+    "host_probe_reset_asserted_value": "1U",
+    "host_probe_reset_deasserted_value": "0U",
+    "host_clock_control": true,
+    "host_reset_control": false,
+    "probe_syms_state": false
+  },
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18
+    },
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "planned_first_measurement_shapes": [
+    {
+      "shape": "1x1",
+      "purpose": "smoke CPU/GPU launch and coverage-output equivalence"
+    },
+    {
+      "shape": "64x1",
+      "purpose": "state-parallel attention-score dot-product throughput tendency"
+    },
+    {
+      "shape": "1x64",
+      "purpose": "single-state repeated-step launch-overhead weakness"
+    }
+  ],
+  "dry_run_checked_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x1 --dry-run",
+  "required_next_gate": {
+    "name": "pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate",
+    "scope": [
+      "run Verilator build for pulp_ita_dotp",
+      "build host probe through src/tools/build_host_probe.py",
+      "build GPU cubin",
+      "run CPU reference and hybrid candidate",
+      "compare with coverage_output_equivalence using this gate as the coverage-output gate",
+      "record timing only after mismatch count is zero"
+    ]
+  },
+  "acceptance_policy": {
+    "overlay_template_manifest_promoted": true,
+    "host_probe_built_with_generic_builder_required": true,
+    "makefile_host_probe_target_allowed": false,
+    "measurement_performed_by_this_gate": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "correctness_claim_allowed_by_gate_alone": false,
+    "only_one_active_ita_seed": true
+  },
+  "review_boundary": [
+    "config/slice_launch_templates/pulp_ita_dotp.json",
+    "overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv",
+    "overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json",
+    "docs/roadmap.md",
+    "docs/status.md",
+    "records/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+  ],
+  "next_task": "run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate",
+  "non_claims": [
+    "not an ITA build/run/compare result",
+    "not a speedup result",
+    "not a correctness result",
+    "not softmax execution",
+    "not full ITA or MHA execution",
+    "not paged attention or KV-cache execution",
+    "not approval to recursively import all Bender dependencies"
+  ]
+}

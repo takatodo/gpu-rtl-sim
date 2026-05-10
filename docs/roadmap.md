@@ -124,6 +124,18 @@ ITA first seed selection after dependency boundary:
 - required boundary: use `src/tools/build_host_probe.py`; do not add a `src/hybrid/Makefile` host-probe target for the ITA seed
 - non-claim: this is a selection-only gate, not an ITA build/run/compare result, speedup result, or correctness result
 
+PULP ITA dotp overlay/template generic host-probe gate:
+
+- `config/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json`
+- promoted source boundary: `overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv`, `overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json`, and `config/slice_launch_templates/pulp_ita_dotp.json`
+- template target: `PULP_ITA.pulp_ita_dotp`
+- upstream source: `third_party/ITA/src/ita_dotp.sv`
+- host-probe builder: `src/tools/build_host_probe.py`
+- host-probe clock/reset metadata: `pulp_ita_dotp_gpu_cov_tb__DOT__clk_i` and `pulp_ita_dotp_gpu_cov_tb__DOT__reset_like_w`
+- dry-run smoke: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x1 --dry-run`
+- next_task: `run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate`
+- non-claim: this is source-boundary promotion only, not a build/run/compare result, speedup result, or correctness result
+
 Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
@@ -272,28 +284,33 @@ Tracked evidence:
 
 Recommended next gate:
 
-`implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate`
+`run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate`
 
 Acceptance criteria:
 
-- promote only the `pulp_ita_dotp` overlay, coverage manifest, and launch template from candidate work if they are used
-- keep the first measurement boundary separate from this seed-selection gate
+- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x1`
+- build the host probe through `src/tools/build_host_probe.py`, not `src/hybrid/Makefile`
+- compare CPU vs hybrid with `coverage_output_equivalence`
+- require mismatch count `0` before any timing or speedup language
 - validate `third_party/ITA/src/ita_dotp.sv` through the canonical `third_party/ITA` submodule
-- use `src/tools/build_host_probe.py` rather than adding a `src/hybrid/Makefile` host-probe target
 - keep recursive Bender dependencies out unless a narrow requirement is recorded
-- keep `ita_softmax_top`, full MHA, KV-cache, LLM SoC, and MobileViT out of the dotp first-seed gate
+- keep `ita_softmax_top`, full MHA, KV-cache, LLM SoC, and MobileViT out of the first dotp measurement gate
 
 Working tree review boundary:
 
-`next_task: implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate`
+`next_task: run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate`
 
-Review only the `pulp_ita_dotp` overlay/template/generic-host-probe promotion boundary. Do not mix in softmax, full MHA, KV-cache, runtime changes, or generated outputs.
+Review only the first `pulp_ita_dotp` generic-host-probe build/run/compare boundary. Do not mix in softmax, full MHA, KV-cache, runtime changes, or generated outputs.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
 - `docs/status.md`
 - `records/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json`
+- `records/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json`
+- `config/slice_launch_templates/pulp_ita_dotp.json`
+- `overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv`
+- `overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json`
 - `records/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json`
 - `records/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json`
 - `records/scaling_gates/candidate_template_clean_checkout_selection_gate.json`
@@ -327,6 +344,8 @@ Boundary acceptance:
 - ITA dependency boundary gate records canonical `.gitmodules` entries and gitlinks for `third_party/ITA` and `third_party/common_cells`
 - ITA first seed selection gate selects `pulp_ita_dotp` and defers `pulp_ita_softmax_top`
 - `third_party/ITA/src/ita_dotp.sv` is the only required ITA source path for the first selected seed
+- PULP ITA dotp overlay/template gate carries `build.host_probe_builder: src/tools/build_host_probe.py`
+- dry-run emits `python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_dotp.json`
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command

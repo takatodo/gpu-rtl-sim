@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "status": "promoted_first_ita_seed_boundary",
+  "target": "PULP_ITA.pulp_ita_dotp",
+  "source_gate": "config/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
+  "top_module": "pulp_ita_dotp_gpu_cov_tb",
+  "build": {
+    "mdir": "artifacts/pulp_ita_dotp_obj_dir",
+    "work_dir": "work/slice_pilots/pulp_ita_dotp",
+    "host_probe_target": "pulp_ita_dotp_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "host_probe": {
+      "output": "tlul_slice_host_probe",
+      "clock_field": "pulp_ita_dotp_gpu_cov_tb__DOT__clk_i",
+      "clock_report_name": "clk_i",
+      "reset_field": "pulp_ita_dotp_gpu_cov_tb__DOT__reset_like_w",
+      "reset_report_name": "reset_like_w",
+      "reset_asserted_value": "1U",
+      "reset_deasserted_value": "0U",
+      "host_clock_control": true,
+      "host_reset_control": false,
+      "probe_syms_state": false
+    },
+    "verilator_mode": "flattened"
+  },
+  "source_files": [
+    "third_party/ITA/src/ita_dotp.sv"
+  ],
+  "verilator_args": [
+    "--flatten"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/pulp_ita_dotp.json",
+    "host_probe_target": "pulp_ita_dotp_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "status": "promoted_first_ita_seed_boundary"
+  },
+  "acceptance": {
+    "candidate_only_until_first_cpu_vs_hybrid_benchmark": true,
+    "next_gate_must_build_cpu_reference": true,
+    "next_gate_must_build_gpu_cubin": true,
+    "next_gate_must_compare_cpu_vs_hybrid": true,
+    "speedup_claim_allowed_by_template_alone": false
+  },
+  "non_claims": [
+    "not full ITA execution",
+    "not softmax execution",
+    "not MHA execution",
+    "not model-level Transformer inference",
+    "not broad modern-NN speedup",
+    "not correctness equivalence beyond scoped output words"
+  ]
+}

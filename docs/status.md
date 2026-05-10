@@ -22,6 +22,8 @@ ITA dependency boundary state: `config/scaling_gates/ita_dependency_clean_checko
 
 ITA first seed selection state: `config/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json` selects `pulp_ita_dotp` as the first ITA active seed after the canonical dependency boundary. The weak point is explicit: `ita_dotp` is only the minimal attention-score dot-product datapath and is less representative than `ita_softmax_top`, full ITA/MHA, paged attention, or KV-cache serving state. The next_task is `implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate`; this selection gate does not run ITA build/run/compare, does not import the candidate overlay/template, and does not make a speedup or correctness claim.
 
+PULP ITA dotp overlay/template state: `config/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json` promotes the selected `pulp_ita_dotp` overlay, coverage manifest, and launch template as source. The template uses `src/tools/build_host_probe.py` with explicit `clk_i` and `reset_like_w` metadata, and `src/hybrid/Makefile` is not expanded with a `pulp_ita_dotp_host_probe` target. This is still not an ITA build/run/compare result; the next_task is `run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate`.
+
 ## Goal
 
 `modern_llm_serving_rtl_hybrid_conditions`

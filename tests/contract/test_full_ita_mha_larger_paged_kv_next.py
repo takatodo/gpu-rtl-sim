@@ -132,6 +132,12 @@ ITA_FIRST_SEED_SELECTION_AFTER_DEPENDENCY_BOUNDARY_GATE = (
     / "scaling_gates"
     / "ita_first_seed_selection_after_dependency_boundary_gate.json"
 )
+PULP_ITA_DOTP_OVERLAY_TEMPLATE_GENERIC_HOST_PROBE_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "pulp_ita_dotp_overlay_template_generic_host_probe_gate.json"
+)
 REPEAT_MEDIAN_RESULTS_SUMMARY = REPO_ROOT / "reports" / "results_reproduction_median_summary.json"
 RESIDENT_BATCH_SWEEP_SUMMARY = REPO_ROOT / "reports" / "resident_batch_sweep_summary.json"
 RESIDENT_STATE_REUSE_SUMMARY = REPO_ROOT / "reports" / "resident_state_reuse_experiment_summary.json"
@@ -220,6 +226,11 @@ FULL_ITA_MHA_COMPARE_64X1 = (
 FULL_ITA_MHA_COMPARE_1X64 = (
     REPO_ROOT / "reports" / "pulp_ita_mha_cpu_vs_hybrid_1x64_coverage_output_compare.json"
 )
+PULP_ITA_DOTP_OVERLAY = REPO_ROOT / "overlays" / "ITA" / "src" / "pulp_ita_dotp_gpu_cov_tb.sv"
+PULP_ITA_DOTP_MANIFEST = (
+    REPO_ROOT / "overlays" / "ITA" / "tests" / "pulp_ita_dotp_coverage_regions.json"
+)
+PULP_ITA_DOTP_TEMPLATE = REPO_ROOT / "config" / "slice_launch_templates" / "pulp_ita_dotp.json"
 FULL_ITA_MHA_PREFILL_DECODE_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "prefill_decode_split_mha_benchmark_gate.json"
 )
@@ -565,6 +576,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
                 self.assertNotIn(target, makefile)
 
         for template_path in (
+            PULP_ITA_DOTP_TEMPLATE,
             LARGE_KV_TEMPLATE,
             FULL_ITA_MHA_TEMPLATE,
             PAGED_ATTENTION_TEMPLATE,
@@ -962,8 +974,91 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "selected first ITA active seed: `pulp_ita_dotp`",
             "third_party/ITA/src/ita_dotp.sv",
             "defers `pulp_ita_softmax_top`",
-            "next_task: implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate",
+            "pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
             "not an ITA build/run/compare result",
+        ):
+            self.assertIn(token, combined_docs)
+
+    def test_pulp_ita_dotp_overlay_template_uses_generic_host_probe_builder(self) -> None:
+        gate = json.loads(PULP_ITA_DOTP_OVERLAY_TEMPLATE_GENERIC_HOST_PROBE_GATE.read_text(encoding="utf-8"))
+        overlay = PULP_ITA_DOTP_OVERLAY.read_text(encoding="utf-8")
+        manifest = json.loads(PULP_ITA_DOTP_MANIFEST.read_text(encoding="utf-8"))
+        template = json.loads(PULP_ITA_DOTP_TEMPLATE.read_text(encoding="utf-8"))
+        makefile = MAKEFILE.read_text(encoding="utf-8")
+        combined_docs = "\n".join(
+            [
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["status"], "promoted_dotp_overlay_template_with_generic_host_probe_builder")
+        self.assertEqual(gate["source_selection_gate"], "config/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json")
+        self.assertEqual(gate["target"], "pulp_ita_dotp")
+        self.assertEqual(gate["upstream"]["source"], "third_party/ITA/src/ita_dotp.sv")
+        self.assertEqual(gate["promoted_source_boundary"]["coverage_tb"], "overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv")
+        self.assertEqual(gate["promoted_source_boundary"]["coverage_manifest"], "overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json")
+        self.assertEqual(gate["promoted_source_boundary"]["launch_template"], "config/slice_launch_templates/pulp_ita_dotp.json")
+        self.assertEqual(gate["promoted_source_boundary"]["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertFalse(gate["promoted_source_boundary"]["makefile_target_required"])
+
+        self.assertIn("module pulp_ita_dotp_gpu_cov_tb", overlay)
+        self.assertIn("ita_dotp #(", overlay)
+        self.assertIn("real_toggle_subset_word17_o", overlay)
+        self.assertEqual(manifest["target"], "PULP_ITA.pulp_ita_dotp")
+        self.assertEqual(manifest["top_module"], "pulp_ita_dotp_gpu_cov_tb")
+        self.assertEqual(manifest["coverage_domain"], "toggle_real_subset_bitmap")
+        self.assertEqual(template["status"], "promoted_first_ita_seed_boundary")
+        self.assertEqual(template["target"], "PULP_ITA.pulp_ita_dotp")
+        self.assertEqual(template["source_gate"], "config/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json")
+        self.assertEqual(template["top_module"], "pulp_ita_dotp_gpu_cov_tb")
+        self.assertEqual(template["source_files"], ["third_party/ITA/src/ita_dotp.sv"])
+        self.assertIn("--flatten", template["verilator_args"])
+        self.assertEqual(template["build"]["host_probe_target"], "pulp_ita_dotp_host_probe")
+        self.assertEqual(template["build"]["host_probe_builder"], "src/tools/build_host_probe.py")
+        self.assertEqual(template["build"]["host_probe"]["clock_field"], "pulp_ita_dotp_gpu_cov_tb__DOT__clk_i")
+        self.assertEqual(template["build"]["host_probe"]["reset_field"], "pulp_ita_dotp_gpu_cov_tb__DOT__reset_like_w")
+        self.assertEqual(template["build"]["host_probe"]["reset_asserted_value"], "1U")
+        self.assertEqual(template["build"]["host_probe"]["reset_deasserted_value"], "0U")
+        self.assertTrue(template["build"]["host_probe"]["host_clock_control"])
+        self.assertFalse(template["build"]["host_probe"]["host_reset_control"])
+        self.assertNotIn("makefile", template["planned_overlay"])
+        self.assertNotIn("pulp_ita_dotp_host_probe", makefile)
+
+        coverage = gate["coverage_output_contract"]
+        self.assertEqual(coverage["total_words_per_state"], 29)
+        self.assertEqual(coverage["total_bytes_per_state"], 116)
+        self.assertEqual(coverage["acceptance_policy"], "coverage_output_equivalence")
+        self.assertFalse(gate["acceptance_policy"]["measurement_performed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["speedup_claim_allowed_by_gate_alone"])
+        self.assertEqual(gate["next_task"], "run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate")
+
+        dry_run = subprocess.run(
+            [
+                "python3",
+                "src/tools/run_hybrid_template.py",
+                "config/slice_launch_templates/pulp_ita_dotp.json",
+                "--shape",
+                "1x1",
+                "--dry-run",
+            ],
+            cwd=REPO_ROOT,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        self.assertIn("python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_dotp.json", dry_run.stdout)
+        self.assertNotIn("make -C src/hybrid pulp_ita_dotp_host_probe", dry_run.stdout)
+
+        for path in (PULP_ITA_DOTP_TEMPLATE, PULP_ITA_DOTP_OVERLAY, PULP_ITA_DOTP_MANIFEST):
+            self.assertTrue(_git_ls_files(path))
+
+        for token in (
+            "pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
+            "src/tools/build_host_probe.py",
+            "pulp_ita_dotp_gpu_cov_tb__DOT__clk_i",
+            "next_task: run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate",
+            "not a build/run/compare result",
         ):
             self.assertIn(token, combined_docs)
 
@@ -1560,12 +1655,17 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "nvdla_shape_expansion_next_workstream_review_gate.json",
             "ita_dependency_clean_checkout_boundary_gate.json",
             "ita_first_seed_selection_after_dependency_boundary_gate.json",
-            "next_task: implement_pulp_ita_dotp_overlay_template_generic_host_probe_gate",
-            "Review only the `pulp_ita_dotp` overlay/template/generic-host-probe promotion boundary",
+            "pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
+            "next_task: run_pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate",
+            "Review only the first `pulp_ita_dotp` generic-host-probe build/run/compare boundary",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
             "records/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json",
+            "records/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
+            "config/slice_launch_templates/pulp_ita_dotp.json",
+            "overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv",
+            "overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json",
             "records/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json",
             "records/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json",
             "records/scaling_gates/candidate_template_clean_checkout_selection_gate.json",
@@ -1591,6 +1691,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "ITA dependency boundary gate records canonical `.gitmodules` entries and gitlinks for `third_party/ITA` and `third_party/common_cells`",
             "ITA first seed selection gate selects `pulp_ita_dotp` and defers `pulp_ita_softmax_top`",
             "`third_party/ITA/src/ita_dotp.sv` is the only required ITA source path for the first selected seed",
+            "PULP ITA dotp overlay/template gate carries `build.host_probe_builder: src/tools/build_host_probe.py`",
+            "dry-run emits `python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_dotp.json`",
             "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "`run_hybrid_template.py` passes template `verilator_defines` into the Verilator command",
