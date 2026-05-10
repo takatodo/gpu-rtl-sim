@@ -329,24 +329,21 @@ Tracked evidence:
 
 Recommended next gate:
 
-`run_pulp_ita_softmax_top_shape_expansion_gate`
+`review_pulp_ita_softmax_top_shape_expansion_and_select_full_ita_or_hold`
 
 Acceptance criteria:
 
-- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_softmax_top.json --shape 64x1`
-- run `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_softmax_top.json --shape 1x64`
-- build the host probe through `src/tools/build_host_probe.py`, not `src/hybrid/Makefile`
-- compare CPU vs hybrid with `coverage_output_equivalence`
-- require mismatch count `0` before any timing or speedup language
-- keep the timing claim scoped to the softmax-top seed and the measured shapes
-- keep recursive Bender dependencies out unless a narrow requirement is recorded
-- keep full MHA, KV-cache, LLM SoC, and MobileViT out of the softmax shape expansion gate
+- review `config/scaling_gates/pulp_ita_softmax_top_shape_expansion_gate.json`
+- confirm `64x1` and `1x64` both passed CPU-vs-hybrid `coverage_output_equivalence` with mismatch count `0`
+- keep the timing claim scoped to the softmax-top seed and the two measured shapes
+- decide whether the next active workstream is full ITA/MHA dependency/template promotion, more softmax evidence, or hold
+- keep KV-cache, LLM SoC, MobileViT, and runtime changes out of this review gate
 
 Working tree review boundary:
 
-`next_task: run_pulp_ita_softmax_top_shape_expansion_gate`
+`next_task: review_pulp_ita_softmax_top_shape_expansion_and_select_full_ita_or_hold`
 
-Review only the `pulp_ita_softmax_top` shape expansion boundary. Do not mix in full MHA, KV-cache, runtime changes, or generated outputs.
+Review only the `pulp_ita_softmax_top` shape expansion result and next-workstream choice. Do not mix in full MHA implementation, KV-cache, runtime changes, or generated outputs.
 
 Review/stage boundary:
 
@@ -359,6 +356,7 @@ Review/stage boundary:
 - `records/scaling_gates/pulp_ita_dotp_shape_expansion_review_gate.json`
 - `records/scaling_gates/pulp_ita_softmax_top_dependency_template_boundary_gate.json`
 - `records/scaling_gates/pulp_ita_softmax_top_first_generic_host_probe_build_run_compare_gate.json`
+- `records/scaling_gates/pulp_ita_softmax_top_shape_expansion_gate.json`
 - `config/slice_launch_templates/pulp_ita_dotp.json`
 - `config/slice_launch_templates/pulp_ita_softmax_top.json`
 - `overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv`
@@ -411,6 +409,8 @@ Boundary acceptance:
 - dry-run emits `python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_softmax_top.json`
 - PULP ITA softmax-top first build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
 - PULP ITA softmax-top first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch
+- PULP ITA softmax-top shape expansion gate records `64x1` and `1x64` coverage-output pass with mismatch count `0`
+- PULP ITA softmax-top shape expansion gate records `64x1` as much more favorable than `1x64` in scoped single-run timing
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command

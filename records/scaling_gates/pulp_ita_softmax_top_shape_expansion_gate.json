@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "gate": "pulp_ita_softmax_top_shape_expansion_gate",
+  "objective": "Measure the selected pulp_ita_softmax_top seed on one state-parallel shape and one single-state repeated-step shape after the 1x1 generic host-probe build/run/compare gate passed.",
+  "status": "all_planned_shapes_passed_coverage_output_equivalence",
+  "source_gate": "config/scaling_gates/pulp_ita_softmax_top_first_generic_host_probe_build_run_compare_gate.json",
+  "target": "PULP_ITA.pulp_ita_softmax_top",
+  "active_seed": "pulp_ita_softmax_top",
+  "planned_shapes": [
+    "64x1",
+    "1x64"
+  ],
+  "host_probe_builder": "src/tools/build_host_probe.py",
+  "makefile_target_required": false,
+  "acceptance_policy": "coverage_output_equivalence",
+  "coverage_output_contract": {
+    "coverage_gate": "config/scaling_gates/pulp_ita_softmax_top_dependency_template_boundary_gate.json",
+    "coverage_output_target": "pulp_ita_softmax_top",
+    "acceptance_policy": "coverage_output_equivalence",
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "manifest_covered_word_count": 18
+  },
+  "result_summary": {
+    "all_planned_shapes_passed_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "timing_scope": "observed single-run timing for this softmax-top seed and these two shapes only",
+    "trend": "64x1 state-parallel timing is much more favorable than 1x64 single-state repeated-step timing in this run, although both pass coverage-output equivalence and both have hybrid wall time below CPU elapsed time."
+  },
+  "measured_shapes": [
+    {
+      "name": "state_parallel_attention_softmax_probe",
+      "shape": "64x1",
+      "nstates": 64,
+      "steps": 1,
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_softmax_top.json --shape 64x1",
+      "cpu_report": "reports/pulp_ita_softmax_top_cpu_repeat_64x1.json",
+      "hybrid_report": "reports/pulp_ita_softmax_top_hybrid_64x1.txt",
+      "coverage_output_compare_report": "reports/pulp_ita_softmax_top_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+      "storage_size_bytes": 1344,
+      "cpu_elapsed_ms": 149.823,
+      "hybrid_gpu_kernel_time_ms_total": 0.891904,
+      "hybrid_wall_time_ms": 0.922,
+      "cpu_to_gpu_kernel_speedup_ratio": 167.98108316590125,
+      "cpu_to_hybrid_wall_speedup_ratio": 162.49783080260303,
+      "raw_full_state_match": false,
+      "raw_full_state_mismatch_count": 3271,
+      "raw_full_state_mismatch_role_summary": {
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 2496
+        },
+        "other": {
+          "field_count": 49,
+          "mismatch_bytes": 775
+        }
+      },
+      "normalized_final_state_equivalence_passed": true,
+      "coverage_output_equivalence_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "coverage_output_compared_state_pair_count": 64,
+      "coverage_output_compared_word_count": 1856,
+      "coverage_output_compared_byte_count": 7424
+    },
+    {
+      "name": "single_state_repeated_attention_softmax_probe",
+      "shape": "1x64",
+      "nstates": 1,
+      "steps": 64,
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_softmax_top.json --shape 1x64",
+      "cpu_report": "reports/pulp_ita_softmax_top_cpu_repeat_1x64.json",
+      "hybrid_report": "reports/pulp_ita_softmax_top_hybrid_1x64.txt",
+      "coverage_output_compare_report": "reports/pulp_ita_softmax_top_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+      "storage_size_bytes": 1344,
+      "cpu_elapsed_ms": 3.96133,
+      "hybrid_gpu_kernel_time_ms_total": 1.303552,
+      "hybrid_wall_time_ms": 1.517,
+      "cpu_to_gpu_kernel_speedup_ratio": 3.0388737848586014,
+      "cpu_to_hybrid_wall_speedup_ratio": 2.611292023731048,
+      "raw_full_state_match": false,
+      "raw_full_state_mismatch_count": 35,
+      "raw_full_state_mismatch_role_summary": {
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 35
+        }
+      },
+      "normalized_final_state_equivalence_passed": true,
+      "coverage_output_equivalence_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "coverage_output_compared_state_pair_count": 1,
+      "coverage_output_compared_word_count": 29,
+      "coverage_output_compared_byte_count": 116
+    }
+  ],
+  "acceptance_policy_summary": {
+    "coverage_output_equivalence_required": true,
+    "all_planned_shapes_must_pass_coverage_output_equivalence": true,
+    "all_planned_shapes_passed_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_match_required": false,
+    "generic_host_probe_builder_required": true,
+    "makefile_host_probe_target_allowed": false,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "second_active_ita_seed_allowed_by_gate": false
+  },
+  "required_next_gate": {
+    "name": "review_pulp_ita_softmax_top_shape_expansion_and_select_full_ita_or_hold",
+    "scope": "Review the softmax-top shape trend and explicitly decide whether to move to full ITA/MHA, extend softmax evidence, or hold."
+  },
+  "review_boundary": [
+    "docs/roadmap.md",
+    "docs/status.md",
+    "records/scaling_gates/pulp_ita_softmax_top_shape_expansion_gate.json",
+    "records/scaling_gates/pulp_ita_softmax_top_first_generic_host_probe_build_run_compare_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+  ],
+  "next_task": "review_pulp_ita_softmax_top_shape_expansion_and_select_full_ita_or_hold",
+  "non_claims": [
+    "not full ITA execution",
+    "not MHA execution",
+    "not model-level Transformer inference",
+    "not broad modern-NN speedup",
+    "not production LLM-serving throughput",
+    "not correctness beyond scoped coverage-output words",
+    "not a second active ITA seed",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
