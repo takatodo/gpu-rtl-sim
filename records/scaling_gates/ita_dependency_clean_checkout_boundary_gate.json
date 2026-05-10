@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "gate": "ita_dependency_clean_checkout_boundary_gate",
+  "objective": "Define the clean-checkout dependency boundary for ITA and common_cells before any new ITA build/run/compare measurement is promoted.",
+  "status": "defined_dependency_boundary_before_import_or_measurement",
+  "source_review_gate": "config/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json",
+  "historical_context_gates": [
+    "config/scaling_gates/neural_network_rtl_pulp_ita_import_gate.json",
+    "config/scaling_gates/neural_network_rtl_pulp_ita_common_cells_import_and_softmax_dependency_probe_gate.json",
+    "config/scaling_gates/neural_network_rtl_full_ita_mha_dependency_audit_gate.json"
+  ],
+  "current_clean_checkout_observation": {
+    "gitmodules_contains_only": [
+      "third_party/rtlmeter"
+    ],
+    "third_party_ita_is_currently_canonical": false,
+    "third_party_common_cells_is_currently_canonical": false,
+    "local_untracked_dependency_dirs_may_exist": true,
+    "policy": "Do not treat local untracked third_party/ITA or third_party/common_cells contents as source of truth."
+  },
+  "selected_boundary": {
+    "import_mode": "explicit_canonical_dependency_boundary_required_before_measurement",
+    "preferred_canonical_form": "git_submodule_or_documented_source_import",
+    "required_dependencies": [
+      {
+        "path": "third_party/ITA",
+        "repository": "https://github.com/pulp-platform/ITA.git",
+        "historical_pinned_commit": "ba96519becce195d64e85eb9a5302e8a1d5487e7",
+        "required_decision": "restore_or_replace_as_canonical_dependency_before_use"
+      },
+      {
+        "path": "third_party/common_cells",
+        "repository": "https://github.com/pulp-platform/common_cells.git",
+        "historical_pinned_revision": "c27bce39ebb2e6bae52f60960814a2afca7bd4cb",
+        "required_decision": "restore_or_replace_as_canonical_dependency_before_use"
+      }
+    ],
+    "first_allowed_seed_after_boundary": "one of ita_dotp or ita_softmax_top, not both in the same measurement gate"
+  },
+  "required_before_ita_measurement": [
+    "Make third_party/ITA canonical in .gitmodules or record an explicit source-import alternative.",
+    "Make third_party/common_cells canonical in .gitmodules or record an explicit source-import alternative.",
+    "Add a clean-checkout contract test that validates the selected dependency paths and required source files.",
+    "Keep repo-specific RTL harnesses and manifests under overlays/ITA, not under third_party.",
+    "Select exactly one first ITA seed for the first measurement gate.",
+    "Keep recursive Bender dependencies out unless a narrow missing module requires them and the gate records why."
+  ],
+  "excluded_from_this_gate": [
+    "Adding or modifying submodules",
+    "Promoting untracked local third_party/ITA or third_party/common_cells contents as canonical source",
+    "Running ITA build/run/compare",
+    "Adding a second active seed measurement",
+    "Changing runtime or LLVM pass behavior",
+    "Writing generated reports or artifacts as source of truth"
+  ],
+  "acceptance_policy": {
+    "define_only": true,
+    "dependency_import_performed_by_this_gate": false,
+    "ita_measurement_allowed_by_this_gate": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "clean_checkout_reproducibility_required_before_next_measurement": true
+  },
+  "review_boundary": [
+    "docs/roadmap.md",
+    "docs/status.md",
+    "records/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json",
+    "records/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+  ],
+  "next_task": "implement_canonical_ita_common_cells_dependency_boundary",
+  "non_claims": [
+    "not an ITA import implementation",
+    "not an ITA build/run/compare result",
+    "not approval to recursively import all Bender dependencies",
+    "not promotion of ita_dotp and ita_softmax_top together",
+    "not a speedup or correctness claim for ITA"
+  ]
+}

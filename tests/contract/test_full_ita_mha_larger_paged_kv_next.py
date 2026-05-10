@@ -120,6 +120,12 @@ NVDLA_SHAPE_EXPANSION_NEXT_WORKSTREAM_REVIEW_GATE = (
     / "scaling_gates"
     / "nvdla_shape_expansion_next_workstream_review_gate.json"
 )
+ITA_DEPENDENCY_CLEAN_CHECKOUT_BOUNDARY_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "ita_dependency_clean_checkout_boundary_gate.json"
+)
 REPEAT_MEDIAN_RESULTS_SUMMARY = REPO_ROOT / "reports" / "results_reproduction_median_summary.json"
 RESIDENT_BATCH_SWEEP_SUMMARY = REPO_ROOT / "reports" / "resident_batch_sweep_summary.json"
 RESIDENT_STATE_REUSE_SUMMARY = REPO_ROOT / "reports" / "resident_state_reuse_experiment_summary.json"
@@ -822,7 +828,60 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "nvdla_shape_expansion_next_workstream_review_gate.json",
             "selected next workstream: `ita_dependency_clean_checkout_boundary`",
             "third_party/ITA` and `third_party/common_cells` canonical",
-            "next_task: define_ita_dependency_clean_checkout_boundary_gate",
+        ):
+            self.assertIn(token, combined_docs)
+
+    def test_ita_dependency_clean_checkout_boundary_is_defined_before_measurement(self) -> None:
+        gate = json.loads(ITA_DEPENDENCY_CLEAN_CHECKOUT_BOUNDARY_GATE.read_text(encoding="utf-8"))
+        combined_docs = "\n".join(
+            [
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+        gitmodules = (REPO_ROOT / ".gitmodules").read_text(encoding="utf-8")
+
+        self.assertEqual(gate["status"], "defined_dependency_boundary_before_import_or_measurement")
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json",
+        )
+        self.assertEqual(gate["current_clean_checkout_observation"]["gitmodules_contains_only"], ["third_party/rtlmeter"])
+        self.assertFalse(gate["current_clean_checkout_observation"]["third_party_ita_is_currently_canonical"])
+        self.assertFalse(gate["current_clean_checkout_observation"]["third_party_common_cells_is_currently_canonical"])
+        self.assertIn(
+            "Do not treat local untracked third_party/ITA or third_party/common_cells contents as source of truth.",
+            gate["current_clean_checkout_observation"]["policy"],
+        )
+        required = {
+            dependency["path"]: dependency
+            for dependency in gate["selected_boundary"]["required_dependencies"]
+        }
+        self.assertEqual(required["third_party/ITA"]["historical_pinned_commit"], "ba96519becce195d64e85eb9a5302e8a1d5487e7")
+        self.assertEqual(
+            required["third_party/common_cells"]["historical_pinned_revision"],
+            "c27bce39ebb2e6bae52f60960814a2afca7bd4cb",
+        )
+        self.assertEqual(
+            gate["selected_boundary"]["first_allowed_seed_after_boundary"],
+            "one of ita_dotp or ita_softmax_top, not both in the same measurement gate",
+        )
+        self.assertTrue(gate["acceptance_policy"]["define_only"])
+        self.assertFalse(gate["acceptance_policy"]["dependency_import_performed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["ita_measurement_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["speedup_claim_allowed_by_gate_alone"])
+        self.assertEqual(gate["next_task"], "implement_canonical_ita_common_cells_dependency_boundary")
+        self.assertIn("not an ITA import implementation", gate["non_claims"])
+        self.assertIn("not approval to recursively import all Bender dependencies", gate["non_claims"])
+        self.assertIn("third_party/rtlmeter", gitmodules)
+        self.assertNotIn("third_party/ITA", gitmodules)
+        self.assertNotIn("third_party/common_cells", gitmodules)
+
+        for token in (
+            "ita_dependency_clean_checkout_boundary_gate.json",
+            "dependency boundary defined before import or measurement",
+            "`.gitmodules` only contains `third_party/rtlmeter`",
+            "next_task: implement_canonical_ita_common_cells_dependency_boundary",
         ):
             self.assertIn(token, combined_docs)
 
@@ -1417,11 +1476,13 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
             "nvdla_cmac_core_mac_template_shape_expansion_gate.json",
             "nvdla_shape_expansion_next_workstream_review_gate.json",
-            "next_task: define_ita_dependency_clean_checkout_boundary_gate",
-            "Review only the dependency-boundary definition for ITA/common_cells",
+            "ita_dependency_clean_checkout_boundary_gate.json",
+            "next_task: implement_canonical_ita_common_cells_dependency_boundary",
+            "Review only the canonical dependency-boundary implementation for ITA/common_cells",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
+            "records/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json",
             "records/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json",
             "records/scaling_gates/candidate_template_clean_checkout_selection_gate.json",
             "records/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
@@ -1444,6 +1505,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "candidate selection gate identifies `NVDLA.nvdla_cmac_core_mac` as primary",
             "minimal build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`",
             "next workstream review selects `ita_dependency_clean_checkout_boundary`",
+            "ITA dependency boundary gate records that `.gitmodules` currently contains only `third_party/rtlmeter`",
             "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "`run_hybrid_template.py` passes template `verilator_defines` into the Verilator command",
