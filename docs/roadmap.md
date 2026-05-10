@@ -218,31 +218,27 @@ Tracked evidence:
 
 Recommended next gate:
 
-`verilator_like_hybrid_config_generation_boundary`
+`legacy_cpu_seed_template_retirement_boundary`
 
 Acceptance criteria:
 
-- keep `run_hybrid_template.py` usable from generated slice-launch templates
-- generate the scaling gate, coverage manifest, and launch template from target/top/overlay metadata
-- build the generic host probe from template metadata without adding a per-target `src/hybrid/Makefile` rule
-- preserve `--dry-run` behavior so generated command plans can be reviewed before execution
-- keep runtime/pass implementation changes, new NN target imports, and MobileViT tooling out of this review boundary
+- remove legacy CPU seed launch templates that are no longer active targets
+- keep VeeR EL2 and XuanTie E902 represented only in `config/archived_targets.json`
+- verify active target metadata does not reference retired template paths or retired target names
+- keep runtime/pass changes, submodule imports, NN target additions, and MobileViT tooling out of this review boundary
 
 Working tree review boundary:
 
-`next_task: verilator_like_hybrid_config_generation_boundary`
+`next_task: legacy_cpu_seed_template_retirement_boundary`
 
-Review the generated-config usability path together. This is the smallest current review boundary that makes hybrid operation feel close to a Verilator flow: generate config from target metadata, inspect the dry-run plan, and build the generic host probe from template metadata.
+Review only the retirement of the old CPU seed launch-template files. The goal is to keep the active `config/slice_launch_templates/` surface aligned with `config/targets.json` while preserving historical context in `config/archived_targets.json`.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
-- `src/tools/gen_hybrid_config.py`
-- `src/tools/hybrid_config_generator.py`
-- `src/tools/build_host_probe.py`
-- `src/tools/hybrid_host_probe_builder.py`
-- `src/tools/hybrid_template_runner.py`
-- existing `src/tools/run_hybrid_template.py` and `tests/contract/test_hybrid_verilator_like_cli.py` behavior
+- remove `config/slice_launch_templates/veer_el2.json`
+- remove `config/slice_launch_templates/xuantie_e902.json`
+- `tests/contract/test_resident_runtime_contract.py`
 
 Exclude from this review boundary:
 
@@ -251,14 +247,16 @@ Exclude from this review boundary:
 - non-rtlmeter overlays such as ITA, ibex, MobileViT, and NVDLA
 - runtime/pass implementation changes under `src/hybrid/` and `src/passes/`
 - broad existing-runner changes such as `build_vl_gpu.py`, `run_vl_hybrid.py`, `compare_vl_hybrid_modes.py`, and `gen_vl_gpu_kernel.py`
+- generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`
 - generated output under `reports/`, `artifacts/`, and `work/`
 
 Boundary acceptance:
 
-- `python3 src/tools/gen_hybrid_config.py --target PULP_ITA.demo_cov --top-module demo_cov_tb --overlay overlays/demo/src/demo_cov_tb.sv --dry-run` emits gate, manifest, and template payloads
-- generated templates name `src/tools/build_host_probe.py` as the host-probe builder
-- `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_attention_kv_score.json --shape 64x1 --dry-run` uses the generic host-probe builder and does not require a Makefile target
-- `python3 -m unittest tests.contract.test_hybrid_verilator_like_cli -q` passes
+- `config/slice_launch_templates/veer_el2.json` is absent
+- `config/slice_launch_templates/xuantie_e902.json` is absent
+- `config/targets.json` and `config/selection.json` do not reference `veer_el2`, `xuantie_e902`, or their retired launch-template paths
+- `config/archived_targets.json` remains the place that records why VeeR EL2 and XuanTie E902 are archived
+- `python3 -m unittest tests.contract.test_resident_runtime_contract -q` passes
 - `python3 -m unittest discover -s tests/contract -q` passes
 
 ## Archive Boundary

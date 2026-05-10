@@ -16,6 +16,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SELECTION = REPO_ROOT / "config" / "selection.json"
 TARGETS = REPO_ROOT / "config" / "targets.json"
 CONFIG_README = REPO_ROOT / "config" / "README.md"
+ARCHIVED_TARGETS = REPO_ROOT / "config" / "archived_targets.json"
 SCALING_GATES_README = REPO_ROOT / "config" / "scaling_gates" / "README.md"
 RECORDS_README = REPO_ROOT / "records" / "README.md"
 CONFIG_MINIMAL_SURFACE_AUDIT = (
@@ -99,6 +100,38 @@ class ReducedActiveSurfaceContractTest(unittest.TestCase):
         self.assertIn("tlul_fifo_sync", active_names)
         self.assertIn("pulp_ita_mha_first_hybrid_benchmark_summary.json", json.dumps(selection))
         self.assertIn("pulp_paged_attention_kv_score_first_hybrid_benchmark_summary.json", json.dumps(selection))
+
+    def test_retired_cpu_seed_templates_are_not_active_surface(self) -> None:
+        targets = json.loads(TARGETS.read_text(encoding="utf-8"))
+        selection = json.loads(SELECTION.read_text(encoding="utf-8"))
+        archived = json.loads(ARCHIVED_TARGETS.read_text(encoding="utf-8"))
+        retired_templates = {
+            "config/slice_launch_templates/veer_el2.json",
+            "config/slice_launch_templates/xuantie_e902.json",
+        }
+        retired_names = {"veer_el2", "xuantie_e902"}
+
+        self.assertFalse((REPO_ROOT / "config" / "slice_launch_templates" / "veer_el2.json").exists())
+        self.assertFalse((REPO_ROOT / "config" / "slice_launch_templates" / "xuantie_e902.json").exists())
+
+        active_text = json.dumps(
+            {
+                "targets": targets,
+                "selection_active_scope": selection["active_scope"],
+                "selection_candidate_targets": selection["candidate_targets"],
+            }
+        )
+        for retired_template in retired_templates:
+            self.assertNotIn(retired_template, active_text)
+        for retired_name in retired_names:
+            self.assertNotIn(f'"name": "{retired_name}"', active_text)
+            self.assertNotIn(f'"{retired_name}"', json.dumps(selection["active_scope"]["targets"]))
+
+        archived_text = json.dumps(archived)
+        for retired_template in retired_templates:
+            self.assertIn(retired_template, archived_text)
+        for retired_name in retired_names:
+            self.assertIn(f'"name": "{retired_name}"', archived_text)
 
     def test_active_target_references_resolve_from_checkout(self) -> None:
         targets = json.loads(TARGETS.read_text(encoding="utf-8"))
