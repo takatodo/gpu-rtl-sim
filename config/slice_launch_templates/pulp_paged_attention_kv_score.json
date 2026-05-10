@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "target": "PULP_ITA.pulp_paged_attention_kv_score",
+  "source_gate": "config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+  "top_module": "pulp_paged_attention_kv_score_gpu_cov_tb",
+  "build": {
+    "mdir": "artifacts/pulp_paged_attention_kv_score_obj_dir",
+    "work_dir": "work/slice_pilots/pulp_paged_attention_kv_score",
+    "host_probe_target": "pulp_paged_attention_kv_score_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "host_probe": {
+      "output": "tlul_slice_host_probe",
+      "clock_field": "pulp_paged_attention_kv_score_gpu_cov_tb__DOT__clk_i",
+      "clock_report_name": "clk_i",
+      "reset_field": "pulp_paged_attention_kv_score_gpu_cov_tb__DOT__reset_like_w",
+      "reset_report_name": "reset_like_w",
+      "reset_asserted_value": "1U",
+      "reset_deasserted_value": "0U",
+      "host_clock_control": true,
+      "host_reset_control": false,
+      "probe_syms_state": false
+    },
+    "verilator_mode": "flattened"
+  },
+  "source_files": [],
+  "verilator_args": [
+    "--flatten"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/ITA/tests/pulp_paged_attention_kv_score_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+    "host_probe_target": "pulp_paged_attention_kv_score_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "makefile": "fallback_only",
+    "status": "implemented"
+  },
+  "paged_attention_contract": {
+    "page_count": 8,
+    "slots_per_page": 16,
+    "total_logical_slots": 128,
+    "score_window": 4,
+    "required_page_table_lookup": true,
+    "required_qk_score_accumulation": true,
+    "required_selected_slot_observation": true
+  },
+  "acceptance": {
+    "candidate_only_until_first_cpu_vs_hybrid_benchmark": true,
+    "next_gate_must_build_cpu_reference": true,
+    "next_gate_must_build_gpu_cubin": true,
+    "next_gate_must_compare_cpu_vs_hybrid": true,
+    "speedup_claim_allowed_by_template_alone": false
+  },
+  "non_claims": [
+    "not full production paged attention",
+    "not full ITA/MHA integration",
+    "not model-level Transformer inference",
+    "not production KV-cache memory hierarchy",
+    "not broad modern-NN speedup"
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "gate": "generic_hybrid_benchmark_cli_gate",
+  "objective": "Expose a Verilator-like public benchmark CLI where supported hybrid RTL workloads can be selected by target plus shape or limit.",
+  "status": "passed_dry_run_preflight_unified_summary_schema_resident_and_mobile_vit_review",
+  "public_cli": "src/tools/run_hybrid_benchmark.py",
+  "shared_module": "src/tools/hybrid_benchmark.py",
+  "supported_targets": [
+    {
+      "target": "pulp_ita_mha",
+      "example": "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run",
+      "delegates_to": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 64x1"
+    },
+    {
+      "target": "pulp_ita_mha",
+      "mode": "resident-state-reuse",
+      "example": "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode resident-state-reuse --dry-run",
+      "delegates_to": "python3 src/tools/run_results_reproduction.py --resident-state-reuse 16x64 --resident-state-reuse-phases 4"
+    },
+    {
+      "target": "pulp_ita_mha",
+      "mode": "persistent-resident-state-abi",
+      "example": "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run",
+      "delegates_to": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4"
+    },
+    {
+      "target": "paged_attention_kv_score",
+      "example": "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run",
+      "delegates_to": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_attention_kv_score.json --shape 64x1"
+    },
+    {
+      "target": "mobile_vit",
+      "example": "python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run",
+      "delegates_to": "python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128"
+    }
+  ],
+  "acceptance_policy": {
+    "cli_is_thin": true,
+    "reusable_logic_in_shared_module": true,
+    "dry_run_required": true,
+    "preflight_required": true,
+    "contract_test_required": true,
+    "docs_required": true
+  },
+  "unified_summary_schema": {
+    "cli_option": "--summary-out",
+    "default_path_pattern": "reports/hybrid_benchmark_<target>_<mode>_<shape-or-limit>.json",
+    "schema_fields": [
+      "schema_version",
+      "tool",
+      "target",
+      "shape",
+      "limit",
+      "mode",
+      "phases",
+      "execution_mode",
+      "command_count",
+      "commands",
+      "expected_reports",
+      "evidence",
+      "non_claims"
+    ],
+    "dry_run_policy": "summary is written but evidence.status is not_collected",
+    "executed_policy": "summary reads collected coverage-output evidence from generated reports when available",
+    "existing_evidence_policy": "summary reads existing generated reports without rerunning benchmark commands",
+    "example": "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run --summary-out"
+  },
+  "executed_smokes": [
+    {
+      "command": "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --summary-out reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json",
+      "summary": "reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json",
+      "compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+      "target": "pulp_ita_mha",
+      "shape": "1x1",
+      "mode": "template",
+      "execution_mode": "executed",
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "compared_word_count": 29,
+      "compared_byte_count": 116
+    },
+    {
+      "command": "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x1 --summary-out reports/hybrid_benchmark_paged_attention_kv_score_template_1x1.json",
+      "summary": "reports/hybrid_benchmark_paged_attention_kv_score_template_1x1.json",
+      "compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+      "target": "paged_attention_kv_score",
+      "shape": "1x1",
+      "mode": "template",
+      "execution_mode": "executed",
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "compared_word_count": 29,
+      "compared_byte_count": 116
+    },
+    {
+      "command": "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --mode resident-state-reuse --phases 2 --summary-out reports/hybrid_benchmark_pulp_ita_mha_resident_state_reuse_1x1.json",
+      "summary": "reports/hybrid_benchmark_pulp_ita_mha_resident_state_reuse_1x1.json",
+      "aggregate_summary": "reports/resident_state_reuse_experiment_summary.json",
+      "target": "pulp_ita_mha",
+      "shape": "1x1",
+      "mode": "resident-state-reuse",
+      "execution_mode": "executed",
+      "phases": 2,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "phase_count": 2
+    },
+    {
+      "command": "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --mode persistent-resident-state-abi --phases 2 --summary-out reports/hybrid_benchmark_pulp_ita_mha_persistent_resident_state_abi_1x1.json",
+      "summary": "reports/hybrid_benchmark_pulp_ita_mha_persistent_resident_state_abi_1x1.json",
+      "aggregate_summary": "reports/persistent_resident_state_abi_probe_summary.json",
+      "target": "pulp_ita_mha",
+      "shape": "1x1",
+      "mode": "persistent-resident-state-abi",
+      "execution_mode": "executed",
+      "phases": 2,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "phase_count": 2
+    },
+    {
+      "command": "python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --summary-from-existing --summary-out reports/hybrid_benchmark_mobile_vit_template_limit128.json",
+      "summary": "reports/hybrid_benchmark_mobile_vit_template_limit128.json",
+      "aggregate_summary": "reports/mobile_vit_hybrid_128_summary.json",
+      "accuracy_report": "reports/mobile_vit_hybrid_128_accuracy.json",
+      "target": "mobile_vit",
+      "limit": 128,
+      "mode": "template",
+      "execution_mode": "existing_evidence",
+      "evaluated_count": 128,
+      "top1_accuracy": 0.7734375,
+      "top5_accuracy": 0.953125,
+      "coverage_output_passed": true,
+      "hybrid_batch_count": 1
+    }
+  ],
+  "non_claims": [
+    "not a replacement for the full public benchmark-pack reproduction command",
+    "not full target inventory coverage",
+    "not a guarantee that every supported shape has fresh executed evidence in the current checkout",
+    "existing_evidence summaries do not rerun benchmark commands",
+    "not production LLM serving throughput",
+    "not MobileViT numerical inference in RTL",
+    "preflight is not correctness or timing evidence"
+  ],
+  "next_task": "review_public_results_pack_after_wrapper_summary_schema_publication"
+}

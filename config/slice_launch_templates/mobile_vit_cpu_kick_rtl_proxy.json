@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "target": "MobileViT.mobile_vit_cpu_kick_rtl_proxy",
+  "source_gate": "config/scaling_gates/mobile_vit_cpu_kick_rtl_hybrid_boundary_intake_gate.json",
+  "top_module": "mobile_vit_cpu_kick_rtl_proxy_gpu_cov_tb",
+  "build": {
+    "mdir": "artifacts/mobile_vit_cpu_kick_rtl_proxy_obj_dir",
+    "work_dir": "work/slice_pilots/mobile_vit_cpu_kick_rtl_proxy",
+    "host_probe_target": "mobile_vit_cpu_kick_rtl_proxy_host_probe",
+    "verilator_mode": "flattened"
+  },
+  "source_files": [
+    "overlays/mobile_vit/src/mobile_vit_cpu_kick_rtl_proxy_gpu_cov_tb.sv"
+  ],
+  "verilator_args": [
+    "--flatten",
+    "-Ioverlays/mobile_vit/src"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/mobile_vit/src/mobile_vit_cpu_kick_rtl_proxy_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/mobile_vit/tests/mobile_vit_cpu_kick_rtl_proxy_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/mobile_vit_cpu_kick_rtl_proxy.json",
+    "host_probe_target": "mobile_vit_cpu_kick_rtl_proxy_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "implemented"
+  },
+  "acceptance": {
+    "candidate_only_until_first_cpu_vs_hybrid_compare": true,
+    "next_gate_must_build_cpu_reference": true,
+    "next_gate_must_build_gpu_cubin": true,
+    "next_gate_must_compare_cpu_vs_hybrid": true,
+    "accuracy_claim_allowed_by_template_alone": false
+  },
+  "non_claims": [
+    "not MobileViT numerical inference",
+    "not ImageNet accuracy measurement",
+    "not full CPU-core execution",
+    "not full SoC boot",
+    "not model graph execution",
+    "not broad CPU versus hybrid speedup"
+  ]
+}

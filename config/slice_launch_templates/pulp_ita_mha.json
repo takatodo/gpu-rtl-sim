@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "target": "PULP_ITA.pulp_ita_mha",
+  "source_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json",
+  "top_module": "pulp_ita_mha_gpu_cov_tb",
+  "build": {
+    "mdir": "artifacts/pulp_ita_mha_obj_dir",
+    "work_dir": "work/slice_pilots/pulp_ita_mha",
+    "host_probe_target": "pulp_ita_mha_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "host_probe": {
+      "output": "tlul_slice_host_probe",
+      "clock_field": "pulp_ita_mha_gpu_cov_tb__DOT__clk_i",
+      "clock_report_name": "clk_i",
+      "reset_field": "pulp_ita_mha_gpu_cov_tb__DOT__reset_like_w",
+      "reset_report_name": "reset_like_w",
+      "reset_asserted_value": "1U",
+      "reset_deasserted_value": "0U",
+      "host_clock_control": true,
+      "host_reset_control": false,
+      "probe_syms_state": false
+    },
+    "verilator_mode": "flattened"
+  },
+  "source_files": [
+    "third_party/common_cells/src/cf_math_pkg.sv",
+    "third_party/common_cells/src/lzc.sv",
+    "third_party/common_cells/src/fifo_v3.sv",
+    "overlays/ITA/src/pulp_ita_cluster_clock_gating_sim.sv",
+    "overlays/ITA/src/pulp_ita_tc_sram_sim.sv",
+    "third_party/ITA/src/ita_package.sv",
+    "third_party/ITA/src/ita_controller.sv",
+    "third_party/ITA/src/ita_input_sampler.sv",
+    "third_party/ITA/src/ita_inp1_mux.sv",
+    "third_party/ITA/src/ita_inp2_mux.sv",
+    "third_party/ITA/src/ita_dotp.sv",
+    "third_party/ITA/src/ita_sumdotp.sv",
+    "third_party/ITA/src/ita_accumulator.sv",
+    "third_party/ITA/src/ita_max_finder.sv",
+    "third_party/ITA/src/ita_register_file_1w_multi_port_read.sv",
+    "third_party/ITA/src/ita_softmax.sv",
+    "third_party/ITA/src/ita_serdiv.sv",
+    "third_party/ITA/src/ita_softmax_top.sv",
+    "third_party/ITA/src/ita_requantization_controller.sv",
+    "third_party/ITA/src/ita_requantizer.sv",
+    "third_party/ITA/src/ita_gelu.sv",
+    "third_party/ITA/src/ita_relu.sv",
+    "third_party/ITA/src/ita_activation.sv",
+    "third_party/ITA/src/ita_fifo_controller.sv",
+    "third_party/ITA/src/ita_output_controller.sv",
+    "third_party/ITA/src/ita_weight_controller.sv",
+    "third_party/ITA/src/ita_register_file_1w_multi_port_read_we.sv",
+    "third_party/ITA/src/ita.sv",
+    "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv"
+  ],
+  "verilator_args": [
+    "--flatten",
+    "-Wno-WIDTHEXPAND",
+    "-Wno-WIDTHTRUNC",
+    "-Wno-COMBDLY",
+    "-Wno-UNSIGNED",
+    "-Wno-UNOPTFLAT",
+    "+define+ITA_M=16",
+    "+define+ITA_N=16",
+    "+define+ITA_S=16",
+    "+define+ITA_P=16",
+    "+define+ITA_E=16"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/ITA/tests/pulp_ita_mha_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/pulp_ita_mha.json",
+    "host_probe_target": "pulp_ita_mha_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "makefile": "fallback_only",
+    "status": "implemented"
+  },
+  "acceptance": {
+    "candidate_only_until_first_cpu_vs_hybrid_benchmark": true,
+    "next_gate_must_build_cpu_reference": true,
+    "next_gate_must_build_gpu_cubin": true,
+    "next_gate_must_compare_cpu_vs_hybrid": true,
+    "speedup_claim_allowed_by_template_alone": false
+  },
+  "non_claims": [
+    "not full production ITA/MHA integration",
+    "not model-level Transformer inference",
+    "not production memory hierarchy",
+    "not broad modern-NN speedup"
+  ]
+}

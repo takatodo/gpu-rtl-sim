@@ -1,0 +1,283 @@
+{
+  "schema_version": 1,
+  "objective": "LLM serving に近い RTL workload を、Verilator に近い簡単さで hybrid 実行し、正しさ・速度傾向・再現手順を公開可能な benchmark pack として維持する",
+  "status": "complete_public_benchmark_pack_current_revision",
+  "source_packaging_gate": "config/scaling_gates/public_results_packaging_gate.json",
+    "current_priority": "public_benchmark_pack_externalization_ready",
+  "success_criteria": [
+    "LLM-serving-like RTL workloads are represented by MHA, paged-attention KV-score, paged KV-cache, resident decode, resident batch-decode, file-boundary state reuse, process-scoped persistent resident ABI evidence, and MobileViT CPU-kick ImageNet limit-128 hybrid control-boundary evidence",
+    "hybrid execution is exposed through Verilator-like public entrypoints and generated-template flows",
+    "correctness is recorded as coverage-output equivalence rather than raw full-state equality",
+    "speed trends are summarized with repeat-median and resident/persistent measurements",
+    "reproduction commands are documented from public CLI entrypoints",
+    "the public benchmark pack has explicit non-claims",
+    "source-of-truth files point at the packaging gate",
+    "contract tests verify the public pack, evidence paths, CLI surface, and source-of-truth alignment",
+        "wrapper summary schema is published in docs/results.md",
+        "wrapper summary reports cover template, resident, persistent resident, and MobileViT existing-evidence paths",
+        "wrapper summaries avoid local absolute paths",
+        "public pack manifest and prerequisites are documented for external readers",
+        "public dry-run reproduction smoke commands are documented and tested",
+        "public_release_checklist_ready is documented and tested",
+        "public_pack_archive_ready dry-run plan is documented and tested"
+  ],
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "LLM serving に近い RTL workload",
+      "status": "satisfied",
+      "evidence": [
+        "docs/results.md:Full ITA/MHA",
+        "docs/results.md:Paged-attention KV score",
+        "docs/results.md:Full ITA/MHA resident batch",
+        "docs/results.md:Full ITA/MHA persistent resident ABI",
+        "reports/pulp_paged_kv_cache_large_first_hybrid_benchmark_summary.json",
+        "reports/pulp_paged_attention_kv_score_first_hybrid_benchmark_summary.json",
+        "reports/persistent_resident_state_abi_probe_summary.json",
+        "reports/mobile_vit_hybrid_128_summary.json"
+      ]
+    },
+    {
+      "requirement": "Verilator に近い簡単さで hybrid 実行",
+      "status": "satisfied",
+      "evidence": [
+        "README.md:Minimal CPU/GPU Repro Flow",
+        "README.md:Generate a new hybrid config",
+        "src/tools/run_hybrid_template.py",
+        "src/tools/gen_hybrid_config.py",
+        "src/tools/run_results_reproduction.py",
+        "python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128 --dry-run",
+        "config/scaling_gates/hybrid_verilator_like_config_and_probe_generation_gate.json"
+      ]
+    },
+    {
+      "requirement": "正しさ",
+      "status": "satisfied",
+      "evidence": [
+        "docs/results.md:Correctness Condition",
+        "coverage_output_equivalence",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_32x64_resident_coverage_output_compare.json",
+        "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+        "reports/persistent_resident_state_abi_probe_summary.json",
+        "reports/mobile_vit_cpu_kick_rtl_proxy_imagenet_batch1_128_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+      ]
+    },
+    {
+      "requirement": "速度傾向",
+      "status": "satisfied",
+      "evidence": [
+        "docs/results.md:Performance Summary",
+        "reports/results_reproduction_median_summary.json",
+        "reports/resident_batch_sweep_summary.json",
+        "config/scaling_gates/resident_execution_optimization_next_gate.json",
+        "config/scaling_gates/persistent_resident_device_handle_storage_gate.json"
+      ]
+    },
+    {
+      "requirement": "再現手順",
+      "status": "satisfied",
+      "evidence": [
+        "docs/results.md:Reproduction",
+        "README.md:External-facing result synthesis",
+        "python3 src/tools/run_results_reproduction.py --dry-run",
+        "python3 src/tools/run_results_reproduction.py --repeat-median 3 --dry-run",
+        "python3 src/tools/run_results_reproduction.py --resident-state-reuse 16x64 --resident-state-reuse-phases 4 --dry-run",
+        "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --dry-run",
+        "python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128 --dry-run"
+      ]
+    },
+    {
+      "requirement": "公開可能な benchmark pack",
+      "status": "satisfied",
+      "evidence": [
+        "docs/results.md",
+        "README.md",
+        "docs/status.md",
+        "docs/roadmap.md",
+        "config/scaling_gates/public_results_packaging_gate.json"
+      ]
+    },
+    {
+      "requirement": "非主張を明示",
+      "status": "satisfied",
+      "evidence": [
+        "docs/results.md:Non-Claims",
+        "not production LLM serving throughput",
+        "not raw full-state equality",
+        "not cross-process persistent CUDA state",
+        "not MobileViT numerical inference in RTL",
+        "not ImageNet accuracy from RTL logits",
+        "not full 50k ImageNet hybrid execution"
+      ]
+    },
+    {
+      "requirement": "検証",
+      "status": "satisfied",
+      "evidence": [
+        "python3 -m unittest discover -s tests/contract -q",
+        "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+        "tests/contract/test_hybrid_verilator_like_cli.py",
+        "tests/contract/test_resident_runtime_contract.py"
+      ]
+    },
+    {
+      "requirement": "wrapper summary schema",
+      "status": "satisfied",
+      "evidence": [
+        "docs/results.md:Wrapper summary schema fields",
+        "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json:unified_summary_schema",
+        "reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json",
+        "reports/hybrid_benchmark_paged_attention_kv_score_template_1x1.json",
+        "reports/hybrid_benchmark_pulp_ita_mha_resident_state_reuse_1x1.json",
+        "reports/hybrid_benchmark_pulp_ita_mha_persistent_resident_state_abi_1x1.json",
+        "reports/hybrid_benchmark_mobile_vit_template_limit128.json"
+      ]
+    },
+        {
+            "requirement": "local absolute path policy",
+            "status": "satisfied",
+            "evidence": [
+                "reports/hybrid_benchmark_mobile_vit_template_limit128.json commands use <local-absolute-path>",
+                "tests/contract/test_hybrid_verilator_like_cli.py"
+            ]
+        },
+        {
+            "requirement": "public pack manifest",
+            "status": "satisfied",
+            "evidence": [
+                "docs/results.md:Public pack manifest",
+                "docs/results.md:Prerequisites by path",
+                "README.md:How to read the public benchmark pack",
+                "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+            ]
+        },
+        {
+            "requirement": "public reproduction smoke",
+            "status": "satisfied",
+            "evidence": [
+                "docs/results.md:Public reproduction smoke",
+                "tests/contract/test_hybrid_verilator_like_cli.py"
+            ]
+        },
+        {
+            "requirement": "public_release_checklist_ready",
+            "status": "satisfied",
+            "evidence": [
+                "docs/results.md:Public Release Checklist",
+                "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+            ]
+        },
+        {
+            "requirement": "public_pack_archive_ready",
+            "status": "satisfied",
+            "evidence": [
+                "docs/results.md:Public archive dry-run",
+                "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+                "tests/contract/test_hybrid_verilator_like_cli.py"
+            ]
+        }
+    ],
+  "measured_evidence_summary": {
+    "repeat_median": {
+      "summary": "reports/results_reproduction_median_summary.json",
+      "repeat_count": 3,
+      "all_coverage_output_passed": true,
+      "max_coverage_output_mismatch_count": 0,
+      "representative_shapes": [
+        "64x1",
+        "1x64",
+        "32x64",
+        "64x1 paged-attention"
+      ]
+    },
+    "resident_batch_sweep": {
+      "summary": "reports/resident_batch_sweep_summary.json",
+      "batch_states": [
+        1,
+        8,
+        16,
+        32
+      ],
+      "repeat_count": 3,
+      "all_coverage_output_passed": true,
+      "max_coverage_output_mismatch_count": 0
+    },
+    "persistent_resident_state_abi": {
+      "summary": "reports/persistent_resident_state_abi_probe_summary.json",
+      "source_gate": "config/scaling_gates/persistent_resident_device_handle_storage_gate.json",
+      "shape": "16x64",
+      "phase_count": 4,
+      "phase_shapes": [
+        "16x64",
+        "16x128",
+        "16x192",
+        "16x256"
+      ],
+      "state_authority": "in_process_gpu_d_storage_after_phase_1",
+      "all_coverage_output_passed": true,
+      "max_coverage_output_mismatch_count": 0,
+      "hybrid_gpu_kernel_total_ms": 4.486688,
+      "hybrid_wall_ms": 4.517
+    },
+    "mobile_vit_imagenet_128": {
+      "summary": "reports/mobile_vit_hybrid_128_summary.json",
+      "one_command": "python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128",
+      "evaluated_count": 128,
+      "top1_accuracy": 0.7734375,
+      "top5_accuracy": 0.953125,
+      "hybrid_batch_count": 1,
+      "coverage_output_equivalence_complete": true,
+      "coverage_output_mismatch_count": 0,
+      "compared_word_count": 21
+    },
+        "wrapper_summary_schema": {
+            "gate": "config/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
+            "reports": [
+        "reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json",
+        "reports/hybrid_benchmark_paged_attention_kv_score_template_1x1.json",
+        "reports/hybrid_benchmark_pulp_ita_mha_resident_state_reuse_1x1.json",
+        "reports/hybrid_benchmark_pulp_ita_mha_persistent_resident_state_abi_1x1.json",
+        "reports/hybrid_benchmark_mobile_vit_template_limit128.json"
+      ],
+      "all_reported_coverage_output_passed": true,
+      "max_coverage_output_mismatch_count": 0,
+            "mobile_vit_execution_mode": "existing_evidence",
+            "local_absolute_path_policy": "commands sanitized in wrapper summaries"
+        },
+        "minimum_public_dry_run_smoke": {
+            "commands": [
+                "python3 src/tools/run_results_reproduction.py --dry-run",
+                "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+                "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run",
+                "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run",
+                "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run",
+                "python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run"
+            ],
+            "claim": "CLI parsing and command expansion only; not correctness or timing evidence",
+            "local_absolute_path_policy": "public dry-run output must not expose local absolute paths"
+        }
+    },
+  "non_claims": [
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "not cross-process persistent CUDA state",
+    "not a paper-ready statistical benchmark",
+    "not model-level Transformer inference",
+    "not MobileViT numerical inference in RTL",
+    "not ImageNet accuracy from RTL logits",
+    "not full 50k ImageNet hybrid execution"
+  ],
+  "residual_followups": [
+    "cross_process_persistent_cuda_state",
+    "paged_attention_kv_cache_scaleup",
+    "timing_repeat_median_for_persistent_resident_abi",
+    "more generated-template target validation"
+  ],
+  "completion_decision": {
+    "achieved": true,
+        "reason": "The current revision has a public results document, reproduction entrypoints, public dry-run smoke commands, public release checklist, public archive dry-run plan, correctness policy, speed evidence, persistent resident ABI evidence, MobileViT limit-128 CPU-kick plus hybrid control-boundary evidence, wrapper summary schema publication, public pack manifest and prerequisites, local absolute path sanitization for wrapper summaries, non-claims, source-of-truth alignment, and contract-test coverage for the benchmark pack objective."
+  },
+    "next_task": "public_benchmark_pack_externalization_ready",
+  "source_packaging_gate_status": "refreshed_public_benchmark_pack_after_wrapper_summary_schema_publication"
+}

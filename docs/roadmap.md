@@ -1,483 +1,281 @@
 # Roadmap
 
-## weakest_point
+## Weakest Point
 
-The project must prove it can run one seed from a clean, small surface before adding more targets or campaign logic.
+Hybrid execution is close to a normal Verilator-style flow for generated templates. The remaining weakness is validation breadth: the generic host-probe builder is wired for generated clock/reset metadata, but more real targets should be exercised before treating it as universal.
 
-## plan
+## Current Frontier
 
-```text
-phase_1:
-  scaffold_minimal_repo: done
-  copy_minimal_runtime_core: done
-  validate_imports: done
-  select_thin_tools: done
-  copy_selected_thin_tools: done
-  validate_thin_tool_imports: done
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is benchmark-pack maintenance after adding persistent resident ABI evidence.
 
-phase_2:
-  copy_tlul_fifo_sync_seed_config: done
-  validate_build_surface_prerequisites: done
-  copy_rtl_test_assets: done
-  validate_verilator_build_surface: done
-  generate_verilator_obj_dir: done
-  build_gpu_kernel: blocked_missing_pass_build_surface
-  add_pass_build_surface: done
-  retry_build_gpu_kernel: done
-  compile_host_runtime: done
-  run_first_hybrid_smoke: done
-  add_cpu_gpu_compare_surface: done
-  run_cpu_baseline: done_with_contract_gap
-  align_cpu_gpu_initial_state_contract: done
-  run_hybrid_validation: done_normalized_final_state_equivalence
-  run_compare: done_normalized_final_state_equivalence
-  document_minimal_repro_flow: done
+Current priority:
 
-phase_3:
-  decide_mainline_promotion_policy: done
-  freeze_generated_artifact_policy: done
-  emit_status_report: done
-  summarize_commit_boundary: done
-  select_git_ownership_mode: done_new_repository
-  add_root_gitignore_policy: done
-  initialize_minimal_repo_git_repository: done
-  review_minimal_initial_source_boundary: done
-  minimal_initial_commit_if_requested: done_f8349b9
-  reproduce_from_clean_checkout_after_initial_commit: done_after_readme_fix
-  commit_minimal_readme_clean_checkout_fix: done_c041911
-  select_next_minimal_runtime_validation_axis: done_scale_tlul_fifo_sync
-  define_tlul_fifo_sync_scaling_validation_gate: done
-  implement_tlul_fifo_sync_scaling_validation_runner: done
-  run_tlul_fifo_sync_scaling_validation_gate: done
-  decide_post_tlul_scaling_validation_next_axis: done_cpu_baseline
-  define_tlul_scaling_cpu_baseline_gate: done
-  implement_tlul_fifo_sync_cpu_baseline_runner: done
-  run_tlul_fifo_sync_cpu_baseline_gate: done
-  decide_post_cpu_baseline_next_axis: done_conservative_multistate_baseline
-  define_tlul_cpu_multistate_baseline_gate: done
-  implement_tlul_cpu_multistate_baseline_runner_mode: done
-  run_tlul_cpu_multistate_baseline_gate: done
-  decide_exact_cpu_loop_or_second_seed_after_conservative_multistate_baseline: done_exact_loop
-  define_tlul_cpu_exact_loop_baseline_gate: done
-  implement_tlul_cpu_exact_loop_probe_and_runner_mode: done
-  run_tlul_cpu_exact_loop_baseline_gate: done
-  decide_second_seed_or_larger_workload_after_exact_cpu_loop_baseline: done_large_nstates
-  define_tlul_large_workload_scaling_gate: done
-  run_tlul_large_workload_scaling_gate: done
-  define_tlul_large_workload_exact_cpu_loop_gate: done
-  run_tlul_large_workload_exact_cpu_loop_gate: done
-  decide_repeated_steps_or_second_seed_after_large_workload: done_repeated_steps
-  define_tlul_repeated_steps_scaling_gate: done
-  run_tlul_repeated_steps_scaling_gate: done
-  define_tlul_repeated_steps_exact_cpu_loop_gate: done
-  run_tlul_repeated_steps_exact_cpu_loop_gate: done
-  decide_second_seed_after_repeated_steps: done_tlul_sink
-  select_second_small_seed_target: done_tlul_sink
-  copy_tlul_sink_minimal_assets: done
-  generate_tlul_sink_verilator_obj_dir: done
-  build_tlul_sink_gpu_cubin: done
-  run_tlul_sink_repeated_steps_gpu_gate: done
-  generalize_cpu_exact_loop_probe_for_second_seed: done
-  build_tlul_sink_host_probe: done
-  run_tlul_sink_repeated_steps_exact_cpu_loop_gate: done
-  decide_package_boundary_after_second_seed_speedup: done_package_boundary
-  document_two_seed_claim_boundary: done
-  document_release_checklist: done
-  package_minimal_two_seed_boundary: done
-  decide_non_tlul_seed_or_release_after_package_boundary: done_release_readiness_first
-  run_release_readiness_audit_after_package_boundary: done_lightweight_pass
-  prepare_minimal_two_seed_release_boundary: done_local_boundary_documented
-  select_smallest_non_tlul_breadth_seed_candidate: done_xuantie_e902
-  define_xuantie_e902_minimal_gate_before_asset_copy: done_gate_shape_defined
-  materialize_xuantie_e902_asset_boundary: done_source_boundary_copied
-  validate_xuantie_e902_asset_boundary: blocked_missing_rtlmeter_top_include
-  define_xuantie_e902_rtlmeter_include_strategy: done_lint_pass_with_warnings
-  generate_xuantie_e902_verilator_obj_dir: done_pass_with_warnings
-  build_xuantie_e902_gpu_cubin: done
-  run_xuantie_e902_gpu_smoke: done
-  define_xuantie_e902_cpu_reference_contract: done_normalized_final_state_equivalence
-  define_xuantie_e902_scaling_gate: done
-  run_xuantie_e902_scaling_gate: done
-  define_xuantie_e902_cpu_repeated_steps_baseline: done_cpu_favorable
-  decide_xuantie_e902_next_scaling_or_boundary: done_scale_workload
-  define_xuantie_e902_large_workload_scaling_gate: done
-  run_xuantie_e902_large_workload_scaling_gate: done
-  define_xuantie_e902_cpu_exact_loop_large_workload_baseline: done
-  run_xuantie_e902_cpu_exact_loop_large_workload_baseline: done_cpu_favorable_but_gap_narrowed
-  decide_xuantie_e902_larger_memory_resident_workload_or_boundary: done_select_memory_resident_gate
-  define_xuantie_e902_memory_resident_workload_gate: done
-  run_xuantie_e902_memory_resident_workload_gate: done
-  define_xuantie_e902_cpu_exact_loop_memory_resident_workload_baseline: done
-  run_xuantie_e902_cpu_exact_loop_memory_resident_workload_baseline: done_gpu_win_at_largest_shape
-  decide_true_resident_runtime_or_package_xuantie_boundary: done_select_true_resident_runtime_interface
-  define_true_resident_gpu_runtime_interface: done
-  implement_true_resident_gpu_runtime_flag: done
-  package_xuantie_true_resident_runtime_boundary: done
-  define_resident_runtime_regression_contract: done
-  run_resident_runtime_regression_contract: done
-  select_next_resident_runtime_breadth_or_patch_semantics: done_select_breadth
-  select_next_non_tlul_resident_candidate: done_veer_el2
-  define_veer_el2_resident_gate_before_asset_copy: done
-  materialize_veer_el2_asset_boundary: done
-  validate_veer_el2_asset_boundary: done
-  generate_veer_el2_verilator_obj_dir: done_pass_with_warnings
-  build_veer_el2_gpu_cubin: done
-  run_veer_el2_gpu_smoke: done
-  define_veer_el2_cpu_reference_contract: done_normalized_final_state_equivalence
-  run_veer_el2_resident_workload_gate: done_cpu_favorable
-  define_veer_el2_larger_resident_workload_gate: done
-  run_veer_el2_larger_resident_workload_gate: done_gpu_win
-  package_veer_el2_larger_resident_boundary: done
-  commit_veer_el2_larger_resident_boundary: done_620cf74
-  define_resident_patch_script_semantics: done
-  implement_resident_patch_schedule_upload: done_smoke_pass
-  validate_resident_patch_schedule_upload: done_smoke_pass
-  define_resident_patch_schedule_validation_gate: done
-  run_resident_patch_schedule_validation_gate: done
-  define_matching_cpu_changing_input_patch_baseline: done
-  run_matching_cpu_changing_input_patch_baseline: done
-  package_resident_patch_schedule_boundary: done
-  select_next_resident_patch_schedule_breadth_or_commit: done_commit_first
-  port_patch_schedule_gate_to_tlul_sink: done
-  package_two_seed_resident_patch_schedule_boundary: done
-  commit_two_seed_resident_patch_schedule_boundary: done_9bddec4
-  select_non_tlul_resident_patch_schedule_breadth_candidate: done_veer_el2
-  define_veer_el2_resident_patch_schedule_gate: done
-  run_veer_el2_resident_patch_schedule_gate: done_gpu_pass
-  run_veer_el2_cpu_exact_loop_resident_patch_schedule_gate: done_gpu_win_at_512x32
-  package_veer_el2_resident_patch_schedule_boundary: done
-  commit_veer_el2_resident_patch_schedule_boundary: done_5697daa
-  select_next_patch_schedule_breadth_after_veer_el2: done_xuantie_e902
-  define_xuantie_e902_resident_patch_schedule_gate: done
-  run_xuantie_e902_resident_patch_schedule_gate: done_gpu_pass
-  run_xuantie_e902_cpu_exact_loop_resident_patch_schedule_gate: done_gpu_win_at_128x32
-  package_xuantie_e902_resident_patch_schedule_boundary: done
-  commit_xuantie_e902_resident_patch_schedule_boundary: done_30e17bd
-  define_application_like_patch_schedule_semantics: done_rom_or_memory_init_delta
-  define_rom_or_memory_init_delta_patch_gate: done_xuantie_e902
-  run_xuantie_e902_rom_memory_delta_patch_schedule_gate: done_gpu_pass
-  run_xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule_gate: done_gpu_win_at_128x32
-  package_rom_memory_delta_patch_schedule_boundary: done
-  commit_rom_memory_delta_patch_schedule_boundary: done_010fb86
-  define_named_rom_memory_symbol_mapping_gate: done_candidate_fields_inspected
-  define_xuantie_e902_named_rom_memory_mapping_contract: done_contract_defined
-  define_xuantie_e902_named_rom_memory_mapping_gate: done_gates_defined
-  implement_xuantie_e902_named_rom_memory_mapping_lowering: done_gpu_cpu_pass
-  package_xuantie_e902_named_rom_memory_mapping_boundary: done
-  define_xuantie_e902_program_image_delta_gate: done_gates_defined
-  run_xuantie_e902_program_image_delta_gate: done_gpu_cpu_pass
-  package_xuantie_e902_program_image_delta_boundary: done
-  define_xuantie_e902_broader_memory_family_delta_gate: blocked_source_contract_gap
-  document_xuantie_e902_non_iahb_memory_family_contract_gap: done
-  select_post_xuantie_memory_gap_responsibility_axis: done_input_stream_delta_selected
-  define_xuantie_e902_input_stream_delta_contract: rejected_no_distinct_source_contract
-  select_next_target_breadth_source_backed_contract: blocked_checked_in_minimal_targets_exhausted
-  decide_next_source_backed_target_import_or_close_breadth: done_close_current_minimal_breadth
-  select_next_runtime_depth_after_breadth_closure: done_resident_schedule_scalability_selected
-  define_resident_schedule_scalability_envelope: done_from_existing_reports
-  define_larger_resident_schedule_envelope_gate: done_gates_defined
-  run_larger_resident_schedule_envelope_gate: done_gpu_cpu_pass
-  select_next_runtime_depth_after_larger_resident_envelope: done_device_side_init_state_replication_selected
-  define_device_side_init_state_replication_gate: done_gate_passed
-  select_next_gpu_owned_state_construction_step: done_source_backed_program_image_initialization_selected
-  define_xuantie_e902_program_image_initialization_construction_gate: done_gate_defined
-  implement_xuantie_e902_program_image_initialization_construction: planned_task_ladder_defined
-  extract_xuantie_e902_program_image_initialization_inputs: done_contract_defined
-  define_program_image_initialization_record_format: done_format_defined
-  implement_program_image_initialization_kernel_and_host_flag: planned_subtasks_defined
-  implement_program_image_initialization_kernel_generation: done_kernel_generation_implemented
-  add_program_image_initialization_host_flag_and_env: done_host_flag_env_wired
-  upload_program_image_initialization_records_once: done_records_uploaded_once
-  launch_program_image_initialization_before_resident_eval: done_launch_before_resident_eval_wired
-  validate_program_image_initialization_against_cpu_constructed_state: done_normalized_final_state_equivalence_pass
-  measure_program_image_initialization_upload_reduction: done_positive_but_small_1_0989x
-  package_program_image_initialization_boundary_and_select_next_gpu_construction_axis: done_selected_word_packed_program_image_initialization
-  define_program_image_word_packed_initialization_boundary: done_boundary_defined
-  implement_program_image_word_packed_kernel_generation: done_kernel_generation_implemented
-  add_program_image_word_packed_host_flag_and_env: done_host_flag_env_wired
-  upload_program_image_words_once: done_words_uploaded_once
-  launch_program_image_word_packed_initialization_before_resident_eval: done_launch_before_resident_eval_wired
-  validate_word_packed_program_image_initialization_against_byte_record_boundary: done_normalized_final_state_equivalence_pass
-  measure_word_packed_program_image_upload_reduction: done_measured_9_8877x_vs_full_state
-  package_word_packed_program_image_initialization_boundary_and_select_next_gpu_construction_axis: done_packaged_selected_non_iahb_memory_initialization
-  define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary: done_defined_blocked_source_contract_gap
-  define_xuantie_e902_dmem_zero_fill_device_initialization_boundary: done_defined_boundary
-  implement_xuantie_e902_dmem_zero_fill_kernel_generation: done_kernel_generation_implemented
-  add_xuantie_e902_dmem_zero_fill_host_flag_and_env: done_host_flag_env_wired
-  upload_xuantie_e902_dmem_zero_fill_lane_offsets_once: done_lane_offsets_uploaded_once
-  launch_xuantie_e902_dmem_zero_fill_before_resident_eval: done_launch_before_resident_eval_wired
-  validate_xuantie_e902_dmem_zero_fill_against_cpu_constructed_state: done_strict_and_normalized_final_state_equivalence_pass
-  package_xuantie_e902_dmem_zero_fill_boundary: done_packaged_deterministic_zero_fill_construction
-  select_next_gpu_owned_state_construction_after_dmem_zero_fill: done_selected_combined_existing_construction_package
-  define_xuantie_e902_combined_program_image_and_dmem_construction_package: done_defined_boundary
-  package_xuantie_e902_combined_program_image_and_dmem_construction_boundary: done_packaged_combined_construction_boundary
-  select_next_gpu_owned_state_construction_after_combined_xuantie_package: done_selected_runtime_accounting_gate
-  define_xuantie_combined_construction_runtime_accounting_gate: done_defined_gate
-  run_xuantie_combined_construction_runtime_accounting_gate: done_run_ok
-  package_xuantie_combined_construction_runtime_accounting_gate: done_packaged_accounting_result
-  select_next_axis_after_xuantie_runtime_accounting: done_selected_close_current_track
-  close_gpu_owned_state_construction_track_for_current_minimal_repo: done_closed_current_minimal_repo_scope
-  select_next_project_axis_after_gpu_owned_construction_closure: next
-```
+`public_benchmark_pack_externalization_ready`
 
-## acceptance
+Current gate:
 
-```text
-first_success_metric:
-  build: pass
-  run_seed: pass
-  compare_seed: pass
-  status_report: pass
-  generated_artifacts_tracked: 0
-  active_targets: 1
+`config/scaling_gates/public_results_packaging_gate.json`
 
-next_scaling_gate:
-  target: tlul_fifo_sync
-  config: config/scaling_gates/tlul_fifo_sync.json
-  runner: src/tools/run_tlul_fifo_sync_scaling_validation.py
-  report: reports/tlul_fifo_sync_scaling_validation.json
-  nstates: [1, 8, 32]
-  steps: [1]
-  correctness_policy: normalized_final_state_equivalence_for_aligned_single_state
-  performance_policy: report_runtime_and_throughput_without_speedup_claim
-  status: pass
+## Plan
 
-next_cpu_baseline_gate:
-  target: tlul_fifo_sync
-  config: config/scaling_gates/tlul_fifo_sync_cpu_baseline.json
-  runner: src/tools/run_tlul_fifo_sync_cpu_baseline.py
-  report: reports/tlul_fifo_sync_cpu_baseline.json
-  reps: 5
-  accepted_claim: CPU single-state host probe timing surface
-  non_claim: exact nstates>1 CPU-vs-GPU speedup until matching CPU loop exists
-  status: pass
+1. Keep active surface compact.
+2. Keep `config/selection.json` current-state-only.
+3. Keep `config/README.md` as the map for config roles and add/move rules.
+4. Keep generated evidence reproducible under `reports/` and build outputs under `artifacts/`, but do not retain them as source of truth.
+5. Make hybrid launch as close as possible to Verilator usage.
+6. Generate config from target/top/overlay metadata.
+7. Keep the public benchmark pack aligned with the latest correctness, timing, and non-claim evidence.
+8. Validate generated host-probe metadata across more target shapes.
 
-next_cpu_multistate_baseline_gate:
-  target: tlul_fifo_sync
-  config: config/scaling_gates/tlul_fifo_sync_cpu_multistate_baseline.json
-  runner: src/tools/run_tlul_fifo_sync_cpu_baseline.py --multi-state
-  report: reports/tlul_fifo_sync_cpu_multistate_baseline.json
-  nstates: [1, 8, 32]
-  steps: [1]
-  accepted_claim: conservative CPU process-per-state baseline compared with GPU scaling report
-  non_claim: exact single-process CPU-vs-GPU speedup
-  status: pass
+## Concrete Milestones
 
-next_cpu_exact_loop_baseline_gate:
-  target: tlul_fifo_sync
-  config: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_baseline.json
-  runner: src/tools/run_tlul_fifo_sync_cpu_baseline.py --exact-loop
-  report: reports/tlul_fifo_sync_cpu_exact_loop_baseline.json
-  nstates: [1, 8, 32]
-  steps: [1]
-  accepted_claim: single-process CPU loop baseline compared with GPU scaling report
-  current_observation: GPU is slower than CPU for this small seed/workload
-  next_decision: increase workload or add second seed
-  status: pass
+Large endpoint:
 
-next_large_workload_gate:
-  target: tlul_fifo_sync
-  gpu_config: config/scaling_gates/tlul_fifo_sync_large_workload.json
-  cpu_config: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_large_workload.json
-  gpu_report: reports/tlul_fifo_sync_large_workload_scaling.json
-  cpu_report: reports/tlul_fifo_sync_cpu_exact_loop_large_workload.json
-  nstates: [32, 128, 512]
-  steps: [1]
-  accepted_claim: GPU beats exact CPU loop at nstates=512 for this seed and gate shape
-  non_claim: repeated-step throughput and target-breadth generality
-  status: pass
+`Run modern LLM-serving-like RTL workloads through hybrid execution with correctness, speed trends, and reproduction evidence that are easy to regenerate and review.`
 
-next_repeated_steps_gate:
-  target: tlul_fifo_sync
-  gpu_config: config/scaling_gates/tlul_fifo_sync_repeated_steps.json
-  cpu_config: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json
-  gpu_report: reports/tlul_fifo_sync_repeated_steps_scaling.json
-  cpu_report: reports/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json
-  nstates: [512]
-  steps: [1, 8, 32]
-  accepted_claim: GPU beats CPU repeated-eval loop for this seed and gate shape
-  non_claim: target-breadth generality and full timed-cycle equivalence
-  status: pass
+The concrete stages are:
 
-second_seed_gate:
-  target: tlul_sink
-  gpu_config: config/scaling_gates/tlul_sink_repeated_steps.json
-  gpu_report: reports/tlul_sink_repeated_steps_scaling.json
-  nstates: [512]
-  steps: [1, 8, 32]
-  cpu_config: config/scaling_gates/tlul_sink_cpu_exact_loop_repeated_steps.json
-  cpu_report: reports/tlul_sink_cpu_exact_loop_repeated_steps.json
-  accepted_claim: second seed shows GPU win against single-process CPU repeated-eval loop
-  non_claim: generality beyond two OpenTitan TL-UL seeds
-  status: pass
+1. Standardize execution.
+   - Use `src/tools/run_hybrid_benchmark.py <target> --shape/--limit` as the target-oriented entrypoint.
+   - Keep `src/tools/run_hybrid_template.py` available for lower-level slice-template runs.
+   - Preserve `--dry-run`, `--preflight`, and `--summary-out` so commands can be reviewed before execution.
 
-package_boundary:
-  status: documented
-  claim_scope: two OpenTitan TL-UL seeds only
-  release_checklist: README.md
-  release_readiness_audit: pass_lightweight
-  release_boundary: README.md
-  next_task: materialize_xuantie_e902_asset_boundary
-  next_decision: copy only the defined XuanTie-E902 source/test boundary
+2. Fix correctness semantics.
+   - Use `coverage_output_equivalence` as the accepted CPU vs hybrid policy.
+   - Keep output-word selection in gates/manifests, not in generated reports.
+   - Treat raw Verilator internal state mismatch as diagnostic unless it affects the declared coverage-output words.
 
-non_tlul_breadth_seed_candidate:
-  selected: XuanTie-E902
-  role: first non-TL-UL breadth candidate
-  selection_status: asset_boundary_materialized
-  gate_status: defined_before_asset_copy
-  gate_top_module: xuantie_e902_gpu_cov_tb
-  gate_shape: nstates=8 steps=56
-  launch_template: config/slice_launch_templates/xuantie_e902.json
-  asset_boundary_status: copied
-  lint_only_status: pass_with_warnings
-  obj_dir_status: pass_with_warnings
-  obj_dir: artifacts/xuantie_e902_obj_dir
-  gpu_cubin_status: pass
-  gpu_smoke_status: pass
-  cpu_reference_contract_status: pass
-  normalized_final_state_equivalence: pass
-  scaling_gate: config/scaling_gates/xuantie_e902_scaling.json
-  scaling_report: reports/xuantie_e902_scaling.json
-  scaling_status: pass
-  cpu_exact_loop_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_repeated_steps.json
-  cpu_exact_loop_report: reports/xuantie_e902_cpu_exact_loop_repeated_steps.json
-  cpu_gpu_observation: cpu_favorable_at_conservative_gate
-  large_workload_gate: config/scaling_gates/xuantie_e902_large_workload.json
-  large_workload_report: reports/xuantie_e902_large_workload_scaling.json
-  large_workload_status: pass
-  cpu_exact_loop_large_workload_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_large_workload.json
-  cpu_exact_loop_large_workload_report: reports/xuantie_e902_cpu_exact_loop_large_workload.json
-  cpu_exact_loop_large_workload_status: pass_cpu_favorable_but_gap_narrowed
-  best_large_workload_gpu_over_cpu_ratio: 0.8625
-  memory_resident_workload_gate: config/scaling_gates/xuantie_e902_memory_resident_workload.json
-  memory_resident_workload_report: reports/xuantie_e902_memory_resident_workload_scaling.json
-  memory_resident_workload_status: pass
-  cpu_exact_loop_memory_resident_workload_gate: config/scaling_gates/xuantie_e902_cpu_exact_loop_memory_resident_workload.json
-  cpu_exact_loop_memory_resident_workload_report: reports/xuantie_e902_cpu_exact_loop_memory_resident_workload.json
-  cpu_exact_loop_memory_resident_workload_status: pass_gpu_win_at_largest_shape
-  best_memory_resident_proxy_gpu_over_cpu_ratio: 1.0955
-  best_true_resident_gpu_over_cpu_ratio: 1.2076
-  true_resident_runtime_status: packaged_boundary
-  true_resident_runtime_accepted_claim: XuanTie-E902 resident mode beats CPU exact-loop at nstates=128 steps=64
-  resident_runtime_regression_contract: tests/contract/test_resident_runtime_contract.py
-  resident_runtime_regression_status: pass
-  next_resident_breadth_policy: select bounded non-TL-UL candidate before copying assets
-  next_resident_breadth_candidate: veer_el2
-  next_resident_breadth_candidate_status: gpu_smoke_pass
-  next_resident_breadth_candidate_evidence:
-    - old_repo:output/family_readiness/veer_el2_gpu_toggle_readiness.md
-    - old_repo:output/design_scope_expansion_packet.json
-    - old_repo:config/slice_launch_templates/veer_el2.json
-  next_resident_breadth_candidate_launch_template: config/slice_launch_templates/veer_el2.json
-  next_resident_breadth_candidate_gpu_gate: config/scaling_gates/veer_el2_resident_workload.json
-  next_resident_breadth_candidate_cpu_gate: config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json
-  next_resident_breadth_candidate_asset_boundary: third_party/rtlmeter/designs/VeeR-EL2
-  next_resident_breadth_candidate_mdir: artifacts/veer_el2_obj_dir
-  next_resident_breadth_candidate_cubin: artifacts/veer_el2_obj_dir/vl_batch_gpu.cubin
-  next_resident_breadth_candidate_gpu_smoke_state: artifacts/veer_el2_obj_dir/veer_el2_gpu_smoke_state.bin
-  true_resident_runtime_interface:
-    cli_flag: src/tools/run_vl_hybrid.py --resident-steps
-    runtime_env: RUN_VL_HYBRID_RESIDENT_STEPS=1
-    c_runtime: src/hybrid/run_vl_hybrid.c
-  storage_size: 1318784
-  support_rtl: third_party/rtlmeter/rtl
-  next_task: commit_two_seed_resident_patch_schedule_boundary
+3. Keep LLM-serving-like RTL workload coverage explicit.
+   - Full ITA/MHA represents attention-like compute.
+   - Paged-attention KV-score and paged KV-cache harnesses represent serving-state access patterns.
+   - Prefill/decode split, resident state reuse, and persistent resident ABI represent serving execution modes.
+   - MobileViT remains CPU-kick plus RTL control-boundary evidence, not RTL numerical inference.
 
-veer_el2_resident_breadth_candidate:
-  selected: true
-  selection_status: packaged_larger_resident_boundary
-  role: next non-TL-UL resident runtime breadth candidate
-  old_repo_launch_template: config/slice_launch_templates/veer_el2.json
-  old_repo_gate_evidence: output/family_readiness/veer_el2_gpu_toggle_readiness.md
-  old_repo_candidate_score_evidence: output/design_scope_expansion_packet.json
-  launch_template: config/slice_launch_templates/veer_el2.json
-  gpu_gate: config/scaling_gates/veer_el2_resident_workload.json
-  cpu_gate: config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json
-  gate_shapes:
-    - nstates=64 steps=64 resident_steps=true
-    - nstates=128 steps=64 resident_steps=true
-  asset_boundary: third_party/rtlmeter/designs/VeeR-EL2
-  obj_dir: artifacts/veer_el2_obj_dir
-  obj_dir_status: pass_with_warnings
-  cubin: artifacts/veer_el2_obj_dir/vl_batch_gpu.cubin
-  storage_size: 431808
-  gpu_smoke_status: pass
-  gpu_smoke_shape: nstates=1 steps=1
-  gpu_smoke_state: artifacts/veer_el2_obj_dir/veer_el2_gpu_smoke_state.bin
-  host_probe: artifacts/veer_el2_obj_dir/veer_el2_host_probe
-  cpu_reference_state: artifacts/veer_el2_obj_dir/veer_el2_cpu_reference_state.bin
-  gpu_from_cpu_reference_state: artifacts/veer_el2_obj_dir/veer_el2_gpu_from_cpu_reference_state.bin
-  cpu_gpu_compare_report: reports/veer_el2_cpu_vs_gpu_from_cpu_init_compare.json
-  cpu_reference_contract_status: pass_normalized_final_state_equivalence
-  normalized_final_state_equivalence:
-    passed: true
-    included_member_count: 6494
-    included_byte_count: 431346
-    functional_non_internal_mismatch_bytes: 0
-  copied_assets:
-    - descriptor.yaml
-    - LICENSE-VeeR-EL2
-    - src/
-    - tests/dhry/program.hex
-    - tests/hello/program.hex
-    - tests/cmark/program.hex
-    - tests/cmark_iccm/program.hex
-    - tests/veer_el2_coverage_regions.json
-    - tests/veer_el2_program_hex_target_config.json
-  asset_validation_status: pass_contract
-  required_next_step: run resident workload gate and matching CPU exact-loop resident baseline
-  resident_workload_gate: config/scaling_gates/veer_el2_resident_workload.json
-  resident_workload_report: reports/veer_el2_resident_workload_scaling.json
-  cpu_exact_loop_resident_workload_report: reports/veer_el2_cpu_exact_loop_resident_workload.json
-  larger_resident_workload_gate: config/scaling_gates/veer_el2_larger_resident_workload.json
-  cpu_exact_loop_larger_resident_workload_gate: config/scaling_gates/veer_el2_cpu_exact_loop_larger_resident_workload.json
-  larger_resident_workload_report: reports/veer_el2_larger_resident_workload_scaling.json
-  cpu_exact_loop_larger_resident_workload_report: reports/veer_el2_cpu_exact_loop_larger_resident_workload.json
-  larger_gate_shapes:
-    - nstates=256 steps=64 resident_steps=true
-    - nstates=512 steps=64 resident_steps=true
-  larger_gpu_over_cpu_ratio:
-    nstates_256_steps_64: 2.3705374232694565
-    nstates_512_steps_64: 2.45997554488639
-  resident_workload_status: pass_cpu_favorable
-  larger_resident_workload_status: pass_gpu_win
-  gpu_over_cpu_ratio:
-    nstates_64_steps_64: 0.6021517508485191
-    nstates_128_steps_64: 0.8295362109911266
-  package_status: done_bounded_larger_resident_claim
-  required_next_step: define resident patch/script semantics so changing-input workloads can stay device-resident
-  non_claim: broad VeeR family support and full RTL application throughput are not proven
+4. Measure speed trends by shape and launch model.
+   - Compare many-state single-launch shapes against single-state repeated-step shapes.
+   - Track resident and persistent-resident modes separately from file-boundary state reuse.
+   - Report per-state-step timing when it is the meaningful comparison unit.
 
-resident_patch_script_semantics:
-  status: runtime_schedule_upload_smoke_passed
-  contract: config/resident_patch_script_semantics.json
-  reason: bounded non-TL-UL resident breadth now exists for XuanTie-E902 and VeeR-EL2, and resident mode now has a device-side --patch-script schedule path
-  initial_policy:
-    - keep full state resident across repeated eval steps
-    - upload init-state once
-    - represent changing inputs as a compact device-side patch schedule
-    - forbid per-step host-device patch copies in resident mode
-    - dump final state only at the boundary when requested
-  validation_gate: config/scaling_gates/tlul_fifo_sync_resident_patch_schedule.json
-  validation_runner: src/tools/run_tlul_fifo_sync_scaling_validation.py
-  validation_report: reports/tlul_fifo_sync_resident_patch_schedule.json
-  validation_status: pass
-  cpu_baseline_gate: config/scaling_gates/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json
-  cpu_baseline_report: reports/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json
-  cpu_baseline_status: pass
-  accepted_bounded_ratio:
-    target: tlul_fifo_sync
-    nstates: 512
-    logical_patch_steps: 32
-    gpu_over_cpu_throughput_ratio: 3.1160088024052413
-  boundary_status: packaged_bounded_tlul_fifo_sync_512x32_gpu_win
-  second_seed_gpu_gate: config/scaling_gates/tlul_sink_resident_patch_schedule.json
-  second_seed_cpu_gate: config/scaling_gates/tlul_sink_cpu_exact_loop_resident_patch_schedule.json
-  second_seed_status: pass
-  accepted_second_seed_ratio:
-    target: tlul_sink
-    nstates: 512
-    logical_patch_steps: 32
-    gpu_over_cpu_throughput_ratio: 2.002480966457029
-  next_task: package_two_seed_resident_patch_schedule_boundary
-```
+5. Make evidence reproducible and reviewable.
+   - Generated evidence lives under `reports/`; raw/build outputs live under `artifacts/`.
+   - Gate/audit records live under `records/scaling_gates/`, with `config/scaling_gates` kept as a compatibility link.
+   - Current decisions stay in `docs/status.md`, `docs/roadmap.md`, `config/selection.json`, and `README.md`.
+
+6. Externalize the benchmark pack.
+   - Keep `docs/results.md` aligned with current representative evidence.
+   - Include reproduction commands, result summaries, non-claims, and the active correctness policy.
+   - Use contract tests to pin public CLI/workflow behavior.
+
+Current strongest next stage:
+
+`Hold the refreshed public benchmark pack for review after publishing the wrapper summary schema, then choose whether to externalize results or open a new measurement goal.`
+
+Config minimization audit:
+
+- `records/scaling_gates/config_minimal_surface_completion_audit.json`
+- active `config/` file count: `146`
+- historical gate JSON records under `records/scaling_gates/`: `632`
+- compatibility link: `config/scaling_gates -> ../records/scaling_gates`
+- generated files under `reports/` and `artifacts/`: reproducible evidence only, never source of truth
+
+## Completed NN Flow
+
+The completed flow is:
+
+1. `neural_network_rtl_paged_kv_cache_large_scaleup_gate.json`
+2. `neural_network_rtl_paged_kv_cache_large_review_gate.json`
+3. `neural_network_rtl_full_ita_mha_dependency_audit_gate.json`
+4. `neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json`
+5. `neural_network_rtl_full_ita_mha_larger_paged_kv_goal_review_gate.json`
+6. `neural_network_rtl_paged_attention_kv_score_harness_gate.json`
+7. `full_ita_mha_larger_paged_attention_kv_goal_completion_audit.json`
+8. `hybrid_verilator_like_config_and_probe_generation_gate.json`
+9. `full_mha_hybrid_try_completion_audit.json`
+10. `full_mha_scaleup_64x1_1x64_gate.json`
+11. `prefill_decode_split_mha_benchmark_gate.json`
+12. `resident_decode_optimization_probe_gate.json`
+13. `resident_decode_batch_parallel_probe_gate.json`
+14. `modern_llm_serving_rtl_hybrid_conditions_goal_completion_audit.json`
+15. `one_command_reproduction_flow_gate.json`
+16. `repeat_median_results_reproduction_gate.json`
+17. `resident_execution_optimization_next_gate.json`
+18. `resident_batch_sweep_measurement_gate.json`
+19. `resident_batch_sweep_review_gate.json`
+20. `resident_state_reuse_experiment_gate.json`
+21. `resident_state_reuse_measurement_gate.json`
+22. `resident_state_reuse_review_gate.json`
+23. `persistent_resident_state_abi_probe_gate.json`
+24. `persistent_resident_state_abi_probe_implementation_gate.json`
+25. `persistent_resident_device_handle_storage_gate.json`
+26. `persistent_resident_device_handle_storage_review_gate.json`
+27. `public_results_packaging_gate.json`
+28. `public_benchmark_pack_goal_completion_audit.json`
+
+Evidence summaries:
+
+- `reports/pulp_paged_kv_cache_large_first_hybrid_benchmark_summary.json`
+- `reports/pulp_ita_mha_first_hybrid_benchmark_summary.json`
+- `reports/pulp_paged_attention_kv_score_first_hybrid_benchmark_summary.json`
+- `reports/pulp_ita_mha_resident_decode_batch_parallel_summary.json`
+- `reports/results_reproduction_median_summary.json`
+- `reports/resident_batch_sweep_summary.json`
+- `reports/resident_state_reuse_experiment_summary.json`
+- `reports/persistent_resident_state_abi_probe_summary.json`
+
+External-facing synthesis:
+
+- `docs/results.md`
+- `src/tools/run_results_reproduction.py`
+- `python3 src/tools/run_results_reproduction.py --repeat-median 3`
+- `python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4`
+- `python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128`
+- `python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run`
+- `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`
+- `python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run`
+- `python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run`
+- `python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --summary-out reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json`
+- `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x1 --summary-out reports/hybrid_benchmark_paged_attention_kv_score_template_1x1.json`
+- `python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --mode resident-state-reuse --phases 2 --summary-out reports/hybrid_benchmark_pulp_ita_mha_resident_state_reuse_1x1.json`
+- `python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --mode persistent-resident-state-abi --phases 2 --summary-out reports/hybrid_benchmark_pulp_ita_mha_persistent_resident_state_abi_1x1.json`
+- `python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --summary-from-existing --summary-out reports/hybrid_benchmark_mobile_vit_template_limit128.json`
+
+## Next Goal
+
+Make the refreshed public benchmark pack externalization-ready:
+
+- gate: `config/scaling_gates/public_results_packaging_gate.json`
+- audit: `config/scaling_gates/public_benchmark_pack_goal_completion_audit.json`
+- document: `docs/results.md`
+- newest evidence: `reports/persistent_resident_state_abi_probe_summary.json`
+- latest MobileViT evidence: `reports/mobile_vit_hybrid_128_summary.json`
+- generic benchmark CLI gate: `config/scaling_gates/generic_hybrid_benchmark_cli_gate.json`
+- generic benchmark summary schema: `python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --summary-out reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json`
+- template wrapper summary smoke: `reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json`
+- fresh wrapper summary smoke: `reports/hybrid_benchmark_paged_attention_kv_score_template_1x1.json`
+- resident wrapper summary smoke: `reports/hybrid_benchmark_pulp_ita_mha_resident_state_reuse_1x1.json`
+- persistent resident wrapper summary smoke: `reports/hybrid_benchmark_pulp_ita_mha_persistent_resident_state_abi_1x1.json`
+- MobileViT wrapper summary from existing evidence: `reports/hybrid_benchmark_mobile_vit_template_limit128.json`
+- correctness policy: `coverage_output_equivalence`
+
+Long-term goal: keep hybrid execution close to Verilator usage while making LLM-serving-like RTL workload correctness, speed trends, reproduction commands, and non-claims easy to regenerate and review.
+
+Externalization readiness adds:
+
+- a reader guide in `docs/results.md`
+- a generated evidence boundary for `reports/` and `artifacts/`
+- prerequisites for dry-run, wrapper summaries, persistent resident ABI, and MobileViT
+- a public reproduction smoke command set using dry-run only
+- a public release checklist for source-of-truth alignment, path hygiene, smoke, evidence scope, non-claims, and tests
+- a public archive dry-run that prints package include/exclude paths without creating a source-of-truth archive
+- contract tests that pin these public-pack explanations
+
+Representative comparisons:
+
+- `reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json`
+- `reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json`
+- `reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json`
+
+Relevant harness strings:
+
+- `overlays/ITA/src/pulp_paged_kv_cache_large_gpu_cov_tb.sv`
+- `pulp_paged_kv_cache_large_host_probe`
+- `tc_sram`
+
+## MobileViT Track
+
+Completed CPU-kick references:
+
+- `phase_11_mobile_vit_cpu_kick_imagenet_accuracy`
+- `phase_12_mobile_vit_cpu_kick_rtl_hybrid_boundary`
+- `select_mobile_vit_model_and_reference_eval_source: done`
+- `define_mobile_vit_cpu_kick_control_contract: done`
+- `define_mobile_vit_accuracy_metric_contract: done`
+- `define_mobile_vit_reference_inference_contract: done`
+- `define_mobile_vit_imagenet_manifest_builder_contract: done`
+- `define_mobile_vit_cpu_kick_proxy_contract: done`
+- `define_mobile_vit_cpu_kick_inference_contract: done`
+- `define_mobile_vit_eval_pipeline_contract: done`
+- `define_mobile_vit_goal_audit_contract: done`
+- `install_mobile_vit_reference_dependencies_in_artifact_venv: done`
+- `run_mobile_vit_reference_smoke: done`
+- `provide_imagenet_validation_data_or_approved_scoped_subset_for_real_accuracy: done_full_imagenet_validation`
+- `create_imagenet_manifest_or_record_dataset_access_blocker: done_full_imagenet_validation`
+
+Tracked evidence:
+
+- `mobile_vit_cpu_kick_imagenet_accuracy`
+- `mobile_vit_cpu_kick_rtl_hybrid_boundary`
+- `apple/mobilevit-small`
+- `complete_full_imagenet_validation_cpu_kick_accuracy_measured`
+- `top-1 0.77022`
+- `mobile_vit_cpu_kick_rtl_proxy_host_probe`
+- `mobile_vit_hybrid_imagenet_eval_gate`
+- `mobile_vit_hybrid_imagenet_eval_completion_audit`
+- `mobile_vit_hybrid_imagenet_limit_128_scaleup_completion_audit`
+- `hybrid ImageNet eval path complete for a real cached two-image scoped subset and a limit-128 local-cache scale-up; full 50k scale-up remains optional`
+
+## Next Gate
+
+Recommended next gate:
+
+`public_benchmark_pack_externalization_ready`
+
+Acceptance criteria:
+
+- keep the public benchmark pack external-reader ready
+- keep wrapper summaries and prerequisites pinned by contract tests
+- keep public dry-run smoke commands passing
+- keep the public release checklist satisfied before handoff
+- keep archive planning dry-run only unless a generated-output archive is explicitly requested outside canonical state
+- optional: add repeat-median timing for persistent resident ABI
+- optional: pursue cross-process persistence or paged-attention/KV scale-up as new goals
+
+Working tree review boundary:
+
+`next_task: working_tree_review_boundary`
+
+Review `public_pack_archive_ready` together with the public-pack support files it references. This is the smallest current review boundary that can still work from a clean checkout.
+
+Review/stage boundary:
+
+- `README.md`
+- `config/selection.json`
+- `docs/results.md`
+- `docs/status.md`
+- `docs/roadmap.md`
+- `records/scaling_gates/public_results_packaging_gate.json`
+- `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json`
+- `records/scaling_gates/generic_hybrid_benchmark_cli_gate.json`
+- `src/tools/run_results_reproduction.py`
+- `src/tools/results_reproduction.py`
+- `src/tools/run_hybrid_benchmark.py`
+- `src/tools/hybrid_benchmark.py`
+- `src/tools/run_hybrid_template.py`
+- `config/slice_launch_templates/pulp_ita_mha.json`
+- `config/slice_launch_templates/pulp_paged_attention_kv_score.json`
+- `config/slice_launch_templates/mobile_vit_cpu_kick_rtl_proxy.json`
+- `tests/contract/test_hybrid_verilator_like_cli.py`
+- `tests/contract/test_full_ita_mha_larger_paged_kv_next.py`
+
+Exclude from this review boundary:
+
+- `.gitmodules`
+- `third_party/`
+- `overlays/`
+- historical `config/scaling_gates/*` mass moves
+- runtime/pass implementation changes under `src/hybrid/` and `src/passes/`
+- broad target inventory changes such as `config/targets.json`
+
+Boundary acceptance:
+
+- `python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run` succeeds
+- the archive plan is dry-run only and does not create an archive
+- the archive remains generated output, not source of truth
+- no separate manifest file is introduced beyond `docs/results.md`
+- public dry-run output does not expose local absolute paths
+- `third_party/`, `overlays/`, `.gitmodules`, and historical gate mass moves are not part of the public archive include list
+- generated `reports/` snapshots may be included in a review bundle as evidence, but they remain regenerable outputs and are not part of the source-of-truth review/stage boundary
+
+## Archive Boundary
+
+Historical gate details remain in `records/scaling_gates/`, with `config/scaling_gates` kept as a compatibility link. Generated summaries are reproducible under `reports/`, and build/raw outputs are reproducible under `artifacts/`; both directories may contain local generated evidence. They should not be copied back into `selection.json`, `README.md`, or this roadmap as canonical decisions.
