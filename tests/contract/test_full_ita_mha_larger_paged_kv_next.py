@@ -126,6 +126,12 @@ PERSISTENT_RESIDENT_STATE_ABI_REPEAT_MEDIAN_GATE = (
     / "scaling_gates"
     / "persistent_resident_state_abi_repeat_median_measurement_gate.json"
 )
+NEXT_GOAL_AFTER_PERSISTENT_RESIDENT_REPEAT_MEDIAN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "next_goal_selection_after_persistent_resident_repeat_median_gate.json"
+)
 CANDIDATE_TEMPLATE_SELECTION_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "candidate_template_clean_checkout_selection_gate.json"
 )
@@ -416,11 +422,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertEqual(selection["top_level_goal"], "modern_llm_serving_rtl_hybrid_conditions")
         self.assertEqual(
             selection["current_priority"],
-            "public_benchmark_pack_externalization_ready",
+            "public_pack_refresh_after_persistent_resident_repeat_median",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/public_results_packaging_gate.json",
+            "config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
         )
 
     def test_gate_records_both_requested_followups_and_selected_first_workstream(self) -> None:
@@ -2835,7 +2841,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             ]
         )
 
-        self.assertEqual(selection["current_priority"], "public_benchmark_pack_externalization_ready")
+        self.assertEqual(
+            selection["current_priority"],
+            "public_pack_refresh_after_persistent_resident_repeat_median",
+        )
         self.assertEqual(gate["current_priority"], "public_benchmark_pack_externalization_ready")
         self.assertEqual(gate["next_task"], "public_benchmark_pack_externalization_ready")
         self.assertEqual(
@@ -2893,8 +2902,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_mha_shape_expansion_gate.json",
             "pulp_ita_mha_shape_expansion_review_gate.json",
             "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
-            "next_task: select_next_measurement_goal_after_persistent_resident_state_abi_repeat_median",
-            "Review only the completed repeat-median measurement record and next-goal selection boundary",
+            "next_task: define_public_results_packaging_refresh_after_persistent_resident_repeat_median_gate",
+            "Review only the repeat-median result, next-goal selection, and public-pack refresh boundary",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
@@ -3178,7 +3187,74 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "reports/persistent_resident_state_abi_repeat_median_summary.json",
             "forbids runtime/ABI changes or new workload claims",
             "Median hybrid wall is `4.965 ms`",
-            "select_next_measurement_goal_after_persistent_resident_state_abi_repeat_median",
+            "define_public_results_packaging_refresh_after_persistent_resident_repeat_median_gate",
+        ):
+            self.assertIn(token, combined)
+
+    def test_next_goal_after_persistent_resident_repeat_median_selects_public_pack_refresh(self) -> None:
+        gate = json.loads(
+            NEXT_GOAL_AFTER_PERSISTENT_RESIDENT_REPEAT_MEDIAN_GATE.read_text(encoding="utf-8")
+        )
+        selection = json.loads(SELECTION.read_text(encoding="utf-8"))
+        combined = "\n".join(
+            [
+                README.read_text(encoding="utf-8"),
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+                RESULTS.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["gate"], "next_goal_selection_after_persistent_resident_repeat_median_gate")
+        self.assertEqual(
+            gate["status"],
+            "selected_public_pack_refresh_after_persistent_resident_repeat_median",
+        )
+        self.assertEqual(
+            gate["source_measurement_gate"],
+            "config/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+        )
+        self.assertEqual(
+            gate["selected_next_goal"]["name"],
+            "public_pack_refresh_after_persistent_resident_repeat_median",
+        )
+        self.assertEqual(
+            gate["selected_next_goal"]["first_gate"],
+            "public_results_packaging_refresh_after_persistent_resident_repeat_median_gate",
+        )
+        options = {entry["option"]: entry for entry in gate["options_reviewed"]}
+        self.assertEqual(options["public_pack_refresh_after_persistent_resident_repeat_median"]["decision"], "select_next")
+        self.assertEqual(options["paged_attention_kv_cache_scale_up"]["decision"], "defer")
+        self.assertIn("strongest next measurement candidate", options["paged_attention_kv_cache_scale_up"]["reason"])
+        self.assertTrue(gate["acceptance_policy"]["selection_only"])
+        self.assertFalse(gate["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["runtime_or_abi_change_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["generated_reports_are_source_of_truth"])
+        self.assertIn("not a new measurement result", gate["non_claims"])
+        self.assertIn("not production LLM serving throughput", gate["non_claims"])
+        self.assertEqual(
+            gate["next_task"],
+            "define_public_results_packaging_refresh_after_persistent_resident_repeat_median_gate",
+        )
+        self.assertEqual(
+            selection["current_priority"],
+            "public_pack_refresh_after_persistent_resident_repeat_median",
+        )
+        self.assertEqual(
+            selection["current_priority_source_artifact"],
+            "config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
+        )
+        self.assertEqual(
+            selection["completed_goal_evidence"]["next_goal_selection_after_persistent_resident_repeat_median_gate"],
+            "config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
+        )
+
+        for token in (
+            "next_goal_selection_after_persistent_resident_repeat_median_gate.json",
+            "public_pack_refresh_after_persistent_resident_repeat_median",
+            "define_public_results_packaging_refresh_after_persistent_resident_repeat_median_gate",
+            "refresh the public benchmark pack after this repeat-median result",
+            "All point at `public_pack_refresh_after_persistent_resident_repeat_median`",
         ):
             self.assertIn(token, combined)
 

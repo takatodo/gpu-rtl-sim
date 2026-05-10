@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "gate": "next_goal_selection_after_persistent_resident_repeat_median_gate",
+  "status": "selected_public_pack_refresh_after_persistent_resident_repeat_median",
+  "source_measurement_gate": "config/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+  "source_results_doc": "docs/results.md",
+  "objective": "Select the next narrow goal after the persistent resident state ABI repeat-median measurement.",
+  "long_term_goal": "Keep hybrid execution close to Verilator usage while making LLM-serving-like RTL workload correctness, speed trends, reproduction commands, and non-claims easy to regenerate and review.",
+  "options_reviewed": [
+    {
+      "option": "paged_attention_kv_cache_scale_up",
+      "decision": "defer",
+      "reason": "This remains the strongest next measurement candidate, but it would reopen workload-specific template and overlay surface while uncommitted candidate files already exist outside the current review boundary.",
+      "weakness": "Adds active RTL surface before closing the newly measured repeat-median evidence into the public pack."
+    },
+    {
+      "option": "full_ita_mha_additional_measurement",
+      "decision": "defer",
+      "reason": "Full ITA/MHA already has fresh generic-host-probe evidence plus persistent resident ABI repeat-median evidence. Additional MHA shapes would refine a known trend rather than close the newest documentation gap.",
+      "weakness": "Improves breadth less than paged attention/KV-cache scale-up and still leaves the public pack refresh incomplete."
+    },
+    {
+      "option": "prefill_decode_split_strengthening",
+      "decision": "defer",
+      "reason": "Prefill/decode split is already documented for the current MHA path. It should be revisited after a larger serving-state workload, not immediately after the persistent ABI timing result.",
+      "weakness": "Mostly restates the many-state versus repeated-step trend already shown by current evidence."
+    },
+    {
+      "option": "resident_execution_optimization",
+      "decision": "defer",
+      "reason": "The persistent resident ABI repeat-median result closes the immediate timing reproducibility gap without changing runtime ABI. Further resident optimization should be a separate runtime/ABI goal.",
+      "weakness": "Risks mixing measurement selection with runtime behavior changes."
+    },
+    {
+      "option": "public_pack_refresh_after_persistent_resident_repeat_median",
+      "decision": "select_next",
+      "reason": "This is the smallest next goal: preserve the new measured result in the external-facing pack, keep generated reports non-canonical, update source-of-truth alignment, and choose later whether to reopen paged attention/KV-cache scale-up.",
+      "weakness": "It is packaging and review-quality work, not a new speed or workload measurement."
+    }
+  ],
+  "selected_next_goal": {
+    "name": "public_pack_refresh_after_persistent_resident_repeat_median",
+    "first_gate": "public_results_packaging_refresh_after_persistent_resident_repeat_median_gate",
+    "first_gate_objective": "Refresh the public benchmark pack after the persistent resident state ABI repeat-median result without adding new workload or runtime claims.",
+    "scope": [
+      "keep docs/results.md aligned with the repeat-median result",
+      "keep README.md, docs/status.md, docs/roadmap.md, and config/selection.json aligned",
+      "reference reports/persistent_resident_state_abi_repeat_median_summary.json as generated evidence only",
+      "preserve coverage_output_equivalence as the correctness policy",
+      "do not add new RTL targets, runtime ABI changes, or generated reports as source of truth"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_referenced_measurement": true,
+    "generated_reports_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "non_claims": [
+    "not a new measurement result",
+    "not a new workload",
+    "not a runtime or ABI change",
+    "not production paged attention",
+    "not production KV-cache memory hierarchy",
+    "not model-level Transformer inference",
+    "not production LLM serving throughput",
+    "not raw full-state equality"
+  ],
+  "next_task": "define_public_results_packaging_refresh_after_persistent_resident_repeat_median_gate"
+}
