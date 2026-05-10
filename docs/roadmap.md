@@ -218,32 +218,31 @@ Tracked evidence:
 
 Recommended next gate:
 
-`makefile_generated_host_probe_target_retirement_boundary`
+`defer_untracked_nn_mobilevit_contract_tests_boundary`
 
 Acceptance criteria:
 
-- keep `src/hybrid/Makefile` focused on the core CUDA runner and active legacy TL-UL probe targets
-- do not add per-target generated host-probe rules for NN, MobileViT, NVDLA, ITA, KV-cache, or primitive inventory
-- use launch-template `build.host_probe_builder: src/tools/build_host_probe.py` metadata for generated host probes
-- keep generated host-probe build behavior in reusable tooling, not in a hand-maintained Makefile target list
-- verify contract tests pass without the huge Makefile target expansion
-- leave unrelated NN/MobileViT/third-party candidate files out of this boundary
+- keep active contract discovery limited to tracked, accepted contract tests under `tests/contract/`
+- move untracked NN/LLM/MobileViT candidate tests out of `tests/contract/` so local `unittest discover -s tests/contract` is not polluted
+- preserve candidate tests under `tests/candidate_contract/` without treating them as active source of truth
+- do not add NN/LLM/MobileViT tools, templates, overlays, or third-party imports in this boundary
+- keep the Makefile generated-host-probe retirement intact
 
 Working tree review boundary:
 
-`next_task: makefile_generated_host_probe_target_retirement_boundary`
+`next_task: defer_untracked_nn_mobilevit_contract_tests_boundary`
 
-Review only the Makefile surface cleanup after moving generated host-probe builds to template metadata. The goal is to prevent thousands of generated per-target rules from becoming source of truth while preserving the Verilator-like `build_host_probe.py` path.
+Review only the candidate-test quarantine needed to keep the active contract suite reproducible while NN/LLM/MobileViT work remains unaccepted. The goal is to avoid accidentally promoting exploratory tests into the active surface.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
-- `src/hybrid/Makefile`
-- contract tests only if they still assert hand-maintained Makefile targets for generated host probes
+- `tests/candidate_contract/README.md`
 
 Exclude from this review boundary:
 
 - `AGENTS.md`
+- `src/hybrid/Makefile`
 - `third_party/ITA`, `third_party/common_cells`, and `third_party/ibex`
 - new NN target templates such as NVDLA, ITA, KV-cache, and LLM SoC kick templates
 - non-rtlmeter overlays such as ITA, ibex, MobileViT, and NVDLA
@@ -254,8 +253,8 @@ Exclude from this review boundary:
 
 Boundary acceptance:
 
-- `src/hybrid/Makefile` does not contain generated host-probe targets for NVDLA, ITA, KV-cache, paged-attention, MobileViT, or broad primitive inventory
-- launch templates that need generated host probes carry `build.host_probe_builder: src/tools/build_host_probe.py`
+- tracked files under `tests/contract/` remain the active contract suite
+- candidate NN/LLM/MobileViT tests are documented as deferred and not discovered by `python3 -m unittest discover -s tests/contract -q`
 - no generated output is introduced as source of truth
 - `python3 -m unittest tests.contract.test_resident_runtime_contract -q` passes
 - `python3 -m unittest discover -s tests/contract -q` passes
