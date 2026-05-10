@@ -114,6 +114,12 @@ NVDLA_CMAC_CORE_MAC_TEMPLATE_SHAPE_EXPANSION_GATE = (
     / "scaling_gates"
     / "nvdla_cmac_core_mac_template_shape_expansion_gate.json"
 )
+NVDLA_SHAPE_EXPANSION_NEXT_WORKSTREAM_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "nvdla_shape_expansion_next_workstream_review_gate.json"
+)
 REPEAT_MEDIAN_RESULTS_SUMMARY = REPO_ROOT / "reports" / "results_reproduction_median_summary.json"
 RESIDENT_BATCH_SWEEP_SUMMARY = REPO_ROOT / "reports" / "resident_batch_sweep_summary.json"
 RESIDENT_STATE_REUSE_SUMMARY = REPO_ROOT / "reports" / "resident_state_reuse_experiment_summary.json"
@@ -770,7 +776,53 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "nvdla_cmac_core_mac_template_shape_expansion_gate.json",
             "`8x1`, `32x1`, and `8x4` all pass CPU-vs-hybrid `coverage_output_equivalence` with mismatch count `0`",
             "raw full-state equality is false",
-            "next_task: review_nvdla_cmac_core_mac_shape_expansion_results_then_choose_a2cacc_or_ita_boundary",
+        ):
+            self.assertIn(token, combined_docs)
+
+    def test_nvdla_shape_expansion_next_workstream_review_selects_ita_dependency_boundary(self) -> None:
+        gate = json.loads(NVDLA_SHAPE_EXPANSION_NEXT_WORKSTREAM_REVIEW_GATE.read_text(encoding="utf-8"))
+        combined_docs = "\n".join(
+            [
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["status"], "selected_ita_dependency_boundary_next")
+        self.assertEqual(
+            gate["source_shape_expansion_gate"],
+            "config/scaling_gates/nvdla_cmac_core_mac_template_shape_expansion_gate.json",
+        )
+        self.assertEqual(
+            gate["completed_nvdla_evidence"]["active_seed_target"],
+            "NVDLA.nvdla_cmac_core_mac",
+        )
+        self.assertEqual(gate["completed_nvdla_evidence"]["measured_shapes"], ["8x1", "32x1", "8x4"])
+        self.assertTrue(gate["completed_nvdla_evidence"]["all_shapes_passed_coverage_output_equivalence"])
+        self.assertEqual(gate["completed_nvdla_evidence"]["max_coverage_output_mismatch_count"], 0)
+        self.assertFalse(gate["completed_nvdla_evidence"]["raw_full_state_match_all_shapes"])
+        options = {entry["option"]: entry for entry in gate["options_reviewed"]}
+        self.assertEqual(options["nvdla_cmac_a2cacc_secondary_minimal_gate"]["decision"], "defer")
+        self.assertEqual(options["ita_dependency_clean_checkout_boundary"]["decision"], "select_next")
+        self.assertEqual(
+            gate["selected_next_workstream"]["name"],
+            "ita_dependency_clean_checkout_boundary",
+        )
+        self.assertEqual(
+            gate["selected_next_workstream"]["next_gate"],
+            "ita_dependency_clean_checkout_boundary_gate",
+        )
+        self.assertFalse(gate["acceptance_policy"]["new_active_seed_measurement_allowed_by_gate"])
+        self.assertFalse(gate["acceptance_policy"]["speedup_claim_allowed_by_gate_alone"])
+        self.assertEqual(gate["next_task"], "define_ita_dependency_clean_checkout_boundary_gate")
+        self.assertIn("not an ITA build/run/compare result", gate["non_claims"])
+        self.assertIn("not promotion of a second active seed measurement", gate["non_claims"])
+
+        for token in (
+            "nvdla_shape_expansion_next_workstream_review_gate.json",
+            "selected next workstream: `ita_dependency_clean_checkout_boundary`",
+            "third_party/ITA` and `third_party/common_cells` canonical",
+            "next_task: define_ita_dependency_clean_checkout_boundary_gate",
         ):
             self.assertIn(token, combined_docs)
 
@@ -1364,11 +1416,13 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "candidate_template_clean_checkout_selection_gate.json",
             "nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
             "nvdla_cmac_core_mac_template_shape_expansion_gate.json",
-            "next_task: review_nvdla_cmac_core_mac_shape_expansion_results_then_choose_a2cacc_or_ita_boundary",
-            "Review only the completed NVDLA `cmac_core_mac` template shape expansion result",
+            "nvdla_shape_expansion_next_workstream_review_gate.json",
+            "next_task: define_ita_dependency_clean_checkout_boundary_gate",
+            "Review only the dependency-boundary definition for ITA/common_cells",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
+            "records/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json",
             "records/scaling_gates/candidate_template_clean_checkout_selection_gate.json",
             "records/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
             "records/scaling_gates/nvdla_cmac_core_mac_template_shape_expansion_gate.json",
@@ -1389,6 +1443,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`",
             "candidate selection gate identifies `NVDLA.nvdla_cmac_core_mac` as primary",
             "minimal build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`",
+            "next workstream review selects `ita_dependency_clean_checkout_boundary`",
             "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "`run_hybrid_template.py` passes template `verilator_defines` into the Verilator command",

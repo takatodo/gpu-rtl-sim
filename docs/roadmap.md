@@ -96,6 +96,14 @@ NVDLA template shape expansion gate:
 - non-claim: raw full-state equality is false, timing is scoped observed evidence only, and this is not full NVDLA execution
 - usability observation: `run_hybrid_template.py` currently rebuilds the generic host probe and forces GPU cubin regeneration on each measured shape
 
+Next workstream review gate:
+
+- `config/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json`
+- selected next workstream: `ita_dependency_clean_checkout_boundary`
+- reason: the same-seed NVDLA `cmac_core_mac` template path has passed its planned shape expansion; the next blocker for the long-term LLM-serving RTL goal is making `third_party/ITA` and `third_party/common_cells` canonical in clean checkout
+- deferred alternative: NVDLA `a2cacc` remains the secondary clean-checkout candidate, but it does not remove the ITA/LLM-serving dependency blocker
+- non-claim: this is not an ITA build/run/compare result and does not promote a second active seed measurement
+
 Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
@@ -244,27 +252,27 @@ Tracked evidence:
 
 Recommended next gate:
 
-`review_nvdla_cmac_core_mac_shape_expansion_results_then_choose_a2cacc_or_ita_boundary`
+`define_ita_dependency_clean_checkout_boundary_gate`
 
 Acceptance criteria:
 
-- review the completed `nvdla_cmac_core_mac_template_shape_expansion_gate`
-- keep the result scoped to coverage-output equivalence and observed timing only
-- decide whether the next active workstream is the secondary NVDLA `a2cacc` candidate or the ITA dependency boundary
-- if choosing `a2cacc`, keep the same template/generic-builder boundary before adding performance claims
-- if choosing ITA, first make `third_party/ITA` and `third_party/common_cells` canonical dependency boundaries
-- consider a build-cache or no-force GPU rebuild option separately as a usability optimization
+- define the dependency boundary before any new ITA measurement
+- decide whether `third_party/ITA` and `third_party/common_cells` are submodules or another explicit source-import boundary
+- add a clean-checkout-oriented contract test for the required dependency paths
+- keep recursive Bender dependencies out unless a narrow requirement is recorded
+- keep ITA build/run/compare work in a later gate
 
 Working tree review boundary:
 
-`next_task: review_nvdla_cmac_core_mac_shape_expansion_results_then_choose_a2cacc_or_ita_boundary`
+`next_task: define_ita_dependency_clean_checkout_boundary_gate`
 
-Review only the completed NVDLA `cmac_core_mac` template shape expansion result and choose the next active workstream.
+Review only the dependency-boundary definition for ITA/common_cells. Do not mix in ITA measurement, runtime changes, or generated outputs.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
 - `docs/status.md`
+- `records/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json`
 - `records/scaling_gates/candidate_template_clean_checkout_selection_gate.json`
 - `records/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json`
 - `records/scaling_gates/nvdla_cmac_core_mac_template_shape_expansion_gate.json`
@@ -292,6 +300,7 @@ Boundary acceptance:
 - candidate selection gate identifies `NVDLA.nvdla_cmac_core_mac` as primary and `NVDLA.nvdla_cmac_a2cacc` as secondary
 - minimal build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
 - shape expansion gate records `8x1`, `32x1`, and `8x4` coverage-output pass with mismatch count `0`
+- next workstream review selects `ita_dependency_clean_checkout_boundary`
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command

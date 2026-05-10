@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "gate": "nvdla_shape_expansion_next_workstream_review_gate",
+  "objective": "Review the completed NVDLA cmac_core_mac template shape expansion and choose the next active workstream without widening the active seed surface prematurely.",
+  "status": "selected_ita_dependency_boundary_next",
+  "source_shape_expansion_gate": "config/scaling_gates/nvdla_cmac_core_mac_template_shape_expansion_gate.json",
+  "source_candidate_selection_gate": "config/scaling_gates/candidate_template_clean_checkout_selection_gate.json",
+  "completed_nvdla_evidence": {
+    "active_seed_target": "NVDLA.nvdla_cmac_core_mac",
+    "measured_shapes": [
+      "8x1",
+      "32x1",
+      "8x4"
+    ],
+    "all_shapes_passed_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_match_all_shapes": false
+  },
+  "options_reviewed": [
+    {
+      "option": "nvdla_cmac_a2cacc_secondary_minimal_gate",
+      "decision": "defer",
+      "strength": "Smallest continuation; source-backed by tracked third_party/rtlmeter and already uses src/tools/build_host_probe.py.",
+      "weakest_point": "It increases NVDLA target breadth but does not remove the blocker for ITA or LLM-serving RTL work.",
+      "conditions_before_reconsidering": [
+        "Need another NVDLA template/generic-host-probe confidence point",
+        "Keep the same build/run/compare boundary and avoid broad speedup claims"
+      ]
+    },
+    {
+      "option": "ita_dependency_clean_checkout_boundary",
+      "decision": "select_next",
+      "strength": "Directly addresses the dependency blocker before promoting ITA, attention, softmax, MHA, or KV-cache RTL work.",
+      "weakest_point": "It is larger than the a2cacc continuation because it must canonicalize third_party/ITA and third_party/common_cells before measurement work.",
+      "conditions": [
+        "Do not add a new active seed measurement in the dependency boundary gate",
+        "Record submodule or source-import decisions for third_party/ITA and third_party/common_cells",
+        "Add a clean-checkout-oriented contract test for required dependency paths",
+        "Keep generated reports and artifacts out of source-of-truth decisions"
+      ]
+    }
+  ],
+  "selected_next_workstream": {
+    "name": "ita_dependency_clean_checkout_boundary",
+    "target_scope": "dependency boundary only; no ITA build/run/compare claim in this gate",
+    "reason": "The current NVDLA cmac_core_mac path has passed the selected same-seed template shape expansion. The next blocker for the long-term LLM-serving RTL goal is not another NVDLA measurement, but making ITA and common_cells reproducible in clean checkout.",
+    "next_gate": "ita_dependency_clean_checkout_boundary_gate"
+  },
+  "acceptance_policy": {
+    "speedup_claim_allowed_by_gate_alone": false,
+    "new_active_seed_measurement_allowed_by_gate": false,
+    "must_preserve_nvdla_evidence_scope": true,
+    "must_keep_reports_and_artifacts_generated_only": true
+  },
+  "review_boundary": [
+    "docs/roadmap.md",
+    "docs/status.md",
+    "records/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json",
+    "records/scaling_gates/nvdla_cmac_core_mac_template_shape_expansion_gate.json",
+    "records/scaling_gates/candidate_template_clean_checkout_selection_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+  ],
+  "exclude_from_boundary": [
+    "AGENTS.md",
+    "src/hybrid/Makefile",
+    "third_party/ITA",
+    "third_party/common_cells",
+    "third_party/ibex",
+    "ITA, KV-cache, LLM SoC, and MobileViT candidate templates and overlays",
+    "generated output under reports/ or artifacts/"
+  ],
+  "next_task": "define_ita_dependency_clean_checkout_boundary_gate",
+  "non_claims": [
+    "not an ITA build/run/compare result",
+    "not approval to add all recursive Bender dependencies",
+    "not promotion of a second active seed measurement",
+    "not a broad CPU versus hybrid speedup claim",
+    "not full NVDLA or full LLM-serving RTL execution"
+  ]
+}

@@ -16,6 +16,8 @@ NVDLA minimal build/run/compare state: `config/scaling_gates/nvdla_cmac_core_mac
 
 NVDLA shape expansion state: `config/scaling_gates/nvdla_cmac_core_mac_template_shape_expansion_gate.json` records that `8x1`, `32x1`, and `8x4` all ran through `run_hybrid_template.py` and the generic host-probe builder with CPU-vs-hybrid `coverage_output_equivalence` mismatch count `0`. Raw full-state equality is still false and timing is scoped observed evidence only; this does not promote another active seed target or claim full NVDLA execution.
 
+Next workstream review state: `config/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json` selects `ita_dependency_clean_checkout_boundary` next. The weaker point is that this is larger than continuing to the NVDLA `a2cacc` secondary candidate, but it addresses the actual blocker before ITA, attention, softmax, MHA, or KV-cache RTL work: making `third_party/ITA` and `third_party/common_cells` canonical and reproducible in clean checkout. This review does not add a new active seed measurement.
+
 ## Goal
 
 `modern_llm_serving_rtl_hybrid_conditions`
