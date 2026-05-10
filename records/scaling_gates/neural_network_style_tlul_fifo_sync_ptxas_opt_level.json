@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_style_tlul_fifo_sync_ptxas_opt_level",
+  "target": "tlul_fifo_sync",
+  "purpose": "Define one ptxas_opt_level comparison after resident_steps produced mixed target behavior.",
+  "prior_review": "second_active_workload_resident_steps_mixed_result_review",
+  "claim_scope": "tlul_fifo_sync runtime throughput comparison between default ptxas optimization and ptxas_opt_level=0 at 512 states x 32 steps with resident_steps=false only",
+  "optimization_knob": {
+    "name": "ptxas_opt_level",
+    "baseline_value": null,
+    "candidate_value": 0,
+    "reason": "Use one existing CUDA backend build knob after resident_steps produced mixed behavior; keep runtime scheduling fixed and compare ptxas default against the explicit validation-build override."
+  },
+  "preconditions": [
+    "second_active_workload_resident_steps_mixed_result_review passed",
+    "tlul_fifo_sync is already in active_scope.targets",
+    "tlul_fifo_sync Verilator obj_dir is generated",
+    "tlul_fifo_sync GPU PTX exists",
+    "resident_steps is disabled for all comparison runs",
+    "existing tlul_fifo_sync source/depth gates preserve correctness evidence"
+  ],
+  "builds": [
+    {
+      "name": "ptxas_default",
+      "ptxas_opt_level": null,
+      "command": "PYTHONPATH=src/tools python3 src/tools/build_vl_gpu.py artifacts/tlul_fifo_sync_obj_dir --reuse-ptx --out artifacts/tlul_fifo_sync_obj_dir/nn_style_ptxas_default.cubin",
+      "cubin": "artifacts/tlul_fifo_sync_obj_dir/nn_style_ptxas_default.cubin",
+      "required": true
+    },
+    {
+      "name": "ptxas_o0",
+      "ptxas_opt_level": 0,
+      "command": "PYTHONPATH=src/tools python3 src/tools/build_vl_gpu.py artifacts/tlul_fifo_sync_obj_dir --reuse-ptx --ptxas-opt-level 0 --out artifacts/tlul_fifo_sync_obj_dir/nn_style_ptxas_o0.cubin",
+      "cubin": "artifacts/tlul_fifo_sync_obj_dir/nn_style_ptxas_o0.cubin",
+      "required": true
+    }
+  ],
+  "runs": [
+    {
+      "name": "ptxas_default_steps_32_batch_512",
+      "build": "ptxas_default",
+      "nstates": 512,
+      "steps": 32,
+      "resident_steps": false,
+      "required": true
+    },
+    {
+      "name": "ptxas_o0_steps_32_batch_512",
+      "build": "ptxas_o0",
+      "nstates": 512,
+      "steps": 32,
+      "resident_steps": false,
+      "required": true
+    }
+  ],
+  "comparison_policy": {
+    "baseline_run": "ptxas_default_steps_32_batch_512",
+    "candidate_run": "ptxas_o0_steps_32_batch_512",
+    "same_target_required": true,
+    "same_nstates_and_steps_required": true,
+    "resident_steps_must_be_false": true,
+    "record_delta_after_run": true
+  },
+  "correctness_policy": {
+    "batched_gpu_runs": [
+      "run exits with status 0",
+      "dumped state byte size equals storage_size * nstates when dump is requested",
+      "the generated zero-initialized GPU dumps are runtime evidence only"
+    ],
+    "non_claims": [
+      "not resident_steps fix",
+      "not resident_steps general speedup",
+      "not ptxas_opt_level general speedup",
+      "not target-breadth performance generalization",
+      "not neural-network numerical correctness",
+      "not model accuracy or convergence",
+      "not model speedup",
+      "not training or inference throughput",
+      "not GEMM or tensor-core kernel performance",
+      "not raw full-state equality",
+      "not zero-initialized GPU correctness",
+      "not RAM/ROM/XPM behavior",
+      "not CPU speedup claim",
+      "not general CUDA performance portability"
+    ]
+  },
+  "performance_policy": {
+    "record": [
+      "ptxas_opt_level",
+      "nstates",
+      "steps",
+      "resident_steps",
+      "elapsed_ms",
+      "states_per_second",
+      "dump_bytes",
+      "expected_dump_bytes"
+    ],
+    "non_claims": [
+      "gate definition only until builds and report are generated",
+      "single-target compiler-backend knob measurement only",
+      "no target-breadth performance generalization",
+      "no general CUDA portability claim",
+      "no CPU speedup claim",
+      "no neural-network model speedup claim"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/neural_network_style_tlul_fifo_sync_ptxas_opt_level.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "run_ptxas_opt_level_nn_style_runtime_comparison_gate",
+  "next_action_on_fail": "diagnose_ptxas_opt_level_nn_style_runtime_comparison_gate_definition"
+}

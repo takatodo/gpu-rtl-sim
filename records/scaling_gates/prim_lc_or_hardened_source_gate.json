@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "gate": "prim_lc_or_hardened_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "prim_lc_or_hardened",
+  "family": "OpenTitan primitive",
+  "purpose": "Define the single source-backed gate selected after the seventeenth primitive review; keep it candidate-only until first-pass and depth evidence pass.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "target_scope": [
+    {
+      "target": "prim_lc_or_hardened",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/prim_lc_or_hardened.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_lc_or_hardened_coverage_regions.json",
+      "mdir": "artifacts/prim_lc_or_hardened_obj_dir",
+      "cpu_reference_state": "artifacts/prim_lc_or_hardened_obj_dir/prim_lc_or_hardened_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_lc_or_hardened_obj_dir/prim_lc_or_hardened_gpu_from_cpu_reference_state.bin",
+      "expected_report": "reports/prim_lc_or_hardened_source_gate.json"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "define_after_seventeenth_primitive_review_acceptance": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte",
+      "tlul_adapter_dmi",
+      "tlul_adapter_reg_racl",
+      "tlul_adapter_sram_racl",
+      "tlul_fifo_async",
+      "prim_fifo_async_simple",
+      "prim_sync_reqack_data",
+      "prim_pulse_sync",
+      "prim_edge_detector",
+      "prim_rst_sync",
+      "prim_flop_en",
+      "prim_flop",
+      "prim_flop_2sync",
+      "prim_mubi4_dec",
+      "prim_mubi4_sync",
+      "prim_mubi4_sender",
+      "prim_mubi8_sender",
+      "prim_mubi8_sync",
+      "prim_mubi32_sync",
+      "prim_multibit_sync",
+      "prim_lc_sync",
+      "prim_lc_sender"
+    ],
+    "candidate_targets_contains_only": [
+      "prim_lc_or_hardened"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_lc_or_hardened remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_lc_or_hardened_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_lc_or_hardened_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_lc_or_hardened.json",
+    "host_probe_target": "prim_lc_or_hardened_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "overlay_ready_first_pass_passed",
+    "planned_parameters": {
+      "ActVal": "lc_ctrl_pkg::On",
+      "LcTxWidth": 4,
+      "child_prim_lc_sync_AsyncOn": 0,
+      "child_prim_lc_sync_NumCopies": "lc_ctrl_pkg::TxWidth"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_util_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/lc_ctrl_state_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/lc_ctrl_reg_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/lc_ctrl_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_buf.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_buf.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_sec_anchor_buf.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop_2sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop_2sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_lc_sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_lc_or_hardened.sv"
+  ],
+  "weakest_point": "prim_lc_or_hardened is the first hardened life-cycle OR candidate and reaches the prim_lc_sync AsyncOn=0 no-flop path that the active prim_lc_sync and prim_lc_sender gates did not claim. This gate will fix ActVal=lc_ctrl_pkg::On and does not prove all life-cycle encodings, alternate ActVal settings, full CDC correctness, security hardening, raw full-state equality, or zero-initialized GPU correctness.",
+  "why_this_target": [
+    "the seventeenth primitive review accepted prim_lc_sender but kept the sender no-flop path and broader life-cycle combinational logic outside the active claim",
+    "prim_lc_or_hardened is a small life-cycle typed module that reuses already active lc_ctrl_pkg and prim_lc_sync source while exercising the previously non-claimed AsyncOn=0 child path",
+    "it is narrower than prim_sync_reqack because it avoids a two-clock request/acknowledge FSM",
+    "it avoids clock-gating special behavior and full IP-block breadth",
+    "it should reuse the shared Verilator/GPU/runtime flow without target-specific runtime hooks"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_sync_reqack",
+      "reason": "larger two-clock request/acknowledge FSM than the next life-cycle combinational gate"
+    },
+    {
+      "target": "prim_sec_anchor_buf",
+      "reason": "narrow buffer helper, but the next higher-value gap after prim_lc_sender is the life-cycle OR using the non-claimed AsyncOn=0 child path"
+    },
+    {
+      "target": "prim_clock_gating",
+      "reason": "clock-gating latch behavior is clock-special and remains outside the current primitive claim"
+    },
+    {
+      "target": "alert_or_esc_primitives",
+      "reason": "alert and escalation primitives introduce protocol breadth beyond the next narrow primitive gate"
+    },
+    {
+      "target": "full_ip_blocks",
+      "reason": "full IP blocks are too large for the next narrow source-backed primitive gate"
+    }
+  ],
+  "constraints": [
+    "define exactly one source-backed gate after the seventeenth primitive review passes",
+    "keep active_targets unchanged until prim_lc_or_hardened first-pass and depth evidence pass",
+    "keep candidate_targets limited to prim_lc_or_hardened",
+    "do not broaden the seventeen-primitive active claim",
+    "do not restore archived XuanTie-E902 or VeeR-EL2 source",
+    "do not add target-specific runtime hooks"
+  ],
+  "recorded_outputs": [
+    "config/scaling_gates/prim_lc_or_hardened_source_gate.json",
+    "config/slice_launch_templates/prim_lc_or_hardened.json",
+    "overlays/rtlmeter/designs/OpenTitan/src/prim_lc_or_hardened_gpu_cov_tb.sv",
+    "overlays/rtlmeter/designs/OpenTitan/tests/prim_lc_or_hardened_coverage_regions.json",
+    "src/hybrid/Makefile",
+    "reports/prim_lc_or_hardened_host_probe.json",
+    "reports/prim_lc_or_hardened_source_gate.json",
+    "config/scaling_gates/prim_lc_or_hardened_repeated_steps.json",
+    "config/scaling_gates/prim_lc_or_hardened_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_lc_or_hardened_coverage_output_depth.json",
+    "reports/prim_lc_or_hardened_repeated_steps_scaling.json",
+    "reports/prim_lc_or_hardened_cpu_exact_loop_repeated_steps.json",
+    "reports/prim_lc_or_hardened_coverage_output_depth.json"
+  ],
+  "next_action": "package_eighteenth_primitive_active_boundary",
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_lc_or_hardened_source_gate.json",
+    "host_probe_report": "reports/prim_lc_or_hardened_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "raw_full_state_mismatch_count": 6,
+    "manifest_valid": true,
+    "storage_size": 512,
+    "cpu_reference_state": "artifacts/prim_lc_or_hardened_obj_dir/prim_lc_or_hardened_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_lc_or_hardened_obj_dir/prim_lc_or_hardened_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_gate_definition": {
+    "status": "defined",
+    "gate": "config/scaling_gates/prim_lc_or_hardened_coverage_output_depth.json",
+    "gpu_repeated_steps_gate": "config/scaling_gates/prim_lc_or_hardened_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_lc_or_hardened_cpu_exact_loop_repeated_steps.json",
+    "report": "reports/prim_lc_or_hardened_coverage_output_depth.json",
+    "comparison_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "candidate_targets": [
+      "prim_lc_or_hardened"
+    ],
+    "active_targets_unchanged": true
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_lc_or_hardened_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gate": "config/scaling_gates/prim_lc_or_hardened_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_lc_or_hardened_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_lc_or_hardened_cpu_exact_loop_repeated_steps.json",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "target": "prim_lc_or_hardened",
+    "completed_task": "promote_prim_lc_or_hardened_to_active_target_scope",
+    "active_target_count": 40,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 18,
+    "candidate_targets": [],
+    "source_gate": "config/scaling_gates/prim_lc_or_hardened_source_gate.json",
+    "first_pass_report": "reports/prim_lc_or_hardened_source_gate.json",
+    "host_probe_report": "reports/prim_lc_or_hardened_host_probe.json",
+    "depth_gate": "config/scaling_gates/prim_lc_or_hardened_coverage_output_depth.json",
+    "depth_report": "reports/prim_lc_or_hardened_coverage_output_depth.json",
+    "depth_comparison_count": 2,
+    "depth_passed_count": 2,
+    "tlul_shared_depth_report": "reports/tlul_coverage_output_depth.json",
+    "tlul_shared_depth_comparison_count": 50,
+    "tlul_shared_depth_passed_count": 50,
+    "next_action": "package_eighteenth_primitive_active_boundary"
+  }
+}

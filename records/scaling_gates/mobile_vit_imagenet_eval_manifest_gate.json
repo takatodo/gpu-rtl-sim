@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "gate": "mobile_vit_imagenet_eval_manifest_gate",
+  "status": "blocked_no_local_imagenet_validation_images_or_labels",
+  "prior_gate": "config/scaling_gates/mobile_vit_model_source_selection_gate.json",
+  "objective": "Create the ImageNet evaluation manifest for the selected MobileViT-S reference model, or record the concrete blocker preventing ImageNet accuracy measurement.",
+  "selected_model": {
+    "huggingface_model_id": "apple/mobilevit-small",
+    "model_selection_gate": "config/scaling_gates/mobile_vit_model_source_selection_gate.json"
+  },
+  "local_dataset_scan": {
+    "commands": [
+      "find . -maxdepth 5 \\( -iname '*imagenet*' -o -iname '*ilsvrc*' -o -iname '*val*.tar' -o -iname '*ILSVRC2012*' \\) -print",
+      "find /data /datasets /mnt/data /home/takatodo/datasets /home/takatodo/data -maxdepth 3 \\( -iname '*imagenet*' -o -iname '*ilsvrc*' -o -iname '*val*.tar' -o -iname '*ILSVRC2012*' \\) -print",
+      "env | rg -i 'imagenet|ilsvrc|dataset|data'"
+    ],
+    "result": "no local ImageNet validation archive, extracted validation directory, labels, or dataset path environment variable found"
+  },
+  "python_inference_dependency_scan": {
+    "command": "python3 import check for torch, transformers, PIL, datasets",
+    "result": {
+      "torch": "present_in_artifacts/mobile_vit/venv",
+      "transformers": "present_in_artifacts/mobile_vit/venv",
+      "PIL": "present_in_artifacts/mobile_vit/venv",
+      "datasets": "present_in_artifacts/mobile_vit/venv"
+    }
+  },
+  "reproducible_checker": {
+    "command": "artifacts/mobile_vit/venv/bin/python src/tools/mobile_vit_eval_inputs.py --output reports/mobile_vit_eval_input_check.json",
+    "explicit_local_input_command": "artifacts/mobile_vit/venv/bin/python src/tools/mobile_vit_eval_inputs.py --image-root /path/to/imagenet/val --labels /path/to/ILSVRC2012_validation_ground_truth.txt --labels-format imagenet_val_ground_truth --label-index-base 1 --output reports/mobile_vit_eval_input_check.json",
+    "report": "reports/mobile_vit_eval_input_check.json",
+    "ready_for_reference_eval": false
+  },
+  "manifest_requirements": {
+    "dataset_root_or_archive": "missing",
+    "validation_labels": "missing",
+    "class_index_mapping": "missing",
+    "preprocessing_contract": "selected_from_model_card_but_not_locally_verified",
+    "model_weights_manifest": "missing",
+    "eval_command": "missing",
+    "accuracy_report": "missing"
+  },
+  "accepted_next_inputs": [
+    "A local ImageNet-1k validation path, for example ILSVRC2012_img_val.tar plus validation labels, or an extracted val/ tree with labels.",
+    "A permitted scoped subset manifest if full ImageNet validation is not available.",
+    "The Python dependencies already installed in artifacts/mobile_vit/venv can be used for reference inference.",
+    "Alternatively, a preexisting local model export and preprocessing script that can run without those Python packages."
+  ],
+  "next_task": "provide_imagenet_validation_data_or_approved_scoped_subset_for_real_accuracy",
+  "completion_claim_allowed": false,
+  "non_claims": [
+    "not ImageNet manifest created",
+    "not local model weights available",
+    "not MobileViT smoke inference",
+    "not CPU-kicked ViT execution",
+    "not top-1 or top-5 accuracy measurement"
+  ]
+}

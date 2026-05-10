@@ -1,0 +1,295 @@
+{
+  "schema_version": 1,
+  "gate": "prim_sync_reqack_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "prim_sync_reqack",
+  "family": "OpenTitan primitive",
+  "purpose": "Define the single source-backed gate selected after the eighteenth primitive review; keep it candidate-only until first-pass and depth evidence pass.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "target_scope": [
+    {
+      "target": "prim_sync_reqack",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/prim_sync_reqack.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sync_reqack_coverage_regions.json",
+      "mdir": "artifacts/prim_sync_reqack_obj_dir",
+      "expected_report": "reports/prim_sync_reqack_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_sync_reqack_obj_dir/prim_sync_reqack_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_sync_reqack_obj_dir/prim_sync_reqack_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "define_after_eighteenth_primitive_review_acceptance": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte",
+      "tlul_adapter_dmi",
+      "tlul_adapter_reg_racl",
+      "tlul_adapter_sram_racl",
+      "tlul_fifo_async",
+      "prim_fifo_async_simple",
+      "prim_sync_reqack_data",
+      "prim_pulse_sync",
+      "prim_edge_detector",
+      "prim_rst_sync",
+      "prim_flop_en",
+      "prim_flop",
+      "prim_flop_2sync",
+      "prim_mubi4_dec",
+      "prim_mubi4_sync",
+      "prim_mubi4_sender",
+      "prim_mubi8_sender",
+      "prim_mubi8_sync",
+      "prim_mubi32_sync",
+      "prim_multibit_sync",
+      "prim_lc_sync",
+      "prim_lc_sender",
+      "prim_lc_or_hardened"
+    ],
+    "candidate_targets_contains_only": [
+      "prim_sync_reqack"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_sync_reqack remains candidate-only until first pass and depth evidence pass"
+    ],
+    "active_targets_at_promotion": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte",
+      "tlul_adapter_dmi",
+      "tlul_adapter_reg_racl",
+      "tlul_adapter_sram_racl",
+      "tlul_fifo_async",
+      "prim_fifo_async_simple",
+      "prim_sync_reqack_data",
+      "prim_pulse_sync",
+      "prim_edge_detector",
+      "prim_rst_sync",
+      "prim_flop_en",
+      "prim_flop",
+      "prim_flop_2sync",
+      "prim_mubi4_dec",
+      "prim_mubi4_sync",
+      "prim_mubi4_sender",
+      "prim_mubi8_sender",
+      "prim_mubi8_sync",
+      "prim_mubi32_sync",
+      "prim_multibit_sync",
+      "prim_lc_sync",
+      "prim_lc_sender",
+      "prim_lc_or_hardened",
+      "prim_sync_reqack"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_sync_reqack_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sync_reqack_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_sync_reqack.json",
+    "host_probe_target": "prim_sync_reqack_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "active",
+    "planned_parameters": {
+      "EnRzHs": 1,
+      "EnRstChks": 0,
+      "protocol": "return_to_zero_handshake",
+      "clock_domains": [
+        "clk_src_i",
+        "clk_dst_i"
+      ]
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop_2sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop_2sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_sync_reqack.sv"
+  ],
+  "weakest_point": "The eighteenth primitive boundary covers the hardened life-cycle OR path, but the active req/ack CDC claim still comes through prim_sync_reqack_data with EnRzHs=0. A direct prim_sync_reqack gate can target the return-to-zero handshake branch while keeping reset assertion checks, arbitrary clock ratios, full CDC correctness, raw full-state equality, and zero-initialized GPU correctness outside the claim.",
+  "why_this_target": [
+    "the eighteenth primitive review accepted prim_lc_or_hardened and leaves req/ack RZ handshake behavior outside the active claim",
+    "prim_sync_reqack is already in the dependency path through prim_sync_reqack_data, so this is source-backed without broadening into a new protocol family",
+    "selecting EnRzHs=1 covers a concrete branch not claimed by the active prim_sync_reqack_data gate",
+    "it is narrower than alert, escalation, arbiter, subreg, memory, and full IP-block targets",
+    "it should reuse the existing multi-clock primitive coverage flow and shared runtime without target-specific runtime hooks"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_clock_gating",
+      "reason": "clock-gating behavior is clock-special and remains outside the current primitive claim"
+    },
+    {
+      "target": "prim_sec_anchor_buf",
+      "reason": "small buffer wrapper that adds less claim value than the unclaimed req/ack RZ branch"
+    },
+    {
+      "target": "prim_arbiter_fixed",
+      "reason": "introduces arbitration policy breadth beyond the next narrow CDC handshake branch"
+    },
+    {
+      "target": "alert_or_esc_primitives",
+      "reason": "alert and escalation primitives introduce protocol breadth beyond the next single primitive gate"
+    },
+    {
+      "target": "full_ip_blocks",
+      "reason": "full IP blocks are too large for the next narrow source-backed primitive gate"
+    }
+  ],
+  "constraints": [
+    "define exactly one source-backed gate after the eighteenth primitive review passes",
+    "keep active_targets unchanged until prim_sync_reqack first-pass and depth evidence pass",
+    "keep candidate_targets limited to prim_sync_reqack",
+    "do not broaden the eighteen-primitive active claim",
+    "do not restore archived XuanTie-E902 or VeeR-EL2 source",
+    "do not add target-specific runtime hooks"
+  ],
+  "recorded_outputs": [
+    "config/scaling_gates/prim_sync_reqack_source_gate.json",
+    "config/slice_launch_templates/prim_sync_reqack.json",
+    "overlays/rtlmeter/designs/OpenTitan/src/prim_sync_reqack_gpu_cov_tb.sv",
+    "overlays/rtlmeter/designs/OpenTitan/tests/prim_sync_reqack_coverage_regions.json",
+    "src/hybrid/Makefile",
+    "reports/prim_sync_reqack_host_probe.json",
+    "reports/prim_sync_reqack_source_gate.json",
+    "config/scaling_gates/prim_sync_reqack_repeated_steps.json",
+    "config/scaling_gates/prim_sync_reqack_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_sync_reqack_coverage_output_depth.json"
+  ],
+  "next_action": "package_nineteenth_primitive_active_boundary",
+  "overlay": {
+    "status": "active",
+    "target": "prim_sync_reqack",
+    "source_gate": "config/scaling_gates/prim_sync_reqack_source_gate.json",
+    "launch_template": "config/slice_launch_templates/prim_sync_reqack.json",
+    "coverage_tb": "overlays/rtlmeter/designs/OpenTitan/src/prim_sync_reqack_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sync_reqack_coverage_regions.json",
+    "host_probe_target": "prim_sync_reqack_host_probe",
+    "completed_task": "implement_prim_sync_reqack_overlay_gate",
+    "next_action": "package_nineteenth_primitive_active_boundary"
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_sync_reqack_source_gate.json",
+    "host_probe_report": "reports/prim_sync_reqack_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "raw_full_state_mismatch_count": 7,
+    "manifest_valid": true,
+    "storage_size": 640,
+    "cpu_reference_state": "artifacts/prim_sync_reqack_obj_dir/prim_sync_reqack_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_sync_reqack_obj_dir/prim_sync_reqack_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_gate_definition": {
+    "status": "defined",
+    "gate": "config/scaling_gates/prim_sync_reqack_coverage_output_depth.json",
+    "gpu_repeated_steps_gate": "config/scaling_gates/prim_sync_reqack_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_sync_reqack_cpu_exact_loop_repeated_steps.json",
+    "report": "reports/prim_sync_reqack_coverage_output_depth.json",
+    "comparison_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "candidate_targets": [
+      "prim_sync_reqack"
+    ],
+    "active_targets_unchanged": true
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_sync_reqack_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gate": "config/scaling_gates/prim_sync_reqack_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_sync_reqack_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_sync_reqack_cpu_exact_loop_repeated_steps.json",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "target": "prim_sync_reqack",
+    "completed_task": "promote_prim_sync_reqack_to_active_target_scope",
+    "active_target_count": 41,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 19,
+    "candidate_targets": [],
+    "source_gate": "config/scaling_gates/prim_sync_reqack_source_gate.json",
+    "first_pass_report": "reports/prim_sync_reqack_source_gate.json",
+    "host_probe_report": "reports/prim_sync_reqack_host_probe.json",
+    "depth_gate": "config/scaling_gates/prim_sync_reqack_coverage_output_depth.json",
+    "depth_report": "reports/prim_sync_reqack_coverage_output_depth.json",
+    "depth_comparison_count": 2,
+    "depth_passed_count": 2,
+    "tlul_shared_depth_report": "reports/tlul_coverage_output_depth.json",
+    "tlul_shared_depth_comparison_count": 50,
+    "tlul_shared_depth_passed_count": 50,
+    "next_action": "package_nineteenth_primitive_active_boundary"
+  },
+  "active_target_count": 41,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 19
+}

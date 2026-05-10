@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "gate": "prim_lc_sender_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "prim_lc_sender",
+  "family": "OpenTitan primitive",
+  "purpose": "Define the single source-backed gate selected after the sixteenth primitive review; keep it candidate-only until first-pass and depth evidence pass.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "target_scope": [
+    {
+      "target": "prim_lc_sender",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/prim_lc_sender.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_lc_sender_coverage_regions.json",
+      "mdir": "artifacts/prim_lc_sender_obj_dir",
+      "cpu_reference_state": "artifacts/prim_lc_sender_obj_dir/prim_lc_sender_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_lc_sender_obj_dir/prim_lc_sender_gpu_from_cpu_reference_state.bin",
+      "expected_report": "reports/prim_lc_sender_source_gate.json"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "define_after_sixteenth_primitive_review_acceptance": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte",
+      "tlul_adapter_dmi",
+      "tlul_adapter_reg_racl",
+      "tlul_adapter_sram_racl",
+      "tlul_fifo_async",
+      "prim_fifo_async_simple",
+      "prim_sync_reqack_data",
+      "prim_pulse_sync",
+      "prim_edge_detector",
+      "prim_rst_sync",
+      "prim_flop_en",
+      "prim_flop",
+      "prim_flop_2sync",
+      "prim_mubi4_dec",
+      "prim_mubi4_sync",
+      "prim_mubi4_sender",
+      "prim_mubi8_sender",
+      "prim_mubi8_sync",
+      "prim_mubi32_sync",
+      "prim_multibit_sync",
+      "prim_lc_sync"
+    ],
+    "candidate_targets_contains_only": [
+      "prim_lc_sender"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_lc_sender remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_lc_sender_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_lc_sender_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_lc_sender.json",
+    "host_probe_target": "prim_lc_sender_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "overlay_ready_first_pass_passed",
+    "planned_parameters": {
+      "AsyncOn": 1,
+      "ResetValueIsOn": 0,
+      "LcTxWidth": 4,
+      "ResetValue": "lc_ctrl_pkg::Off"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_util_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/lc_ctrl_state_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/lc_ctrl_reg_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/lc_ctrl_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_sec_anchor_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_lc_sender.sv"
+  ],
+  "weakest_point": "prim_lc_sender is the first life-cycle typed sender gate after prim_lc_sync. It introduces prim_sec_anchor_flop through the AsyncOn=1 sender path, but fixes AsyncOn=1 and ResetValueIsOn=0, so it does not prove the no-flop sender path, ResetValueIsOn=1, all life-cycle encodings, full CDC correctness, security hardening, raw full-state equality, or zero-initialized GPU correctness.",
+  "why_this_target": [
+    "the sixteenth primitive review accepted prim_lc_sync but kept prim_lc_sender and prim_sec_anchor_flop outside the active claim",
+    "prim_lc_sender is the narrowest next life-cycle sender step and directly exercises prim_sec_anchor_flop without introducing the larger req/ack FSM",
+    "the upstream module is small and depends on already active lc_ctrl_pkg, prim_flop, and generic flop paths",
+    "it is narrower than prim_sync_reqack and prim_diff_decode and avoids clock-gating special behavior",
+    "it should reuse the shared Verilator/GPU/runtime flow without target-specific runtime hooks"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_sync_reqack",
+      "reason": "larger two-clock request/acknowledge FSM than the next life-cycle sender step"
+    },
+    {
+      "target": "prim_diff_decode",
+      "reason": "alert/esc-adjacent differential-pair pattern FSM is broader than the next sender gate"
+    },
+    {
+      "target": "prim_clock_gating",
+      "reason": "clock-gating latch behavior is clock-special and remains outside the current primitive claim"
+    },
+    {
+      "target": "prim_lc_or_hardened",
+      "reason": "hardened life-cycle OR mainly reuses prim_lc_sync AsyncOn=0; take the explicit sender and prim_sec_anchor_flop path first"
+    },
+    {
+      "target": "full_ip_blocks",
+      "reason": "full IP blocks are too large for the next narrow source-backed primitive gate"
+    }
+  ],
+  "constraints": [
+    "define exactly one source-backed gate after the sixteenth primitive review passes",
+    "keep active_targets unchanged until prim_lc_sender first-pass and depth evidence pass",
+    "keep candidate_targets limited to prim_lc_sender",
+    "do not broaden the sixteen-primitive active claim",
+    "do not restore archived XuanTie-E902 or VeeR-EL2 source",
+    "do not add target-specific runtime hooks"
+  ],
+  "recorded_outputs": [
+    "config/scaling_gates/prim_lc_sender_source_gate.json",
+    "config/slice_launch_templates/prim_lc_sender.json",
+    "overlays/rtlmeter/designs/OpenTitan/src/prim_lc_sender_gpu_cov_tb.sv",
+    "overlays/rtlmeter/designs/OpenTitan/tests/prim_lc_sender_coverage_regions.json",
+    "src/hybrid/Makefile",
+    "reports/prim_lc_sender_host_probe.json",
+    "reports/prim_lc_sender_source_gate.json",
+    "config/scaling_gates/prim_lc_sender_repeated_steps.json",
+    "config/scaling_gates/prim_lc_sender_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_lc_sender_coverage_output_depth.json",
+    "reports/prim_lc_sender_repeated_steps_scaling.json",
+    "reports/prim_lc_sender_cpu_exact_loop_repeated_steps.json",
+    "reports/prim_lc_sender_coverage_output_depth.json"
+  ],
+  "next_action": "package_seventeenth_primitive_active_boundary",
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_lc_sender_source_gate.json",
+    "host_probe_report": "reports/prim_lc_sender_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "raw_full_state_mismatch_count": 31,
+    "manifest_valid": true,
+    "storage_size": 576,
+    "cpu_reference_state": "artifacts/prim_lc_sender_obj_dir/prim_lc_sender_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_lc_sender_obj_dir/prim_lc_sender_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_gate_definition": {
+    "status": "defined",
+    "gate": "config/scaling_gates/prim_lc_sender_coverage_output_depth.json",
+    "gpu_repeated_steps_gate": "config/scaling_gates/prim_lc_sender_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_lc_sender_cpu_exact_loop_repeated_steps.json",
+    "report": "reports/prim_lc_sender_coverage_output_depth.json",
+    "comparison_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "candidate_targets": [
+      "prim_lc_sender"
+    ],
+    "active_targets_unchanged": true
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_lc_sender_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gate": "config/scaling_gates/prim_lc_sender_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_lc_sender_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_lc_sender_cpu_exact_loop_repeated_steps.json",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "target": "prim_lc_sender",
+    "completed_task": "promote_prim_lc_sender_to_active_target_scope",
+    "active_target_count": 39,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 17,
+    "candidate_targets": [],
+    "source_gate": "config/scaling_gates/prim_lc_sender_source_gate.json",
+    "first_pass_report": "reports/prim_lc_sender_source_gate.json",
+    "host_probe_report": "reports/prim_lc_sender_host_probe.json",
+    "depth_gate": "config/scaling_gates/prim_lc_sender_coverage_output_depth.json",
+    "depth_report": "reports/prim_lc_sender_coverage_output_depth.json",
+    "depth_comparison_count": 2,
+    "depth_passed_count": 2,
+    "tlul_shared_depth_report": "reports/tlul_coverage_output_depth.json",
+    "tlul_shared_depth_comparison_count": 50,
+    "tlul_shared_depth_passed_count": 50,
+    "next_action": "package_seventeenth_primitive_active_boundary"
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_nvdla_cmac_a2cacc_first_hybrid_benchmark_gate",
+  "target": "nvdla_cmac_a2cacc",
+  "upstream_module": "NV_NVDLA_RT_cmac_a2cacc",
+  "upstream_source": "third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_RT_cmac_a2cacc.v",
+  "overlay": {
+    "coverage_tb": "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_a2cacc_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_a2cacc_coverage_regions.json",
+    "launch_template": "config/slice_launch_templates/nvdla_cmac_a2cacc.json",
+    "host_probe_target": "nvdla_cmac_a2cacc_host_probe",
+    "makefile": "src/hybrid/Makefile"
+  },
+  "build_evidence": {
+    "verilator_mdir": "artifacts/nvdla_cmac_a2cacc_obj_dir",
+    "host_probe_report": "reports/nvdla_cmac_a2cacc_host_probe.json",
+    "gpu_cubin": "artifacts/nvdla_cmac_a2cacc_obj_dir/vl_batch_gpu.cubin",
+    "gpu_meta": "artifacts/nvdla_cmac_a2cacc_obj_dir/vl_batch_gpu.meta.json"
+  },
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "target_scope": [
+    {
+      "target": "nvdla_cmac_a2cacc",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/nvdla_cmac_a2cacc.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_a2cacc_coverage_regions.json",
+      "mdir": "artifacts/nvdla_cmac_a2cacc_obj_dir",
+      "cpu_reference_state": "artifacts/nvdla_cmac_a2cacc_obj_dir/nvdla_cpu_repeat_32x4.bin",
+      "gpu_candidate_state": "artifacts/nvdla_cmac_a2cacc_obj_dir/nvdla_gpu_from_cpu_init_32x4.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18
+    },
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "benchmark_summary": "reports/nvdla_cmac_a2cacc_first_hybrid_benchmark_summary.json",
+  "measured_shapes": [
+    {
+      "name": "minimum_overhead_probe",
+      "nstates": 1,
+      "steps": 1,
+      "cpu_report": "reports/nvdla_cmac_a2cacc_cpu_repeat_1x1.json",
+      "hybrid_report": "reports/nvdla_cmac_a2cacc_hybrid_1x1.txt",
+      "coverage_output_compare_report": "reports/nvdla_cmac_a2cacc_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+      "cpu_elapsed_ms": 3.50557,
+      "hybrid_gpu_kernel_time_ms_total": 0.723968,
+      "hybrid_wall_time_ms": 0.753,
+      "cpu_to_gpu_kernel_speedup_ratio": 4.842161532001415,
+      "cpu_to_hybrid_wall_speedup_ratio": 4.655471447543161,
+      "coverage_output_equivalence_passed": true
+    },
+    {
+      "name": "single_state_repeated_step_probe",
+      "nstates": 1,
+      "steps": 64,
+      "cpu_report": "reports/nvdla_cmac_a2cacc_cpu_repeat_1x64.json",
+      "hybrid_report": "reports/nvdla_cmac_a2cacc_hybrid_1x64.txt",
+      "coverage_output_compare_report": "reports/nvdla_cmac_a2cacc_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+      "cpu_elapsed_ms": 2.95613,
+      "hybrid_gpu_kernel_time_ms_total": 1.376256,
+      "hybrid_wall_time_ms": 1.424,
+      "cpu_to_gpu_kernel_speedup_ratio": 2.147950671968006,
+      "cpu_to_hybrid_wall_speedup_ratio": 2.075933988764045,
+      "coverage_output_equivalence_passed": true
+    },
+    {
+      "name": "many_state_single_step_probe",
+      "nstates": 32,
+      "steps": 1,
+      "cpu_report": "reports/nvdla_cmac_a2cacc_cpu_repeat_32x1.json",
+      "hybrid_report": "reports/nvdla_cmac_a2cacc_hybrid_32x1.txt",
+      "coverage_output_compare_report": "reports/nvdla_cmac_a2cacc_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "cpu_elapsed_ms": 69.934,
+      "hybrid_gpu_kernel_time_ms_total": 0.007168,
+      "hybrid_wall_time_ms": 0.055,
+      "cpu_to_gpu_kernel_speedup_ratio": 6208.629261363636,
+      "cpu_to_hybrid_wall_speedup_ratio": 1271.5272727272727,
+      "coverage_output_equivalence_passed": true
+    },
+    {
+      "name": "small_repeated_step_probe",
+      "nstates": 32,
+      "steps": 4,
+      "cpu_report": "reports/nvdla_cmac_a2cacc_cpu_repeat_32x4.json",
+      "hybrid_report": "reports/nvdla_cmac_a2cacc_hybrid_32x4.txt",
+      "coverage_output_compare_report": "reports/nvdla_cmac_a2cacc_cpu_vs_hybrid_32x4_coverage_output_compare.json",
+      "cpu_elapsed_ms": 74.0951,
+      "hybrid_gpu_kernel_time_ms_total": 0.028672,
+      "hybrid_wall_time_ms": 0.113,
+      "cpu_to_gpu_kernel_speedup_ratio": 2584.232003348214,
+      "cpu_to_hybrid_wall_speedup_ratio": 655.7088495575222,
+      "coverage_output_equivalence_passed": true
+    },
+    {
+      "name": "larger_single_step_probe",
+      "nstates": 256,
+      "steps": 1,
+      "cpu_report": "reports/nvdla_cmac_a2cacc_cpu_repeat_256x1.json",
+      "hybrid_report": "reports/nvdla_cmac_a2cacc_hybrid_256x1.txt",
+      "coverage_output_compare_report": "reports/nvdla_cmac_a2cacc_cpu_vs_hybrid_256x1_coverage_output_compare.json",
+      "cpu_elapsed_ms": 543.582,
+      "hybrid_gpu_kernel_time_ms_total": 0.013312,
+      "hybrid_wall_time_ms": 0.084,
+      "cpu_to_gpu_kernel_speedup_ratio": 40833.984375,
+      "cpu_to_hybrid_wall_speedup_ratio": 6471.214285714285,
+      "coverage_output_equivalence_passed": true
+    },
+    {
+      "name": "large_batch_repeated_step_probe",
+      "nstates": 1024,
+      "steps": 64,
+      "cpu_report": "reports/nvdla_cmac_a2cacc_cpu_repeat_1024x64.json",
+      "hybrid_report": "reports/nvdla_cmac_a2cacc_hybrid_1024x64.txt",
+      "coverage_output_compare_report": "reports/nvdla_cmac_a2cacc_cpu_vs_hybrid_1024x64_coverage_output_compare.json",
+      "cpu_elapsed_ms": 7317.67,
+      "hybrid_gpu_kernel_time_ms_total": 0.57856,
+      "hybrid_wall_time_ms": 0.622,
+      "cpu_to_gpu_kernel_speedup_ratio": 12648.074529867257,
+      "cpu_to_hybrid_wall_speedup_ratio": 11764.742765273311,
+      "coverage_output_equivalence_passed": true
+    }
+  ],
+  "acceptance_policy": {
+    "overlay_and_manifest_exist": true,
+    "cpu_reference_built": true,
+    "gpu_cubin_built": true,
+    "cpu_vs_hybrid_compared": true,
+    "coverage_output_equivalence_required": true,
+    "coverage_output_equivalence_gate_passed": true,
+    "speedup_claim_allowed_by_gate_alone": false
+  },
+  "result": {
+    "status": "passed_six_shapes_with_coverage_output_equivalence_before_review",
+    "measured_shape_count": 6,
+    "minimum_measured_cpu_to_hybrid_wall_speedup_ratio": 2.075933988764045,
+    "maximum_measured_cpu_to_hybrid_wall_speedup_ratio": 11764.742765273311,
+    "all_measured_shapes_hybrid_faster_than_cpu_wall": true,
+    "slowest_relative_shape": "1x64",
+    "fastest_relative_shape": "1024x64",
+    "classification_so_far": "For this scoped routing-style NVDLA seed, every measured shape from 1x1 through 1024x64 is faster on hybrid wall time than the CPU exact-loop path after coverage-output equivalence passes. Larger many-state/repeated-step shapes show the strongest relative speedup; single-state shapes are weakest because fixed launch/setup overhead dominates.",
+    "remaining_gap": "This is not a modern NN workload, full NVDLA accelerator run, CMAC_CORE_mac compute benchmark, or target-breadth performance claim."
+  },
+  "next_task": "review_nvdla_cmac_a2cacc_first_hybrid_benchmark_result_and_define_coverage_output_or_shape_expansion_gate",
+  "claim_scope": "first scoped NVDLA CMAC-to-CACC CPU versus hybrid timing comparison only",
+  "non_claims": [
+    "not neural-network model execution",
+    "not current LLM accelerator completeness",
+    "not NVDLA full accelerator execution",
+    "not CMAC_CORE_mac compute benchmark",
+    "not broad CPU versus hybrid speedup claim",
+    "not broad testbench-shape classification beyond the measured shapes",
+    "not target-breadth performance generalization"
+  ]
+}

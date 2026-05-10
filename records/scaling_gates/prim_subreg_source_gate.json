@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "status": "candidate_defined",
+  "gate": "prim_subreg_source_backed_gate",
+  "target": "prim_subreg",
+  "source_gate_name": "prim_subreg_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Source-backed gate selected after the fifty-seventh primitive review; remains candidate-only until first-pass and depth evidence pass.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_subreg.json",
+  "build": {
+    "mdir": "artifacts/prim_subreg_obj_dir",
+    "work_dir": "work/slice_pilots/prim_subreg",
+    "host_probe_target": "prim_subreg_host_probe",
+    "cpu_reference_state": "artifacts/prim_subreg_obj_dir/prim_subreg_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_subreg_obj_dir/prim_subreg_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_subreg_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_subreg_arb.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_subreg.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_subreg",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_subreg.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_subreg_coverage_regions.json",
+      "mdir": "artifacts/prim_subreg_obj_dir",
+      "expected_report": "reports/prim_subreg_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_subreg_obj_dir/prim_subreg_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_subreg_obj_dir/prim_subreg_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [
+    "prim_subreg"
+  ],
+  "acceptance": {
+    "define_after_fifty_seventh_primitive_review_acceptance": true,
+    "active_target_count_unchanged_until_first_pass": 79,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 57,
+    "candidate_targets_contains_only": [
+      "prim_subreg"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_subreg remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_subreg_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_subreg_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_subreg.json",
+    "host_probe_target": "prim_subreg_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "planned",
+    "planned_parameters": {
+      "DW": 8,
+      "SwAccess": "SwAccessRW",
+      "RESVAL": "8h00",
+      "Mubi": false,
+      "path": "stateful_rw_register_slice"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 75,
+    "arbiter_source_line_count": 187,
+    "planned_DW": 8,
+    "planned_SwAccess": "SwAccessRW",
+    "planned_RESVAL": "8h00",
+    "planned_Mubi": false,
+    "stateful_register_claimed": true,
+    "rw_branch_only_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true
+  },
+  "weakest_point": "The active CSR/register-slice surface currently stops at external pass-through. prim_subreg adds the smallest stateful register slice, but the first gate is restricted to DW=8 SwAccessRW RESVAL=0 Mubi=0.",
+  "selection_reason": [
+    "continues the CSR/register-slice primitive family after the external-register leaf",
+    "keeps the first stateful register-slice gate fixed to DW=8 SwAccessRW RESVAL=0 Mubi=0",
+    "keeps the next step narrower than subreg arbitration variants, shadow registers, interrupt, RAM, CDC, alert, escalation, or crypto primitives",
+    "preserves the single-candidate discipline after the fifty-seventh primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_subreg_arb",
+      "reason": "isolating arbitration directly would skip the stateful register slice now unlocked by prim_subreg_ext"
+    },
+    {
+      "target": "prim_subreg_shadow",
+      "reason": "shadow update and error semantics are broader than the first stateful register-slice gate"
+    },
+    {
+      "target": "prim_intr_hw",
+      "reason": "interrupt register semantics introduce a wider CSR-facing behavior surface"
+    },
+    {
+      "target": "prim_ram_1p",
+      "reason": "memory macro behavior and vendor implementation boundaries are broader than this source gate"
+    }
+  ],
+  "active_target_count": 79,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 57,
+  "recorded_outputs": [
+    "config/scaling_gates/prim_subreg_source_gate.json",
+    "config/slice_launch_templates/prim_subreg.json"
+  ],
+  "non_claims": [
+    "SwAccessRO/WO/W1C/W1S/W0C/RC/HRW/HWO behaviors",
+    "Mubi register arbitration behavior",
+    "shadow-register behavior",
+    "hardware update priority beyond the fixed RW wrapper coverage",
+    "assertion-policy proof",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full CSR/register primitive-family support",
+    "full OpenTitan primitive-family support"
+  ],
+  "next_action": "implement_prim_subreg_overlay_gate"
+}

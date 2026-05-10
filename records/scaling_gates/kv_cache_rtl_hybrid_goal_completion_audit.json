@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "gate": "kv_cache_rtl_hybrid_goal_completion_audit",
+  "status": "objective_satisfied_for_minimal_kv_cache_rtl_seed",
+  "objective": "KV cacheをRTLで再現しhybridで検証する",
+  "success_criteria": [
+    {
+      "requirement": "Reproduce KV-cache behavior in RTL.",
+      "evidence": "overlays/ITA/src/pulp_kv_cache_gpu_cov_tb.sv",
+      "result": "satisfied"
+    },
+    {
+      "requirement": "Run the KV-cache RTL through the hybrid path.",
+      "evidence": [
+        "reports/pulp_kv_cache_hybrid_1x1.txt",
+        "reports/pulp_kv_cache_hybrid_32x1.txt",
+        "reports/pulp_kv_cache_hybrid_1x32.txt"
+      ],
+      "result": "satisfied"
+    },
+    {
+      "requirement": "Verify CPU-vs-hybrid equivalence.",
+      "evidence": [
+        "reports/pulp_kv_cache_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "reports/pulp_kv_cache_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+        "reports/pulp_kv_cache_cpu_vs_hybrid_1x32_coverage_output_compare.json"
+      ],
+      "result": "satisfied"
+    },
+    {
+      "requirement": "Record timing and shape classification.",
+      "evidence": "reports/pulp_kv_cache_first_hybrid_benchmark_summary.json",
+      "result": "satisfied"
+    }
+  ],
+  "prompt_to_artifact_checklist": [
+    {
+      "prompt_item": "KV cacheをRTLで再現",
+      "artifacts": [
+        "overlays/ITA/src/pulp_kv_cache_gpu_cov_tb.sv",
+        "overlays/ITA/tests/pulp_kv_cache_coverage_regions.json",
+        "config/slice_launch_templates/pulp_kv_cache.json"
+      ],
+      "verified_by": "Verilator and host probe reports"
+    },
+    {
+      "prompt_item": "hybridで検証",
+      "artifacts": [
+        "config/scaling_gates/neural_network_rtl_kv_cache_first_hybrid_benchmark_gate.json",
+        "reports/pulp_kv_cache_first_hybrid_benchmark_summary.json"
+      ],
+      "verified_by": "coverage-output equivalence passed for 1x1, 32x1, and 1x32"
+    }
+  ],
+  "measured_result": {
+    "storage_size_bytes": 704,
+    "shapes": [
+      {
+        "shape": "1x1",
+        "cpu_elapsed_ms": 7.2905,
+        "hybrid_wall_time_ms": 2.509,
+        "cpu_to_hybrid_wall_speedup_ratio": 2.9057393383818253,
+        "coverage_output_equivalence_passed": true
+      },
+      {
+        "shape": "32x1",
+        "cpu_elapsed_ms": 165.671,
+        "hybrid_wall_time_ms": 0.152,
+        "cpu_to_hybrid_wall_speedup_ratio": 1089.9407894736842,
+        "coverage_output_equivalence_passed": true
+      },
+      {
+        "shape": "1x32",
+        "cpu_elapsed_ms": 4.45942,
+        "hybrid_wall_time_ms": 5.622,
+        "cpu_to_hybrid_wall_speedup_ratio": 0.7932088224831021,
+        "coverage_output_equivalence_passed": true
+      }
+    ],
+    "classification": "State-parallel KV-cache states are materially faster; single-state repeated launches are slower."
+  },
+  "residual_non_claims": [
+    "not full paged-attention implementation",
+    "not full model-level Transformer inference",
+    "not production KV-cache memory hierarchy",
+    "not low-precision or compressed KV cache",
+    "not broad modern-NN speedup"
+  ],
+  "completion_decision": "complete_for_minimal_kv_cache_rtl_hybrid_verification",
+  "next_optional_followup": "define_paged_attention_or_kv_cache_scaleup_gate"
+}

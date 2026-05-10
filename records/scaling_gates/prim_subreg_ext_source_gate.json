@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "status": "candidate_defined",
+  "gate": "prim_subreg_ext_source_backed_gate",
+  "target": "prim_subreg_ext",
+  "source_gate_name": "prim_subreg_ext_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Source-backed gate selected after the fifty-sixth primitive review; remains candidate-only until first-pass and depth evidence pass.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_subreg_ext.json",
+  "build": {
+    "mdir": "artifacts/prim_subreg_ext_obj_dir",
+    "work_dir": "work/slice_pilots/prim_subreg_ext",
+    "host_probe_target": "prim_subreg_ext_host_probe",
+    "cpu_reference_state": "artifacts/prim_subreg_ext_obj_dir/prim_subreg_ext_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_subreg_ext_obj_dir/prim_subreg_ext_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_subreg_ext.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_subreg_ext",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_subreg_ext.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_subreg_ext_coverage_regions.json",
+      "mdir": "artifacts/prim_subreg_ext_obj_dir",
+      "expected_report": "reports/prim_subreg_ext_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_subreg_ext_obj_dir/prim_subreg_ext_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_subreg_ext_obj_dir/prim_subreg_ext_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [
+    "prim_subreg_ext"
+  ],
+  "acceptance": {
+    "define_after_fifty_sixth_primitive_review_acceptance": true,
+    "active_target_count_unchanged_until_first_pass": 78,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 56,
+    "candidate_targets_contains_only": [
+      "prim_subreg_ext"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_subreg_ext remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_subreg_ext_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_subreg_ext_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_subreg_ext.json",
+    "host_probe_target": "prim_subreg_ext_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "planned",
+    "planned_parameters": {
+      "DW": 8,
+      "path": "external_register_feedthrough"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 32,
+    "planned_DW": 8,
+    "combinational_feedthrough_only": true,
+    "no_internal_state_claimed": true,
+    "csr_register_family_entry_point": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true
+  },
+  "weakest_point": "The active primitive set still has no CSR/register-slice primitive. prim_subreg_ext is the smallest remaining source-backed register-slice leaf and keeps the first CSR-facing step to external-register feedthrough behavior only.",
+  "selection_reason": [
+    "starts the CSR/register-slice primitive family with the smallest remaining source-backed leaf",
+    "keeps the next step narrower than prim_subreg, prim_subreg_arb, prim_subreg_shadow, interrupt, RAM, CDC, alert, escalation, or crypto primitives",
+    "uses a fixed DW=8 feedthrough wrapper with no internal state claim",
+    "preserves the single-candidate discipline after the fifty-sixth primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_subreg",
+      "reason": "stateful register semantics and software/hardware update policy are broader than external-register feedthrough"
+    },
+    {
+      "target": "prim_intr_hw",
+      "reason": "interrupt register semantics introduce a wider CSR-facing behavior surface"
+    },
+    {
+      "target": "prim_clock_timeout",
+      "reason": "cross-clock timeout behavior is broader than a combinational register-slice leaf"
+    },
+    {
+      "target": "prim_ram_1p",
+      "reason": "memory macro behavior and vendor implementation boundaries are broader than this source gate"
+    }
+  ],
+  "active_target_count": 78,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 56,
+  "recorded_outputs": [
+    "config/scaling_gates/prim_subreg_ext_source_gate.json",
+    "config/slice_launch_templates/prim_subreg_ext.json"
+  ],
+  "non_claims": [
+    "prim_subreg stateful register behavior",
+    "software write policy semantics beyond external-register pass-through",
+    "hardware update arbitration",
+    "shadow-register behavior",
+    "assertion-policy proof",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full CSR/register primitive-family support",
+    "full OpenTitan primitive-family support"
+  ],
+  "next_action": "implement_prim_subreg_ext_overlay_gate"
+}

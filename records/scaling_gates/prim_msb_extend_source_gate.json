@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "status": "promoted_to_active_scope",
+  "gate": "prim_msb_extend_source_backed_gate",
+  "target": "prim_msb_extend",
+  "source_gate_name": "prim_msb_extend_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Source-backed gate selected after the thirty-first primitive review; first-pass and initialized depth evidence passed before activation.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_msb_extend.json",
+  "build": {
+    "mdir": "artifacts/prim_msb_extend_obj_dir",
+    "work_dir": "work/slice_pilots/prim_msb_extend",
+    "host_probe_target": "prim_msb_extend_host_probe",
+    "cpu_reference_state": "artifacts/prim_msb_extend_obj_dir/prim_msb_extend_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_msb_extend_obj_dir/prim_msb_extend_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_msb_extend.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_msb_extend",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/prim_msb_extend.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_msb_extend_coverage_regions.json",
+      "mdir": "artifacts/prim_msb_extend_obj_dir",
+      "expected_report": "reports/prim_msb_extend_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_msb_extend_obj_dir/prim_msb_extend_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_msb_extend_obj_dir/prim_msb_extend_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "define_after_thirty_first_primitive_review_acceptance": true,
+    "active_target_count_unchanged_until_first_pass": 53,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 31,
+    "candidate_targets_contains_only": [
+      "prim_msb_extend"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_msb_extend remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_msb_extend_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_msb_extend_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_msb_extend.json",
+    "host_probe_target": "prim_msb_extend_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "overlay_ready_first_pass_and_depth_passed",
+    "planned_parameters": {
+      "InWidth": 8,
+      "OutWidth": 16
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "overlay": {
+    "status": "overlay_ready_first_pass_and_depth_passed",
+    "target": "prim_msb_extend",
+    "source_gate": "config/scaling_gates/prim_msb_extend_source_gate.json",
+    "launch_template": "config/slice_launch_templates/prim_msb_extend.json",
+    "coverage_tb": "overlays/rtlmeter/designs/OpenTitan/src/prim_msb_extend_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_msb_extend_coverage_regions.json",
+    "host_probe_target": "prim_msb_extend_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "completed_task": "implement_prim_msb_extend_overlay_gate",
+    "next_action": "package_thirty_second_primitive_active_boundary"
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 27,
+    "planned_InWidth": 8,
+    "planned_OutWidth": 16,
+    "sign_extension_path": true,
+    "feedthrough_path_not_claimed": true,
+    "all_widths_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true
+  },
+  "weakest_point": "The active primitive set covers narrow bitwise and blanking wrappers, but it does not directly cover a source-backed width-extension data-path primitive. A prim_msb_extend gate can target InWidth=8 and OutWidth=16 while keeping feedthrough mode, all width parameterizations, raw full-state equality, zero-initialized GPU correctness, and full primitive-family support outside the claim.",
+  "selection_reason": [
+    "uses a very small upstream OpenTitan primitive source file with only prim_assert dependencies",
+    "adds a distinct sign-extension data-path behavior after the bitwise and blanking wrapper gates",
+    "avoids clocking, CDC, memory, crypto, and alert/interrupt behavior in the next step",
+    "preserves the single-next-gate discipline after the thirty-first primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_clock_buf",
+      "reason": "clock buffering introduces clock-special behavior and vendor implementation branches beyond the next minimal data-path step"
+    },
+    {
+      "target": "prim_slicer",
+      "reason": "dynamic part-select behavior is useful but wider than a fixed sign-extension gate"
+    },
+    {
+      "target": "prim_count",
+      "reason": "stateful counter behavior and count package dependencies are broader than the next narrow combinational primitive"
+    }
+  ],
+  "active_target_count": 54,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 32,
+  "recorded_outputs": [
+    "config/scaling_gates/prim_msb_extend_source_gate.json",
+    "config/slice_launch_templates/prim_msb_extend.json",
+    "overlays/rtlmeter/designs/OpenTitan/src/prim_msb_extend_gpu_cov_tb.sv",
+    "overlays/rtlmeter/designs/OpenTitan/tests/prim_msb_extend_coverage_regions.json",
+    "src/hybrid/Makefile",
+    "reports/prim_msb_extend_host_probe.json",
+    "reports/prim_msb_extend_source_gate.json",
+    "config/scaling_gates/prim_msb_extend_repeated_steps.json",
+    "config/scaling_gates/prim_msb_extend_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_msb_extend_coverage_output_depth.json",
+    "reports/prim_msb_extend_repeated_steps_scaling.json",
+    "reports/prim_msb_extend_cpu_exact_loop_repeated_steps.json",
+    "reports/prim_msb_extend_coverage_output_depth.json"
+  ],
+  "next_action": "package_thirty_second_primitive_active_boundary",
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_msb_extend_source_gate.json",
+    "host_probe_report": "reports/prim_msb_extend_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "raw_full_state_mismatch_count": 32,
+    "manifest_valid": true,
+    "storage_size": 640,
+    "cpu_reference_state": "artifacts/prim_msb_extend_obj_dir/prim_msb_extend_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_msb_extend_obj_dir/prim_msb_extend_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_msb_extend_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gate": "config/scaling_gates/prim_msb_extend_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_msb_extend_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_msb_extend_cpu_exact_loop_repeated_steps.json",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "promotion_result": {
+    "schema_version": 1,
+    "status": "promoted_to_active_scope",
+    "target": "prim_msb_extend",
+    "completed_task": "promote_prim_msb_extend_to_active_target_scope",
+    "active_target_count": 54,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 32,
+    "candidate_targets": [],
+    "depth_result": "reports/prim_msb_extend_coverage_output_depth.json",
+    "non_claims_preserved": [
+      "feedthrough mode",
+      "all width parameterizations",
+      "raw full-state equality",
+      "zero-initialized GPU correctness",
+      "full OpenTitan primitive-family support"
+    ],
+    "next_action": "package_thirty_second_primitive_active_boundary"
+  }
+}

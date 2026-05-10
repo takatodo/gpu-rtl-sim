@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "status": "promoted_to_active_scope",
+  "gate": "prim_intr_hw_source_backed_gate",
+  "target": "prim_intr_hw",
+  "source_gate_name": "prim_intr_hw_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Source-backed gate selected after the sixty-first primitive review; remains candidate-only until first-pass and depth evidence pass.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_intr_hw.json",
+  "build": {
+    "mdir": "artifacts/prim_intr_hw_obj_dir",
+    "work_dir": "work/slice_pilots/prim_intr_hw",
+    "host_probe_target": "prim_intr_hw_host_probe",
+    "cpu_reference_state": "artifacts/prim_intr_hw_obj_dir/prim_intr_hw_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_intr_hw_obj_dir/prim_intr_hw_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_intr_hw.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_intr_hw",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_intr_hw.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_intr_hw_coverage_regions.json",
+      "mdir": "artifacts/prim_intr_hw_obj_dir",
+      "expected_report": "reports/prim_intr_hw_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_intr_hw_obj_dir/prim_intr_hw_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_intr_hw_obj_dir/prim_intr_hw_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "define_after_sixty_first_primitive_review_acceptance": true,
+    "active_target_count_unchanged_until_first_pass": 83,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 61,
+    "candidate_targets_contains_only": [
+      "prim_intr_hw"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_intr_hw remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_intr_hw_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_intr_hw_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_intr_hw.json",
+    "host_probe_target": "prim_intr_hw_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "implemented",
+    "planned_parameters": {
+      "Width": 1,
+      "IntrT": "Event",
+      "FlopOutput": 1,
+      "path": "single_event_interrupt_state"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 112,
+    "planned_width": 1,
+    "planned_intr_type": "Event",
+    "planned_flop_output": 1,
+    "status_interrupt_mode_not_claimed": true,
+    "vector_interrupt_widths_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true,
+    "overlay_implemented": true,
+    "depth_gate_passed": true,
+    "host_probe_makefile_hook_ready": true,
+    "coverage_manifest_ready": true,
+    "depth_gate_ready": true
+  },
+  "weakest_point": "prim_intr_hw is scoped to Width=1 IntrT=Event FlopOutput=1 interrupt-state behavior; Status interrupts, vector widths, CSR integration, software W1C semantics, assertion-policy proof, raw full-state equality, and zero-initialized GPU correctness remain outside this gate.",
+  "selection_reason": [
+    "keeps the next source-backed primitive smaller than alert, escalation, RAM, CDC register, crypto, or FIFO async SRAM adapter primitives",
+    "adds a CSR-facing primitive while constraining the first gate to one event interrupt bit",
+    "uses only upstream prim_intr_hw source plus the standard assertion include boundary",
+    "preserves the single-candidate discipline after the sixty-first primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_reg_cdc",
+      "reason": "CDC register behavior is broader than a single-event interrupt-state gate"
+    },
+    {
+      "target": "prim_alert_sender",
+      "reason": "alert protocol behavior is broader than the interrupt-state primitive gate"
+    },
+    {
+      "target": "prim_fifo_async",
+      "reason": "async FIFO behavior would broaden the next gate into CDC and pointer synchronization"
+    },
+    {
+      "target": "prim_subreg_shadow",
+      "reason": "shadow phase and storage-error semantics are broader than the fixed Event interrupt path"
+    }
+  ],
+  "next_action": "package_sixty_second_primitive_active_boundary",
+  "active_target_count": 84,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 62,
+  "recorded_outputs": [
+    "config/scaling_gates/prim_intr_hw_source_gate.json",
+    "config/slice_launch_templates/prim_intr_hw.json",
+    "overlays/rtlmeter/designs/OpenTitan/src/prim_intr_hw_gpu_cov_tb.sv",
+    "overlays/rtlmeter/designs/OpenTitan/tests/prim_intr_hw_coverage_regions.json",
+    "reports/prim_intr_hw_host_probe.json",
+    "reports/prim_intr_hw_source_gate.json",
+    "reports/prim_intr_hw_repeated_steps_scaling.json",
+    "reports/prim_intr_hw_cpu_exact_loop_repeated_steps.json",
+    "reports/prim_intr_hw_coverage_output_depth.json"
+  ],
+  "first_pass_result": {
+    "selected_acceptance_policy_passed": true,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "coverage_output_mismatch_count": 0,
+    "raw_mismatch_count": 31,
+    "storage_size": 576,
+    "root_layout_member_count": 127,
+    "report": "reports/prim_intr_hw_source_gate.json"
+  },
+  "depth_result": {
+    "status": "ok",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "report": "reports/prim_intr_hw_coverage_output_depth.json"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "candidate_targets": [],
+    "active_target_count": 84,
+    "active_primitive_target_count": 62
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "gate": "llm_soc_cpu_kick_intake_gate",
+  "status": "first_instruction_cpu_multistage_llm_kick_run_passed_coverage_output_equivalence",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "objective": "Design a minimal SoC boundary that lets a CPU-side controller kick an LLM-serving RTL proxy.",
+  "target_scope": [
+    {
+      "target": "pulp_llm_soc_kick",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/pulp_llm_soc_kick.json",
+      "coverage_manifest": "overlays/ITA/tests/pulp_llm_soc_kick_coverage_regions.json",
+      "mdir": "artifacts/pulp_llm_soc_kick_obj_dir",
+      "cpu_reference_state": "artifacts/pulp_llm_soc_kick_obj_dir/soc_cpu_kick_1x1_cpu.bin",
+      "gpu_candidate_state": "artifacts/pulp_llm_soc_kick_obj_dir/soc_cpu_kick_1x1_gpu.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18
+    },
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "selected_target": {
+    "name": "pulp_llm_soc_kick",
+    "top_module": "pulp_llm_soc_kick_gpu_cov_tb",
+    "overlay": "overlays/ITA/src/pulp_llm_soc_kick_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/ITA/tests/pulp_llm_soc_kick_coverage_regions.json",
+    "launch_template": "config/slice_launch_templates/pulp_llm_soc_kick.json",
+    "host_probe_target": "pulp_llm_soc_kick_host_probe",
+    "proxied_llm_engine": "pulp_quantized_kv_cache"
+  },
+  "soc_model": {
+    "cpu_boundary": "tiny instruction-ROM CPU model with PC and fetch/decode/execute",
+    "program_flow": [
+      "fetch WRITE_SEED instruction",
+      "fetch WRITE_SHAPE instruction",
+      "fetch WRITE_TENSOR_Q instruction",
+      "fetch KICK_Q instruction",
+      "execute POLL_DONE_Q loop",
+      "fetch WRITE_TENSOR_K instruction",
+      "fetch KICK_K instruction",
+      "execute POLL_DONE_K",
+      "fetch WRITE_TENSOR_V instruction",
+      "fetch KICK_V instruction",
+      "execute POLL_DONE_V",
+      "fetch HALT instruction"
+    ],
+    "accelerator_boundary": "existing quantized KV-cache LLM-serving proxy",
+    "observable_contract": "coverage-output words include CPU MMIO write count, kick count, poll count, done count, command/status, tensor window, and LLM proxy output signatures"
+  },
+  "acceptance_policy": {
+    "build_verilator": true,
+    "build_gpu_cubin": true,
+    "build_host_probe": true,
+    "run_cpu_reference": true,
+    "run_hybrid": true,
+    "compare_cpu_vs_hybrid": "coverage_output_equivalence",
+    "require_cpu_kick_word_nonzero": true,
+    "require_llm_proxy_progress_word_nonzero": true,
+    "speedup_claim_allowed_by_intake_gate": false
+  },
+  "planned_commands": {
+    "verilator": "verilator -cc --timing --Mdir artifacts/pulp_llm_soc_kick_obj_dir --top-module pulp_llm_soc_kick_gpu_cov_tb --flatten -Ioverlays/ITA/src overlays/ITA/src/pulp_llm_soc_kick_gpu_cov_tb.sv",
+    "gpu_cubin": "PYTHONPATH=src/tools python3 src/tools/build_vl_gpu.py artifacts/pulp_llm_soc_kick_obj_dir --force --gpu-opt-level O0 --ptxas-opt-level 0",
+    "host_probe": "make -C src/hybrid pulp_llm_soc_kick_host_probe",
+    "cpu_reference": "artifacts/pulp_llm_soc_kick_obj_dir/tlul_slice_host_probe --repeat-states 1 --repeat-eval-steps 1 --repeat-state-out artifacts/pulp_llm_soc_kick_obj_dir/soc_cpu_kick_1x1_cpu.bin",
+    "hybrid": "PYTHONPATH=src/tools python3 src/tools/run_vl_hybrid.py --mdir artifacts/pulp_llm_soc_kick_obj_dir --cubin artifacts/pulp_llm_soc_kick_obj_dir/vl_batch_gpu.cubin --storage-size TBD --steps 1 --nstates 1 --init-state artifacts/pulp_llm_soc_kick_obj_dir/soc_cpu_kick_1x1_cpu.bin --sanitize-host-only-internals --gpu-replicate-init-state --dump-state artifacts/pulp_llm_soc_kick_obj_dir/soc_cpu_kick_1x1_gpu.bin",
+    "compare": "PYTHONPATH=src/tools python3 src/tools/compare_vl_hybrid_modes.py artifacts/pulp_llm_soc_kick_obj_dir --compare-dumps artifacts/pulp_llm_soc_kick_obj_dir/soc_cpu_kick_1x1_cpu.bin artifacts/pulp_llm_soc_kick_obj_dir/soc_cpu_kick_1x1_gpu.bin --acceptance-policy coverage_output_equivalence --coverage-output-target pulp_llm_soc_kick --coverage-output-gate config/scaling_gates/llm_soc_cpu_kick_intake_gate.json --json-out reports/pulp_llm_soc_kick_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+  },
+  "non_claims": [
+    "not a real production CPU core",
+    "not RV32 architectural compliance",
+    "not coherent cache or interconnect integration",
+    "not full SoC boot",
+    "not full model graph execution",
+    "not tokenizer-compatible text generation",
+    "not HuggingFace or MLPerf numerical equivalence",
+    "not end-to-end LLM serving throughput",
+    "not broad hybrid speedup"
+  ],
+  "next_task": "review_llm_soc_cpu_kick_first_result_and_decide_real_cpu_core_gate",
+  "result": {
+    "summary": "reports/pulp_llm_soc_kick_first_cpu_vs_hybrid_summary.json",
+    "cpu_report": "reports/pulp_llm_soc_kick_400cy_cpu.json",
+    "hybrid_report": "reports/pulp_llm_soc_kick_400cy_hybrid.txt",
+    "coverage_output_compare": "reports/pulp_llm_soc_kick_cpu_vs_hybrid_400cy_coverage_output_compare.json",
+    "cpu_model": "tiny_instruction_rom_cpu_model_fetch_decode_execute",
+    "llm_control_program_stage_count": 3,
+    "cpu_mmio_write_count": 5,
+    "cpu_kick_count": 3,
+    "cpu_poll_count": 33,
+    "cpu_done_count": 3,
+    "cpu_pc": 11,
+    "cpu_retired_instruction_count": 11,
+    "llm_proxy_host_req_accepted": 24,
+    "coverage_output_equivalence": "passed",
+    "coverage_output_mismatch_count": 0,
+    "coverage_output_compared_words": 29,
+    "cpu_elapsed_ms": 3.26851,
+    "hybrid_wall_time_ms": 78.443,
+    "cpu_to_hybrid_wall_speedup_ratio": 0.04166732531902145,
+    "timing_classification": "slow_hybrid_due_to_800_patch_script_launches_no_speedup_claim"
+  }
+}

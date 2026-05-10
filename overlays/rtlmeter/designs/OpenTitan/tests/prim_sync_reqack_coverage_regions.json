@@ -1,0 +1,50 @@
+{
+  "schema_version": "coverage-region-manifest-v1",
+  "target": "OpenTitan.prim_sync_reqack",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "regions": [
+    {
+      "name": "source_domain_rz_handshake",
+      "words": [
+        "real_toggle_subset_word0_o",
+        "real_toggle_subset_word1_o",
+        "real_toggle_subset_word2_o",
+        "real_toggle_subset_word6_o"
+      ]
+    },
+    {
+      "name": "destination_domain_rz_handshake",
+      "words": [
+        "real_toggle_subset_word3_o",
+        "real_toggle_subset_word4_o",
+        "real_toggle_subset_word5_o",
+        "real_toggle_subset_word12_o"
+      ]
+    },
+    {
+      "name": "rz_protocol_context",
+      "words": [
+        "real_toggle_subset_word7_o",
+        "real_toggle_subset_word8_o",
+        "real_toggle_subset_word9_o",
+        "real_toggle_subset_word10_o"
+      ]
+    },
+    {
+      "name": "clock_domain_context",
+      "words": [
+        "real_toggle_subset_word11_o",
+        "real_toggle_subset_word13_o",
+        "real_toggle_subset_word14_o",
+        "real_toggle_subset_word15_o"
+      ]
+    },
+    {
+      "name": "config_progress",
+      "words": [
+        "real_toggle_subset_word16_o",
+        "real_toggle_subset_word17_o"
+      ]
+    }
+  ]
+}

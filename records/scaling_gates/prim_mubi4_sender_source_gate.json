@@ -1,0 +1,244 @@
+{
+  "schema_version": 1,
+  "gate": "prim_mubi4_sender_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "prim_mubi4_sender",
+  "family": "OpenTitan primitive",
+  "purpose": "Record the single source-backed gate selected after the tenth primitive review and its passing first-pass coverage-output result.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "target_scope": [
+    {
+      "target": "prim_mubi4_sender",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/prim_mubi4_sender.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_mubi4_sender_coverage_regions.json",
+      "mdir": "artifacts/prim_mubi4_sender_obj_dir",
+      "cpu_reference_state": "artifacts/prim_mubi4_sender_obj_dir/prim_mubi4_sender_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_mubi4_sender_obj_dir/prim_mubi4_sender_gpu_from_cpu_reference_state.bin",
+      "expected_report": "reports/prim_mubi4_sender_source_gate.json"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "define_after_tenth_primitive_review_acceptance": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte",
+      "tlul_adapter_dmi",
+      "tlul_adapter_reg_racl",
+      "tlul_adapter_sram_racl",
+      "tlul_fifo_async",
+      "prim_fifo_async_simple",
+      "prim_sync_reqack_data",
+      "prim_pulse_sync",
+      "prim_edge_detector",
+      "prim_rst_sync",
+      "prim_flop_en",
+      "prim_flop",
+      "prim_flop_2sync",
+      "prim_mubi4_dec",
+      "prim_mubi4_sync"
+    ],
+    "candidate_targets_contains_only": [
+      "prim_mubi4_sender"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_mubi4_sender remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_mubi4_sender_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_mubi4_sender_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_mubi4_sender.json",
+    "host_probe_target": "prim_mubi4_sender_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "overlay_ready_first_pass_passed",
+    "planned_parameters": {
+      "AsyncOn": 1,
+      "EnSecBuf": 0,
+      "ResetValue": "MuBi4False"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi4_sender.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_sec_anchor_buf.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_buf.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_buf.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh"
+  ],
+  "weakest_point": "This candidate is limited to a MuBi4 sender wrapper with AsyncOn enabled and EnSecBuf disabled; it does not prove wider mubi sender/sync wrappers, the no-flop branch, security anchor buffer behavior, full CDC correctness, raw full-state equality, clock-gating correctness, security hardening, or zero-initialized GPU correctness.",
+  "why_this_target": [
+    "the tenth primitive review accepted prim_mubi4_sync only as scoped coverage-output equivalence and initialized depth",
+    "prim_mubi4_sender is source-backed and composes already active prim_flop and MuBi4 package behavior",
+    "the planned parameters keep the sender gate to the flopped MuBi4 path with EnSecBuf disabled",
+    "it is more behaviorally useful than a plain security anchor buffer and narrower than wider mubi senders, prim_multibit_sync, clock-gating wrappers, alert/esc primitives, memories, or full IP blocks",
+    "it does not restore archived XuanTie-E902 or VeeR-EL2 source",
+    "it should reuse the shared Verilator/GPU/runtime flow without target-specific runtime hooks"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_sec_anchor_buf",
+      "reason": "too close to plain buffer behavior for the next primitive expansion"
+    },
+    {
+      "target": "prim_multibit_sync",
+      "reason": "broader generic consistency-check synchronizer surface than one MuBi4 sender wrapper"
+    },
+    {
+      "target": "prim_mubi8_sender_or_wider",
+      "reason": "wider generated mubi sender wrappers broaden package width before the MuBi4 sender path is proven"
+    },
+    {
+      "target": "prim_mubi8_sync_or_wider",
+      "reason": "wider generated mubi sync-family wrappers are broader than the next MuBi4 sender step"
+    },
+    {
+      "target": "prim_clock_gating",
+      "reason": "clock-gating latch behavior is clock-special and remains outside the current primitive claim"
+    },
+    {
+      "target": "alert_or_esc_primitives",
+      "reason": "alert and escalation primitives introduce protocol breadth beyond the next narrow primitive gate"
+    },
+    {
+      "target": "memory_primitives",
+      "reason": "RAM/ROM primitives introduce memory-model breadth beyond the next narrow primitive gate"
+    },
+    {
+      "target": "full_ip_blocks",
+      "reason": "full IP blocks are too large for the next narrow source-backed primitive gate"
+    }
+  ],
+  "recorded_outputs": [
+    "config/scaling_gates/prim_mubi4_sender_source_gate.json",
+    "config/slice_launch_templates/prim_mubi4_sender.json",
+    "overlays/rtlmeter/designs/OpenTitan/src/prim_mubi4_sender_gpu_cov_tb.sv",
+    "overlays/rtlmeter/designs/OpenTitan/tests/prim_mubi4_sender_coverage_regions.json",
+    "src/hybrid/Makefile",
+    "reports/prim_mubi4_sender_host_probe.json",
+    "reports/prim_mubi4_sender_source_gate.json",
+    "config/scaling_gates/prim_mubi4_sender_repeated_steps.json",
+    "config/scaling_gates/prim_mubi4_sender_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_mubi4_sender_coverage_output_depth.json",
+    "reports/prim_mubi4_sender_repeated_steps_scaling.json",
+    "reports/prim_mubi4_sender_cpu_exact_loop_repeated_steps.json",
+    "reports/prim_mubi4_sender_coverage_output_depth.json"
+  ],
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_mubi4_sender_source_gate.json",
+    "host_probe_report": "reports/prim_mubi4_sender_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "manifest_valid": true,
+    "storage_size": 576,
+    "cpu_reference_state": "artifacts/prim_mubi4_sender_obj_dir/prim_mubi4_sender_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_mubi4_sender_obj_dir/prim_mubi4_sender_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_gate_definition": {
+    "status": "defined",
+    "gate": "config/scaling_gates/prim_mubi4_sender_coverage_output_depth.json",
+    "gpu_repeated_steps_gate": "config/scaling_gates/prim_mubi4_sender_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_mubi4_sender_cpu_exact_loop_repeated_steps.json",
+    "report": "reports/prim_mubi4_sender_coverage_output_depth.json",
+    "comparison_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "candidate_targets": [
+      "prim_mubi4_sender"
+    ],
+    "active_targets_unchanged": true
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_mubi4_sender_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gate": "config/scaling_gates/prim_mubi4_sender_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_mubi4_sender_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_mubi4_sender_cpu_exact_loop_repeated_steps.json",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "target": "prim_mubi4_sender",
+    "completed_task": "promote_prim_mubi4_sender_to_active_target_scope",
+    "active_target_count": 33,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 11,
+    "candidate_targets": [],
+    "active_targets_append_only": [
+      "prim_mubi4_sender"
+    ],
+    "source_gate": "config/scaling_gates/prim_mubi4_sender_source_gate.json",
+    "first_pass_report": "reports/prim_mubi4_sender_source_gate.json",
+    "host_probe_report": "reports/prim_mubi4_sender_host_probe.json",
+    "depth_gate": "config/scaling_gates/prim_mubi4_sender_coverage_output_depth.json",
+    "depth_report": "reports/prim_mubi4_sender_coverage_output_depth.json",
+    "claim_delta": "extends the active primitive boundary from ten to eleven OpenTitan primitive seeds with prim_mubi4_sender",
+    "non_claims_preserved": [
+      "not raw full-state equality",
+      "not zero-initialized GPU scaling correctness",
+      "not broader mubi sender/sync wrapper support",
+      "not prim_mubi4_sender no-flop branch correctness",
+      "not prim_mubi4_sender security anchor buffer branch correctness",
+      "not full CDC correctness",
+      "not clock-gating correctness",
+      "not security hardening"
+    ],
+    "next_action": "package_eleventh_primitive_active_boundary"
+  },
+  "next_action": "package_eleventh_primitive_active_boundary"
+}

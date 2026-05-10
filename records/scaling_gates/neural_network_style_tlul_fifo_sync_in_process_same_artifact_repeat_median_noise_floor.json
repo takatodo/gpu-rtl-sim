@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_style_tlul_fifo_sync_in_process_same_artifact_repeat_median_noise_floor",
+  "target": "tlul_fifo_sync",
+  "purpose": "Measure same-artifact variation of in-process GPU-event repeat medians before using repeat medians for another optimization comparison.",
+  "prior_review": "in_process_gpu_event_timing_repeat_noise_floor_result_review",
+  "measurement_stability_policy": "nn_style_runtime_measurement_stability_policy",
+  "claim_scope": "same-artifact in-process repeat-median GPU-event timing noise-floor check for tlul_fifo_sync default ptxas and ptxas_opt_level=0 cubins at 512 states x 32 steps with zero-init, no patches, and resident_steps=false only",
+  "optimization_knob": {
+    "name": "in_process_repeat_median_noise_floor",
+    "baseline_value": "same_artifact_reference_repeat_median",
+    "candidate_value": "same_artifact_repeat_repeat_median",
+    "reason": "The in-process capture path works, but a same-artifact repeat-median noise floor is required before using repeat medians for another optimization comparison."
+  },
+  "preconditions": [
+    "in_process_gpu_event_timing_repeat_noise_floor_result_review passed",
+    "run_vl_hybrid supports RUN_VL_HYBRID_TIMING_REPEATS",
+    "src/tools/run_vl_hybrid.py forwards --timing-repeats",
+    "src/tools/run_tlul_fifo_sync_scaling_validation.py records gpu_event_timing_repeat fields",
+    "tlul_fifo_sync Verilator obj_dir is generated",
+    "tlul_fifo_sync GPU PTX exists",
+    "resident_steps is disabled for all runs",
+    "runs use zero-init and no patch script"
+  ],
+  "builds": [
+    {
+      "name": "ptxas_default",
+      "ptxas_opt_level": null,
+      "command": "PYTHONPATH=src/tools python3 src/tools/build_vl_gpu.py artifacts/tlul_fifo_sync_obj_dir --reuse-ptx --out artifacts/tlul_fifo_sync_obj_dir/nn_style_in_process_same_artifact_repeat_median_ptxas_default.cubin",
+      "cubin": "artifacts/tlul_fifo_sync_obj_dir/nn_style_in_process_same_artifact_repeat_median_ptxas_default.cubin",
+      "required": true
+    },
+    {
+      "name": "ptxas_o0",
+      "ptxas_opt_level": 0,
+      "command": "PYTHONPATH=src/tools python3 src/tools/build_vl_gpu.py artifacts/tlul_fifo_sync_obj_dir --reuse-ptx --ptxas-opt-level 0 --out artifacts/tlul_fifo_sync_obj_dir/nn_style_in_process_same_artifact_repeat_median_ptxas_o0.cubin",
+      "cubin": "artifacts/tlul_fifo_sync_obj_dir/nn_style_in_process_same_artifact_repeat_median_ptxas_o0.cubin",
+      "required": true
+    }
+  ],
+  "runs": [
+    {
+      "name": "warmup_default_steps_32_batch_512",
+      "build": "ptxas_default",
+      "nstates": 512,
+      "steps": 32,
+      "resident_steps": false,
+      "timing_repeats": 1,
+      "role": "warmup",
+      "same_artifact_group": "ptxas_default",
+      "required": true
+    },
+    {
+      "name": "warmup_o0_steps_32_batch_512",
+      "build": "ptxas_o0",
+      "nstates": 512,
+      "steps": 32,
+      "resident_steps": false,
+      "timing_repeats": 1,
+      "role": "warmup",
+      "same_artifact_group": "ptxas_o0",
+      "required": true
+    },
+    {
+      "name": "default_reference_repeat_median_steps_32_batch_512",
+      "build": "ptxas_default",
+      "nstates": 512,
+      "steps": 32,
+      "resident_steps": false,
+      "timing_repeats": 9,
+      "role": "measured",
+      "same_artifact_group": "ptxas_default",
+      "same_artifact_pair": "default_pair_1",
+      "required": true
+    },
+    {
+      "name": "default_repeat_repeat_median_steps_32_batch_512",
+      "build": "ptxas_default",
+      "nstates": 512,
+      "steps": 32,
+      "resident_steps": false,
+      "timing_repeats": 9,
+      "role": "measured",
+      "same_artifact_group": "ptxas_default",
+      "same_artifact_pair": "default_pair_1",
+      "required": true
+    },
+    {
+      "name": "o0_reference_repeat_median_steps_32_batch_512",
+      "build": "ptxas_o0",
+      "nstates": 512,
+      "steps": 32,
+      "resident_steps": false,
+      "timing_repeats": 9,
+      "role": "measured",
+      "same_artifact_group": "ptxas_o0",
+      "same_artifact_pair": "o0_pair_1",
+      "required": true
+    },
+    {
+      "name": "o0_repeat_repeat_median_steps_32_batch_512",
+      "build": "ptxas_o0",
+      "nstates": 512,
+      "steps": 32,
+      "resident_steps": false,
+      "timing_repeats": 9,
+      "role": "measured",
+      "same_artifact_group": "ptxas_o0",
+      "same_artifact_pair": "o0_pair_1",
+      "required": true
+    }
+  ],
+  "comparison_policy": {
+    "comparison_type": "same_artifact_in_process_repeat_median_noise_floor",
+    "primary_metric": "gpu_event_timing_repeat.total_ms_median",
+    "warmup_runs": 2,
+    "measured_runs": 4,
+    "required_repeat_count": 9,
+    "same_artifact_pairs": [
+      "default_pair_1",
+      "o0_pair_1"
+    ],
+    "required_timing_fields": [
+      "gpu_kernel_time_repeat_count",
+      "gpu_kernel_time_ms_total_min",
+      "gpu_kernel_time_ms_total_median",
+      "gpu_kernel_time_ms_total_max",
+      "gpu_kernel_time_ms_total_samples"
+    ],
+    "unsupported_with_timing_repeats": [
+      "patch_script",
+      "init_state",
+      "resident_steps"
+    ]
+  },
+  "acceptance_policy": {
+    "all_required_builds_pass": true,
+    "all_required_runs_pass": true,
+    "measured_runs_have_gpu_event_timing_repeat": true,
+    "required_repeat_count": 9,
+    "review_before_next_optimization_comparison": true,
+    "speedup_claim_allowed": false
+  },
+  "correctness_policy": {
+    "required": true,
+    "expected_dump_bytes": "storage_size * nstates",
+    "required_run_status": "ok",
+    "non_claims": [
+      "not_full_state_equivalence",
+      "not_cpu_exactness_claim",
+      "not_zero_init_general_correctness_claim"
+    ]
+  },
+  "performance_policy": {
+    "primary_metric": "gpu_event_timing_repeat.total_ms_median",
+    "decision_rule": "record same-artifact repeat-median deltas; do not claim speedup unless a later review accepts the noise floor against the measurement stability policy",
+    "non_claims": [
+      "not_optimization_speedup_claim",
+      "not_ptxas_opt_level_speedup_claim",
+      "not_stable_speedup_or_regression_claim",
+      "not_mean_only_speedup_claim",
+      "not_compiler_knob_generalization",
+      "not_target_breadth_performance_generalization",
+      "not_resident_steps_fix_or_general_speedup",
+      "not_neural_network_model_or_training_or_inference_throughput_claim",
+      "not_cpu_speedup_claim",
+      "not_general_cuda_portability_claim",
+      "not_full_runtime_semantic_equivalence_for_repeated_samples"
+    ]
+  }
+}

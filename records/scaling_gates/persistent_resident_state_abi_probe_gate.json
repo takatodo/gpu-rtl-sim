@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "objective": "define_persistent_resident_state_abi_probe_gate",
+  "status": "implemented_persistent_resident_state_abi_probe_dry_run_before_runtime_change",
+  "source_gate": "config/scaling_gates/resident_state_reuse_review_gate.json",
+  "current_priority": "define_persistent_resident_state_abi_probe_implementation_gate",
+  "target": "pulp_ita_mha",
+  "selected_workstream": "persistent_resident_state_abi_probe",
+  "deferred_workstream": "paged_attention_kv_cache_scaleup",
+  "problem_statement": "resident state reuse currently advances phases by dumping GPU state to a file and reloading it as the next invocation init-state; the missing ABI is an explicit persistent device-resident state handle that can advance multiple phases without file-boundary reloads",
+  "baseline_evidence": {
+    "measurement_gate": "config/scaling_gates/resident_state_reuse_measurement_gate.json",
+    "summary_report": "reports/resident_state_reuse_experiment_summary.json",
+    "shape": "16x64",
+    "phases": 4,
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "best_wall_per_state_step_shape": "16x256",
+    "best_wall_per_state_step_ms": 0.000572265625
+  },
+  "probe_contract": {
+    "name": "persistent_resident_state_abi_probe",
+    "minimum_shape": "16x64",
+    "minimum_phases": 4,
+    "correctness_policy": "coverage_output_equivalence",
+    "state_authority": {
+      "initial_authority": "CPU-generated 1x1 init-state",
+      "device_authority_after_init": "GPU-resident state handle",
+      "forbidden_phase_boundary": "previous phase GPU dump reloaded via --init-state",
+      "cpu_reference": "cumulative CPU repeat reference per phase"
+    },
+    "required_runtime_observability": [
+      "resident handle creation or equivalent explicit allocation boundary",
+      "one host-to-device initialization before phase 1",
+      "per-phase advance without host re-upload of the prior phase state",
+      "optional final dump only for compare/reporting",
+      "separate setup, phase kernel, dump, and compare timings"
+    ],
+    "planned_public_dry_run_command": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --dry-run",
+    "planned_report": "reports/persistent_resident_state_abi_probe_summary.json"
+  },
+  "implementation_boundaries": {
+    "allowed_first_step": "add a dry-run public workflow and command planner only",
+    "runtime_change_allowed_by_this_gate": false,
+    "runtime_change_requires_next_gate": "persistent_resident_state_abi_probe_implementation_gate",
+    "existing_file_boundary_flow_must_remain_available": true,
+    "existing_resident_steps_mode_must_remain_available": true
+  },
+  "implemented_dry_run": {
+    "cli": "src/tools/run_results_reproduction.py",
+    "shared_module": "src/tools/results_reproduction.py",
+    "command": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --dry-run",
+    "observed_phase_shapes": [
+      "16x64",
+      "16x128",
+      "16x192",
+      "16x256"
+    ],
+    "phase_model": "phase 1 initializes the persistent handle from the CPU 1x1 init-state; phases 2..N reference the same handle and do not include --init-state for the previous phase GPU dump",
+    "non_dry_run_status": "rejected_until_persistent_resident_state_abi_probe_implementation_gate"
+  },
+  "acceptance_policy": {
+    "public_dry_run_required_before_runtime_change": true,
+    "new_public_cli_requires_contract_test_and_doc_mention": true,
+    "coverage_output_equivalence_required": true,
+    "raw_full_state_equality_required": false,
+    "must_reject_persistent_claim_if_state_reloaded_from_previous_phase_dump": true,
+    "must_compare_against_cpu_cumulative_references": true,
+    "must_separate_setup_kernel_dump_compare_timing": true
+  },
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "correctness",
+      "evidence": "coverage_output_equivalence against cumulative CPU repeat references",
+      "status": "planned_not_implemented"
+    },
+    {
+      "requirement": "speed",
+      "evidence": "setup, phase kernel, dump, and compare timing in reports/persistent_resident_state_abi_probe_summary.json",
+      "status": "planned_not_measured"
+    },
+    {
+      "requirement": "reproducibility",
+      "evidence": "public dry-run command before implementation",
+      "status": "planned_not_implemented"
+    },
+    {
+      "requirement": "LLM-serving-like workload",
+      "evidence": "pulp_ita_mha 16x64 four-phase decode-like resident workload",
+      "status": "selected"
+    }
+  ],
+  "non_claims": [
+    "not implemented yet",
+    "not measured yet",
+    "not a runtime ABI change",
+    "not persistent GPU-resident state proven yet",
+    "not paged attention or KV-cache scale-up",
+    "not production LLM serving throughput",
+    "not raw full-state equality"
+  ],
+  "next_task": "define_persistent_resident_state_abi_probe_implementation_gate"
+}

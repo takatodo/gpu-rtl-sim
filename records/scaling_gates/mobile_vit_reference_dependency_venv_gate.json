@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "gate": "mobile_vit_reference_dependency_venv_gate",
+  "status": "reference_inference_dependencies_installed_in_artifact_venv_imagenet_data_still_missing",
+  "prior_gate": "config/scaling_gates/mobile_vit_cpu_kick_imagenet_goal_completion_audit.json",
+  "objective": "Install MobileViT reference inference dependencies in an isolated artifact venv without changing source dependencies.",
+  "venv": "artifacts/mobile_vit/venv",
+  "install_command": "python3 -m venv artifacts/mobile_vit/venv && artifacts/mobile_vit/venv/bin/python -m pip install --upgrade pip && artifacts/mobile_vit/venv/bin/python -m pip install 'pillow' 'transformers' 'torch' && artifacts/mobile_vit/venv/bin/python -m pip install torchvision datasets",
+  "installed_versions": {
+    "torch": "2.11.0+cu130",
+    "transformers": "5.8.0",
+    "PIL": "12.2.0",
+    "torchvision": "0.26.0+cu130",
+    "datasets": "4.8.5"
+  },
+  "input_check_report": "reports/mobile_vit_eval_input_check.json",
+  "input_check_result": {
+    "torch": "present",
+    "transformers": "present",
+    "PIL": "present",
+    "datasets": "present",
+    "dataset_candidates": [],
+    "ready_for_reference_eval": false
+  },
+  "next_task": "provide_imagenet_validation_data_or_approved_scoped_subset_for_real_accuracy",
+  "completion_claim_allowed": false,
+  "non_claims": [
+    "not ImageNet data available",
+    "not ImageNet or approved scoped-subset inference executed",
+    "not RTL/full CPU-kicked execution",
+    "not ImageNet accuracy measurement"
+  ]
+}

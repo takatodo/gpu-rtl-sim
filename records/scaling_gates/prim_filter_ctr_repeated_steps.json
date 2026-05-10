@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "gate": "prim_filter_ctr_repeated_steps_scaling",
+  "target": "prim_filter_ctr",
+  "purpose": "Validate the candidate prim_filter_ctr seed can run repeated GPU steps through the existing shared runtime before depth comparison.",
+  "preconditions": [
+    "prim_filter_ctr Verilator obj_dir is generated",
+    "prim_filter_ctr GPU PTX module is built",
+    "artifacts/ and reports/ are ignored generated outputs"
+  ],
+  "runs": [
+    {
+      "name": "steps_1_batch_32",
+      "nstates": 32,
+      "steps": 1,
+      "required": true
+    },
+    {
+      "name": "steps_4_batch_32",
+      "nstates": 32,
+      "steps": 4,
+      "required": true
+    }
+  ],
+  "correctness_policy": {
+    "batched_gpu_runs": [
+      "run exits with status 0",
+      "dumped state byte size equals storage_size * nstates when dump is requested",
+      "the generated zero-initialized GPU dumps are runtime evidence only"
+    ],
+    "non_claims": [
+      "not raw full-state equality",
+      "not active-target promotion by itself",
+      "not broad non-TL-UL runtime generality",
+      "not AsyncOn=1 synchronizer behavior or full CDC correctness",
+      "not all CntWidth or threshold parameterizations",
+      "not metastability behavior"
+    ]
+  },
+  "performance_policy": {
+    "record": [
+      "nstates",
+      "steps",
+      "elapsed_ms",
+      "state_steps_per_second"
+    ],
+    "non_claims": [
+      "the zero-initialized GPU report is not the correctness input for coverage-output depth",
+      "target breadth remains candidate-only until the depth gate passes and promotion is recorded"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/prim_filter_ctr_repeated_steps_scaling.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "run_prim_filter_ctr_cpu_exact_loop_repeated_steps",
+  "next_action_on_fail": "diagnose_prim_filter_ctr_repeated_steps_scaling_failure"
+}

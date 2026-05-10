@@ -1,0 +1,69 @@
+{
+  "schema_version": "slice-launch-template-v1",
+  "slice_name": "prim_intr_hw",
+  "target": "OpenTitan.prim_intr_hw",
+  "family": "OpenTitan primitive",
+  "status": "promoted_to_active_scope",
+  "pilot_gate": "Source-backed prim_intr_hw candidate after sixty-first primitive review acceptance.",
+  "source_gate": "config/scaling_gates/prim_intr_hw_source_gate.json",
+  "top_module": "prim_intr_hw_gpu_cov_tb",
+  "source": {
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_intr_hw.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_intr_hw_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_intr_hw_coverage_regions.json"
+  },
+  "build": {
+    "mdir": "artifacts/prim_intr_hw_obj_dir",
+    "work_dir": "work/slice_pilots/prim_intr_hw",
+    "host_probe_target": "prim_intr_hw_host_probe"
+  },
+  "coverage_output_contract": {
+    "gate": "config/scaling_gates/prim_intr_hw_source_gate.json",
+    "strict_output_words": 29,
+    "strict_output_bytes": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_intr_hw"
+    ],
+    "active_target_count_unchanged_until_first_pass": 83,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 61,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized coverage_output_equivalence passes"
+    ]
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 112,
+    "planned_width": 1,
+    "planned_intr_type": "Event",
+    "planned_flop_output": 1,
+    "overlay_implemented": true,
+    "depth_gate_passed": true,
+    "host_probe_makefile_hook_ready": true,
+    "coverage_manifest_ready": true,
+    "depth_gate_ready": true
+  },
+  "candidate_targets": [],
+  "active_target_count": 84,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 62,
+  "next_action": "package_sixty_second_primitive_active_boundary",
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "candidate_targets": [],
+    "active_target_count": 84,
+    "active_primitive_target_count": 62
+  }
+}

@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "status": "active",
+  "target": "OpenTitan.prim_packer",
+  "source_gate": "config/scaling_gates/prim_packer_source_gate.json",
+  "top_module": "prim_packer_gpu_cov_tb",
+  "build": {
+    "mdir": "artifacts/prim_packer_obj_dir",
+    "work_dir": "work/slice_pilots/prim_packer",
+    "host_probe_target": "prim_packer_host_probe",
+    "cpu_reference_state": "artifacts/prim_packer_obj_dir/prim_packer_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_packer_obj_dir/prim_packer_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_count_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_util_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_count.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_packer.sv"
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_packer"
+    ],
+    "active_target_count_unchanged_until_first_pass": 55,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 33,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_packer remains candidate-only until promotion is recorded"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_packer_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_packer_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_packer.json",
+    "host_probe_target": "prim_packer_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "overlay_ready_first_pass_and_depth_passed",
+    "planned_parameters": {
+      "InW": 8,
+      "OutW": 16,
+      "HintByteData": 0,
+      "EnProtection": 0,
+      "path": "two_byte_pack_and_flush_nonprotected"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "static_features": {
+    "schema_version": "opentitan-primitive-slice-static-features-v1",
+    "target": "OpenTitan.prim_packer",
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_packer.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_packer_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_packer_coverage_regions.json",
+    "tb_contract_ready": true,
+    "base_outputs_ready": true,
+    "real_toggle_outputs_ready": true,
+    "toggle_bitmap_outputs_ready": true,
+    "focused_wave_ready": true,
+    "source_line_count": 371,
+    "planned_InW": 8,
+    "planned_OutW": 16,
+    "planned_HintByteData": 0,
+    "planned_EnProtection": 0,
+    "region_names": [
+      "input_mask_shift",
+      "stored_pack_state",
+      "ready_valid_flow",
+      "flush_flow",
+      "signature_and_context"
+    ],
+    "structural_connectivity": {
+      "structural_connectivity_class": "source_backed_candidate_overlay_pending",
+      "nonclock_input_count": 5,
+      "nonclock_output_count": 5,
+      "reachable_output_fraction": null
+    },
+    "host_probe_makefile_hook_ready": true,
+    "coverage_manifest_ready": true
+  },
+  "candidate_targets": [],
+  "active_target_count": 56,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 34,
+  "non_claims": [
+    "all prim_packer InW/OutW/HintByteData/EnProtection parameterizations",
+    "EnProtection=1 duplicated-counter branch or prim_count correctness",
+    "non-contiguous mask assertion behavior",
+    "byte-hint assertion policy beyond HintByteData=0",
+    "prim_packer_fifo coverage",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full OpenTitan primitive-family support"
+  ],
+  "runner_args_template": {
+    "batch_defaults_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_slice_batch_default.json",
+    "batch_length": 12,
+    "campaign_gpu_nstates": 512,
+    "campaign_sequential_rep_graph_mode": "auto",
+    "cases": 25000,
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_packer_coverage_regions.json",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_packer_gpu_cov_tb.sv",
+    "cpu_reps": 1,
+    "dead_word_bias": true,
+    "debug_internal_output_names": [],
+    "driver_defaults": {},
+    "global_top_k": 128,
+    "gpu_nstates": 32,
+    "gpu_reps": 3,
+    "gpu_sequential_steps": 56,
+    "keep_top_k": 16,
+    "pilot_campaign_candidate_count": 4096,
+    "pilot_sweep_cases": 256,
+    "profile_family": "primitive_stateful_datapath",
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_packer.sv",
+    "seed_fanout": 1,
+    "shard_count": 256,
+    "states_per_case": 4,
+    "target": "OpenTitan.prim_packer",
+    "top_module": "prim_packer_gpu_cov_tb",
+    "trace_length": 12,
+    "uniform_states": true,
+    "variants_per_case": 4,
+    "work_dir": "work/slice_pilots/prim_packer"
+  },
+  "tb_core_contract": {
+    "kind": "gpu_toggle_shared_tb_v1",
+    "coverage_domain": "toggle_real_subset_bitmap",
+    "required_output_prefixes": [
+      "real_toggle_subset_word",
+      "toggle_bitmap_word",
+      "focused_wave_word"
+    ],
+    "baseline_reference_counts": {
+      "focused_wave_word": 8,
+      "real_toggle_subset_word": 18,
+      "toggle_bitmap_word": 3
+    },
+    "region_family_names": [
+      "input_mask_shift",
+      "stored_pack_state",
+      "ready_valid_flow",
+      "flush_flow",
+      "signature_and_context"
+    ]
+  },
+  "next_action": "package_thirty_fourth_primitive_active_boundary",
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_packer_source_gate.json",
+    "host_probe_report": "reports/prim_packer_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "raw_full_state_mismatch_count": 31,
+    "manifest_valid": true,
+    "storage_size": 640,
+    "cpu_reference_state": "artifacts/prim_packer_obj_dir/prim_packer_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_packer_obj_dir/prim_packer_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "gpu_init_sanitized": true,
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_gates": {
+    "gpu_repeated_steps_gate": "config/scaling_gates/prim_packer_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_packer_cpu_exact_loop_repeated_steps.json",
+    "coverage_output_depth_gate": "config/scaling_gates/prim_packer_coverage_output_depth.json"
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_packer_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gate": "config/scaling_gates/prim_packer_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_packer_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_packer_cpu_exact_loop_repeated_steps.json",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "gpu_init_sanitized": true
+  },
+  "promotion_result": {
+    "schema_version": 1,
+    "status": "promoted_to_active_scope",
+    "target": "prim_packer",
+    "completed_task": "promote_prim_packer_to_active_target_scope",
+    "active_target_count": 56,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 34,
+    "candidate_targets": [],
+    "depth_result": "reports/prim_packer_coverage_output_depth.json",
+    "non_claims_preserved": [
+      "all prim_packer InW/OutW/HintByteData/EnProtection parameterizations",
+      "EnProtection=1 duplicated-counter branch or prim_count correctness",
+      "non-contiguous mask assertion behavior",
+      "byte-hint assertion policy beyond HintByteData=0",
+      "prim_packer_fifo coverage",
+      "raw full-state equality",
+      "zero-initialized GPU correctness",
+      "full OpenTitan primitive-family support"
+    ],
+    "next_action": "package_thirty_fourth_primitive_active_boundary"
+  }
+}

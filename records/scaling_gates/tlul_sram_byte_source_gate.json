@@ -1,0 +1,177 @@
+{
+  "schema_version": "scaling-gate-v1",
+  "gate": "tlul_sram_byte_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "tlul_sram_byte",
+  "family": "OpenTitan TL-UL",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "coverage_output_contract": {
+    "planned_manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18,
+      "policy": "manifest regions must cover each real_toggle_subset_word[0..17]_o exactly once"
+    },
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116
+  },
+  "target_scope": [
+    {
+      "target": "tlul_sram_byte",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/tlul_sram_byte.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_sram_byte_coverage_regions.json",
+      "mdir": "artifacts/tlul_sram_byte_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_sram_byte_obj_dir/tlul_sram_byte_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_sram_byte_obj_dir/tlul_sram_byte_gpu_from_cpu_reference_state.bin",
+      "expected_report": "reports/tlul_sram_byte_source_gate.json"
+    }
+  ],
+  "weakest_point": "tlul_sram_byte overlaps the active tlul_adapter_sram surface, and the standalone value is limited to isolating the byte-write read-modify-write integrity path with EnableIntg=1 before taking RACL, DMI, or async FIFO scope.",
+  "why_this_target": [
+    "single-clock TL-UL byte-write integrity helper",
+    "source-backed by upstream rtlmeter",
+    "exercises the tlul_sram_byte read-modify-write and data-integrity recompute branch directly",
+    "adds SRAM byte-write breadth after tlul_adapter_sram without taking RACL policy dependencies",
+    "avoids the multi-clock boundary in tlul_fifo_async",
+    "avoids debug-module typed dependencies in tlul_adapter_dmi",
+    "does not restore archived non-TL-UL source",
+    "should reuse shared Verilator/GPU/runtime flow without target-specific hooks"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "tlul_fifo_async",
+      "reason": "multi-clock async FIFO boundary is larger than the current single-clock byte-write step"
+    },
+    {
+      "target": "tlul_adapter_dmi",
+      "reason": "requires debug-module typed dependencies outside the current TL-UL-only runtime boundary"
+    },
+    {
+      "target": "tlul_adapter_reg_racl",
+      "reason": "requires RACL policy package dependencies after the non-RACL adapter is already active"
+    },
+    {
+      "target": "tlul_adapter_sram_racl",
+      "reason": "requires RACL policy package dependencies after the non-RACL SRAM adapter is already active"
+    }
+  ],
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/tlul_sram_byte.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/tlul_data_integ_enc.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_fifo_sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_fifo_sync_cnt.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_count.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_count_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_39_32_enc.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/tlul_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/top_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_util_pkg.sv"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_sram_byte_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_sram_byte_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/tlul_sram_byte.json",
+    "status": "defined",
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "acceptance": {
+    "define_before_implementation": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec"
+    ],
+    "candidate_targets_contains_only": [
+      "tlul_sram_byte"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that tlul_sram_byte remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "non_claims": [
+    "not raw full-state equality",
+    "not zero-initialized GPU scaling correctness",
+    "not non-TL-UL coverage-output equivalence",
+    "not RACL adapter coverage",
+    "not DMI adapter coverage",
+    "not async FIFO coverage",
+    "not full RTL application coverage closure"
+  ],
+  "next_action": "package_eighteen_seed_tlul_boundary",
+  "next_action_on_pass": "package_eighteen_seed_tlul_boundary",
+  "next_action_on_fail": "diagnose_tlul_sram_byte_first_pass",
+  "overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_sram_byte_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_sram_byte_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/tlul_sram_byte.json",
+    "host_probe_target": "tlul_sram_byte_host_probe",
+    "status": "defined"
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/tlul_sram_byte_source_gate.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "manifest_valid": true,
+    "storage_size": 896,
+    "cpu_reference_state": "artifacts/tlul_sram_byte_obj_dir/tlul_sram_byte_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/tlul_sram_byte_obj_dir/tlul_sram_byte_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "depth_result": {
+    "status": "passed",
+    "gate": "config/scaling_gates/tlul_sram_byte_coverage_output_depth.json",
+    "report": "reports/tlul_sram_byte_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_registry": "config/targets.json",
+    "shared_equivalence_gate": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+    "shared_depth_gate": "config/scaling_gates/tlul_coverage_output_depth.json",
+    "shared_depth_report": "reports/tlul_coverage_output_depth.json",
+    "shared_depth_comparison_count": 42,
+    "shared_depth_passed_count": 42
+  }
+}

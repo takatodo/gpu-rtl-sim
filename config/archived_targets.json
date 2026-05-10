@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "archive_reason": "Keep the active repository focused on TL-UL coverage-output/depth work. Non-TL-UL target material remains recoverable from git history and generated reports, but is no longer active source.",
+  "archived_from_active_source_at_base_commit": "420e0f8",
+  "restore_policy": "Restore an archived target only when it becomes the current source-backed gate target again, with a new selection entry and matching tests.",
+  "archived_targets": [
+    {
+      "name": "xuantie_e902",
+      "previous_paths": [
+        "third_party/rtlmeter/designs/XuanTie-E902",
+        "config/slice_launch_templates/xuantie_e902.json",
+        "config/scaling_gates/xuantie_e902_*.json"
+      ],
+      "removed_tracked_lines": 56325,
+      "removed_gate_count": 15,
+      "preserved_claim_summary": "Historical bounded resident/runtime and GPU-owned construction claims only; not active TL-UL coverage-output depth work.",
+      "non_claims": [
+        "not broad XuanTie family support",
+        "not full RTL application throughput",
+        "not active coverage-output equivalence scope"
+      ]
+    },
+    {
+      "name": "veer_el2",
+      "previous_paths": [
+        "third_party/rtlmeter/designs/VeeR-EL2",
+        "config/slice_launch_templates/veer_el2.json",
+        "config/scaling_gates/veer_el2_*.json"
+      ],
+      "removed_tracked_lines": 41097,
+      "removed_gate_count": 6,
+      "preserved_claim_summary": "Historical bounded resident runtime claims only; not active TL-UL coverage-output depth work.",
+      "non_claims": [
+        "not broad VeeR family support",
+        "not full RTL application throughput",
+        "not active coverage-output equivalence scope"
+      ]
+    }
+  ],
+  "active_scope_after_archive": [
+    "tlul_fifo_sync",
+    "tlul_sink"
+  ]
+}

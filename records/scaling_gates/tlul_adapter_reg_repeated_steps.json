@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_adapter_reg_repeated_steps_scaling",
+  "target": "tlul_adapter_reg",
+  "purpose": "Validate the candidate tlul_adapter_reg seed can run repeated GPU steps through the existing shared runtime before depth comparison.",
+  "preconditions": [
+    "tlul_adapter_reg Verilator obj_dir is generated",
+    "tlul_adapter_reg GPU cubin is built",
+    "artifacts/ and reports/ are ignored generated outputs"
+  ],
+  "runs": [
+    {
+      "name": "steps_1_batch_32",
+      "nstates": 32,
+      "steps": 1,
+      "required": true
+    },
+    {
+      "name": "steps_4_batch_32",
+      "nstates": 32,
+      "steps": 4,
+      "required": true
+    }
+  ],
+  "correctness_policy": {
+    "batched_gpu_runs": [
+      "run exits with status 0",
+      "dumped state byte size equals storage_size * nstates when dump is requested",
+      "the generated zero-initialized GPU dumps are runtime evidence only"
+    ],
+    "non_claims": [
+      "not raw full-state equality",
+      "not active-target promotion by itself",
+      "not non-TL-UL runtime generality"
+    ]
+  },
+  "performance_policy": {
+    "record": [
+      "nstates",
+      "steps",
+      "elapsed_ms",
+      "state_steps_per_second"
+    ],
+    "non_claims": [
+      "the zero-initialized GPU report is not the correctness input for coverage-output depth",
+      "target breadth remains candidate-only until the depth gate passes and promotion is recorded"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/tlul_adapter_reg_repeated_steps_scaling.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "run_tlul_adapter_reg_cpu_exact_loop_repeated_steps",
+  "next_action_on_fail": "diagnose_tlul_adapter_reg_repeated_steps_scaling_failure"
+}

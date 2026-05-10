@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "target": "OpenTitan.prim_mubi8_sync",
+  "status": "active",
+  "source_gate": "config/scaling_gates/prim_mubi8_sync_source_gate.json",
+  "top_module": "prim_mubi8_sync_gpu_cov_tb",
+  "build": {
+    "mdir": "artifacts/prim_mubi8_sync_obj_dir",
+    "work_dir": "work/slice_pilots/prim_mubi8_sync",
+    "host_probe_target": "prim_mubi8_sync_host_probe"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi8_sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop_2sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop_2sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_buf.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_buf.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_mubi8_sync_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_mubi8_sync_coverage_regions.json",
+    "status": "overlay_ready_first_pass_passed",
+    "planned_parameters": {
+      "NumCopies": 2,
+      "AsyncOn": 1,
+      "StabilityCheck": 0,
+      "ResetValue": "MuBi8False",
+      "EnablePrimCdcRand": 0
+    }
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_mubi8_sync"
+    ],
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte",
+      "tlul_adapter_dmi",
+      "tlul_adapter_reg_racl",
+      "tlul_adapter_sram_racl",
+      "tlul_fifo_async",
+      "prim_fifo_async_simple",
+      "prim_sync_reqack_data",
+      "prim_pulse_sync",
+      "prim_edge_detector",
+      "prim_rst_sync",
+      "prim_flop_en",
+      "prim_flop",
+      "prim_flop_2sync",
+      "prim_mubi4_dec",
+      "prim_mubi4_sync",
+      "prim_mubi4_sender",
+      "prim_mubi8_sender"
+    ],
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized coverage_output_equivalence passes"
+    ]
+  },
+  "static_features": {
+    "tb_contract_ready": true,
+    "real_toggle_outputs_ready": true,
+    "toggle_bitmap_outputs_ready": true,
+    "focused_wave_ready": true,
+    "source_line_count": 178,
+    "auto_generated_mubi_sync": true,
+    "uses_prim_mubi_pkg": true,
+    "depends_on_prim_flop_2sync": true,
+    "uses_prim_buf": true,
+    "multi_clock": false,
+    "rtl_clock_ports": [
+      "clk_i"
+    ],
+    "has_reset_input": true,
+    "planned_mubi_width": 8,
+    "planned_stability_check": false,
+    "planned_num_copies": 2,
+    "planned_async_on": true,
+    "stability_check_branch_not_claimed": true,
+    "wider_mubi32_sync_not_claimed": true,
+    "broad_mubi_package_support_not_claimed": true
+  },
+  "next_action": "package_thirteenth_primitive_active_boundary",
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_mubi8_sync_source_gate.json",
+    "host_probe_report": "reports/prim_mubi8_sync_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "raw_full_state_mismatch_count": 29,
+    "manifest_valid": true,
+    "storage_size": 576,
+    "cpu_reference_state": "artifacts/prim_mubi8_sync_obj_dir/prim_mubi8_sync_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_mubi8_sync_obj_dir/prim_mubi8_sync_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_gate_definition": {
+    "status": "defined",
+    "gate": "config/scaling_gates/prim_mubi8_sync_coverage_output_depth.json",
+    "gpu_repeated_steps_gate": "config/scaling_gates/prim_mubi8_sync_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_mubi8_sync_cpu_exact_loop_repeated_steps.json",
+    "report": "reports/prim_mubi8_sync_coverage_output_depth.json",
+    "comparison_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "candidate_targets": [
+      "prim_mubi8_sync"
+    ],
+    "active_targets_unchanged": true
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_mubi8_sync_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gate": "config/scaling_gates/prim_mubi8_sync_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_mubi8_sync_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_mubi8_sync_cpu_exact_loop_repeated_steps.json",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "target": "prim_mubi8_sync",
+    "completed_task": "promote_prim_mubi8_sync_to_active_target_scope",
+    "active_target_count": 35,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 13,
+    "candidate_targets": [],
+    "source_gate": "config/scaling_gates/prim_mubi8_sync_source_gate.json",
+    "first_pass_report": "reports/prim_mubi8_sync_source_gate.json",
+    "depth_report": "reports/prim_mubi8_sync_coverage_output_depth.json",
+    "next_action": "package_thirteenth_primitive_active_boundary"
+  }
+}

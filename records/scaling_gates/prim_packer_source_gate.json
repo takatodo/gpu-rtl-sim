@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "status": "promoted_to_active_scope",
+  "gate": "config/scaling_gates/prim_packer_source_gate.json",
+  "target": "prim_packer",
+  "source_gate_name": "prim_packer_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Source-backed gate selected after the thirty-third primitive review; candidate-only until promotion is recorded.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_packer.json",
+  "top_module": "prim_packer_gpu_cov_tb",
+  "build": {
+    "mdir": "artifacts/prim_packer_obj_dir",
+    "work_dir": "work/slice_pilots/prim_packer",
+    "host_probe_target": "prim_packer_host_probe",
+    "cpu_reference_state": "artifacts/prim_packer_obj_dir/prim_packer_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_packer_obj_dir/prim_packer_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_count_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_util_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_count.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_packer.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_packer",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/prim_packer.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_packer_coverage_regions.json",
+      "mdir": "artifacts/prim_packer_obj_dir",
+      "expected_report": "reports/prim_packer_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_packer_obj_dir/prim_packer_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_packer_obj_dir/prim_packer_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "define_after_thirty_third_primitive_review_acceptance": true,
+    "active_target_count_unchanged_until_first_pass": 55,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 33,
+    "candidate_targets_contains_only": [
+      "prim_packer"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_packer remains candidate-only until promotion is recorded"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_packer_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_packer_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_packer.json",
+    "host_probe_target": "prim_packer_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "overlay_ready_first_pass_and_depth_passed",
+    "planned_parameters": {
+      "InW": 8,
+      "OutW": 16,
+      "HintByteData": 0,
+      "EnProtection": 0,
+      "path": "two_byte_pack_and_flush_nonprotected"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 371,
+    "planned_InW": 8,
+    "planned_OutW": 16,
+    "planned_HintByteData": 0,
+    "planned_EnProtection": 0,
+    "ready_valid_handshake": true,
+    "mask_contiguous_assumption_not_claimed": true,
+    "flush_path_planned": true,
+    "en_protection_branch_not_claimed": true,
+    "prim_count_dependency_not_claimed": true,
+    "all_widths_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true,
+    "host_probe_makefile_hook_ready": true,
+    "coverage_manifest_ready": true
+  },
+  "weakest_point": "After prim_slicer, the active primitive set covers dynamic extraction but not the inverse stateful mask/flush packing path. prim_packer is useful, but its 371-line source is much larger than the previous slicer gate and must be limited to InW=8, OutW=16, HintByteData=0, and EnProtection=0 before any promotion claim.",
+  "selection_reason": [
+    "directly complements the active prim_slicer dynamic extraction gate with the inverse packing direction",
+    "uses one upstream OpenTitan primitive source file plus prim_util_pkg and assertion macros",
+    "keeps the next step on a single-clock primitive datapath rather than a FIFO wrapper, alert path, CDC path, crypto block, or broad package-heavy module",
+    "preserves the single-next-gate discipline after the thirty-third primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_packer_fifo",
+      "reason": "adds FIFO storage, depth, push/pop, and downstream flow-control scope before the base packer path is proven"
+    },
+    {
+      "target": "prim_count",
+      "reason": "protected counter behavior is broader than the initial EnProtection=0 packer path"
+    },
+    {
+      "target": "prim_arbiter_tree",
+      "reason": "multi-client arbitration/fairness scope is larger than the next narrow packer datapath step"
+    }
+  ],
+  "active_target_count": 56,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 34,
+  "non_claims": [
+    "all prim_packer InW/OutW/HintByteData/EnProtection parameterizations",
+    "EnProtection=1 duplicated-counter branch or prim_count correctness",
+    "non-contiguous mask assertion behavior",
+    "byte-hint assertion policy beyond HintByteData=0",
+    "prim_packer_fifo coverage",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full OpenTitan primitive-family support"
+  ],
+  "next_action": "package_thirty_fourth_primitive_active_boundary",
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_packer_source_gate.json",
+    "host_probe_report": "reports/prim_packer_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "raw_full_state_mismatch_count": 31,
+    "manifest_valid": true,
+    "storage_size": 640,
+    "cpu_reference_state": "artifacts/prim_packer_obj_dir/prim_packer_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_packer_obj_dir/prim_packer_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "gpu_init_sanitized": true,
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_gates": {
+    "gpu_repeated_steps_gate": "config/scaling_gates/prim_packer_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_packer_cpu_exact_loop_repeated_steps.json",
+    "coverage_output_depth_gate": "config/scaling_gates/prim_packer_coverage_output_depth.json"
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_packer_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gate": "config/scaling_gates/prim_packer_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_packer_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_packer_cpu_exact_loop_repeated_steps.json",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "gpu_init_sanitized": true
+  },
+  "promotion_result": {
+    "schema_version": 1,
+    "status": "promoted_to_active_scope",
+    "target": "prim_packer",
+    "completed_task": "promote_prim_packer_to_active_target_scope",
+    "active_target_count": 56,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 34,
+    "candidate_targets": [],
+    "depth_result": "reports/prim_packer_coverage_output_depth.json",
+    "non_claims_preserved": [
+      "all prim_packer InW/OutW/HintByteData/EnProtection parameterizations",
+      "EnProtection=1 duplicated-counter branch or prim_count correctness",
+      "non-contiguous mask assertion behavior",
+      "byte-hint assertion policy beyond HintByteData=0",
+      "prim_packer_fifo coverage",
+      "raw full-state equality",
+      "zero-initialized GPU correctness",
+      "full OpenTitan primitive-family support"
+    ],
+    "next_action": "package_thirty_fourth_primitive_active_boundary"
+  }
+}

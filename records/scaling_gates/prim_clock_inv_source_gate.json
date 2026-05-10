@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "status": "candidate_defined",
+  "gate": "prim_clock_inv_source_backed_gate",
+  "target": "prim_clock_inv",
+  "source_gate_name": "prim_clock_inv_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Source-backed gate selected after the fifty-second primitive review; remains candidate-only until first-pass and depth evidence pass.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_clock_inv.json",
+  "build": {
+    "mdir": "artifacts/prim_clock_inv_obj_dir",
+    "work_dir": "work/slice_pilots/prim_clock_inv",
+    "host_probe_target": "prim_clock_inv_host_probe",
+    "cpu_reference_state": "artifacts/prim_clock_inv_obj_dir/prim_clock_inv_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_clock_inv_obj_dir/prim_clock_inv_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_clock_inv.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_clock_inv.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_clock_inv",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_clock_inv.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_clock_inv_coverage_regions.json",
+      "mdir": "artifacts/prim_clock_inv_obj_dir",
+      "expected_report": "reports/prim_clock_inv_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_clock_inv_obj_dir/prim_clock_inv_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_clock_inv_obj_dir/prim_clock_inv_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [
+    "prim_clock_inv"
+  ],
+  "acceptance": {
+    "define_after_fifty_second_primitive_review_acceptance": true,
+    "active_target_count_unchanged_until_first_pass": 74,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 52,
+    "candidate_targets_contains_only": [
+      "prim_clock_inv"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_clock_inv remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_clock_inv_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_clock_inv_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_clock_inv.json",
+    "host_probe_target": "prim_clock_inv_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "planned",
+    "planned_parameters": {
+      "HasScanMode": false,
+      "NoFpgaBufG": false,
+      "path": "generic_clock_inverter_noscan"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 48,
+    "generic_clock_inv_source_line_count": 32,
+    "planned_HasScanMode": false,
+    "planned_NoFpgaBufG": false,
+    "uses_prim_generic_clock_inv": true,
+    "generic_impl_only_claimed": true,
+    "scanmode_mux_path_not_claimed": true,
+    "vendor_specific_impls_not_claimed": true,
+    "clock_correctness_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true
+  },
+  "weakest_point": "The active primitive set includes a generic clock buffer but still does not directly claim the smaller generated clock inverter wrapper. The first prim_clock_inv gate fixes HasScanMode=0 and treats scan-mode muxing, vendor clock inverters, and clock-correctness proof as non-claims.",
+  "selection_reason": [
+    "extends the active clock primitive surface with the smallest remaining generated clock wrapper",
+    "keeps the next step narrower than clock muxes, dividers, timeouts, differential decoders, memories, alert, escalation, or crypto primitives",
+    "uses a generic implementation with simple inverter behavior when HasScanMode is false",
+    "preserves the single-candidate discipline after the fifty-second primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_clock_mux2",
+      "reason": "clock mux selection behavior is broader than the fixed no-scan inverter wrapper gate"
+    },
+    {
+      "target": "prim_clock_div",
+      "reason": "clock division introduces stateful clocking behavior broader than a fixed inverter wrapper"
+    },
+    {
+      "target": "prim_diff_decode",
+      "reason": "differential decode signal-integrity behavior and optional async synchronization are broader than this wrapper gate"
+    },
+    {
+      "target": "prim_intr_hw",
+      "reason": "interrupt register semantics introduce a wider CSR-facing behavior surface"
+    }
+  ],
+  "active_target_count": 74,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 52,
+  "recorded_outputs": [
+    "config/scaling_gates/prim_clock_inv_source_gate.json",
+    "config/slice_launch_templates/prim_clock_inv.json"
+  ],
+  "non_claims": [
+    "scan-mode clock mux path",
+    "vendor-specific Xilinx or Ultrascale clock-inverter implementations",
+    "clock-tree correctness",
+    "glitch-free clocking proof",
+    "assertion-policy proof",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full OpenTitan primitive-family support"
+  ],
+  "next_action": "implement_prim_clock_inv_overlay_gate"
+}

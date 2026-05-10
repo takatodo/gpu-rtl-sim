@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "objective": "configディレクトリを必要最低限に絞り生成物は削除する",
+  "status": "complete_config_minimal_surface_with_external_records_and_generated_outputs_removed",
+  "success_criteria": [
+    "config contains only current state, target inventory, runtime-facing templates, and compatibility links",
+    "historical gate records are managed outside the active config surface",
+    "existing config/scaling_gates paths remain compatible",
+    "generated reports and build/raw artifacts are managed outside config",
+    "generated reports and build/raw artifacts are deleted from the working tree unless regenerated",
+    "docs explain the boundary",
+    "tests verify the boundary and compatibility"
+  ],
+  "measured_state": {
+    "config_file_count_after_cleanup": 146,
+    "records_scaling_gate_json_count": 632,
+    "config_scaling_gates_is_symlink": true,
+    "config_scaling_gates_link_target": "../records/scaling_gates",
+    "runtime_facing_template_count": 141,
+    "generated_output_non_gitignore_file_count_after_cleanup": 0,
+    "reports_non_gitignore_file_count_after_cleanup": 0,
+    "artifacts_non_gitignore_file_count_after_cleanup": 0
+  },
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "configディレクトリを必要最低限に絞る",
+      "status": "satisfied",
+      "evidence": [
+        "config/selection.json",
+        "config/targets.json",
+        "config/slice_launch_templates/",
+        "config/scaling_gates -> ../records/scaling_gates",
+        "find config -maxdepth 2 -type f | wc -l == 146"
+      ]
+    },
+    {
+      "requirement": "履歴 gate を active config surface から外す",
+      "status": "satisfied",
+      "evidence": [
+        "records/scaling_gates/",
+        "records/scaling_gates/README.md",
+        "find records/scaling_gates -maxdepth 1 -type f -name '*.json' | wc -l == 632"
+      ]
+    },
+    {
+      "requirement": "既存パス互換性を保つ",
+      "status": "satisfied",
+      "evidence": [
+        "config/scaling_gates is a symlink",
+        "config/scaling_gates/public_results_packaging_gate.json resolves",
+        "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --dry-run"
+      ]
+    },
+    {
+      "requirement": "生成物は別で管理する",
+      "status": "satisfied",
+      "evidence": [
+        ".gitignore:/reports/**",
+        ".gitignore:/artifacts/**",
+        "README.md:Generated outputs are reproducible under reports and artifacts but are not source of truth",
+        "find reports artifacts -mindepth 1 ! -name '.gitignore' | wc -l == 0"
+      ]
+    },
+    {
+      "requirement": "生成物は削除する",
+      "status": "satisfied",
+      "evidence": [
+        "reports/.gitignore",
+        "artifacts/.gitignore",
+        "find reports artifacts -mindepth 1 ! -name '.gitignore' | wc -l == 0",
+        "python3 -m unittest discover -s tests/contract -q"
+      ]
+    },
+    {
+      "requirement": "境界を文書化する",
+      "status": "satisfied",
+      "evidence": [
+        "config/README.md",
+        "records/README.md",
+        "records/scaling_gates/README.md",
+        "README.md",
+        "docs/status.md",
+        "docs/roadmap.md"
+      ]
+    },
+    {
+      "requirement": "テストで固定する",
+      "status": "satisfied",
+      "evidence": [
+        "tests/contract/test_resident_runtime_contract.py:test_config_directory_has_current_state_map_and_gate_policy",
+        "python3 -m unittest discover -s tests/contract -q"
+      ]
+    }
+  ],
+  "non_claims": [
+    "does not delete historical gate evidence",
+    "does not reduce runtime-facing launch templates",
+    "does not rewrite all historical config/scaling_gates references",
+    "does not claim generated evidence is permanently unavailable; it is reproducible from documented commands"
+  ],
+  "completion_decision": {
+    "achieved": true,
+    "reason": "The active config surface now holds only current-state files, runtime-facing launch templates, and a compatibility symlink; historical gate records live under records/scaling_gates, while reports and artifacts contain only .gitignore until generated outputs are reproduced."
+  },
+  "next_task": "hold_for_review_after_config_minimal_surface_cleanup"
+}

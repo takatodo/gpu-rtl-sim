@@ -1,0 +1,50 @@
+{
+  "schema_version": "coverage-region-manifest-v1",
+  "target": "OpenTitan.prim_onehot_check",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "regions": [
+    {
+      "name": "expected_observed_error_path",
+      "words": [
+        "real_toggle_subset_word0_o",
+        "real_toggle_subset_word1_o",
+        "real_toggle_subset_word2_o",
+        "real_toggle_subset_word3_o"
+      ]
+    },
+    {
+      "name": "checker_error_sources",
+      "words": [
+        "real_toggle_subset_word4_o",
+        "real_toggle_subset_word5_o",
+        "real_toggle_subset_word6_o",
+        "real_toggle_subset_word7_o"
+      ]
+    },
+    {
+      "name": "input_case_activity",
+      "words": [
+        "real_toggle_subset_word8_o",
+        "real_toggle_subset_word9_o",
+        "real_toggle_subset_word10_o",
+        "real_toggle_subset_word11_o"
+      ]
+    },
+    {
+      "name": "progress_context",
+      "words": [
+        "real_toggle_subset_word12_o",
+        "real_toggle_subset_word13_o",
+        "real_toggle_subset_word14_o",
+        "real_toggle_subset_word15_o"
+      ]
+    },
+    {
+      "name": "config_done_context",
+      "words": [
+        "real_toggle_subset_word16_o",
+        "real_toggle_subset_word17_o"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_coverage_output_equivalence",
+  "status": "active_twenty_two_seed_boundary",
+  "purpose": "Define the active CPU/GPU coverage-output equivalence claim for checked-in TL-UL seed scope.",
+  "weakest_point": "The one-state coverage-output gate now includes tlul_fifo_async, but the claim remains coverage-output words only and not raw full-state equality or full CDC correctness.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "target_scope": [
+    {
+      "target": "tlul_fifo_sync",
+      "launch_template": "config/slice_launch_templates/tlul_fifo_sync.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_fifo_sync_coverage_regions.json",
+      "mdir": "artifacts/tlul_fifo_sync_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_fifo_sync_obj_dir/minimal_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_fifo_sync_obj_dir/minimal_gpu_from_cpu_init_state.bin"
+    },
+    {
+      "target": "tlul_sink",
+      "launch_template": "config/slice_launch_templates/tlul_sink.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_sink_coverage_regions.json",
+      "mdir": "artifacts/tlul_sink_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_sink_obj_dir/tlul_sink_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_sink_obj_dir/tlul_sink_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_request_loopback",
+      "launch_template": "config/slice_launch_templates/tlul_request_loopback.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_request_loopback_coverage_regions.json",
+      "mdir": "artifacts/tlul_request_loopback_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_request_loopback_obj_dir/tlul_request_loopback_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_request_loopback_obj_dir/tlul_request_loopback_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_socket_m1",
+      "launch_template": "config/slice_launch_templates/tlul_socket_m1.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_socket_m1_coverage_regions.json",
+      "mdir": "artifacts/tlul_socket_m1_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_socket_m1_obj_dir/tlul_socket_m1_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_socket_m1_obj_dir/tlul_socket_m1_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_socket_1n",
+      "launch_template": "config/slice_launch_templates/tlul_socket_1n.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_socket_1n_coverage_regions.json",
+      "mdir": "artifacts/tlul_socket_1n_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_socket_1n_obj_dir/tlul_socket_1n_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_socket_1n_obj_dir/tlul_socket_1n_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_adapter_host",
+      "launch_template": "config/slice_launch_templates/tlul_adapter_host.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_host_coverage_regions.json",
+      "mdir": "artifacts/tlul_adapter_host_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_adapter_host_obj_dir/tlul_adapter_host_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_adapter_host_obj_dir/tlul_adapter_host_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_adapter_reg",
+      "launch_template": "config/slice_launch_templates/tlul_adapter_reg.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_reg_coverage_regions.json",
+      "mdir": "artifacts/tlul_adapter_reg_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_adapter_reg_obj_dir/tlul_adapter_reg_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_adapter_reg_obj_dir/tlul_adapter_reg_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_adapter_sram",
+      "launch_template": "config/slice_launch_templates/tlul_adapter_sram.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_sram_coverage_regions.json",
+      "mdir": "artifacts/tlul_adapter_sram_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_adapter_sram_obj_dir/tlul_adapter_sram_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_adapter_sram_obj_dir/tlul_adapter_sram_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_lc_gate",
+      "launch_template": "config/slice_launch_templates/tlul_lc_gate.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_lc_gate_coverage_regions.json",
+      "mdir": "artifacts/tlul_lc_gate_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_lc_gate_obj_dir/tlul_lc_gate_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_lc_gate_obj_dir/tlul_lc_gate_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_err_resp",
+      "launch_template": "config/slice_launch_templates/tlul_err_resp.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_err_resp_coverage_regions.json",
+      "mdir": "artifacts/tlul_err_resp_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_err_resp_obj_dir/tlul_err_resp_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_err_resp_obj_dir/tlul_err_resp_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_err",
+      "launch_template": "config/slice_launch_templates/tlul_err.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_err_coverage_regions.json",
+      "mdir": "artifacts/tlul_err_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_err_obj_dir/tlul_err_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_err_obj_dir/tlul_err_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_cmd_intg_chk",
+      "launch_template": "config/slice_launch_templates/tlul_cmd_intg_chk.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_cmd_intg_chk_coverage_regions.json",
+      "mdir": "artifacts/tlul_cmd_intg_chk_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_cmd_intg_chk_obj_dir/tlul_cmd_intg_chk_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_cmd_intg_chk_obj_dir/tlul_cmd_intg_chk_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_cmd_intg_gen",
+      "launch_template": "config/slice_launch_templates/tlul_cmd_intg_gen.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_cmd_intg_gen_coverage_regions.json",
+      "mdir": "artifacts/tlul_cmd_intg_gen_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_cmd_intg_gen_obj_dir/tlul_cmd_intg_gen_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_cmd_intg_gen_obj_dir/tlul_cmd_intg_gen_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_rsp_intg_gen",
+      "launch_template": "config/slice_launch_templates/tlul_rsp_intg_gen.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_rsp_intg_gen_coverage_regions.json",
+      "mdir": "artifacts/tlul_rsp_intg_gen_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_rsp_intg_gen_obj_dir/tlul_rsp_intg_gen_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_rsp_intg_gen_obj_dir/tlul_rsp_intg_gen_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_rsp_intg_chk",
+      "launch_template": "config/slice_launch_templates/tlul_rsp_intg_chk.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_rsp_intg_chk_coverage_regions.json",
+      "mdir": "artifacts/tlul_rsp_intg_chk_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_rsp_intg_chk_obj_dir/tlul_rsp_intg_chk_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_rsp_intg_chk_obj_dir/tlul_rsp_intg_chk_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_data_integ_enc",
+      "launch_template": "config/slice_launch_templates/tlul_data_integ_enc.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_data_integ_enc_coverage_regions.json",
+      "mdir": "artifacts/tlul_data_integ_enc_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_data_integ_enc_obj_dir/tlul_data_integ_enc_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_data_integ_enc_obj_dir/tlul_data_integ_enc_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_data_integ_dec",
+      "launch_template": "config/slice_launch_templates/tlul_data_integ_dec.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_data_integ_dec_coverage_regions.json",
+      "mdir": "artifacts/tlul_data_integ_dec_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_data_integ_dec_obj_dir/tlul_data_integ_dec_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_data_integ_dec_obj_dir/tlul_data_integ_dec_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_sram_byte",
+      "launch_template": "config/slice_launch_templates/tlul_sram_byte.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_sram_byte_coverage_regions.json",
+      "mdir": "artifacts/tlul_sram_byte_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_sram_byte_obj_dir/tlul_sram_byte_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_sram_byte_obj_dir/tlul_sram_byte_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_adapter_dmi",
+      "launch_template": "config/slice_launch_templates/tlul_adapter_dmi.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_dmi_coverage_regions.json",
+      "mdir": "artifacts/tlul_adapter_dmi_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_adapter_dmi_obj_dir/tlul_adapter_dmi_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_adapter_dmi_obj_dir/tlul_adapter_dmi_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_adapter_reg_racl",
+      "launch_template": "config/slice_launch_templates/tlul_adapter_reg_racl.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_reg_racl_coverage_regions.json",
+      "mdir": "artifacts/tlul_adapter_reg_racl_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_adapter_reg_racl_obj_dir/tlul_adapter_reg_racl_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_adapter_reg_racl_obj_dir/tlul_adapter_reg_racl_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_adapter_sram_racl",
+      "launch_template": "config/slice_launch_templates/tlul_adapter_sram_racl.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_sram_racl_coverage_regions.json",
+      "mdir": "artifacts/tlul_adapter_sram_racl_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_adapter_sram_racl_obj_dir/tlul_adapter_sram_racl_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_adapter_sram_racl_obj_dir/tlul_adapter_sram_racl_gpu_from_cpu_reference_state.bin"
+    },
+    {
+      "target": "tlul_fifo_async",
+      "launch_template": "config/slice_launch_templates/tlul_fifo_async.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_fifo_async_coverage_regions.json",
+      "mdir": "artifacts/tlul_fifo_async_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_fifo_async_obj_dir/tlul_fifo_async_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_fifo_async_obj_dir/tlul_fifo_async_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18,
+      "policy": "manifest regions must cover each real_toggle_subset_word[0..17]_o exactly once"
+    },
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116
+  },
+  "acceptance": [
+    "each selected target's launch template coverage_manifest_path exists",
+    "each manifest coverage_domain is toggle_real_subset_bitmap",
+    "each manifest covers real_toggle_subset_word0_o through real_toggle_subset_word17_o exactly once",
+    "root layout exposes all strict_output_words as comparable top-level output fields",
+    "CPU reference and GPU candidate dumps are storage-size compatible",
+    "all strict_output_words match byte-for-byte for the compared state pairs",
+    "the report separates coverage-output equality from normalized final-state equivalence"
+  ],
+  "report": "reports/tlul_coverage_output_equivalence.json",
+  "next_action_on_defined": "decide_coverage_extraction_runner_or_existing_compare_extension",
+  "next_action_on_fail": "diagnose_tlul_coverage_output_equivalence_failure",
+  "non_claims": [
+    "not non-TL-UL coverage-output equivalence",
+    "not full application coverage closure",
+    "not coverage-guided search quality",
+    "not raw full-state byte equality"
+  ]
+}

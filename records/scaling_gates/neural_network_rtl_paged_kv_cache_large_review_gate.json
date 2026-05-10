@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_paged_kv_cache_large_review_gate",
+  "completed_task": "review_pulp_paged_kv_cache_large_first_compare_result_and_select_next_full_ita_or_scaleup_step",
+  "status": "reviewed_select_full_ita_mha_dependency_audit_next",
+  "objective": "Review the larger paged KV-cache scale-up result and select the next step toward the active full ITA/MHA plus larger paged attention / KV-cache scale-up goal.",
+  "reviewed_gate": "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+  "reviewed_summary": "reports/pulp_paged_kv_cache_large_first_hybrid_benchmark_summary.json",
+  "result_summary": {
+    "target": "pulp_paged_kv_cache_large",
+    "scale": "8_pages_x_16_slots_per_page_128_logical_slots",
+    "storage_size_bytes": 1600,
+    "measured_shapes": [
+      "1x1",
+      "64x1",
+      "1x64",
+      "256x1"
+    ],
+    "all_planned_shapes_passed_coverage_output_equivalence": true,
+    "mismatch_count": 0,
+    "strict_output_words_per_state": 29,
+    "strict_output_bytes_per_state": 116
+  },
+  "interpretation": {
+    "correctness_claim_allowed": "CPU-vs-hybrid coverage-output equivalence passed for the scoped larger paged KV-cache RTL harness.",
+    "timing_observation": "The measured shapes are sufficient to keep the prior condition trend alive, but this review does not promote a new broad timing classification by itself.",
+    "why_not_finish_goal": [
+      "This is still a KV-cache harness, not full paged attention.",
+      "This does not execute full ITA/MHA.",
+      "This does not prove model-level Transformer inference or production serving memory hierarchy."
+    ]
+  },
+  "selected_next_workstream": {
+    "name": "full_ita_mha_execution",
+    "reason": "The larger paged KV-cache first correctness gate is complete; the active long-term objective still explicitly includes full ITA/MHA execution.",
+    "next_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_dependency_audit_gate.json",
+    "next_task": "implement_pulp_ita_mha_minimal_dependency_stubs_and_lint_probe"
+  },
+  "non_claims": [
+    "not full paged attention",
+    "not full ITA/MHA execution",
+    "not model-level Transformer inference",
+    "not production KV-cache memory hierarchy",
+    "not final broad timing classification",
+    "not raw full-state equality"
+  ],
+  "next_task": "implement_pulp_ita_mha_minimal_dependency_stubs_and_lint_probe"
+}

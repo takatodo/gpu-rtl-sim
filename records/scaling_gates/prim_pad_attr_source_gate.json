@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "status": "promoted_to_active_scope",
+  "gate": "prim_pad_attr_source_backed_gate",
+  "target": "prim_pad_attr",
+  "source_gate_name": "prim_pad_attr_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Define one source-backed candidate after the seventy-fourth primitive boundary review passed.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_pad_attr.json",
+  "build": {
+    "mdir": "artifacts/prim_pad_attr_obj_dir",
+    "work_dir": "work/slice_pilots/prim_pad_attr",
+    "host_probe_target": "prim_pad_attr_host_probe",
+    "cpu_reference_state": "artifacts/prim_pad_attr_obj_dir/prim_pad_attr_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_pad_attr_obj_dir/prim_pad_attr_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pad_wrapper_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_pad_attr.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pad_attr.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_pad_attr",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_pad_attr.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_pad_attr_coverage_regions.json",
+      "mdir": "artifacts/prim_pad_attr_obj_dir",
+      "expected_report": "reports/prim_pad_attr_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_pad_attr_obj_dir/prim_pad_attr_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_pad_attr_obj_dir/prim_pad_attr_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "active_target_count_unchanged_until_first_pass": 96,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 74,
+    "candidate_targets_contains_only": [
+      "prim_pad_attr"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_pad_attr_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_pad_attr_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_pad_attr.json",
+    "host_probe_target": "prim_pad_attr_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "planned",
+    "planned_parameters": {
+      "PadType": "BidirStd",
+      "Impl": "ImplGeneric"
+    }
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 49,
+    "generic_pad_attr_source_line_count": 71,
+    "planned_PadType": "BidirStd",
+    "generic_impl_only_claimed": true
+  },
+  "weakest_point": "prim_pad_attr is scoped to generic BidirStd WARL attribute output; vendor pad implementations, electrical behavior, other PadType values, invalid config assertion policy, raw full-state equality, and zero-initialized GPU correctness remain outside this gate.",
+  "source_review": "seventy_fourth_primitive_review_hold",
+  "active_target_count": 97,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 75,
+  "next_action": "hold_for_review_after_seventy_fifth_primitive_boundary",
+  "first_pass_result": {
+    "report": "reports/prim_pad_attr_source_gate.json",
+    "selected_acceptance_policy_passed": true,
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_mismatch_count": 0,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "raw_mismatch_count": 31,
+    "mismatch_role_summary": {
+      "verilator_internal": {
+        "field_count": 4,
+        "mismatch_bytes": 31
+      }
+    },
+    "storage_size": 512,
+    "root_layout_member_count": 102
+  },
+  "depth_gate_paths": [
+    "config/scaling_gates/prim_pad_attr_repeated_steps.json",
+    "config/scaling_gates/prim_pad_attr_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_pad_attr_coverage_output_depth.json"
+  ],
+  "depth_result": {
+    "report": "reports/prim_pad_attr_coverage_output_depth.json",
+    "status": "ok",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "acceptance": {
+      "all_comparisons_have_cpu_and_gpu_dump_paths": true,
+      "all_dump_byte_counts_match_expected_dump_bytes": true,
+      "all_comparisons_pass_coverage_output_equivalence": true
+    }
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_count": 97,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 75,
+    "candidate_targets": [],
+    "primitive_equivalence_gate": "config/scaling_gates/prim_pad_attr_source_gate.json",
+    "primitive_depth_gate": "config/scaling_gates/prim_pad_attr_coverage_output_depth.json",
+    "primitive_depth_report": "reports/prim_pad_attr_coverage_output_depth.json"
+  }
+}

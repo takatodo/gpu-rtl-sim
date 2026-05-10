@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "status": "candidate_defined",
+  "gate": "prim_clock_gating_sync_source_backed_gate",
+  "target": "prim_clock_gating_sync",
+  "source_gate_name": "prim_clock_gating_sync_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Source-backed gate selected after the fifty-fifth primitive review; remains candidate-only until first-pass and depth evidence pass.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_clock_gating_sync.json",
+  "build": {
+    "mdir": "artifacts/prim_clock_gating_sync_obj_dir",
+    "work_dir": "work/slice_pilots/prim_clock_gating_sync",
+    "host_probe_target": "prim_clock_gating_sync_host_probe",
+    "cpu_reference_state": "artifacts/prim_clock_gating_sync_obj_dir/prim_clock_gating_sync_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_clock_gating_sync_obj_dir/prim_clock_gating_sync_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop_2sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop_2sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_clock_gating.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_clock_gating.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_clock_gating_sync.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_clock_gating_sync",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_clock_gating_sync.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_clock_gating_sync_coverage_regions.json",
+      "mdir": "artifacts/prim_clock_gating_sync_obj_dir",
+      "expected_report": "reports/prim_clock_gating_sync_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_clock_gating_sync_obj_dir/prim_clock_gating_sync_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_clock_gating_sync_obj_dir/prim_clock_gating_sync_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [
+    "prim_clock_gating_sync"
+  ],
+  "acceptance": {
+    "define_after_fifty_fifth_primitive_review_acceptance": true,
+    "active_target_count_unchanged_until_first_pass": 77,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 55,
+    "candidate_targets_contains_only": [
+      "prim_clock_gating_sync"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_clock_gating_sync remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_clock_gating_sync_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_clock_gating_sync_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_clock_gating_sync.json",
+    "host_probe_target": "prim_clock_gating_sync_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "planned",
+    "planned_parameters": {
+      "Width": 1,
+      "path": "flop_2sync_plus_generic_clock_gating"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 28,
+    "uses_active_prim_flop_2sync_child": true,
+    "uses_active_prim_clock_gating_child": true,
+    "cdc_full_correctness_not_claimed": true,
+    "vendor_specific_clock_gating_not_claimed": true,
+    "clock_correctness_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true
+  },
+  "weakest_point": "The active clock primitive surface includes clock gating and a fixed Divisor=2 clock divider, but still does not directly claim the synchronizer-plus-clock-gating wrapper. The first prim_clock_gating_sync gate keeps CDC, clock-tree, glitch-free clocking, and vendor-specific clock-gating behavior outside the claim.",
+  "selection_reason": [
+    "extends the active clock primitive surface with a small wrapper over already active prim_flop_2sync and prim_clock_gating children",
+    "keeps the next step narrower than clock timeout, clock measurement, differential decode, interrupt, memory, alert, escalation, or crypto primitives",
+    "preserves the single-candidate discipline after the fifty-fifth primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_clock_timeout",
+      "reason": "timeout detection introduces multi-clock request/ack and counter behavior broader than the synchronizer-plus-clock-gating wrapper"
+    },
+    {
+      "target": "prim_clock_meas",
+      "reason": "clock measurement introduces ratio counters, FSM sequencing, pulse synchronization, and timeout submodules broader than this gate"
+    },
+    {
+      "target": "prim_diff_decode",
+      "reason": "differential decode signal-integrity behavior and optional async synchronization are broader than this clock-gating-sync gate"
+    },
+    {
+      "target": "prim_intr_hw",
+      "reason": "interrupt register semantics introduce a wider CSR-facing behavior surface"
+    }
+  ],
+  "active_target_count": 77,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 55,
+  "recorded_outputs": [
+    "config/scaling_gates/prim_clock_gating_sync_source_gate.json",
+    "config/slice_launch_templates/prim_clock_gating_sync.json"
+  ],
+  "non_claims": [
+    "full CDC correctness",
+    "metastability behavior",
+    "vendor-specific clock-gating implementations",
+    "clock-tree correctness",
+    "glitch-free clocking proof",
+    "assertion-policy proof",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full OpenTitan primitive-family support"
+  ],
+  "next_action": "implement_prim_clock_gating_sync_overlay_gate"
+}

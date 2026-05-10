@@ -1,0 +1,249 @@
+{
+  "schema_version": "scaling-gate-v1",
+  "gate": "config/scaling_gates/prim_secded_inv_28_22_enc_source_gate.json",
+  "status": "promoted_to_active_scope",
+  "target": "prim_secded_inv_28_22_enc",
+  "family": "OpenTitan primitive",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "source_review": "forty_fifth_primitive_review_hold",
+  "coverage_output_contract": {
+    "planned_manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18,
+      "policy": "manifest regions must cover each real_toggle_subset_word[0..17]_o exactly once"
+    },
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "weakest_point": "This gate only selects the fixed 22-to-28 inverse SECDED encoder as the next candidate; decoder behavior, correction/syndrome classification, other inverse SECDED generated widths, hamming variants beyond active slices, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and full primitive-family support remain outside the claim.",
+  "why_this_target": [
+    "uses the accepted forty-fifth primitive boundary as the source-backed base",
+    "selects the only remaining generated non-hamming inverse encoder width not yet active",
+    "keeps the next step on a fixed-width combinational datapath with one input and one output",
+    "continues the SECDED encoder family without entering decoder or correction behavior",
+    "preserves the single-next-gate discipline after the forty-fifth primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_secded_inv_22_16_dec",
+      "reason": "decoder syndrome, correction, and error classification paths are broader than one more fixed encoder variant"
+    },
+    {
+      "target": "prim_secded_inv_72_64_dec",
+      "reason": "decoder behavior remains outside the current scoped encoder claim"
+    },
+    {
+      "target": "prim_arbiter_tree",
+      "reason": "multi-request arbitration, locking, and fairness behavior are broader than a combinational SECDED encoder step"
+    },
+    {
+      "target": "prim_subreg",
+      "reason": "register write/read control and software access policy are broader than this source-backed encoder candidate"
+    }
+  ],
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_28_22_enc.sv"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_28_22_enc_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_28_22_enc_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_secded_inv_28_22_enc.json",
+    "status": "implemented",
+    "max_new_overlay_files_before_first_gate_pass": 3,
+    "planned_parameters": {
+      "DataWidth": 22,
+      "CodeWidth": 28,
+      "InversionMask": "28'hA800000",
+      "path": "fixed_28_22_inverse_secded_encode"
+    },
+    "parity_masks": [
+      "28'h03003FF",
+      "28'h010FC0F",
+      "28'h0271C71",
+      "28'h03B6592",
+      "28'h03DAAA4",
+      "28'h03ED348"
+    ],
+    "host_probe_target": "prim_secded_inv_28_22_enc_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "host_probe_report": "reports/prim_secded_inv_28_22_enc_host_probe.json"
+  },
+  "acceptance": {
+    "define_after_forty_fifth_primitive_review_acceptance": true,
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "active_target_count_unchanged_until_first_pass": 67,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 45,
+    "candidate_targets_contains_only": [
+      "prim_secded_inv_28_22_enc"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench, coverage manifest, launch template, and host probe hook exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_secded_inv_28_22_enc remains candidate-only until first pass and depth evidence pass"
+    ],
+    "overlay_ready_before_first_pass": false
+  },
+  "static_features": {
+    "schema_version": "opentitan-primitive-slice-static-features-v1",
+    "target": "OpenTitan.prim_secded_inv_28_22_enc",
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_28_22_enc.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_28_22_enc_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_28_22_enc_coverage_regions.json",
+    "tb_contract_planned": true,
+    "base_outputs_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "tb_contract_ready": true,
+    "base_outputs_ready": true,
+    "real_toggle_outputs_ready": true,
+    "toggle_bitmap_outputs_ready": true,
+    "focused_wave_ready": true,
+    "source_line_count": 24,
+    "planned_DataWidth": 22,
+    "planned_CodeWidth": 28,
+    "planned_InversionMask": "28'hA800000",
+    "inverse_variant_planned": true,
+    "hamming_variant_planned": false,
+    "region_names": [
+      "input_output_presence",
+      "encoder_reference_match",
+      "input_output_change_activity",
+      "data_activity_buckets",
+      "parity_activity"
+    ],
+    "combinational_encoder_only": true,
+    "no_clock_or_reset": true,
+    "decoder_not_claimed": true,
+    "error_correction_not_claimed": true,
+    "other_secded_widths_not_claimed": true,
+    "assertion_policy_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true,
+    "host_probe_makefile_hook_ready": true,
+    "coverage_manifest_ready": true,
+    "structural_connectivity": {
+      "structural_connectivity_class": "source_backed_candidate_promoted",
+      "nonclock_input_count": 1,
+      "nonclock_output_count": 1,
+      "reachable_output_fraction": 1.0
+    },
+    "real_toggle_word_count": 18,
+    "toggle_bitmap_word_count": 3,
+    "focused_wave_word_count": 8,
+    "region_count": 5,
+    "required_output_count": 38,
+    "depth_gate_planned": true,
+    "depth_gate_ready": true
+  },
+  "non_claims": [
+    "prim_secded_inv_28_22_dec decoder behavior",
+    "SECDED correction or syndrome classification",
+    "other inverse SECDED generated widths",
+    "hamming SECDED generated variants beyond active slices",
+    "random fault injection coverage",
+    "assertion-policy proof",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full OpenTitan primitive-family support"
+  ],
+  "candidate_targets": [],
+  "target_scope": [
+    {
+      "target": "prim_secded_inv_28_22_enc",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_secded_inv_28_22_enc.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_28_22_enc_coverage_regions.json",
+      "mdir": "artifacts/prim_secded_inv_28_22_enc_obj_dir",
+      "expected_report": "reports/prim_secded_inv_28_22_enc_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_secded_inv_28_22_enc_obj_dir/prim_secded_inv_28_22_enc_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_secded_inv_28_22_enc_obj_dir/prim_secded_inv_28_22_enc_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "active_target_count": 68,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 46,
+  "next_action": "package_forty_sixth_primitive_active_boundary",
+  "next_action_on_pass": "promote_prim_secded_inv_28_22_enc_to_active_target_scope",
+  "next_action_on_fail": "keep_candidate_only_and_record_blocker",
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_secded_inv_28_22_enc_source_gate.json",
+    "host_probe_report": "reports/prim_secded_inv_28_22_enc_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "mismatch_count": 0,
+    "raw_full_state_mismatch_count": 28,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "storage_size": 640,
+    "manifest_valid": true,
+    "cpu_reference_state": "artifacts/prim_secded_inv_28_22_enc_obj_dir/prim_secded_inv_28_22_enc_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_secded_inv_28_22_enc_obj_dir/prim_secded_inv_28_22_enc_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "gpu_init_sanitized": true,
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_secded_inv_28_22_enc_coverage_output_depth.json",
+    "gate": "config/scaling_gates/prim_secded_inv_28_22_enc_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_secded_inv_28_22_enc_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_secded_inv_28_22_enc_cpu_exact_loop_repeated_steps.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "mismatch_count": 0,
+    "compared_word_count_per_comparison": 928,
+    "compared_byte_count_per_comparison": 3712,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "gpu_init_sanitized": true
+  },
+  "promotion_result": {
+    "schema_version": 1,
+    "status": "promoted_to_active_scope",
+    "target": "prim_secded_inv_28_22_enc",
+    "completed_task": "promote_prim_secded_inv_28_22_enc_to_active_target_scope",
+    "active_target_count": 68,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 46,
+    "candidate_targets": [],
+    "depth_result": "reports/prim_secded_inv_28_22_enc_coverage_output_depth.json",
+    "non_claims_preserved": [
+      "prim_secded_inv_28_22_dec decoder behavior",
+      "SECDED correction or syndrome classification",
+      "other inverse SECDED generated widths",
+      "hamming SECDED generated variants beyond active slices",
+      "random fault injection coverage",
+      "assertion-policy proof",
+      "raw full-state equality",
+      "zero-initialized GPU correctness",
+      "full OpenTitan primitive-family support"
+    ],
+    "next_action": "package_forty_sixth_primitive_active_boundary"
+  }
+}

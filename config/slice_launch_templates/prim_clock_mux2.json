@@ -1,0 +1,63 @@
+{
+  "schema_version": "slice-launch-template-v1",
+  "slice_name": "prim_clock_mux2",
+  "target": "OpenTitan.prim_clock_mux2",
+  "family": "OpenTitan primitive",
+  "status": "candidate_defined",
+  "pilot_gate": "Source-backed prim_clock_mux2 candidate after fifty-third primitive review acceptance.",
+  "source_gate": "config/scaling_gates/prim_clock_mux2_source_gate.json",
+  "top_module": "prim_clock_mux2_gpu_cov_tb",
+  "source": {
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_clock_mux2.sv",
+    "generic_rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_clock_mux2.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_clock_mux2_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_clock_mux2_coverage_regions.json"
+  },
+  "build": {
+    "mdir": "artifacts/prim_clock_mux2_obj_dir",
+    "work_dir": "work/slice_pilots/prim_clock_mux2",
+    "host_probe_target": "prim_clock_mux2_host_probe"
+  },
+  "coverage_output_contract": {
+    "gate": "config/scaling_gates/prim_clock_mux2_source_gate.json",
+    "strict_output_words": 29,
+    "strict_output_bytes": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_clock_mux2"
+    ],
+    "active_target_count_unchanged_until_first_pass": 75,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 53,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized coverage_output_equivalence passes"
+    ]
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 46,
+    "generic_source_line_count": 21,
+    "planned_no_fpga_buf_g": false,
+    "depends_on_prim_generic_clock_mux2": true,
+    "vendor_specific_impls_not_claimed": true,
+    "clock_correctness_not_claimed": true
+  },
+  "candidate_targets": [
+    "prim_clock_mux2"
+  ],
+  "active_target_count": 75,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 53,
+  "next_action": "implement_prim_clock_mux2_overlay_gate"
+}

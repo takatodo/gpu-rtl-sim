@@ -1,0 +1,328 @@
+{
+  "schema_version": "scaling-gate-v1",
+  "gate": "prim_secded_inv_hamming_39_32_enc_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "prim_secded_inv_hamming_39_32_enc",
+  "family": "OpenTitan primitive",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "source_review": "fortieth_primitive_review_hold",
+  "coverage_output_contract": {
+    "planned_manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18,
+      "policy": "manifest regions must cover each real_toggle_subset_word[0..17]_o exactly once"
+    },
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "target_scope": [
+    {
+      "target": "prim_secded_inv_hamming_39_32_enc",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/prim_secded_inv_hamming_39_32_enc.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_hamming_39_32_enc_coverage_regions.json",
+      "mdir": "artifacts/prim_secded_inv_hamming_39_32_enc_obj_dir",
+      "expected_report": "reports/prim_secded_inv_hamming_39_32_enc_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_secded_inv_hamming_39_32_enc_obj_dir/prim_secded_inv_hamming_39_32_enc_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_secded_inv_hamming_39_32_enc_obj_dir/prim_secded_inv_hamming_39_32_enc_gpu_from_cpu_reference_state.bin",
+      "repeated_steps_gate": "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_repeated_steps.json",
+      "cpu_exact_loop_gate": "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_cpu_exact_loop_repeated_steps.json",
+      "depth_gate": "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_coverage_output_depth.json",
+      "depth_report": "reports/prim_secded_inv_hamming_39_32_enc_coverage_output_depth.json"
+    }
+  ],
+  "weakest_point": "This next gate only tests the fixed 32-to-39 inverse-hamming SECDED encoder; decoder behavior, correction/syndrome classification, other generated widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and full primitive-family support remain outside the claim.",
+  "why_this_target": [
+    "extends the just-promoted inverse-hamming 16-to-22 encoder to the already active 32-to-39 inverse SECDED width",
+    "keeps the next step on a fixed-width combinational datapath with one input and one output",
+    "uses upstream OpenTitan generated source as the source of truth and leaves implementation evidence under reports/ or artifacts/",
+    "avoids decoder, correction, wider 64-bit hamming encoders, subregister, FIFO, and arbiter-tree breadth until one more narrow encoder candidate passes",
+    "preserves the single-next-gate discipline after the fortieth primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_secded_inv_hamming_39_32_dec",
+      "reason": "decoder syndrome, correction, and err_o classification paths are broader than one more fixed encoder variant"
+    },
+    {
+      "target": "prim_secded_hamming_72_64_enc",
+      "reason": "wider 64-bit data/code surface should wait until the 32-to-39 inverse-hamming encoder variant is proven"
+    },
+    {
+      "target": "prim_arbiter_tree",
+      "reason": "multi-request arbitration, locking, and fairness behavior are broader than a combinational SECDED encoder step"
+    },
+    {
+      "target": "prim_subreg",
+      "reason": "register write/read control and software access policy are broader than this source-backed encoder candidate"
+    }
+  ],
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_39_32_enc.sv"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_39_32_enc_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_hamming_39_32_enc_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_secded_inv_hamming_39_32_enc.json",
+    "status": "overlay_ready_first_pass_and_depth_passed",
+    "max_new_overlay_files_before_first_gate_pass": 3,
+    "planned_parameters": {
+      "DataWidth": 32,
+      "CodeWidth": 39,
+      "InversionMask": "39'h2A00000000",
+      "path": "fixed_39_32_inverse_hamming_secded_encode"
+    },
+    "host_probe_target": "prim_secded_inv_hamming_39_32_enc_host_probe",
+    "makefile": "src/hybrid/Makefile"
+  },
+  "acceptance": {
+    "define_after_fortieth_primitive_review_acceptance": true,
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "active_target_count_unchanged_until_first_pass": 62,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 40,
+    "candidate_targets_contains_only": [
+      "prim_secded_inv_hamming_39_32_enc"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_secded_inv_hamming_39_32_enc remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "static_features": {
+    "schema_version": "opentitan-primitive-slice-static-features-v1",
+    "target": "OpenTitan.prim_secded_inv_hamming_39_32_enc",
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_39_32_enc.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_39_32_enc_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_hamming_39_32_enc_coverage_regions.json",
+    "tb_contract_planned": true,
+    "base_outputs_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "tb_contract_ready": true,
+    "base_outputs_ready": true,
+    "real_toggle_outputs_ready": true,
+    "toggle_bitmap_outputs_ready": true,
+    "focused_wave_ready": true,
+    "source_line_count": 24,
+    "planned_DataWidth": 32,
+    "planned_CodeWidth": 39,
+    "planned_InversionMask": "39'h2A00000000",
+    "inverse_hamming_variant_planned": true,
+    "region_names": [
+      "input_output_presence",
+      "encoder_reference_match",
+      "input_output_change_activity",
+      "data_activity_buckets",
+      "parity_activity"
+    ],
+    "combinational_encoder_only": true,
+    "no_clock_or_reset": true,
+    "decoder_not_claimed": true,
+    "error_correction_not_claimed": true,
+    "other_secded_widths_not_claimed": true,
+    "assertion_policy_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true,
+    "host_probe_makefile_hook_ready": true,
+    "coverage_manifest_ready": true,
+    "structural_connectivity": {
+      "structural_connectivity_class": "source_backed_candidate_overlay_ready",
+      "nonclock_input_count": 1,
+      "nonclock_output_count": 1,
+      "reachable_output_fraction": null
+    },
+    "real_toggle_word_count": 18,
+    "toggle_bitmap_word_count": 3,
+    "focused_wave_word_count": 8,
+    "region_count": 5,
+    "required_output_count": 38,
+    "depth_gate_ready": true
+  },
+  "non_claims": [
+    "prim_secded_inv_hamming_39_32_dec decoder behavior",
+    "SECDED correction or syndrome classification",
+    "non-inverted hamming variants beyond the already active fixed 16-to-22 slice",
+    "other SECDED generated widths",
+    "random fault injection coverage",
+    "assertion-policy proof",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full OpenTitan primitive-family support"
+  ],
+  "next_action": "package_forty_first_primitive_active_boundary",
+  "next_action_on_pass": "package_forty_first_primitive_active_boundary",
+  "next_action_on_fail": "keep_candidate_only_and_record_blocker",
+  "candidate_targets": [],
+  "active_target_count": 63,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 41,
+  "overlay": {
+    "schema_version": 1,
+    "status": "overlay_ready_first_pass_and_depth_passed",
+    "target": "prim_secded_inv_hamming_39_32_enc",
+    "source_gate": "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_source_gate.json",
+    "launch_template": "config/slice_launch_templates/prim_secded_inv_hamming_39_32_enc.json",
+    "coverage_tb": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_39_32_enc_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_hamming_39_32_enc_coverage_regions.json",
+    "host_probe_target": "prim_secded_inv_hamming_39_32_enc_host_probe",
+    "host_probe_report": "reports/prim_secded_inv_hamming_39_32_enc_host_probe.json",
+    "makefile": "src/hybrid/Makefile",
+    "planned_parameters": {
+      "DataWidth": 32,
+      "CodeWidth": 39,
+      "InversionMask": "39'h2A00000000",
+      "path": "fixed_39_32_inverse_hamming_secded_encode"
+    },
+    "generated_files": [
+      "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_39_32_enc_gpu_cov_tb.sv",
+      "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_hamming_39_32_enc_coverage_regions.json"
+    ],
+    "verified_commands": [
+      "verilator --cc --timing -Wno-fatal ... --top-module prim_secded_inv_hamming_39_32_enc_gpu_cov_tb",
+      "make -C src/hybrid prim_secded_inv_hamming_39_32_enc_host_probe",
+      "artifacts/prim_secded_inv_hamming_39_32_enc_obj_dir/tlul_slice_host_probe --reset-cycles 16 --post-reset-cycles 900"
+    ],
+    "host_probe_smoke": {
+      "status": "passed",
+      "constructor_ok": true,
+      "done_o": 1,
+      "rsp_queue_overflow_o": 0,
+      "root_size": 640,
+      "reset_cycles": 16,
+      "post_reset_cycles": 900
+    },
+    "completed_task": "implement_prim_secded_inv_hamming_39_32_enc_overlay_gate",
+    "active_targets_unchanged": true,
+    "active_target_count": 62,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 40,
+    "candidate_targets": [
+      "prim_secded_inv_hamming_39_32_enc"
+    ],
+    "next_action": "define_prim_secded_inv_hamming_39_32_enc_depth_gate_before_promotion",
+    "first_pass_result": {
+      "status": "passed",
+      "report": "reports/prim_secded_inv_hamming_39_32_enc_source_gate.json",
+      "host_probe_report": "reports/prim_secded_inv_hamming_39_32_enc_host_probe.json",
+      "acceptance_policy": "coverage_output_equivalence",
+      "mismatch_count": 0,
+      "raw_full_state_mismatch_count": 32,
+      "compared_word_count": 29,
+      "compared_byte_count": 116,
+      "storage_size": 640,
+      "manifest_valid": true,
+      "cpu_reference_state": "artifacts/prim_secded_inv_hamming_39_32_enc_obj_dir/prim_secded_inv_hamming_39_32_enc_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_secded_inv_hamming_39_32_enc_obj_dir/prim_secded_inv_hamming_39_32_enc_gpu_from_cpu_reference_state.bin",
+      "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+      "gpu_init_sanitized": true,
+      "host_probe_reset_cycles": 16,
+      "host_probe_post_reset_cycles": 900,
+      "root_layout_member_count": 132
+    },
+    "gpu_build_result": {
+      "status": "cubin_built_first_pass_passed",
+      "cubin": "artifacts/prim_secded_inv_hamming_39_32_enc_obj_dir/vl_batch_gpu.cubin",
+      "meta": "artifacts/prim_secded_inv_hamming_39_32_enc_obj_dir/vl_batch_gpu.meta.json",
+      "storage_size": 640,
+      "sm": "sm_89",
+      "ptxas_opt_level": 0
+    }
+  },
+  "first_pass_status": "passed",
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_secded_inv_hamming_39_32_enc_source_gate.json",
+    "host_probe_report": "reports/prim_secded_inv_hamming_39_32_enc_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "mismatch_count": 0,
+    "raw_full_state_mismatch_count": 32,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "storage_size": 640,
+    "manifest_valid": true,
+    "cpu_reference_state": "artifacts/prim_secded_inv_hamming_39_32_enc_obj_dir/prim_secded_inv_hamming_39_32_enc_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_secded_inv_hamming_39_32_enc_obj_dir/prim_secded_inv_hamming_39_32_enc_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "gpu_init_sanitized": true,
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900,
+    "root_layout_member_count": 132
+  },
+  "gpu_build_result": {
+    "status": "cubin_built_first_pass_passed",
+    "cubin": "artifacts/prim_secded_inv_hamming_39_32_enc_obj_dir/vl_batch_gpu.cubin",
+    "meta": "artifacts/prim_secded_inv_hamming_39_32_enc_obj_dir/vl_batch_gpu.meta.json",
+    "storage_size": 640,
+    "sm": "sm_89",
+    "ptxas_opt_level": 0
+  },
+  "depth_gates": {
+    "gpu_repeated_steps_gate": "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_cpu_exact_loop_repeated_steps.json",
+    "coverage_output_depth_gate": "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_coverage_output_depth.json"
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_secded_inv_hamming_39_32_enc_coverage_output_depth.json",
+    "gate": "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_secded_inv_hamming_39_32_enc_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_secded_inv_hamming_39_32_enc_cpu_exact_loop_repeated_steps.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "gpu_init_sanitized": true,
+    "mismatch_count": 0,
+    "compared_word_count_per_comparison": 928,
+    "compared_byte_count_per_comparison": 3712
+  },
+  "promotion_result": {
+    "schema_version": 1,
+    "status": "promoted_to_active_scope",
+    "target": "prim_secded_inv_hamming_39_32_enc",
+    "completed_task": "promote_prim_secded_inv_hamming_39_32_enc_to_active_target_scope",
+    "active_target_count": 63,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 41,
+    "candidate_targets": [],
+    "depth_result": "reports/prim_secded_inv_hamming_39_32_enc_coverage_output_depth.json",
+    "non_claims_preserved": [
+      "prim_secded_inv_hamming_39_32_dec decoder behavior",
+      "SECDED correction or syndrome classification",
+      "non-inverted hamming variants beyond the already active fixed 16-to-22 slice",
+      "other SECDED generated widths",
+      "random fault injection coverage",
+      "assertion-policy proof",
+      "raw full-state equality",
+      "zero-initialized GPU correctness",
+      "full OpenTitan primitive-family support"
+    ],
+    "next_action": "package_forty_first_primitive_active_boundary"
+  }
+}

@@ -1,1201 +1,485 @@
 #!/usr/bin/env python3
-"""Contract checks for the explicit resident GPU runtime boundary."""
+"""Contract checks for the compact active hybrid-runtime surface."""
 
 from __future__ import annotations
 
+import importlib
 import json
-import re
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-RUN_VL_HYBRID = REPO_ROOT / "src" / "tools" / "run_vl_hybrid.py"
-GPU_SCALING_RUNNER = REPO_ROOT / "src" / "tools" / "run_tlul_fifo_sync_scaling_validation.py"
-CPU_BASELINE_RUNNER = REPO_ROOT / "src" / "tools" / "run_tlul_fifo_sync_cpu_baseline.py"
-NAMED_PATCH_LOWERING = REPO_ROOT / "src" / "tools" / "named_patch_lowering.py"
-RESIDENT_GATE = REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_memory_resident_workload.json"
-VEER_EL2_RESIDENT_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_resident_workload.json"
-VEER_EL2_CPU_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_cpu_exact_loop_resident_workload.json"
-VEER_EL2_LARGER_RESIDENT_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_larger_resident_workload.json"
-VEER_EL2_LARGER_CPU_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_cpu_exact_loop_larger_resident_workload.json"
-VEER_EL2_PATCH_GATE = REPO_ROOT / "config" / "scaling_gates" / "veer_el2_resident_patch_schedule.json"
-VEER_EL2_PATCH_CPU_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "veer_el2_cpu_exact_loop_resident_patch_schedule.json"
-)
-VEER_EL2_TEMPLATE = REPO_ROOT / "config" / "slice_launch_templates" / "veer_el2.json"
-VEER_EL2_ASSETS = REPO_ROOT / "third_party" / "rtlmeter" / "designs" / "VeeR-EL2"
-RESIDENT_PATCH_SEMANTICS = REPO_ROOT / "config" / "resident_patch_script_semantics.json"
-RESIDENT_PATCH_GATE = REPO_ROOT / "config" / "scaling_gates" / "tlul_fifo_sync_resident_patch_schedule.json"
-RESIDENT_PATCH_CPU_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json"
-)
-TLUL_SINK_RESIDENT_PATCH_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "tlul_sink_resident_patch_schedule.json"
-)
-TLUL_SINK_RESIDENT_PATCH_CPU_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "tlul_sink_cpu_exact_loop_resident_patch_schedule.json"
-)
-XUANTIE_E902_PATCH_GATE = REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_resident_patch_schedule.json"
-XUANTIE_E902_PATCH_CPU_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_cpu_exact_loop_resident_patch_schedule.json"
-)
-XUANTIE_E902_ROM_DELTA_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_rom_memory_delta_patch_schedule.json"
-)
-XUANTIE_E902_ROM_DELTA_CPU_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule.json"
-)
-XUANTIE_E902_NAMED_ROM_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_named_rom_memory_mapping.json"
-)
-XUANTIE_E902_NAMED_ROM_CPU_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json"
-)
-XUANTIE_E902_PROGRAM_IMAGE_DELTA_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_program_image_delta.json"
-)
-XUANTIE_E902_PROGRAM_IMAGE_DELTA_CPU_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_cpu_exact_loop_program_image_delta.json"
-)
-XUANTIE_E902_PROGRAM_IMAGE_INIT_CONSTRUCTION_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "xuantie_e902_program_image_initialization_construction.json"
-)
-TLUL_SINK_LARGER_ENVELOPE_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "tlul_sink_larger_resident_patch_schedule.json"
-)
-TLUL_SINK_LARGER_ENVELOPE_CPU_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "tlul_sink_cpu_exact_loop_larger_resident_patch_schedule.json"
-)
-TLUL_FIFO_INIT_REPLICATION_GATE = (
-    REPO_ROOT / "config" / "scaling_gates" / "tlul_fifo_sync_init_state_replication.json"
-)
+SELECTION = REPO_ROOT / "config" / "selection.json"
 TARGETS = REPO_ROOT / "config" / "targets.json"
+CONFIG_README = REPO_ROOT / "config" / "README.md"
+SCALING_GATES_README = REPO_ROOT / "config" / "scaling_gates" / "README.md"
+RECORDS_README = REPO_ROOT / "records" / "README.md"
+CONFIG_MINIMAL_SURFACE_AUDIT = (
+    REPO_ROOT / "records" / "scaling_gates" / "config_minimal_surface_completion_audit.json"
+)
 README = REPO_ROOT / "README.md"
-RUNTIME = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid.c"
+STATUS = REPO_ROOT / "docs" / "status.md"
+ROADMAP = REPO_ROOT / "docs" / "roadmap.md"
+GITIGNORE = REPO_ROOT / ".gitignore"
+GITMODULES = REPO_ROOT / ".gitmodules"
+COMPARE_VL_HYBRID_MODES = REPO_ROOT / "src" / "tools" / "compare_vl_hybrid_modes.py"
+TLUL_COVERAGE_OUTPUT_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "tlul_coverage_output_equivalence.json"
+)
+TLUL_FIFO_COVERAGE_MANIFEST = (
+    REPO_ROOT
+    / "overlays"
+    / "rtlmeter"
+    / "designs"
+    / "OpenTitan"
+    / "tests"
+    / "tlul_fifo_sync_coverage_regions.json"
+)
+TLUL_SLICE_HOST_PROBE = REPO_ROOT / "src" / "hybrid" / "tlul_slice_host_probe.cpp"
+TLUL_CPU_BASELINE_RUNNER = REPO_ROOT / "src" / "tools" / "run_tlul_fifo_sync_cpu_baseline.py"
+RUN_VL_HYBRID_PY = REPO_ROOT / "src" / "tools" / "run_vl_hybrid.py"
+RUN_VL_HYBRID_C = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid.c"
 
 
-class ResidentRuntimeContractTest(unittest.TestCase):
-    def test_resident_steps_rejects_host_patches_before_runtime_launch(self) -> None:
-        completed = subprocess.run(
-            [
-                sys.executable,
-                str(RUN_VL_HYBRID),
-                "--resident-steps",
-                "--patch",
-                "0:1",
-                "--storage-size",
-                "1",
-                "--cubin",
-                "/no/such/file",
-            ],
-            cwd=REPO_ROOT,
-            text=True,
-            capture_output=True,
-        )
-        self.assertEqual(completed.returncode, 2)
-        self.assertIn("--resident-steps rejects --patch", completed.stderr)
+class ReducedActiveSurfaceContractTest(unittest.TestCase):
+    def _load_tool_module(self, module_name: str):
+        tools_dir = str(REPO_ROOT / "src" / "tools")
+        added = False
+        if tools_dir not in sys.path:
+            sys.path.insert(0, tools_dir)
+            added = True
+        try:
+            return importlib.import_module(module_name)
+        finally:
+            if added:
+                sys.path.remove(tools_dir)
 
-    def test_resident_steps_allows_patch_script_past_argparse(self) -> None:
-        completed = subprocess.run(
-            [
-                sys.executable,
-                str(RUN_VL_HYBRID),
-                "--resident-steps",
-                "--patch-script",
-                "/no/such/script",
-                "--storage-size",
-                "1",
-                "--cubin",
-                "/no/such/file",
-            ],
-            cwd=REPO_ROOT,
-            text=True,
-            capture_output=True,
-        )
-        self.assertNotEqual(completed.returncode, 2)
-        self.assertIn("error: cubin not found", completed.stderr)
+    def test_selection_is_compact_current_state(self) -> None:
+        selection = json.loads(SELECTION.read_text(encoding="utf-8"))
 
-    def test_resident_gate_requires_resident_steps_for_every_run(self) -> None:
-        gate = json.loads(RESIDENT_GATE.read_text(encoding="utf-8"))
-        self.assertEqual(gate["gate"], "xuantie_e902_memory_resident_workload_scaling")
-        self.assertGreater(len(gate["runs"]), 0)
-        self.assertTrue(all(run.get("resident_steps") is True for run in gate["runs"]))
-
-    def test_veer_el2_resident_gate_is_defined_before_asset_copy(self) -> None:
-        gate = json.loads(VEER_EL2_RESIDENT_GATE.read_text(encoding="utf-8"))
-        cpu_gate = json.loads(VEER_EL2_CPU_GATE.read_text(encoding="utf-8"))
-        larger_gate = json.loads(VEER_EL2_LARGER_RESIDENT_GATE.read_text(encoding="utf-8"))
-        larger_cpu_gate = json.loads(VEER_EL2_LARGER_CPU_GATE.read_text(encoding="utf-8"))
-        targets = json.loads(TARGETS.read_text(encoding="utf-8"))
-        self.assertEqual(gate["gate"], "veer_el2_resident_workload_scaling")
-        self.assertEqual(gate["target"], "veer_el2")
-        self.assertGreater(len(gate["runs"]), 0)
-        self.assertTrue(all(run.get("resident_steps") is True for run in gate["runs"]))
-        self.assertEqual(cpu_gate["source_gpu_gate"], "config/scaling_gates/veer_el2_resident_workload.json")
-        self.assertEqual(larger_gate["gate"], "veer_el2_larger_resident_workload_scaling")
-        self.assertTrue(all(run.get("resident_steps") is True for run in larger_gate["runs"]))
-        self.assertEqual(
-            larger_cpu_gate["source_gpu_gate"],
-            "config/scaling_gates/veer_el2_larger_resident_workload.json",
-        )
-        veer_targets = [target for target in targets["active_targets"] if target["name"] == "veer_el2"]
-        self.assertEqual(len(veer_targets), 1)
-        self.assertIn(
-            veer_targets[0]["status"],
-            {
-                "resident_gate_defined_before_asset_copy",
-                "asset_boundary_materialized",
-                "asset_boundary_validated",
-                "verilator_obj_dir_generated",
-                "gpu_cubin_built",
-                "gpu_smoke_pass",
-                "cpu_reference_contract_pass",
-                "resident_workload_cpu_favorable",
-                "larger_resident_workload_gpu_win",
-                "packaged_larger_resident_boundary",
-            },
-        )
-
-    def test_veer_el2_asset_boundary_is_materialized_without_work_history(self) -> None:
-        template = json.loads(VEER_EL2_TEMPLATE.read_text(encoding="utf-8"))
-        required_paths = [
-            VEER_EL2_ASSETS / "descriptor.yaml",
-            VEER_EL2_ASSETS / "LICENSE-VeeR-EL2",
-            REPO_ROOT / template["runner_args_template"]["coverage_tb_path"],
-            REPO_ROOT / template["enrollment"]["runtime_input_path"],
-            VEER_EL2_ASSETS / "tests" / "veer_el2_coverage_regions.json",
-            VEER_EL2_ASSETS / "tests" / "veer_el2_program_hex_target_config.json",
-        ]
-        for path in required_paths:
-            self.assertTrue(path.exists(), str(path.relative_to(REPO_ROOT)))
-        copied_files = [path.relative_to(VEER_EL2_ASSETS).parts[0] for path in VEER_EL2_ASSETS.rglob("*") if path.is_file()]
-        self.assertNotIn("work", copied_files)
-        self.assertNotIn("output", copied_files)
-
-    def test_veer_el2_descriptor_referenced_assets_exist(self) -> None:
-        descriptor = (VEER_EL2_ASSETS / "descriptor.yaml").read_text(encoding="utf-8")
-        relative_paths = re.findall(r"- (src/[^\n ]+|tests/[^\n ]+)", descriptor)
-        missing = [path for path in relative_paths if not (VEER_EL2_ASSETS / path).exists()]
-        self.assertEqual(missing, [])
-
-    def test_runtime_reports_resident_mode(self) -> None:
-        runtime = RUNTIME.read_text(encoding="utf-8")
-        self.assertIn("RUN_VL_HYBRID_RESIDENT_STEPS", runtime)
-        self.assertIn('printf("resident_mode: %s\\n"', runtime)
-
-    def test_resident_patch_script_semantics_are_implemented_before_validation(self) -> None:
-        semantics = json.loads(RESIDENT_PATCH_SEMANTICS.read_text(encoding="utf-8"))
-        self.assertEqual(semantics["name"], "resident_patch_script_semantics")
-        self.assertEqual(semantics["status"], "packaged_bounded_multi_seed_gpu_wins")
-        self.assertEqual(
-            semantics["accepted_semantics"]["per_step_host_copy"],
-            "No cuMemcpyHtoD patch copy may occur inside the resident step loop.",
-        )
-        self.assertEqual(
-            semantics["implementation_policy"]["phase_1"],
-            "Keep rejecting direct --patch with --resident-steps because it is still a host argv per-step patch interface.",
-        )
-        self.assertEqual(semantics["next_action"], "define_xuantie_e902_program_image_delta_gate")
-
-    def test_resident_patch_schedule_kernel_contract_is_present(self) -> None:
-        runtime = RUNTIME.read_text(encoding="utf-8")
-        generator = (REPO_ROOT / "src" / "tools" / "gen_vl_gpu_kernel.py").read_text(
-            encoding="utf-8"
-        )
-        cpp_generator = (REPO_ROOT / "src" / "passes" / "vlgpugen.cpp").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("vl_apply_patch_schedule_gpu", generator)
-        self.assertIn("vl_apply_patch_schedule_gpu", cpp_generator)
-        self.assertIn("resident_patch_schedule", runtime)
-        self.assertIn("cuMemcpyHtoD(resident_patch_schedule.d_offsets", runtime)
-        self.assertIn("launch_resident_patch_step", runtime)
-
-    def test_device_side_init_state_replication_contract_is_present(self) -> None:
-        runtime = RUNTIME.read_text(encoding="utf-8")
-        wrapper = RUN_VL_HYBRID.read_text(encoding="utf-8")
-        generator = (REPO_ROOT / "src" / "tools" / "gen_vl_gpu_kernel.py").read_text(
-            encoding="utf-8"
-        )
-        cpp_generator = (REPO_ROOT / "src" / "passes" / "vlgpugen.cpp").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("RUN_VL_HYBRID_GPU_REPLICATE_INIT_STATE", runtime)
-        self.assertIn("vl_replicate_init_state_gpu", runtime)
-        self.assertIn("vl_replicate_init_state_gpu", generator)
-        self.assertIn("vl_replicate_init_state_gpu", cpp_generator)
-        self.assertIn("--gpu-replicate-init-state", wrapper)
-
-    def test_program_image_initialization_kernel_generation_is_present(self) -> None:
-        runtime = RUNTIME.read_text(encoding="utf-8")
-        wrapper = RUN_VL_HYBRID.read_text(encoding="utf-8")
-        generator = (REPO_ROOT / "src" / "tools" / "gen_vl_gpu_kernel.py").read_text(
-            encoding="utf-8"
-        )
-        cpp_generator = (REPO_ROOT / "src" / "passes" / "vlgpugen.cpp").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("vl_apply_program_image_init_gpu", generator)
-        self.assertIn("vl_apply_program_image_init_gpu", cpp_generator)
-        self.assertIn("record_offsets", generator)
-        self.assertIn("record_offsets", cpp_generator)
-        self.assertIn("storage_bytes", generator)
-        self.assertIn("storage_bytes", cpp_generator)
-        self.assertIn("vl_apply_program_image_words_gpu", generator)
-        self.assertIn("vl_apply_program_image_words_gpu", cpp_generator)
-        self.assertIn("vl_zero_dmem_words_gpu", generator)
-        self.assertIn("vl_zero_dmem_words_gpu", cpp_generator)
-        self.assertIn("dmem_lane{lane}_dst", generator)
-        self.assertIn("dmem_lane_dst", cpp_generator)
-        self.assertIn("program_words", generator)
-        self.assertIn("program_words", cpp_generator)
-        self.assertIn("lane_base_offsets", generator)
-        self.assertIn("lane_base_offsets", cpp_generator)
-        self.assertIn("lshr i32 %word, 24", generator)
-        self.assertIn("B.CreateLShr(Word, ConstantInt::get(I32Ty, 24)", cpp_generator)
-        self.assertIn("RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS", wrapper)
-        self.assertIn("RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS", runtime)
-        self.assertIn("--program-image-init-records", wrapper)
-        self.assertIn("RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS", wrapper)
-        self.assertIn("RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS", runtime)
-        self.assertIn("RUN_VL_HYBRID_PROGRAM_IMAGE_LANE_BASE_OFFSETS", wrapper)
-        self.assertIn("RUN_VL_HYBRID_PROGRAM_IMAGE_LANE_BASE_OFFSETS", runtime)
-        self.assertIn("RUN_VL_HYBRID_DMEM_ZERO_FILL", wrapper)
-        self.assertIn("RUN_VL_HYBRID_DMEM_ZERO_FILL", runtime)
-        self.assertIn("RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS", wrapper)
-        self.assertIn("RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS", runtime)
-        self.assertIn("RUN_VL_HYBRID_DMEM_ZERO_FILL_WORD_COUNT", wrapper)
-        self.assertIn("RUN_VL_HYBRID_DMEM_ZERO_FILL_WORD_COUNT", runtime)
-        self.assertIn("--program-image-words", wrapper)
-        self.assertIn("--program-image-lane-base-offsets", wrapper)
-        self.assertIn("--dmem-zero-fill", wrapper)
-        self.assertIn("--dmem-zero-fill-lane-base-offsets", wrapper)
-        self.assertIn("--dmem-zero-fill-word-count", wrapper)
-        self.assertIn("program_image_words", runtime)
-        self.assertIn("dmem_zero_fill", runtime)
-        self.assertIn("load_program_image_words", runtime)
-        self.assertIn("cuMemcpyHtoD(program_image_words.d_words", runtime)
-        self.assertIn("cuMemcpyHtoD(program_image_words.d_lane_base_offsets", runtime)
-        self.assertIn("program_image_word_upload", runtime)
-        self.assertIn("launch_program_image_words", runtime)
-        self.assertIn("program_image_word_launch", runtime)
-        self.assertIn("vl_zero_dmem_words_gpu", runtime)
-        self.assertIn("cuMemcpyHtoD(dmem_zero_fill.d_lane_base_offsets", runtime)
-        self.assertIn("dmem_zero_fill_offset_upload", runtime)
-        self.assertIn("launch_dmem_zero_fill", runtime)
-        self.assertIn("dmem_zero_fill_launch", runtime)
-        self.assertIn("cuLaunchKernel(zero_kfn", runtime)
-        self.assertIn("program_image_init_records", runtime)
-        self.assertIn("load_program_image_init_records", runtime)
-        self.assertIn("cuMemcpyHtoD(program_image_init_records.d_offsets", runtime)
-        self.assertIn("program_image_init_record_upload", runtime)
-        self.assertIn("launch_program_image_init", runtime)
-        self.assertIn("cuLaunchKernel(init_kfn", runtime)
-        self.assertIn("program_image_init_launch", runtime)
-
-    def test_device_side_init_state_replication_gate_is_defined(self) -> None:
-        gate = json.loads(TLUL_FIFO_INIT_REPLICATION_GATE.read_text(encoding="utf-8"))
-        self.assertEqual(gate["gate"], "tlul_fifo_sync_device_side_init_state_replication")
-        self.assertEqual(gate["boundary"], "device_side_init_state_replication")
-        self.assertEqual(gate["shape"], {"nstates": 64, "steps": 1, "storage_size": 6016})
-        self.assertEqual(gate["runtime_support"]["kernel"], "vl_replicate_init_state_gpu")
-        self.assertEqual(
-            gate["comparison"]["acceptance_policy"],
-            "normalized_final_state_equivalence",
-        )
-        self.assertTrue(gate["comparison"]["strict_match"])
-        self.assertTrue(gate["comparison"]["normalized_final_state_equivalence"])
-        self.assertEqual(gate["communication_claim"]["upload_reduction_ratio"], 64.0)
-
-    def test_resident_patch_schedule_gate_is_defined(self) -> None:
-        gate = json.loads(RESIDENT_PATCH_GATE.read_text(encoding="utf-8"))
-        self.assertEqual(gate["gate"], "tlul_fifo_sync_resident_patch_schedule_validation")
-        self.assertEqual(gate["target"], "tlul_fifo_sync")
-        self.assertGreaterEqual(len(gate["runs"]), 2)
-        self.assertTrue(all(run.get("resident_steps") is True for run in gate["runs"]))
-        self.assertTrue(all("patch_script_lines" in run for run in gate["runs"]))
-
-    def test_scaling_runner_supports_inline_patch_script_gate_lines(self) -> None:
-        runner = (REPO_ROOT / "src" / "tools" / "run_tlul_fifo_sync_scaling_validation.py").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("patch_script_lines", runner)
-        self.assertIn("_patch_script_logical_steps", runner)
-        self.assertIn("--patch-script", runner)
-
-    def test_cpu_patch_schedule_baseline_gate_is_defined(self) -> None:
-        gate = json.loads(RESIDENT_PATCH_CPU_GATE.read_text(encoding="utf-8"))
-        self.assertEqual(gate["gate"], "tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule")
-        self.assertEqual(
-            gate["source_gpu_gate"], "config/scaling_gates/tlul_fifo_sync_resident_patch_schedule.json"
-        )
-        self.assertTrue(all("patch_script_lines" in run for run in gate["runs"]))
-        runner = (REPO_ROOT / "src" / "tools" / "run_tlul_fifo_sync_cpu_baseline.py").read_text(
-            encoding="utf-8"
-        )
-        probe = (REPO_ROOT / "src" / "hybrid" / "tlul_slice_host_probe.cpp").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("--patch-script", runner)
-        self.assertIn("--patch-script", probe)
-
-    def test_second_seed_patch_schedule_gates_are_defined(self) -> None:
-        gpu_gate = json.loads(TLUL_SINK_RESIDENT_PATCH_GATE.read_text(encoding="utf-8"))
-        cpu_gate = json.loads(TLUL_SINK_RESIDENT_PATCH_CPU_GATE.read_text(encoding="utf-8"))
-        self.assertEqual(gpu_gate["gate"], "tlul_sink_resident_patch_schedule_validation")
-        self.assertEqual(cpu_gate["gate"], "tlul_sink_cpu_exact_loop_resident_patch_schedule")
-        self.assertEqual(cpu_gate["source_gpu_gate"], "config/scaling_gates/tlul_sink_resident_patch_schedule.json")
-        self.assertTrue(all(run.get("resident_steps") is True for run in gpu_gate["runs"]))
-        self.assertTrue(all("patch_script_lines" in run for run in gpu_gate["runs"]))
-        self.assertTrue(all("patch_script_lines" in run for run in cpu_gate["runs"]))
-
-    def test_veer_el2_resident_patch_schedule_gate_is_defined(self) -> None:
-        gpu_gate = json.loads(VEER_EL2_PATCH_GATE.read_text(encoding="utf-8"))
-        cpu_gate = json.loads(VEER_EL2_PATCH_CPU_GATE.read_text(encoding="utf-8"))
-        self.assertEqual(gpu_gate["gate"], "veer_el2_resident_patch_schedule_validation")
-        self.assertEqual(gpu_gate["target"], "veer_el2")
-        self.assertEqual(cpu_gate["source_gpu_gate"], "config/scaling_gates/veer_el2_resident_patch_schedule.json")
-        self.assertEqual(gpu_gate["artifacts"]["report"], "reports/veer_el2_resident_patch_schedule.json")
-        self.assertEqual(
-            cpu_gate["artifacts"]["report"],
-            "reports/veer_el2_cpu_exact_loop_resident_patch_schedule.json",
-        )
-        self.assertTrue(all(run.get("resident_steps") is True for run in gpu_gate["runs"]))
-        self.assertTrue(all("patch_script_lines" in run for run in gpu_gate["runs"]))
-        self.assertTrue(all("patch_script_lines" in run for run in cpu_gate["runs"]))
-
-    def test_xuantie_e902_resident_patch_schedule_gate_is_defined(self) -> None:
-        gpu_gate = json.loads(XUANTIE_E902_PATCH_GATE.read_text(encoding="utf-8"))
-        cpu_gate = json.loads(XUANTIE_E902_PATCH_CPU_GATE.read_text(encoding="utf-8"))
-        self.assertEqual(gpu_gate["gate"], "xuantie_e902_resident_patch_schedule_validation")
-        self.assertEqual(gpu_gate["target"], "xuantie_e902")
-        self.assertEqual(
-            cpu_gate["source_gpu_gate"],
-            "config/scaling_gates/xuantie_e902_resident_patch_schedule.json",
-        )
-        self.assertEqual(gpu_gate["artifacts"]["report"], "reports/xuantie_e902_resident_patch_schedule.json")
-        self.assertEqual(
-            cpu_gate["artifacts"]["report"],
-            "reports/xuantie_e902_cpu_exact_loop_resident_patch_schedule.json",
-        )
-        self.assertTrue(all(run.get("resident_steps") is True for run in gpu_gate["runs"]))
-        self.assertTrue(all("patch_script_lines" in run for run in gpu_gate["runs"]))
-        self.assertTrue(all("patch_script_lines" in run for run in cpu_gate["runs"]))
-
-    def test_xuantie_e902_rom_memory_delta_patch_schedule_gate_is_defined(self) -> None:
-        gpu_gate = json.loads(XUANTIE_E902_ROM_DELTA_GATE.read_text(encoding="utf-8"))
-        cpu_gate = json.loads(XUANTIE_E902_ROM_DELTA_CPU_GATE.read_text(encoding="utf-8"))
-        self.assertEqual(gpu_gate["gate"], "xuantie_e902_rom_memory_delta_patch_schedule_validation")
-        self.assertEqual(gpu_gate["semantic"], "rom_or_memory_init_delta")
-        self.assertEqual(cpu_gate["source_gpu_gate"], "config/scaling_gates/xuantie_e902_rom_memory_delta_patch_schedule.json")
-        self.assertEqual(gpu_gate["artifacts"]["report"], "reports/xuantie_e902_rom_memory_delta_patch_schedule.json")
-        self.assertEqual(
-            cpu_gate["artifacts"]["report"],
-            "reports/xuantie_e902_cpu_exact_loop_rom_memory_delta_patch_schedule.json",
-        )
-        self.assertIn("storage_mapping", gpu_gate["semantic_mapping"])
-        self.assertTrue(all(run.get("resident_steps") is True for run in gpu_gate["runs"]))
-        self.assertTrue(all("patch_script_lines" in run for run in gpu_gate["runs"]))
-        self.assertTrue(all("patch_script_lines" in run for run in cpu_gate["runs"]))
-
-    def test_xuantie_e902_named_rom_memory_mapping_gates_are_defined(self) -> None:
-        gpu_gate = json.loads(XUANTIE_E902_NAMED_ROM_GATE.read_text(encoding="utf-8"))
-        cpu_gate = json.loads(XUANTIE_E902_NAMED_ROM_CPU_GATE.read_text(encoding="utf-8"))
-        self.assertEqual(gpu_gate["gate"], "xuantie_e902_named_rom_memory_mapping_validation")
-        self.assertEqual(cpu_gate["source_gpu_gate"], "config/scaling_gates/xuantie_e902_named_rom_memory_mapping.json")
-        self.assertEqual(gpu_gate["named_mapping"]["selected_family"], "iahb_instruction_memory")
-        self.assertEqual(
-            gpu_gate["named_mapping"]["testbench_initialization_lane_mapping"]["ram0"],
-            "word[31:24]",
-        )
-        self.assertEqual(gpu_gate["runtime_support"]["status"], "named_mapping_lowering_required")
-        self.assertTrue(gpu_gate["runtime_support"]["current_patch_script_lines_are_not_source_of_truth"])
-        self.assertTrue(all("named_patch_delta_sequence" in run for run in gpu_gate["runs"]))
-        self.assertTrue(all("named_patch_delta_sequence" in run for run in cpu_gate["runs"]))
-
-    def test_named_rom_memory_mapping_lowering_is_wired_into_runners(self) -> None:
-        lowering = NAMED_PATCH_LOWERING.read_text(encoding="utf-8")
-        gpu_runner = GPU_SCALING_RUNNER.read_text(encoding="utf-8")
-        cpu_runner = CPU_BASELINE_RUNNER.read_text(encoding="utf-8")
-        self.assertIn("probe_root_layout", lowering)
-        self.assertIn("named_patch_delta_sequence", lowering)
-        self.assertIn("program_image_init_record_lines", lowering)
-        self.assertIn("zero_program_image_bytes", lowering)
-        self.assertIn("case.pat", lowering)
-        self.assertIn("x_iahb_mem_ctrl__DOT__{lane}__DOT__mem", lowering)
-        self.assertIn("_repeated_to_(?P<steps>\\d+)_logical_steps", lowering)
-        self.assertIn("resolve_patch_script_lines", gpu_runner)
-        self.assertIn("patch_script_lowering", gpu_runner)
-        self.assertIn("resolve_patch_script_lines", cpu_runner)
-        self.assertIn("patch_script_lowering", cpu_runner)
-
-    def test_xuantie_e902_program_image_delta_gates_are_defined(self) -> None:
-        gpu_gate = json.loads(XUANTIE_E902_PROGRAM_IMAGE_DELTA_GATE.read_text(encoding="utf-8"))
-        cpu_gate = json.loads(XUANTIE_E902_PROGRAM_IMAGE_DELTA_CPU_GATE.read_text(encoding="utf-8"))
-        self.assertEqual(gpu_gate["semantic"], "program_image_delta")
-        self.assertEqual(gpu_gate["mapping_semantic"], "named_rom_memory_symbol_mapping")
-        self.assertEqual(
-            gpu_gate["program_image_delta_contract"]["program_image_source"],
-            "case.pat loaded through mem_inst_temp",
-        )
-        self.assertEqual(
-            cpu_gate["source_gpu_gate"],
-            "config/scaling_gates/xuantie_e902_program_image_delta.json",
-        )
-        self.assertTrue(gpu_gate["runtime_support"]["current_patch_script_lines_are_not_source_of_truth"])
-        self.assertTrue(all("named_patch_delta_sequence" in run for run in gpu_gate["runs"]))
-        self.assertTrue(all("named_patch_delta_sequence" in run for run in cpu_gate["runs"]))
-        self.assertIn("not ISA/program correctness", gpu_gate["correctness_policy"]["non_claims"])
-
-    def test_xuantie_e902_program_image_initialization_construction_gate_is_defined(self) -> None:
-        gate = json.loads(XUANTIE_E902_PROGRAM_IMAGE_INIT_CONSTRUCTION_GATE.read_text(encoding="utf-8"))
-        self.assertEqual(
-            gate["gate"],
-            "xuantie_e902_source_backed_program_image_initialization_construction",
-        )
-        self.assertEqual(gate["boundary"], "source_backed_program_image_initialization")
-        self.assertEqual(gate["source_contract"]["program_image_source"], "case.pat loaded through mem_inst_temp")
-        self.assertEqual(gate["source_contract"]["selected_memory_family"], "iahb_instruction_memory")
-        self.assertEqual(gate["program_image_initialization_inputs"]["status"], "extraction_contract_defined")
-        self.assertEqual(
-            gate["program_image_initialization_inputs"]["record_fields"],
-            ["word_index", "lane", "byte_value", "target_root_offset"],
-        )
-        self.assertIn(
-            "full per-state root storage images",
-            gate["program_image_initialization_inputs"]["non_sources"],
-        )
-        record_format = gate["program_image_initialization_record_format"]
-        self.assertEqual(record_format["status"], "defined")
-        self.assertEqual(record_format["device_upload_layout"]["layout"], "structure_of_arrays")
-        self.assertIn("target_root_offset", record_format["device_upload_layout"]["offsets"])
-        self.assertIn("byte_value", record_format["device_upload_layout"]["values"])
-        self.assertIn("before the first resident eval step", record_format["application_semantics"]["apply_scope"])
-        self.assertEqual(gate["runtime_support"]["required_kernel"], "vl_apply_program_image_init_gpu")
-        self.assertEqual(gate["runtime_support"]["required_host_flag"], "--program-image-init-records")
-        self.assertEqual(gate["runtime_support"]["required_env"], "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS")
-        self.assertEqual(
-            gate["runtime_support"]["implementation_subtasks"][0],
-            "implement_program_image_initialization_kernel_generation: done",
-        )
-        self.assertEqual(
-            gate["runtime_support"]["status"],
-            "packaged_bounded_case_pat_iahb_byte_record_construction",
-        )
-        self.assertEqual(gate["communication_claim"]["full_state_upload_bytes"], 1318784)
-        self.assertEqual(gate["communication_claim"]["record_upload_bytes"], 1200096)
-        self.assertEqual(
-            gate["communication_claim"]["upload_reduction_ratio"],
-            1.0988987547662854,
-        )
-        self.assertEqual(
-            gate["next_axis_selection"]["selected_axis"],
-            "source_backed_program_image_word_packed_initialization",
-        )
-        self.assertEqual(gate["next_axis_selection"]["expected_upload_bytes"], 166688)
-        word_boundary = gate["program_image_word_packed_initialization_boundary"]
-        self.assertEqual(
-            word_boundary["status"],
-            "packaged_source_backed_case_pat_word_packed_iahb_construction",
-        )
-        self.assertEqual(word_boundary["runtime_support"]["required_kernel"], "vl_apply_program_image_words_gpu")
-        self.assertEqual(
-            word_boundary["runtime_support"]["kernel_generation_status"],
-            "implemented_in_generators",
-        )
-        self.assertEqual(word_boundary["runtime_support"]["planned_host_flag"], "--program-image-words")
-        self.assertEqual(word_boundary["runtime_support"]["planned_env"], "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS")
-        self.assertEqual(
-            word_boundary["runtime_support"]["host_flag_status"],
-            "wired_to_runtime_env",
-        )
-        self.assertEqual(
-            word_boundary["runtime_support"]["word_upload_status"],
-            "uint32_words_uploaded_once",
-        )
-        self.assertEqual(
-            word_boundary["runtime_support"]["launch_status"],
-            "launch_before_resident_eval_wired",
-        )
-        self.assertEqual(
-            word_boundary["runtime_support"]["validation_status"],
-            "normalized_final_state_equivalence_pass",
-        )
-        self.assertEqual(
-            word_boundary["runtime_support"]["validation_report"],
-            "reports/xuantie_e902_program_image_word_packed_initialization_validation.json",
-        )
-        self.assertEqual(word_boundary["expected_traffic"]["expected_word_count"], 33336)
-        self.assertEqual(word_boundary["expected_traffic"]["expected_upload_bytes"], 166688)
-        self.assertEqual(word_boundary["expected_traffic"]["measured_upload_bytes"], 133376)
-        self.assertEqual(
-            word_boundary["expected_traffic"]["measured_reduction_ratio_vs_full_state"],
-            9.887715930902111,
-        )
-        self.assertEqual(
-            word_boundary["expected_traffic"]["measured_reduction_ratio_vs_byte_records"],
-            8.997840690978887,
-        )
-        self.assertEqual(
-            word_boundary["implementation_subtasks"][0],
-            "define_program_image_word_packed_initialization_boundary: done",
-        )
-        self.assertEqual(
-            word_boundary["implementation_subtasks"][1],
-            "implement_program_image_word_packed_kernel_generation: done",
-        )
-        self.assertEqual(
-            word_boundary["implementation_subtasks"][2],
-            "add_program_image_word_packed_host_flag_and_env: done",
-        )
-        self.assertEqual(
-            word_boundary["implementation_subtasks"][3],
-            "upload_program_image_words_once: done",
-        )
-        self.assertEqual(
-            word_boundary["implementation_subtasks"][4],
-            "launch_program_image_word_packed_initialization_before_resident_eval: done",
-        )
-        self.assertEqual(
-            word_boundary["implementation_subtasks"][5],
-            "validate_word_packed_program_image_initialization_against_byte_record_boundary: done",
-        )
-        self.assertEqual(
-            word_boundary["implementation_subtasks"][6],
-            "measure_word_packed_program_image_upload_reduction: done",
-        )
-        package = gate["word_packed_boundary_package"]
-        self.assertEqual(package["status"], "packaged")
-        self.assertEqual(
-            package["packaged_boundary"],
-            "source_backed_case_pat_word_packed_iahb_program_image_initialization",
-        )
-        self.assertEqual(package["measured_upload_bytes"], 133376)
-        self.assertEqual(
-            package["next_axis"],
-            "xuantie_e902_non_iahb_source_backed_memory_initialization",
-        )
-        self.assertEqual(
-            package["next_action"],
-            "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary",
-        )
-        non_iahb = gate["non_iahb_source_backed_memory_initialization_boundary"]
-        self.assertEqual(non_iahb["status"], "defined_blocked_source_contract_gap")
-        self.assertEqual(non_iahb["accepted_source_backed_families"], [])
-        self.assertIn("x_dmem_ctrl_zero_fill", non_iahb["eligible_non_source_backed_construction"])
-        self.assertEqual(
-            non_iahb["next_action"],
-            "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary",
-        )
-        dmem_zero = gate["dmem_zero_fill_device_initialization_boundary"]
-        self.assertEqual(dmem_zero["status"], "defined_boundary")
-        self.assertEqual(dmem_zero["selected_family"], "x_dmem_ctrl.ram0..3.mem")
-        self.assertIn("zero-fills", dmem_zero["source_policy"])
-        self.assertEqual(dmem_zero["runtime_support"]["required_kernel"], "vl_zero_dmem_words_gpu")
-        self.assertEqual(
-            dmem_zero["runtime_support"]["kernel_generation_status"],
-            "implemented_in_generators",
-        )
-        self.assertEqual(dmem_zero["runtime_support"]["planned_host_flag"], "--dmem-zero-fill")
-        self.assertEqual(dmem_zero["runtime_support"]["planned_env"], "RUN_VL_HYBRID_DMEM_ZERO_FILL")
-        self.assertEqual(
-            dmem_zero["runtime_support"]["host_flag_status"],
-            "wired_to_runtime_env",
-        )
-        self.assertEqual(
-            dmem_zero["runtime_support"]["lane_offset_upload_status"],
-            "lane_base_offsets_uploaded_once",
-        )
-        self.assertEqual(
-            dmem_zero["runtime_support"]["launch_status"],
-            "launch_before_resident_eval_wired",
-        )
-        self.assertEqual(
-            dmem_zero["runtime_support"]["validation_status"],
-            "strict_and_normalized_final_state_equivalence_pass",
-        )
-        self.assertEqual(
-            dmem_zero["runtime_support"]["validation_report"],
-            "reports/xuantie_e902_dmem_zero_fill_validation.json",
-        )
-        self.assertEqual(
-            dmem_zero["runtime_support"]["validation_shape"]["dirty_dmem_bytes"],
-            262144,
-        )
-        self.assertEqual(dmem_zero["boundary_package"]["status"], "packaged")
-        self.assertEqual(
-            dmem_zero["boundary_package"]["packaged_boundary"],
-            "deterministic_x_dmem_zero_fill_device_initialization",
-        )
-        self.assertEqual(dmem_zero["boundary_package"]["device_offset_upload_bytes"], 32)
-        self.assertEqual(
-            dmem_zero["boundary_package"]["dmem_payload_reduction_ratio_vs_per_state_dmem_bytes"],
-            8192.0,
-        )
-        self.assertIn("not source-backed data-image initialization", dmem_zero["non_claims"])
-        self.assertEqual(
-            dmem_zero["next_action"],
-            "select_next_gpu_owned_state_construction_after_dmem_zero_fill",
-        )
-        self.assertEqual(word_boundary["device_semantics"]["lane_decode"]["ram0"], "word[31:24]")
-        self.assertTrue(
-            any("x_smem_ctrl" in family for family in gate["source_contract"]["unselected_families"])
-        )
-        self.assertIn("not broad ROM initialization", gate["weakest_point"])
-
-    def test_selection_advances_after_two_seed_boundary_commit(self) -> None:
-        selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
+        self.assertLess(SELECTION.stat().st_size, 32_000)
+        self.assertEqual(selection["top_level_goal"], "modern_llm_serving_rtl_hybrid_conditions")
         self.assertEqual(
             selection["current_priority"],
-            "select_next_project_axis_after_gpu_owned_construction_closure",
+            "public_benchmark_pack_externalization_ready",
         )
         self.assertEqual(
-            selection["post_dmem_zero_fill_axis_selection"]["status"],
-            "selected_combined_existing_construction_package",
+            selection["current_priority_source_artifact"],
+            "config/scaling_gates/public_results_packaging_gate.json",
         )
+        self.assertEqual(selection["candidate_targets"], [])
+        self.assertEqual(selection["active_scope"]["candidate_targets"], [])
         self.assertEqual(
-            selection["post_dmem_zero_fill_axis_selection"]["next_action"],
-            "define_xuantie_e902_combined_program_image_and_dmem_construction_package",
+            selection["repository_cleanup"]["selection_policy"],
+            "current_state_only; historical gate details live in records/scaling_gates with config/scaling_gates as a compatibility link; generated outputs are reproducible under reports and artifacts but are not source of truth",
         )
-        combined_package = selection[
-            "xuantie_e902_combined_program_image_and_dmem_construction_package"
-        ]
-        self.assertEqual(combined_package["status"], "packaged")
-        self.assertEqual(
-            combined_package["packaged_boundary"],
-            "combined_word_packed_iahb_program_image_and_dmem_zero_fill_construction",
-        )
-        self.assertEqual(combined_package["aggregate_upload_bytes"], 133408)
-        self.assertEqual(
-            combined_package["aggregate_upload_components"]["program_image_words_and_lane_offsets"],
-            133376,
-        )
-        self.assertEqual(
-            combined_package["aggregate_upload_components"]["dmem_zero_fill_lane_offsets"],
-            32,
-        )
-        self.assertIn("not x_dmem data-image initialization", combined_package["non_claims"])
-        self.assertEqual(
-            combined_package["next_action"],
-            "select_next_gpu_owned_state_construction_after_combined_xuantie_package",
-        )
-        self.assertEqual(
-            combined_package["packaging_status"],
-            "accepted_current_combined_construction_surface",
-        )
-        post_combined = selection["post_combined_xuantie_package_axis_selection"]
-        self.assertEqual(post_combined["status"], "selected_runtime_accounting_gate")
-        self.assertEqual(
-            post_combined["selected_next_axis"],
-            "define_xuantie_combined_construction_runtime_accounting_gate",
-        )
-        self.assertEqual(
-            post_combined["rejected_axes"]["x_smem_ctrl_initialization"],
-            "blocked_no_testbench_or_external_source_image",
-        )
-        self.assertEqual(
-            post_combined["next_action"],
-            "define_xuantie_combined_construction_runtime_accounting_gate",
-        )
-        accounting_gate = selection["xuantie_combined_construction_runtime_accounting_gate"]
-        self.assertEqual(accounting_gate["status"], "packaged")
-        self.assertEqual(
-            accounting_gate["artifact"],
-            "reports/xuantie_e902_combined_construction_runtime_accounting.json",
-        )
-        self.assertIn("program_image_word_launch", accounting_gate["measured_components"])
-        self.assertIn("dmem_zero_fill_launch", accounting_gate["required_existing_report_lines"])
-        self.assertIn("not launch-latency speedup", accounting_gate["non_claims"])
-        run_report = accounting_gate["run_report"]
-        self.assertEqual(run_report["status"], "ok")
-        self.assertEqual(run_report["program_image_word_count"], 33336)
-        self.assertEqual(run_report["combined_accounted_upload_bytes"], 133408)
-        self.assertIn("program_image_word_upload", run_report["observed_report_lines"])
-        self.assertIn("dmem_zero_fill_launch", run_report["observed_report_lines"])
-        self.assertEqual(
-            accounting_gate["next_action"],
-            "select_next_axis_after_xuantie_runtime_accounting",
-        )
-        self.assertEqual(
-            accounting_gate["packaging_status"],
-            "accepted_accounting_result_without_speedup_claim",
-        )
-        post_accounting = selection["post_xuantie_runtime_accounting_axis_selection"]
-        self.assertEqual(post_accounting["status"], "selected_close_current_track")
-        self.assertIn(
-            "external_source_backed_target_import_decision",
-            post_accounting["candidate_axes"],
-        )
-        self.assertIn(
-            "close_gpu_owned_state_construction_track_for_current_minimal_repo",
-            post_accounting["candidate_axes"],
-        )
-        self.assertEqual(
-            post_accounting["selected_axis"],
-            "close_gpu_owned_state_construction_track_for_current_minimal_repo",
-        )
-        self.assertIn("No concrete external source-backed target", post_accounting["selection_reason"])
-        self.assertEqual(
-            post_accounting["next_action"],
-            "close_gpu_owned_state_construction_track_for_current_minimal_repo",
-        )
-        closure = selection["gpu_owned_state_construction_track_closure"]
-        self.assertEqual(closure["status"], "closed_current_minimal_repo_scope")
-        self.assertIn(
-            "combined_word_packed_iahb_program_image_and_dmem_zero_fill_construction",
-            closure["closed_scope"],
-        )
-        self.assertIn("not full application throughput", closure["preserved_non_claims"])
-        self.assertEqual(
-            closure["next_action"],
-            "select_next_project_axis_after_gpu_owned_construction_closure",
-        )
-        self.assertEqual(
-            selection["resident_patch_schedule_boundary_status"],
-            "committed_veer_el2_resident_patch_schedule_gpu_win",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_resident_patch_schedule_boundary_status"],
-            "committed_xuantie_e902_resident_patch_schedule_gpu_win",
-        )
-        self.assertEqual(
-            selection["next_patch_schedule_semantics_axis"],
-            "application_like_patch_schedule_semantics",
-        )
-        self.assertEqual(
-            selection["selected_application_like_patch_schedule_semantic"],
-            "rom_or_memory_init_delta",
-        )
-        self.assertEqual(
-            selection["rom_or_memory_init_delta_boundary_status"],
-            "committed_xuantie_e902_rom_memory_delta_patch_schedule_gpu_win",
-        )
-        self.assertEqual(selection["next_rom_memory_precision_axis"], "named_rom_memory_symbol_mapping")
-        self.assertEqual(selection["named_rom_memory_symbol_mapping_status"], "gpu_cpu_named_mapping_gates_passed")
-        self.assertEqual(
-            selection["named_rom_memory_symbol_mapping_boundary_status"],
-            "packaged_xuantie_e902_named_mapping_gpu_win",
-        )
-        self.assertEqual(selection["next_application_like_semantics_axis"], "program_image_delta")
-        self.assertEqual(selection["program_image_delta_status"], "packaged_gpu_win")
-        self.assertEqual(
-            selection["program_image_delta_gpu_report"],
-            "reports/xuantie_e902_program_image_delta.json",
-        )
-        self.assertEqual(
-            selection["program_image_delta_cpu_report"],
-            "reports/xuantie_e902_cpu_exact_loop_program_image_delta.json",
-        )
-        self.assertEqual(selection["next_responsibility_expansion_axis"], "broader_memory_family_coverage")
-        self.assertEqual(selection["broader_memory_family_coverage_status"], "source_contract_gap_found")
-        self.assertIn("zero-fills", selection["broader_memory_family_coverage_gap"]["x_dmem_ctrl"])
-        self.assertIn("does not load", selection["broader_memory_family_coverage_gap"]["x_smem_ctrl"])
-        self.assertEqual(
-            selection["post_xuantie_memory_gap_next_axis_options"],
-            ["input_stream_delta", "target_breadth"],
-        )
-        self.assertEqual(selection["post_xuantie_memory_gap_selected_axis"], "input_stream_delta")
-        self.assertEqual(selection["post_xuantie_memory_gap_deferred_axis"], "target_breadth")
-        self.assertIn("case.pat", selection["post_xuantie_memory_gap_selection_reason"])
-        self.assertEqual(
-            selection["input_stream_delta_contract_status"],
-            "rejected_no_distinct_source_contract",
-        )
-        self.assertEqual(
-            selection["next_responsibility_expansion_axis_after_input_stream_rejection"],
-            "target_breadth",
-        )
-        self.assertEqual(
-            selection["target_breadth_inventory_status"],
-            "checked_in_minimal_targets_exhausted",
-        )
-        self.assertEqual(
-            selection["target_breadth_inventory"],
-            ["tlul_fifo_sync", "tlul_sink", "xuantie_e902", "veer_el2"],
-        )
-        self.assertEqual(selection["target_breadth_decision"], "close_current_minimal_breadth")
-        self.assertIn(
-            "gpu_owned_state_construction",
-            selection["next_runtime_depth_axis_options"],
-        )
-        self.assertEqual(
-            selection["next_runtime_depth_selected_axis"],
-            "resident_schedule_scalability_envelope",
-        )
-        self.assertEqual(selection["next_runtime_depth_deferred_axis"], "gpu_owned_state_construction")
-        self.assertIn("VeeR-EL2", selection["next_runtime_depth_selection_reason"])
-        self.assertEqual(
-            selection["resident_schedule_scalability_envelope_status"],
-            "defined_from_existing_reports",
-        )
-        envelope = selection["resident_schedule_scalability_envelope"]
-        self.assertIn("tlul_fifo_sync resident_patch_schedule 512x32 ratio 3.1160088024052413", envelope["gpu_favorable_batch_shapes"])
-        self.assertIn("tlul_sink resident_patch_schedule 1024x64 ratio 5.557127971950416", envelope["gpu_favorable_batch_shapes"])
-        self.assertIn("tlul_sink resident_patch_schedule 2048x64 ratio 6.685046741041471", envelope["gpu_favorable_batch_shapes"])
-        self.assertIn("xuantie_e902 program_image_delta 1x6 ratio 0.016034347357067786", envelope["cpu_favorable_smoke_shapes"])
-        self.assertEqual(
-            selection["next_runtime_depth_after_envelope"],
-            "select_next_runtime_depth_after_larger_resident_envelope",
-        )
-        self.assertEqual(selection["larger_resident_schedule_envelope_status"], "gpu_cpu_passed")
-        self.assertEqual(
-            selection["larger_resident_schedule_envelope_1024x64_gpu_over_cpu_ratio"],
-            5.557127971950416,
-        )
-        self.assertEqual(
-            selection["larger_resident_schedule_envelope_2048x64_gpu_over_cpu_ratio"],
-            6.685046741041471,
-        )
-        self.assertEqual(
-            selection["gpu_owned_state_construction_boundary"],
-            "device_side_init_state_replication",
-        )
-        self.assertEqual(
-            selection["device_side_init_state_replication_status"],
-            "gate_passed",
-        )
-        self.assertEqual(
-            selection["device_side_init_state_replication_next_action"],
-            "select_next_gpu_owned_state_construction_step",
-        )
-        self.assertEqual(
-            selection["device_side_init_state_replication_gate"],
-            "config/scaling_gates/tlul_fifo_sync_init_state_replication.json",
-        )
-        self.assertEqual(selection["device_side_init_state_replication_upload_reduction_ratio"], 64.0)
-        self.assertEqual(
-            selection["next_gpu_owned_state_construction_step"],
-            "source_backed_program_image_initialization",
-        )
-        self.assertEqual(
-            selection["next_gpu_owned_state_construction_gate"],
-            "config/scaling_gates/xuantie_e902_program_image_initialization_construction.json",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_status"],
-            "packaged_bounded_case_pat_iahb_byte_record_construction",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_input_extraction_status"],
-            "contract_defined",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_input_record_fields"],
-            ["word_index", "lane", "byte_value", "target_root_offset"],
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_next_action"],
-            "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_kernel_name"],
-            "vl_apply_program_image_init_gpu",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_kernel_generation_status"],
-            "implemented_in_generators",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_env"],
-            "RUN_VL_HYBRID_PROGRAM_IMAGE_INIT_RECORDS",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_host_flag_status"],
-            "wired_to_runtime_env",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_record_upload_status"],
-            "offset_value_soa_uploaded_once",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_launch_status"],
-            "launch_before_resident_eval_wired",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_validation_status"],
-            "normalized_final_state_equivalence_pass",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_validation_report"],
-            "reports/xuantie_e902_program_image_initialization_construction.json",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_full_state_upload_bytes"],
-            1318784,
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_record_upload_bytes"],
-            1200096,
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_upload_reduction_ratio"],
-            1.0988987547662854,
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_boundary_status"],
-            "packaged_bounded_case_pat_iahb_byte_record_construction",
-        )
-        self.assertEqual(
-            selection["next_gpu_owned_state_construction_axis"],
-            "source_backed_program_image_word_packed_initialization",
-        )
-        self.assertEqual(selection["next_gpu_owned_state_construction_expected_upload_bytes"], 166688)
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_status"],
-            "packaged_source_backed_case_pat_word_packed_iahb_construction",
-        )
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_kernel_name"],
-            "vl_apply_program_image_words_gpu",
-        )
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_kernel_generation_status"],
-            "implemented_in_generators",
-        )
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_planned_host_flag"],
-            "--program-image-words",
-        )
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_planned_env"],
-            "RUN_VL_HYBRID_PROGRAM_IMAGE_WORDS",
-        )
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_host_flag_status"],
-            "wired_to_runtime_env",
-        )
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_word_upload_status"],
-            "uint32_words_uploaded_once",
-        )
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_launch_status"],
-            "launch_before_resident_eval_wired",
-        )
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_validation_status"],
-            "normalized_final_state_equivalence_pass",
-        )
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_validation_design_state_mismatch_bytes"],
-            0,
-        )
-        self.assertEqual(selection["program_image_word_packed_initialization_upload_bytes"], 133376)
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_upload_reduction_ratio_vs_full_state"],
-            9.887715930902111,
-        )
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_upload_reduction_ratio_vs_byte_records"],
-            8.997840690978887,
-        )
-        self.assertEqual(selection["program_image_word_packed_initialization_expected_word_count"], 33336)
-        self.assertEqual(selection["program_image_word_packed_initialization_expected_upload_bytes"], 166688)
-        self.assertEqual(
-            selection["program_image_word_packed_initialization_next_action"],
-            "define_xuantie_e902_non_iahb_source_backed_memory_initialization_boundary",
-        )
-        self.assertEqual(
-            selection["next_gpu_owned_state_construction_axis_after_word_packed_program_image"],
-            "xuantie_e902_non_iahb_source_backed_memory_initialization",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_non_iahb_source_backed_memory_initialization_status"],
-            "defined_blocked_source_contract_gap",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_non_iahb_source_backed_memory_initialization_boundary"][
-                "accepted_source_backed_families"
-            ],
-            [],
-        )
-        self.assertIn(
-            "x_dmem_ctrl_zero_fill",
-            selection["xuantie_e902_non_iahb_source_backed_memory_initialization_boundary"][
-                "eligible_non_source_backed_construction"
-            ],
-        )
-        self.assertEqual(
-            selection["xuantie_e902_non_iahb_source_backed_memory_initialization_next_action"],
-            "define_xuantie_e902_dmem_zero_fill_device_initialization_boundary",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_device_initialization_status"],
-            "defined_boundary",
-        )
-        dmem_zero = selection["xuantie_e902_dmem_zero_fill_device_initialization_boundary"]
-        self.assertEqual(dmem_zero["selected_family"], "x_dmem_ctrl.ram0..3.mem")
-        self.assertIn("zero-fills", dmem_zero["source_policy"])
-        self.assertIn("x_dmem_ctrl.ram2.mem", dmem_zero["root_storage_scope"])
-        self.assertIn("not source-backed data-image initialization", dmem_zero["non_claims"])
-        self.assertIn(
-            "not per-state DMEM bytes",
-            selection["xuantie_e902_dmem_zero_fill_device_initialization_upload_goal"],
-        )
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_kernel_generation_status"],
-            "implemented_in_generators",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_kernel_name"],
-            "vl_zero_dmem_words_gpu",
-        )
-        self.assertEqual(selection["xuantie_e902_dmem_zero_fill_host_flag"], "--dmem-zero-fill")
-        self.assertEqual(selection["xuantie_e902_dmem_zero_fill_env"], "RUN_VL_HYBRID_DMEM_ZERO_FILL")
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_host_flag_status"],
-            "wired_to_runtime_env",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_lane_base_offsets_env"],
-            "RUN_VL_HYBRID_DMEM_ZERO_FILL_LANE_BASE_OFFSETS",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_lane_base_offsets_flag"],
-            "--dmem-zero-fill-lane-base-offsets",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_word_count_env"],
-            "RUN_VL_HYBRID_DMEM_ZERO_FILL_WORD_COUNT",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_word_count_flag"],
-            "--dmem-zero-fill-word-count",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_lane_offset_upload_status"],
-            "lane_base_offsets_uploaded_once",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_launch_status"],
-            "launch_before_resident_eval_wired",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_validation_status"],
-            "strict_and_normalized_final_state_equivalence_pass",
-        )
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_validation_report"],
-            "reports/xuantie_e902_dmem_zero_fill_validation.json",
-        )
-        self.assertEqual(selection["xuantie_e902_dmem_zero_fill_validation_dirty_dmem_bytes"], 262144)
-        self.assertEqual(selection["xuantie_e902_dmem_zero_fill_validation_word_count"], 65536)
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_boundary_status"],
-            "packaged_deterministic_zero_fill_construction",
-        )
-        package = selection["xuantie_e902_dmem_zero_fill_package"]
-        self.assertEqual(package["status"], "packaged")
-        self.assertEqual(
-            package["packaged_boundary"],
-            "deterministic_x_dmem_zero_fill_device_initialization",
-        )
-        self.assertEqual(package["validated_dirty_dmem_bytes"], 262144)
-        self.assertEqual(package["device_offset_upload_bytes"], 32)
-        self.assertEqual(package["dmem_payload_reduction_ratio_vs_per_state_dmem_bytes"], 8192.0)
-        self.assertEqual(
-            selection["xuantie_e902_dmem_zero_fill_device_initialization_next_action"],
-            "select_next_gpu_owned_state_construction_after_dmem_zero_fill",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_implementation_subtasks"][0],
-            "implement_program_image_initialization_kernel_generation",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_record_format_status"],
-            "defined",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_device_upload_layout"],
-            "structure_of_arrays_offsets_and_values",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_task_ladder"][0],
-            "extract_xuantie_e902_program_image_initialization_inputs",
-        )
-        self.assertEqual(
-            selection["source_backed_program_image_initialization_task_ladder"][-1],
-            "measure_program_image_initialization_upload_reduction",
-        )
-        self.assertIn("--program-image-init-records", selection["source_backed_program_image_initialization_current_blocker"])
-        self.assertEqual(
-            selection["larger_resident_schedule_envelope_gate"],
-            "config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json",
-        )
-        self.assertEqual(
-            selection["active_non_tlul_candidate_program_image_delta_gate"],
-            "config/scaling_gates/xuantie_e902_program_image_delta.json",
-        )
-        self.assertEqual(
-            selection["active_non_tlul_candidate_cpu_exact_loop_program_image_delta_gate"],
-            "config/scaling_gates/xuantie_e902_cpu_exact_loop_program_image_delta.json",
-        )
-        self.assertEqual(
-            selection["named_rom_memory_symbol_mapping_gpu_report"],
-            "reports/xuantie_e902_named_rom_memory_mapping.json",
-        )
-        self.assertEqual(
-            selection["named_rom_memory_symbol_mapping_cpu_report"],
-            "reports/xuantie_e902_cpu_exact_loop_named_rom_memory_mapping.json",
-        )
-        self.assertEqual(
-            selection["named_rom_memory_symbol_mapping_contract"]["selected_family"],
-            "iahb_instruction_memory",
-        )
-        self.assertIn(
-            "ram0=word[31:24]",
-            selection["named_rom_memory_symbol_mapping_contract"]["testbench_initialization_lane_mapping"],
+        historical_prefixes = (
+            "next_source_backed_gate_after_",
+            "first_primitive_",
+            "four_seed_",
+            "ninety_",
         )
-        self.assertIn(
-            "xuantie_e902_gpu_cov_tb.dut.x_soc.x_cpu_sub_system_ahb.x_iahb_mem_ctrl.ram0..3.mem",
-            selection["named_rom_memory_symbol_mapping_candidate_fields"],
+        self.assertFalse(
+            any(key.startswith(historical_prefixes) for key in selection),
+            "selection.json should not store historical gate-by-gate state",
         )
 
-    def test_resident_patch_semantics_names_application_like_next_axis(self) -> None:
-        semantics = json.loads(RESIDENT_PATCH_SEMANTICS.read_text(encoding="utf-8"))
-        self.assertEqual(semantics["next_action"], "define_xuantie_e902_program_image_delta_gate")
-        self.assertEqual(semantics["next_semantics_axis"]["name"], "application_like_patch_schedule_semantics")
-        self.assertEqual(semantics["next_semantics_axis"]["selected_first_semantic"], "rom_or_memory_init_delta")
-        self.assertIn("rom_or_memory_init_delta", semantics["next_semantics_axis"]["candidate_semantics"])
-        self.assertEqual(
-            semantics["next_semantics_axis"]["selected_semantic_contract"]["cpu_baseline"],
-            "matching single-process CPU exact-loop applies the same memory-image deltas before each corresponding eval step",
+    def test_targets_registry_matches_selection_scope(self) -> None:
+        targets = json.loads(TARGETS.read_text(encoding="utf-8"))
+        selection = json.loads(SELECTION.read_text(encoding="utf-8"))
+
+        active_names = [target["name"] for target in targets["active_targets"]]
+        self.assertEqual(len(active_names), selection["active_scope"]["active_target_count"])
+        self.assertEqual(set(active_names), set(selection["active_scope"]["targets"]))
+        self.assertEqual(targets["candidate_targets"], [])
+        self.assertIn("tlul_fifo_sync", active_names)
+        self.assertIn("pulp_ita_mha_first_hybrid_benchmark_summary.json", json.dumps(selection))
+        self.assertIn("pulp_paged_attention_kv_score_first_hybrid_benchmark_summary.json", json.dumps(selection))
+
+    def test_active_target_references_resolve_from_checkout(self) -> None:
+        targets = json.loads(TARGETS.read_text(encoding="utf-8"))
+        reference_keys = (
+            "launch_template_path",
+            "coverage_manifest_path",
+            "coverage_output_gate_path",
+            "source_gate_path",
+            "upstream_module_path",
         )
-        self.assertEqual(
-            semantics["next_semantics_axis"]["selected_semantic_contract"]["next_precision_step"],
-            "define_xuantie_e902_program_image_delta_gate",
+        missing = []
+
+        for target in targets["active_targets"]:
+            for key in reference_keys:
+                reference = target.get(key)
+                if reference and not (REPO_ROOT / reference).exists():
+                    missing.append(f"{target['name']}:{key}:{reference}")
+            for reference in target.get("depth_candidate_gates", []):
+                if not (REPO_ROOT / reference).exists():
+                    missing.append(f"{target['name']}:depth_candidate_gates:{reference}")
+
+        self.assertEqual(missing, [])
+
+    def test_active_launch_templates_reference_only_present_source_paths(self) -> None:
+        targets = json.loads(TARGETS.read_text(encoding="utf-8"))
+        tracked_paths = set(
+            subprocess.check_output(
+                ["git", "ls-files"],
+                cwd=REPO_ROOT,
+                text=True,
+            ).splitlines()
         )
+        source_prefixes = (
+            "config/scaling_gates/",
+            "config/slice_launch_templates/",
+            "overlays/rtlmeter/",
+            "third_party/rtlmeter/",
+        )
+        missing = []
+        untracked = []
+        absolute_paths = []
+
+        def collect_source_paths(value):
+            if isinstance(value, dict):
+                for child in value.values():
+                    yield from collect_source_paths(child)
+            elif isinstance(value, list):
+                for child in value:
+                    yield from collect_source_paths(child)
+            elif isinstance(value, str):
+                if value.startswith(source_prefixes):
+                    yield value
+                elif value.startswith("/"):
+                    absolute_paths.append(value)
+
+        template_paths = {
+            target["launch_template_path"]
+            for target in targets["active_targets"]
+            if target.get("launch_template_path")
+        }
+        for template_path in sorted(template_paths):
+            template = json.loads((REPO_ROOT / template_path).read_text(encoding="utf-8"))
+            for reference in collect_source_paths(template):
+                if not (REPO_ROOT / reference).exists():
+                    missing.append(f"{template_path}:{reference}")
+                if reference.startswith(("config/slice_launch_templates/", "overlays/rtlmeter/")):
+                    if reference not in tracked_paths:
+                        untracked.append(f"{template_path}:{reference}")
+
+        self.assertEqual(missing, [])
+        self.assertEqual(untracked, [])
+        self.assertEqual(absolute_paths, [])
+
+    def test_rtlmeter_is_the_only_third_party_submodule_boundary(self) -> None:
+        gitmodules = GITMODULES.read_text(encoding="utf-8")
+
+        self.assertIn('[submodule "third_party/rtlmeter"]', gitmodules)
+        self.assertIn("path = third_party/rtlmeter", gitmodules)
+        self.assertIn("url = https://github.com/verilator/rtlmeter.git", gitmodules)
+        self.assertNotIn("third_party/ITA", gitmodules)
+        self.assertNotIn("third_party/common_cells", gitmodules)
+        self.assertNotIn("third_party/ibex", gitmodules)
+
+    def test_generated_output_dirs_are_not_source_of_truth(self) -> None:
+        ignore = GITIGNORE.read_text(encoding="utf-8")
+        combined = "\n".join(
+            [
+                README.read_text(encoding="utf-8"),
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertIn("/artifacts/**", ignore)
+        self.assertIn("/reports/**", ignore)
+        self.assertIn("Generated outputs are not source of truth", combined)
+        self.assertIn("Historical gate details live under `records/scaling_gates/`", combined)
+        self.assertIn("Generated outputs are reproducible under `reports/` and `artifacts/`", combined)
+        for generated_dir in (REPO_ROOT / "reports", REPO_ROOT / "artifacts"):
+            self.assertTrue(generated_dir.exists())
+
+    def test_config_directory_has_current_state_map_and_gate_policy(self) -> None:
+        config_readme = CONFIG_README.read_text(encoding="utf-8")
+        gates_readme = SCALING_GATES_README.read_text(encoding="utf-8")
+        records_readme = RECORDS_README.read_text(encoding="utf-8")
+        combined_docs = "\n".join(
+            [
+                README.read_text(encoding="utf-8"),
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertIn("`config/` is source-of-truth configuration, not generated output.", config_readme)
+        self.assertIn("selection.json", config_readme)
+        self.assertIn("targets.json", config_readme)
+        self.assertIn("slice_launch_templates/", config_readme)
+        self.assertIn("scaling_gates/", config_readme)
+        self.assertIn("records/scaling_gates/", config_readme)
+        self.assertIn("Do not put generated reports", config_readme)
+
+        self.assertTrue((REPO_ROOT / "config" / "scaling_gates").is_symlink())
+        self.assertIn("evidence ledger", gates_readme)
+        self.assertIn("current_priority_source_artifact", gates_readme)
+        self.assertIn("public_results_packaging_gate.json", gates_readme)
+        self.assertIn("public_benchmark_pack_goal_completion_audit.json", gates_readme)
+        self.assertIn("Keep generated measurements in `reports/`", gates_readme)
+        self.assertIn("`config/scaling_gates` is a symlink", records_readme)
+
+        self.assertIn("config/README.md", combined_docs)
+        self.assertIn("records/scaling_gates", combined_docs)
+        self.assertIn("config_minimal_surface_completion_audit.json", combined_docs)
+
+        config_file_count = len([path for path in (REPO_ROOT / "config").glob("**/*") if path.is_file()])
+        self.assertLess(config_file_count, 200)
+
+    def test_config_minimal_surface_audit_records_counts_and_external_records(self) -> None:
+        selection = json.loads(SELECTION.read_text(encoding="utf-8"))
+        audit = json.loads(CONFIG_MINIMAL_SURFACE_AUDIT.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            audit["status"],
+            "complete_config_minimal_surface_with_external_records_and_generated_outputs_removed",
+        )
+        self.assertTrue(audit["completion_decision"]["achieved"])
+        self.assertEqual(audit["measured_state"]["config_file_count_after_cleanup"], 146)
+        self.assertEqual(audit["measured_state"]["records_scaling_gate_json_count"], 632)
+        self.assertEqual(audit["measured_state"]["generated_output_non_gitignore_file_count_after_cleanup"], 0)
+        self.assertEqual(audit["measured_state"]["reports_non_gitignore_file_count_after_cleanup"], 0)
+        self.assertEqual(audit["measured_state"]["artifacts_non_gitignore_file_count_after_cleanup"], 0)
+        self.assertTrue(audit["measured_state"]["config_scaling_gates_is_symlink"])
+        self.assertEqual(audit["measured_state"]["config_scaling_gates_link_target"], "../records/scaling_gates")
+        self.assertEqual(
+            selection["repository_cleanup"]["config_minimal_surface_audit"],
+            "records/scaling_gates/config_minimal_surface_completion_audit.json",
+        )
+        self.assertEqual(selection["repository_cleanup"]["config_file_count_after_cleanup"], 146)
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 632)
         self.assertIn(
-            "x_iahb_mem_ctrl.ram0..3.mem",
-            semantics["next_semantics_axis"]["selected_semantic_contract"]["named_mapping_contract"],
+            "reports and artifacts may contain local generated evidence",
+            selection["repository_cleanup"]["generated_output_policy"],
         )
 
-    def test_tlul_sink_larger_resident_schedule_envelope_gates_are_defined(self) -> None:
-        gpu_gate = json.loads(TLUL_SINK_LARGER_ENVELOPE_GATE.read_text(encoding="utf-8"))
-        cpu_gate = json.loads(TLUL_SINK_LARGER_ENVELOPE_CPU_GATE.read_text(encoding="utf-8"))
-        self.assertEqual(gpu_gate["gate"], "tlul_sink_larger_resident_patch_schedule_envelope")
-        self.assertEqual(
-            cpu_gate["source_gpu_gate"],
-            "config/scaling_gates/tlul_sink_larger_resident_patch_schedule.json",
-        )
-        self.assertEqual([run["nstates"] for run in gpu_gate["runs"]], [1024, 2048])
-        self.assertEqual([run["steps"] for run in cpu_gate["runs"]], [64, 64])
-        self.assertTrue(all(run.get("resident_steps") is True for run in gpu_gate["runs"]))
+        checklist = {entry["requirement"]: entry for entry in audit["prompt_to_artifact_checklist"]}
+        for requirement in (
+            "configディレクトリを必要最低限に絞る",
+            "履歴 gate を active config surface から外す",
+            "既存パス互換性を保つ",
+            "生成物は別で管理する",
+            "生成物は削除する",
+            "境界を文書化する",
+            "テストで固定する",
+        ):
+            self.assertEqual(checklist[requirement]["status"], "satisfied")
 
-    def test_readme_keeps_xuantie_boundary_limited(self) -> None:
-        readme = README.read_text(encoding="utf-8")
-        self.assertIn("XuanTie-E902 Resident Runtime Boundary", readme)
-        self.assertIn("GPU resident mode beats", readme)
-        self.assertIn("Not broad XuanTie family support", readme)
-        self.assertIn("resident --patch / --patch-script semantics", readme)
-        self.assertIn("define_resident_patch_script_semantics", readme)
-        self.assertIn("config/resident_patch_script_semantics.json", readme)
-        self.assertIn("config/scaling_gates/veer_el2_resident_workload.json", readme)
-        self.assertIn("config/scaling_gates/veer_el2_larger_resident_workload.json", readme)
-        self.assertIn("make -C src/hybrid veer_el2_host_probe", readme)
+    def test_scaling_validation_parses_gpu_event_timing_metrics(self) -> None:
+        runner = self._load_tool_module("run_tlul_fifo_sync_scaling_validation")
+        metrics = runner._parse_timing_metrics(
+            "\n".join(
+                [
+                    "gpu_kernel_time_ms: total=12.345678  per_launch=0.385802  (CUDA events, default stream)",
+                    "gpu_kernel_time: per_state=0.753 us  (per_launch / nstates)",
+                    "gpu_kernel_time_repeat_ms: count=3 min=11.000000 median=12.000000 max=13.000000 samples=13.000000,11.000000,12.000000",
+                    "wall_time_ms: 14.321  (host; one GPU sync unless RUN_VL_HYBRID_SYNC_EACH_STEP=1)",
+                ]
+            )
+        )
+
+        self.assertEqual(metrics["gpu_kernel_time_ms_total"], 12.345678)
+        self.assertEqual(metrics["gpu_kernel_time_ms_per_launch"], 0.385802)
+        self.assertEqual(metrics["gpu_kernel_time_us_per_state"], 0.753)
+        self.assertEqual(metrics["host_wall_time_ms"], 14.321)
+        self.assertEqual(metrics["gpu_kernel_time_repeat_count"], 3)
+        self.assertEqual(metrics["gpu_kernel_time_ms_total_samples"], [13.0, 11.0, 12.0])
+        self.assertTrue(runner._format_gpu_event_timing(metrics)["available"])
+        self.assertTrue(runner._format_gpu_event_timing_repeat(metrics)["available"])
+
+    def test_run_vl_hybrid_rejects_unsafe_nonflat_syms_state_before_launch(self) -> None:
+        runner = self._load_tool_module("run_vl_hybrid")
+        with tempfile.TemporaryDirectory() as tmp:
+            mdir = Path(tmp)
+            (mdir / "vl_batch_gpu_opt.ll").write_text(
+                "\n".join(
+                    [
+                        "%class.Vfoo__Syms = type { i8 }",
+                        "  %p = getelementptr inbounds %class.Vfoo__Syms, ptr %symsp, i64 0, i32 5",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            unsupported = runner._detect_unsupported_nonflat_syms_state(mdir)
+
+        self.assertIsNotNone(unsupported)
+        self.assertEqual(unsupported["reason"], "unsupported_nonflat_verilator_syms_state")
+
+    def test_run_vl_hybrid_allows_declared_syms_state_image(self) -> None:
+        runner = self._load_tool_module("run_vl_hybrid")
+        with tempfile.TemporaryDirectory() as tmp:
+            mdir = Path(tmp)
+            (mdir / "vl_batch_gpu_opt.ll").write_text(
+                "\n".join(
+                    [
+                        "%class.Vfoo__Syms = type { i8 }",
+                        "  %p = getelementptr inbounds %class.Vfoo__Syms, ptr %symsp, i64 0, i32 5",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            unsupported = runner._detect_unsupported_nonflat_syms_state(
+                mdir,
+                {
+                    "hierarchy_state": {
+                        "state_image_kind": "verilator_syms_image",
+                        "unsafe_syms_gep_covered_by_state_image": True,
+                        "prelaunch_rejection_required": False,
+                    }
+                },
+            )
+
+        self.assertIsNone(unsupported)
+
+    def test_run_vl_hybrid_sanitizes_root_fields_at_syms_root_offset(self) -> None:
+        runner = self._load_tool_module("run_vl_hybrid")
+        sanitized, applied = runner._sanitize_host_only_internals_at_root_offset(
+            b"AA" + b"\x01" + b"BBBB",
+            [{"name": "__VstlFirstIteration", "offset": 0, "size": 1}],
+            root_offset=2,
+        )
+
+        self.assertEqual(sanitized, b"AA" + b"\x00" + b"BBBB")
+        self.assertEqual(applied[0]["offset"], 2)
+        self.assertEqual(applied[0]["sanitized_start"], 2)
+
+    def test_build_vl_gpu_records_hierarchy_state_metadata(self) -> None:
+        builder = self._load_tool_module("build_vl_gpu")
+        with tempfile.TemporaryDirectory() as tmp:
+            mdir = Path(tmp)
+            (mdir / "vl_batch_gpu_opt.ll").write_text(
+                "\n".join(
+                    [
+                        "declare void @Vfoo__SymsC1(ptr noundef nonnull dereferenceable(2048))",
+                        "  %p = getelementptr inbounds %class.Vfoo__Syms, ptr %symsp, i64 0, i32 5",
+                        '!7 = !{!"_ZTS10Vfoo__Syms", !1, i64 0, !2, i64 64, !3, i64 576}',
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            metadata = builder.detect_hierarchy_state_metadata(mdir, 512)
+
+        self.assertEqual(metadata["state_image_kind"], "root_image")
+        self.assertEqual(metadata["syms_storage_size"], 2048)
+        self.assertEqual(metadata["root_offset_in_syms"], 64)
+        self.assertTrue(metadata["prelaunch_rejection_required"])
+
+    def test_compare_tool_keeps_coverage_output_policy(self) -> None:
+        text = COMPARE_VL_HYBRID_MODES.read_text(encoding="utf-8")
+        self.assertIn("coverage_output_equivalence", text)
+        self.assertIn("--coverage-output-gate", text)
+        self.assertIn("--coverage-output-target", text)
+
+        module = self._load_tool_module("compare_vl_hybrid_modes")
+        gate = json.loads(TLUL_COVERAGE_OUTPUT_GATE.read_text(encoding="utf-8"))
+        words = module.derive_strict_output_field_names(gate)
+        self.assertEqual(len(words), 29)
+        self.assertIn("real_toggle_subset_word17_o", words)
+        self.assertIn("toggle_bitmap_word2_o", words)
+
+        manifest = json.loads(TLUL_FIFO_COVERAGE_MANIFEST.read_text(encoding="utf-8"))
+        validation = module.validate_coverage_output_manifest(manifest)
+        self.assertTrue(validation["valid"])
+        self.assertEqual(validation["covered_word_count"], 18)
+
+    def test_cpu_depth_dump_contract_is_wired(self) -> None:
+        probe = TLUL_SLICE_HOST_PROBE.read_text(encoding="utf-8")
+        runner = TLUL_CPU_BASELINE_RUNNER.read_text(encoding="utf-8")
+
+        self.assertIn("--repeat-state-out", probe)
+        self.assertIn("append_state", probe)
+        self.assertIn("repeat_state_bytes", probe)
+        self.assertIn("--repeat-state-out", runner)
+        self.assertIn("cpu_final_state_dump_contract", runner)
+        self.assertIn("concat_root_storage_by_state", runner)
+
+    def test_persistent_resident_state_abi_runtime_surface_is_wired_as_probe_only(self) -> None:
+        wrapper = RUN_VL_HYBRID_PY.read_text(encoding="utf-8")
+        runner = RUN_VL_HYBRID_C.read_text(encoding="utf-8")
+
+        self.assertIn("--persistent-resident-state-abi-handle", wrapper)
+        self.assertIn("--persistent-resident-state-abi-phase", wrapper)
+        self.assertIn("RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_HANDLE", wrapper)
+        self.assertIn("persistent resident state ABI phases after 1 must not use --init-state", wrapper)
+        self.assertIn("requires --resident-steps", wrapper)
+
+        self.assertIn("RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_HANDLE", runner)
+        self.assertIn("RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_PHASE", runner)
+        self.assertIn("probe_surface_phase1_only", runner)
+        self.assertIn("refusing to fall back to a previous phase", runner)
+        self.assertIn("persistent_resident_state_abi: handle=%s phase=%u", runner)
+
+    def test_docs_record_current_nn_and_mobile_vit_evidence(self) -> None:
+        combined = "\n".join(
+            [
+                README.read_text(encoding="utf-8"),
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+            ]
+        )
+
+        for token in [
+            "modern_llm_serving_rtl_hybrid_conditions",
+            "neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+            "neural_network_rtl_paged_kv_cache_large_review_gate.json",
+            "neural_network_rtl_full_ita_mha_dependency_audit_gate.json",
+            "neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json",
+            "neural_network_rtl_full_ita_mha_larger_paged_kv_goal_review_gate.json",
+            "neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+            "full_ita_mha_larger_paged_attention_kv_goal_completion_audit.json",
+            "modern_llm_serving_rtl_hybrid_conditions_goal_completion_audit.json",
+            "public_results_packaging_gate.json",
+            "one_command_reproduction_flow_gate.json",
+            "repeat_median_results_reproduction_gate.json",
+            "resident_execution_optimization_next_gate.json",
+            "resident_batch_sweep_measurement_gate.json",
+            "resident_batch_sweep_review_gate.json",
+            "resident_state_reuse_experiment_gate.json",
+            "resident_state_reuse_measurement_gate.json",
+            "resident_state_reuse_review_gate.json",
+            "persistent_resident_state_abi_probe_gate.json",
+            "persistent_resident_state_abi_probe_implementation_gate.json",
+            "persistent_resident_device_handle_storage_gate.json",
+            "persistent_resident_device_handle_storage_review_gate.json",
+            "docs/results.md",
+            "src/tools/run_results_reproduction.py",
+            "reports/results_reproduction_median_summary.json",
+            "reports/resident_batch_sweep_summary.json",
+            "reports/resident_state_reuse_experiment_summary.json",
+            "reports/persistent_resident_state_abi_probe_summary.json",
+            "reports/pulp_paged_kv_cache_large_first_hybrid_benchmark_summary.json",
+            "reports/pulp_ita_mha_first_hybrid_benchmark_summary.json",
+            "reports/pulp_paged_attention_kv_score_first_hybrid_benchmark_summary.json",
+            "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+            "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+            "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+            "pulp_paged_kv_cache_large_host_probe",
+            "overlays/ITA/src/pulp_paged_kv_cache_large_gpu_cov_tb.sv",
+            "tc_sram",
+            "mobile_vit_cpu_kick_imagenet_accuracy",
+            "mobile_vit_cpu_kick_rtl_hybrid_boundary",
+            "apple/mobilevit-small",
+            "complete_full_imagenet_validation_cpu_kick_accuracy_measured",
+            "top-1 0.77022",
+            "mobile_vit_cpu_kick_rtl_proxy_host_probe",
+            "phase_12_mobile_vit_cpu_kick_rtl_hybrid_boundary",
+            "phase_11_mobile_vit_cpu_kick_imagenet_accuracy",
+            "select_mobile_vit_model_and_reference_eval_source: done",
+            "define_mobile_vit_cpu_kick_control_contract: done",
+            "define_mobile_vit_accuracy_metric_contract: done",
+            "define_mobile_vit_reference_inference_contract: done",
+            "define_mobile_vit_imagenet_manifest_builder_contract: done",
+        ]:
+            self.assertIn(token, combined)
 
 
 if __name__ == "__main__":

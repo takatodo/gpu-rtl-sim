@@ -1,0 +1,63 @@
+{
+  "schema_version": "slice-launch-template-v1",
+  "slice_name": "prim_diff_decode",
+  "target": "OpenTitan.prim_diff_decode",
+  "family": "OpenTitan primitive",
+  "status": "promoted_to_active_scope",
+  "pilot_gate": "Source-backed prim_diff_decode candidate after sixtieth primitive review acceptance.",
+  "source_gate": "config/scaling_gates/prim_diff_decode_source_gate.json",
+  "top_module": "prim_diff_decode_gpu_cov_tb",
+  "source": {
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_diff_decode.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_diff_decode_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_diff_decode_coverage_regions.json"
+  },
+  "build": {
+    "mdir": "artifacts/prim_diff_decode_obj_dir",
+    "work_dir": "work/slice_pilots/prim_diff_decode",
+    "host_probe_target": "prim_diff_decode_host_probe"
+  },
+  "coverage_output_contract": {
+    "gate": "config/scaling_gates/prim_diff_decode_source_gate.json",
+    "strict_output_words": 29,
+    "strict_output_bytes": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_diff_decode"
+    ],
+    "active_target_count_unchanged_until_first_pass": 82,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 60,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized coverage_output_equivalence passes"
+    ]
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 194,
+    "planned_async_on": 0,
+    "planned_width": 1,
+    "synchronous_decode_only": true,
+    "overlay_implemented": true,
+    "depth_gate_passed": true,
+    "host_probe_makefile_hook_ready": true,
+    "coverage_manifest_ready": true,
+    "depth_gate_ready": true
+  },
+  "candidate_targets": [],
+  "active_target_count": 83,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 61,
+  "next_action": "package_sixty_first_primitive_active_boundary"
+}

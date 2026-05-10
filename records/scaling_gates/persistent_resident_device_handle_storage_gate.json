@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "objective": "define_persistent_resident_device_handle_storage_gate",
+  "status": "measured_in_process_persistent_resident_device_handle_storage",
+  "source_gate": "config/scaling_gates/persistent_resident_state_abi_probe_implementation_gate.json",
+  "current_priority": "review_in_process_persistent_resident_device_handle_storage",
+  "target": "pulp_ita_mha",
+  "selected_scope": {
+    "name": "in_process_persistent_resident_device_handle_storage",
+    "reason": "the existing runner is process-scoped, so the first real persistent handle should keep one CUDA context and one device allocation alive across phases inside a single invocation before attempting cross-process persistence",
+    "explicitly_out_of_scope": [
+      "cross-process persistent CUDA allocation",
+      "daemon or server mode",
+      "paged-attention/KV-cache scale-up",
+      "production LLM serving API"
+    ]
+  },
+  "storage_contract": {
+    "handle_lifetime": "one run_vl_hybrid process invocation",
+    "device_storage": "reuse the same d_storage allocation across all persistent phases",
+    "initialization": "phase 1 may upload the CPU-generated 1x1 init-state once",
+    "phase_advancement": "phases 2..N advance from the existing d_storage contents without --init-state",
+    "final_dump": "optional per-phase dump is diagnostic and compare evidence, not the authority for the next phase",
+    "state_authority": "GPU d_storage is authoritative after phase 1 initialization"
+  },
+  "implementation_plan": [
+    {
+      "step": "extend_runner_phase_loop",
+      "files": [
+        "src/hybrid/run_vl_hybrid.c"
+      ],
+      "required_behavior": [
+        "when persistent handle is requested, treat ENV_PERSISTENT_RESIDENT_PHASE as the reported phase index",
+        "for the first implemented measurement, run exactly one phase per process until a multi-phase process driver is added",
+        "do not accept phase > 1 without a device-resident handle lookup",
+        "print setup and phase timing fields without changing existing resident timing lines"
+      ]
+    },
+    {
+      "step": "add_tool_level_multi_phase_driver",
+      "files": [
+        "src/tools/results_reproduction.py"
+      ],
+      "required_behavior": [
+        "invoke a single persistent process or explicit future runner mode instead of chaining prior GPU dumps through --init-state",
+        "keep CPU cumulative references per phase",
+        "write reports/persistent_resident_state_abi_probe_summary.json only after compare reports exist for every phase"
+      ]
+    },
+    {
+      "step": "update_contract_tests",
+      "files": [
+        "tests/contract/test_hybrid_verilator_like_cli.py",
+        "tests/contract/test_resident_runtime_contract.py",
+        "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+      ],
+      "required_behavior": [
+        "prove phase > 1 init-state reload remains rejected",
+        "prove persistent flags are wired",
+        "prove measured summary cannot be written without all phase compares"
+      ]
+    }
+  ],
+  "acceptance_policy": {
+    "coverage_output_equivalence_required": true,
+    "raw_full_state_equality_required": false,
+    "phase_gt_1_init_state_reload_forbidden": true,
+    "device_storage_authority_required_after_phase_1": true,
+    "single_process_scope_must_be_explicit": true,
+    "existing_file_boundary_state_reuse_flow_must_remain_available": true,
+    "existing_resident_steps_flow_must_remain_available": true,
+    "all_phase_compare_reports_required_before_summary": true
+  },
+  "measurement_target": {
+    "command": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4",
+    "dry_run_command": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --dry-run",
+    "summary_report": "reports/persistent_resident_state_abi_probe_summary.json",
+    "phase_shapes": [
+      "16x64",
+      "16x128",
+      "16x192",
+      "16x256"
+    ]
+  },
+  "measured_result": {
+    "command": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4",
+    "summary_report": "reports/persistent_resident_state_abi_probe_summary.json",
+    "hybrid_report": "reports/pulp_ita_mha_16x64_persistent_resident_state_abi_multiphase_hybrid.txt",
+    "status": "measured_persistent_resident_state_abi_probe",
+    "state_authority": "in_process_gpu_d_storage_after_phase_1",
+    "phase_count": 4,
+    "phase_shapes": [
+      "16x64",
+      "16x128",
+      "16x192",
+      "16x256"
+    ],
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "hybrid_gpu_kernel_total_ms": 4.486688,
+    "hybrid_wall_ms": 4.517,
+    "hybrid_gpu_kernel_per_launch_ms": 0.017526,
+    "hybrid_gpu_kernel_per_state_us": 1.095
+  },
+  "implemented_storage": {
+    "scope": "one run_vl_hybrid process invocation",
+    "device_storage_authority": "the same d_storage allocation advances all four phases",
+    "phase_dump_role": "diagnostic and compare evidence only",
+    "next_phase_input": "existing device d_storage contents, not previous phase dump file"
+  },
+  "non_claims": [
+    "not cross-process persistent CUDA state",
+    "not paged attention or KV-cache scale-up",
+    "not production LLM serving throughput",
+    "not raw full-state equality"
+  ],
+  "next_task": "review_in_process_persistent_resident_device_handle_storage"
+}

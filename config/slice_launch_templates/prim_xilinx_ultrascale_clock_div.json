@@ -1,0 +1,108 @@
+{
+  "schema_version": "slice-launch-template-v1",
+  "slice_name": "prim_xilinx_ultrascale_clock_div",
+  "target": "OpenTitan.prim_xilinx_ultrascale_clock_div",
+  "family": "OpenTitan primitive",
+  "status": "active_promoted",
+  "pilot_gate": "Source-backed prim_xilinx_ultrascale_clock_div candidate after ninety-fifth primitive review acceptance.",
+  "source_gate": "config/scaling_gates/prim_xilinx_ultrascale_clock_div_source_gate.json",
+  "top_module": "prim_xilinx_ultrascale_clock_div_gpu_cov_tb",
+  "source": {
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_div.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_div_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_clock_div_coverage_regions.json"
+  },
+  "build": {
+    "mdir": "artifacts/prim_xilinx_ultrascale_clock_div_obj_dir",
+    "work_dir": "work/slice_pilots/prim_xilinx_ultrascale_clock_div",
+    "host_probe_target": "prim_xilinx_ultrascale_clock_div_host_probe"
+  },
+  "coverage_output_contract": {
+    "gate": "config/scaling_gates/prim_xilinx_ultrascale_clock_div_source_gate.json",
+    "strict_output_words": 29,
+    "strict_output_bytes": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_xilinx_ultrascale_clock_div"
+    ],
+    "active_target_count_unchanged_until_first_pass": 117,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 95
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 97,
+    "planned_Divisor": 16,
+    "planned_ResetValue": 0,
+    "no_bufg_fallback_path_only": true,
+    "bufgce_div_path_not_claimed": true,
+    "bufgctrl_path_not_claimed": true,
+    "clock_tree_correctness_not_claimed": true,
+    "glitch_free_clocking_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true,
+    "ultrascale_wrapper_only_claimed": true
+  },
+  "candidate_targets": [],
+  "active_target_count": 118,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 96,
+  "next_action": "hold_for_review_after_ninety_sixth_primitive_boundary",
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_div_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_clock_div_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_clock_div.json",
+    "host_probe_target": "prim_xilinx_ultrascale_clock_div_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "implemented",
+    "planned_parameters": {
+      "Divisor": 16,
+      "ResetValue": 0,
+      "path": "gen_div_no_bufg"
+    }
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_xilinx_ultrascale_clock_div_source_gate.json",
+    "host_probe_report": "reports/prim_xilinx_ultrascale_clock_div_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "raw_mismatch_count": 32,
+    "manifest_valid": true,
+    "storage_size": 640,
+    "cpu_reference_state": "artifacts/prim_xilinx_ultrascale_clock_div_obj_dir/prim_xilinx_ultrascale_clock_div_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_xilinx_ultrascale_clock_div_obj_dir/prim_xilinx_ultrascale_clock_div_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_gate_paths": [
+    "config/scaling_gates/prim_xilinx_ultrascale_clock_div_repeated_steps.json",
+    "config/scaling_gates/prim_xilinx_ultrascale_clock_div_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_xilinx_ultrascale_clock_div_coverage_output_depth.json"
+  ],
+  "latest_primitive": "prim_xilinx_ultrascale_clock_div",
+  "depth_result": {
+    "status": "ok",
+    "report": "reports/prim_xilinx_ultrascale_clock_div_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "acceptance": {
+      "all_comparisons_have_cpu_and_gpu_dump_paths": true,
+      "all_dump_byte_counts_match_expected_dump_bytes": true,
+      "all_comparisons_pass_coverage_output_equivalence": true
+    }
+  }
+}

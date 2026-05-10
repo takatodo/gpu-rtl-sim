@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "gate": "mobile_vit_cpu_kick_inference_contract_gate",
+  "status": "cpu_kick_inference_cli_smoke_passed_waiting_for_imagenet_inputs",
+  "prior_gate": "config/scaling_gates/mobile_vit_imagenet_input_blocker_gate.json",
+  "objective": "Define a CPU-kick path that actually invokes MobileViT inference after KICK_INFER instead of only replaying prepared predictions.",
+  "tool": {
+    "path": "src/tools/mobile_vit_cpu_kick_infer.py",
+        "example_command": "artifacts/mobile_vit/venv/bin/python src/tools/mobile_vit_cpu_kick_infer.py --manifest artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest.json --output reports/mobile_vit_cpu_kick_predictions.json --model-id apple/mobilevit-small --batch-size 32"
+  },
+  "control_sequence": [
+    "LOAD_MODEL",
+    "LOAD_IMAGE",
+    "KICK_INFER",
+    "POLL_DONE"
+  ],
+  "output_contract": {
+    "prediction_source": "cpu_kicked_mobile_vit_inference",
+    "required_top_level_keys": [
+      "target",
+      "dataset_scope",
+      "cpu_kick_count",
+            "cpu_done_count",
+            "batch_size",
+            "complete_cpu_kick_prediction_set",
+      "predictions"
+    ],
+    "per_prediction_required_keys": [
+      "image_id",
+      "label",
+      "top5",
+      "top5_scores",
+      "cpu_sequence_index"
+    ]
+  },
+  "test_evidence": {
+    "contract_test": "tests/contract/test_mobile_vit_cpu_kick_infer.py"
+  },
+  "smoke_evidence": {
+    "manifest": "artifacts/mobile_vit/smoke/manifest.json",
+    "predictions": "reports/mobile_vit_cpu_kick_infer_smoke_predictions.json",
+    "accuracy": "reports/mobile_vit_cpu_kick_infer_smoke_accuracy.json",
+    "dataset_scope": "smoke_non_imagenet_generated_image",
+    "prediction_count": 1,
+    "cpu_kick_count": 1,
+    "cpu_done_count": 1,
+    "top1_accuracy": 0.0,
+    "top5_accuracy": 0.0,
+    "accuracy_claim_allowed": false
+  },
+  "completion_claim_allowed": false,
+  "next_task": "run_cpu_kicked_mobile_vit_on_imagenet_or_approved_scoped_subset_when_inputs_are_available",
+  "non_claims": [
+    "not RTL execution",
+    "not full CPU core execution",
+    "not ImageNet data available",
+    "not ImageNet accuracy measurement by itself"
+  ]
+}

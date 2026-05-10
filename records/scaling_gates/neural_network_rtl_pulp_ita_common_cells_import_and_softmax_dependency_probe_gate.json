@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_pulp_ita_common_cells_import_and_softmax_dependency_probe_gate",
+  "status": "common_cells_imported_softmax_dependency_probe_passed",
+  "goal": "run_neural_network_rtl_hybrid_cpu_comparison",
+  "prior_gate": "config/scaling_gates/neural_network_rtl_pulp_ita_softmax_top_dependency_pin_gate.json",
+  "completed_tasks": [
+    "import_common_cells_v1_37_0_for_pulp_ita_softmax_top",
+    "probe_pulp_ita_softmax_top_minimal_dependency_boundary"
+  ],
+  "common_cells_import": {
+    "path": "third_party/common_cells",
+    "repository": "https://github.com/pulp-platform/common_cells.git",
+    "pinned_revision": "c27bce39ebb2e6bae52f60960814a2afca7bd4cb",
+    "version_tag": "v1.37.0",
+    "source": "third_party/ITA/Bender.lock",
+    "import_mode": "git_submodule",
+    "submodule_status": "+c27bce39ebb2e6bae52f60960814a2afca7bd4cb third_party/common_cells (v1.30.0-33-gc27bce3)",
+    "dns_workaround_used": "git -c http.curloptResolve=github.com:443:20.27.177.113"
+  },
+  "minimal_softmax_dependency_boundary": {
+    "common_cells_sources": [
+      "third_party/common_cells/src/cf_math_pkg.sv",
+      "third_party/common_cells/src/lzc.sv",
+      "third_party/common_cells/src/fifo_v3.sv"
+    ],
+    "repo_overlay_sources": [
+      "overlays/ITA/src/pulp_ita_cluster_clock_gating_sim.sv"
+    ],
+    "ita_sources": [
+      "third_party/ITA/src/ita_package.sv",
+      "third_party/ITA/src/ita_max_finder.sv",
+      "third_party/ITA/src/ita_register_file_1w_multi_port_read.sv",
+      "third_party/ITA/src/ita_softmax.sv",
+      "third_party/ITA/src/ita_serdiv.sv",
+      "third_party/ITA/src/ita_softmax_top.sv"
+    ],
+    "required_warning_suppression_for_probe": [
+      "WIDTHEXPAND",
+      "WIDTHTRUNC",
+      "COMBDLY"
+    ],
+    "probe_command_summary": "verilator -cc --timing -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-COMBDLY --top-module ita_softmax_top ...",
+    "probe_report": "reports/pulp_ita_softmax_top_dependency_probe_verilator.txt",
+    "probe_result": "passed"
+  },
+  "dependency_corrections": {
+    "added_common_cells_source_after_probe": "third_party/common_cells/src/lzc.sv",
+    "added_overlay_shim_after_probe": "overlays/ITA/src/pulp_ita_cluster_clock_gating_sim.sv",
+    "reason": "ita_serdiv instantiates lzc, and ita_register_file_1w_multi_port_read instantiates cluster_clock_gating. A local simulation shim avoids recursively importing another dependency family."
+  },
+  "non_claims": [
+    "not softmax coverage-output overlay yet",
+    "not softmax host probe yet",
+    "not softmax CPU-vs-hybrid benchmark yet",
+    "not full ITA execution",
+    "not model-level Transformer inference",
+    "not broad modern-NN speedup"
+  ],
+  "next_task": "implement_pulp_ita_softmax_top_overlay_and_first_hybrid_benchmark_gate"
+}

@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "gate": "hybrid_verilator_like_config_and_probe_generation_gate",
+  "objective": "Make generated hybrid runs close to Verilator usage by generating config, launch metadata, and host-probe build glue from one template path.",
+  "status": "passed_for_generated_config_and_real_host_probe_builder_smoke",
+  "current_priority": "hold_for_review_after_hybrid_verilator_like_config_and_probe_generation_gate",
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "Generate the config needed for a hybrid run.",
+      "evidence": [
+        "src/tools/gen_hybrid_config.py",
+        "src/tools/hybrid_config_generator.py",
+        "tests/contract/test_hybrid_verilator_like_cli.py::test_gen_hybrid_config_dry_run_emits_gate_manifest_and_template"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "Generated config includes scaling gate, coverage manifest, and slice launch template.",
+      "evidence": [
+        "overlays/generated/tests/<target>_coverage_regions.json",
+        "config/slice_launch_templates/<target>.json",
+        "config/scaling_gates/<target>_first_hybrid_benchmark_gate.json"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "Host-probe and Makefile glue are generated or avoided for new generated templates.",
+      "evidence": [
+        "src/tools/build_host_probe.py",
+        "src/tools/hybrid_host_probe_builder.py",
+        "template build.host_probe_builder",
+        "template build.host_probe",
+        "gate acceptance_policy.host_probe_glue_generated_from_template=true",
+        "gate acceptance_policy.makefile_target_required=false"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "run_hybrid_template.py can execute the generated flow through Verilator, host probe build, GPU build, hybrid run, and compare.",
+      "evidence": [
+        "src/tools/hybrid_template_runner.py",
+        "tests/contract/test_hybrid_verilator_like_cli.py::test_generated_template_uses_host_probe_builder_without_makefile_glue",
+        "dry-run command plan for config/slice_launch_templates/pulp_paged_attention_kv_score.json"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "A real target template can use the generic host-probe builder.",
+      "evidence": [
+        "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+        "python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+        "build exited with code 0"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "CPU vs hybrid comparison remains coverage-output equivalence.",
+      "evidence": [
+        "src/tools/hybrid_template_runner.py compare command uses --acceptance-policy coverage_output_equivalence",
+        "tests/contract/test_hybrid_verilator_like_cli.py",
+        "tests/contract/test_resident_runtime_contract.py::test_compare_tool_keeps_coverage_output_policy"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "Public workflow has documentation and contract tests.",
+      "evidence": [
+        "README.md",
+        "docs/status.md",
+        "docs/roadmap.md",
+        "tests/contract/test_hybrid_verilator_like_cli.py"
+      ],
+      "covered": true
+    }
+  ],
+  "verified_commands": [
+    {
+      "command": "python3 -m py_compile src/tools/hybrid_config_generator.py src/tools/gen_hybrid_config.py src/tools/hybrid_template_runner.py src/tools/hybrid_host_probe_builder.py src/tools/build_host_probe.py tests/contract/test_hybrid_verilator_like_cli.py",
+      "result": "pass"
+    },
+    {
+      "command": "python3 -m unittest tests.contract.test_hybrid_verilator_like_cli -q",
+      "result": "pass"
+    },
+    {
+      "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.demo_cov --top-module demo_cov_tb --overlay overlays/demo/src/demo_cov_tb.sv --dry-run",
+      "result": "pass"
+    },
+    {
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_attention_kv_score.json --shape 64x1 --dry-run",
+      "result": "pass"
+    },
+    {
+      "command": "python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+      "result": "pass"
+    },
+    {
+      "command": "python3 -m unittest discover -s tests/contract -q",
+      "result": "pass",
+      "observed": "Ran 110 tests in 1.273s OK"
+    }
+  ],
+  "non_claims": [
+    "not universal host-probe metadata for every existing historical template",
+    "not a speedup claim",
+    "not a full end-to-end fresh target benchmark without target RTL",
+    "older templates may still use Makefile fallback until migrated"
+  ],
+  "next_task": "broaden_generated_host_probe_builder_to_more_real_templates_or_select_paged_attention_scaleup"
+}

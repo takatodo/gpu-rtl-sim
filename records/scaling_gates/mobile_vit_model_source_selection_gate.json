@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "gate": "mobile_vit_model_source_selection_gate",
+  "status": "selected_reference_model_no_local_weights_or_imagenet_run_yet",
+  "prior_gate": "config/scaling_gates/mobile_vit_cpu_kick_imagenet_intake_gate.json",
+  "objective": "Select exactly one mobile-oriented ViT-class model as the reference target for CPU-kicked ImageNet accuracy verification.",
+  "selected_model": {
+    "name": "MobileViT-S",
+    "huggingface_model_id": "apple/mobilevit-small",
+    "architecture_family": "MobileViT",
+    "task": "image-classification",
+    "pretrained_dataset": "ImageNet-1k",
+    "input_resolution": "256x256 center crop after 288x288 resize/rescale at inference",
+    "pixel_order": "BGR according to the Hugging Face model card",
+    "reference_top1_accuracy_percent": 78.4,
+    "reference_top5_accuracy_percent": 94.1,
+    "parameter_count": "5.6M",
+    "license_note": "Apple sample code license / Hugging Face license field: other",
+    "model_card": "https://huggingface.co/apple/mobilevit-small",
+    "paper": "https://arxiv.org/abs/2110.02178"
+  },
+  "selection_rationale": [
+    "It is explicitly mobile-oriented and combines CNN-style local processing with transformer global processing.",
+    "It is pretrained for 1000-class ImageNet classification and has published reference top-1/top-5 values.",
+    "Transformers exposes AutoImageProcessor and AutoModelForImageClassification for direct CPU reference execution.",
+    "The model is small enough to use as the first mobile ViT target before considering larger or newer mobile ViT variants."
+  ],
+  "rejected_or_deferred_candidates": [
+    {
+      "name": "MobileViT-XXS",
+      "decision": "deferred",
+      "reason": "Smaller and useful later, but lower reference accuracy makes it a less useful first ImageNet correctness target."
+    },
+    {
+      "name": "MobileViT-XS",
+      "decision": "deferred",
+      "reason": "Also viable, but MobileViT-S has the clearest high-accuracy reference while remaining mobile-sized."
+    },
+    {
+      "name": "TinyViT or newer mobile ViT variants",
+      "decision": "deferred",
+      "reason": "Could be stronger, but would require additional source and preprocessing selection before the first CPU-kick/ImageNet path exists."
+    }
+  ],
+  "required_next_artifacts": [
+    "artifacts/mobile_vit/apple_mobilevit_small/model_manifest.json",
+    "config/scaling_gates/mobile_vit_imagenet_eval_manifest_gate.json"
+  ],
+  "next_task": "create_imagenet_manifest_or_record_dataset_access_blocker",
+  "completion_claim_allowed": false,
+  "non_claims": [
+    "not local model weight download",
+    "not ImageNet dataset access",
+    "not smoke inference",
+    "not CPU-kicked ViT execution",
+    "not top-1 or top-5 accuracy measurement",
+    "not RTL ViT datapath implementation"
+  ]
+}

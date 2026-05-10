@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "status": "promoted_to_active_scope",
+  "gate": "prim_xilinx_ram_1p_source_backed_gate",
+  "target": "prim_xilinx_ram_1p",
+  "source_gate_name": "prim_xilinx_ram_1p_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Define one source-backed candidate after the ninety-seventh primitive boundary review passed.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_xilinx_ram_1p.json",
+  "build": {
+    "mdir": "artifacts/prim_xilinx_ram_1p_obj_dir",
+    "work_dir": "work/slice_pilots/prim_xilinx_ram_1p",
+    "host_probe_target": "prim_xilinx_ram_1p_host_probe",
+    "cpu_reference_state": "artifacts/prim_xilinx_ram_1p_obj_dir/prim_xilinx_ram_1p_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_xilinx_ram_1p_obj_dir/prim_xilinx_ram_1p_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ram_1p.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_ram_1p.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_ram_1p_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_pkg.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_xilinx_ram_1p",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_xilinx_ram_1p.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ram_1p_coverage_regions.json",
+      "mdir": "artifacts/prim_xilinx_ram_1p_obj_dir",
+      "expected_report": "reports/prim_xilinx_ram_1p_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_xilinx_ram_1p_obj_dir/prim_xilinx_ram_1p_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_xilinx_ram_1p_obj_dir/prim_xilinx_ram_1p_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "active_target_count_unchanged_until_first_pass": 119,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 97,
+    "candidate_targets_contains_only": [
+      "prim_xilinx_ram_1p"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ram_1p_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ram_1p_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_xilinx_ram_1p.json",
+    "host_probe_target": "prim_xilinx_ram_1p_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "first_pass_passed",
+    "planned_parameters": {
+      "Width": 8,
+      "Depth": 16,
+      "DataBitsPerMask": 1,
+      "MemInitFile": ""
+    }
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 67,
+    "planned_Width": 8,
+    "planned_Depth": 16,
+    "planned_DataBitsPerMask": 1,
+    "xilinx_wrapper_only_claimed": true,
+    "xpm_behavior_not_claimed": true,
+    "memory_init_file_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": false,
+    "coverage_manifest_planned": false,
+    "xilinx_ultrascale_wrapper_only_claimed": false,
+    "xpm_fallback_not_exercised_by_current_source_pkg": true,
+    "host_probe_makefile_hook_implemented": true,
+    "coverage_manifest_implemented": true
+  },
+  "weakest_point": "prim_xilinx_ram_1p is scoped to the small Width=8 Depth=16 Xilinx wrapper generic-fallback coverage-output candidate; XPM primitive behavior, full SRAM semantics, memory initialization files, raw full-state equality, zero-initialized GPU correctness, and full primitive-family support remain non-claims.",
+  "selection_reason": [
+    "continues the single-port RAM wrapper surface immediately after the Ultrascale RAM 1P seed",
+    "keeps exactly one candidate target after the ninety-seventh primitive review",
+    "uses the same small parameterization to isolate wrapper differences before broader RAM families",
+    "records XPM and full SRAM behavior as non-claims before implementation"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_ram_1p_adv and scrambled RAM wrappers",
+      "reason": "advanced, scrambled, and multi-instance RAM flows are broader than the single-port Xilinx wrapper candidate"
+    }
+  ],
+  "active_target_count": 120,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 98,
+  "non_claims": [
+    "XPM memory primitive behavior",
+    "full SRAM semantics",
+    "memory initialization files",
+    "Width/Depth values other than 8x16",
+    "DataBitsPerMask values other than 1",
+    "ECC or cfg side effects",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full OpenTitan primitive-family support"
+  ],
+  "next_action": "package_ninety_eighth_primitive_active_boundary",
+  "source_review": "ninety_seventh_primitive_review_hold",
+  "first_pass_evidence": {
+    "host_probe_report": "reports/prim_xilinx_ram_1p_host_probe.json",
+    "source_gate_report": "reports/prim_xilinx_ram_1p_source_gate.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "raw_mismatch_count": 7
+  },
+  "promotion_evidence": {
+    "host_probe_report": "reports/prim_xilinx_ram_1p_host_probe.json",
+    "first_pass_report": "reports/prim_xilinx_ram_1p_source_gate.json",
+    "repeated_steps_report": "reports/prim_xilinx_ram_1p_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_xilinx_ram_1p_cpu_exact_loop_repeated_steps.json",
+    "depth_report": "reports/prim_xilinx_ram_1p_coverage_output_depth.json",
+    "passed_count": 2,
+    "comparison_count": 2
+  }
+}

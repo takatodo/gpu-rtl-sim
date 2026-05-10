@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "status": "candidate_defined",
+  "gate": "prim_secded_inv_72_64_dec_source_backed_gate",
+  "target": "prim_secded_inv_72_64_dec",
+  "source_gate_name": "prim_secded_inv_72_64_dec_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Define one source-backed candidate after the seventy-first primitive boundary review passed.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_secded_inv_72_64_dec.json",
+  "build": {
+    "mdir": "artifacts/prim_secded_inv_72_64_dec_obj_dir",
+    "work_dir": "work/slice_pilots/prim_secded_inv_72_64_dec",
+    "host_probe_target": "prim_secded_inv_72_64_dec_host_probe",
+    "cpu_reference_state": "artifacts/prim_secded_inv_72_64_dec_obj_dir/prim_secded_inv_72_64_dec_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_secded_inv_72_64_dec_obj_dir/prim_secded_inv_72_64_dec_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_72_64_dec.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_secded_inv_72_64_dec",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_secded_inv_72_64_dec.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_72_64_dec_coverage_regions.json",
+      "mdir": "artifacts/prim_secded_inv_72_64_dec_obj_dir",
+      "expected_report": "reports/prim_secded_inv_72_64_dec_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_secded_inv_72_64_dec_obj_dir/prim_secded_inv_72_64_dec_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_secded_inv_72_64_dec_obj_dir/prim_secded_inv_72_64_dec_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [
+    "prim_secded_inv_72_64_dec"
+  ],
+  "acceptance": {
+    "active_target_count_unchanged_until_first_pass": 93,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 71,
+    "candidate_targets_contains_only": [
+      "prim_secded_inv_72_64_dec"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes"
+    ],
+    "define_after_seventy_first_primitive_review_acceptance": true
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_72_64_dec_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_72_64_dec_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_secded_inv_72_64_dec.json",
+    "host_probe_target": "prim_secded_inv_72_64_dec_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "planned",
+    "planned_parameters": {
+      "DataWidth": 64,
+      "CodeWidth": 72,
+      "path": "fixed_72_64_inverse_secded_decode"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 94,
+    "planned_DataWidth": 64,
+    "planned_CodeWidth": 72,
+    "decoder_path_planned": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true
+  },
+  "weakest_point": "prim_secded_inv_72_64_dec is scoped to the fixed 72-to-64 generated inverse SECDED decoder surface; exhaustive correction/syndrome classification, hamming variants, other decoder widths, assertion-policy proof, raw full-state equality, and zero-initialized GPU correctness remain outside this gate.",
+  "selection_reason": [
+    "finishes the remaining source-backed fixed SECDED decoder surface after the seventy-first primitive boundary review passed",
+    "keeps the next source-backed primitive combinational and smaller than pad, RAM, alert, escalation, CDC register, crypto, or LFSR primitives",
+    "uses one upstream source file with no clock, reset, or package dependency",
+    "preserves the single-candidate discipline after the seventy-first primitive review"
+  ],
+  "next_action": "implement_prim_secded_inv_72_64_dec_overlay_gate",
+  "source_review": "seventy_first_primitive_review_hold",
+  "active_target_count": 93,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 71
+}

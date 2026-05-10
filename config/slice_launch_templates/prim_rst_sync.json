@@ -1,0 +1,121 @@
+{
+  "schema_version": "slice-launch-template-v1",
+  "slice_name": "prim_rst_sync",
+  "target": "OpenTitan.prim_rst_sync",
+  "family": "OpenTitan primitive",
+  "status": "active",
+  "pilot_gate": "Source-backed prim_rst_sync candidate after fourth primitive review acceptance.",
+  "source_gate": "config/scaling_gates/prim_rst_sync_source_gate.json",
+  "top_module": "prim_rst_sync_gpu_cov_tb",
+  "source": {
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_rst_sync.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_rst_sync_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_rst_sync_coverage_regions.json"
+  },
+  "build": {
+    "mdir": "artifacts/prim_rst_sync_obj_dir",
+    "work_dir": "work/slice_pilots/prim_rst_sync",
+    "host_probe_target": "prim_rst_sync_host_probe"
+  },
+  "coverage_output_contract": {
+    "gate": "config/scaling_gates/prim_rst_sync_source_gate.json",
+    "strict_output_words": 29,
+    "strict_output_bytes": 116
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_rst_sync"
+    ],
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte",
+      "tlul_adapter_dmi",
+      "tlul_adapter_reg_racl",
+      "tlul_adapter_sram_racl",
+      "tlul_fifo_async",
+      "prim_fifo_async_simple",
+      "prim_sync_reqack_data",
+      "prim_pulse_sync",
+      "prim_edge_detector"
+    ],
+    "first_pass_requires": [
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized coverage_output_equivalence passes"
+    ]
+  },
+  "static_features": {
+    "tb_contract_ready": true,
+    "real_toggle_outputs_ready": true,
+    "toggle_bitmap_outputs_ready": true,
+    "focused_wave_ready": true,
+    "source_line_count": 65,
+    "multi_clock": false,
+    "rtl_clock_ports": [
+      "clk_i"
+    ],
+    "has_async_reset_input": true,
+    "has_scan_mux_path": true,
+    "planned_skip_scan": true,
+    "depends_on_prim_flop_2sync": true,
+    "depends_on_prim_mubi_pkg_type": true
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_rst_sync_source_gate.json",
+    "host_probe_report": "reports/prim_rst_sync_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "manifest_valid": true,
+    "storage_size": 576
+  },
+  "depth_gate": {
+    "status": "defined",
+    "gate": "config/scaling_gates/prim_rst_sync_coverage_output_depth.json",
+    "gpu_repeated_steps_gate": "config/scaling_gates/prim_rst_sync_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_rst_sync_cpu_exact_loop_repeated_steps.json",
+    "report": "reports/prim_rst_sync_coverage_output_depth.json",
+    "comparison_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "candidate_targets": [
+      "prim_rst_sync"
+    ],
+    "active_targets_unchanged": true
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_rst_sync_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "promotion": {
+    "status": "promoted_to_active_scope",
+    "active_target_count": 27,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 5,
+    "candidate_targets": []
+  },
+  "next_action": "package_fifth_primitive_active_boundary"
+}

@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_style_prim_generic_and2_in_process_repeat_median_block_size_128_target_family_check",
+  "target": "prim_generic_and2",
+  "purpose": "Check the block_size=128 launch-geometry candidate on one existing primitive-family target at 1024 states x 64 steps using in-process repeat-median GPU-event timing.",
+  "prior_review": "in_process_repeat_median_block_size_128_tlul_sink_cross_target_check_result_review",
+  "measurement_stability_policy": "nn_style_runtime_measurement_stability_policy",
+  "claim_scope": "narrow prim_generic_and2 block_size=256 versus block_size=128 check at 1024 states x 64 steps using in-process repeat-median GPU-event timing only",
+  "optimization_knob": {
+    "name": "block_size",
+    "baseline_value": 256,
+    "candidate_value": 128,
+    "reason": "tlul_fifo_sync and tlul_sink checks favored block_size=128, but they remain TL-UL-family evidence. prim_generic_and2 is an existing active primitive target with generated GPU artifacts and prior NN-style baseline evidence, making it the smallest different-family check without claiming target breadth."
+  },
+  "preconditions": [
+    "in_process_repeat_median_block_size_128_tlul_sink_cross_target_check_result_review accepted only one additional TL-UL target check",
+    "prim_generic_and2 Verilator obj_dir is generated",
+    "prim_generic_and2 GPU PTX exists",
+    "run_vl_hybrid.py supports --block-size",
+    "src/tools/run_tlul_fifo_sync_scaling_validation.py forwards run block_size",
+    "run_vl_hybrid supports RUN_VL_HYBRID_TIMING_REPEATS",
+    "resident_steps is disabled for all runs",
+    "runs use zero-init and no patch script"
+  ],
+  "builds": [
+    {
+      "name": "ptxas_default",
+      "ptxas_opt_level": null,
+      "command": "PYTHONPATH=src/tools python3 src/tools/build_vl_gpu.py artifacts/prim_generic_and2_obj_dir --reuse-ptx --out artifacts/prim_generic_and2_obj_dir/nn_style_in_process_repeat_median_block_size_steps_64_default.cubin",
+      "cubin": "artifacts/prim_generic_and2_obj_dir/nn_style_in_process_repeat_median_block_size_steps_64_default.cubin",
+      "required": true
+    }
+  ],
+  "runs": [
+    {
+      "name": "warmup_block_256_steps_64_batch_1024",
+      "build": "ptxas_default",
+      "nstates": 1024,
+      "steps": 64,
+      "block_size": 256,
+      "resident_steps": false,
+      "timing_repeats": 1,
+      "role": "warmup",
+      "variant": "baseline",
+      "required": true
+    },
+    {
+      "name": "warmup_block_128_steps_64_batch_1024",
+      "build": "ptxas_default",
+      "nstates": 1024,
+      "steps": 64,
+      "block_size": 128,
+      "resident_steps": false,
+      "timing_repeats": 1,
+      "role": "warmup",
+      "variant": "candidate",
+      "required": true
+    },
+    {
+      "name": "pair_1_block_256_steps_64_batch_1024",
+      "build": "ptxas_default",
+      "nstates": 1024,
+      "steps": 64,
+      "block_size": 256,
+      "resident_steps": false,
+      "timing_repeats": 9,
+      "role": "measured",
+      "comparison_pair": "pair_1",
+      "variant": "baseline",
+      "required": true
+    },
+    {
+      "name": "pair_1_block_128_steps_64_batch_1024",
+      "build": "ptxas_default",
+      "nstates": 1024,
+      "steps": 64,
+      "block_size": 128,
+      "resident_steps": false,
+      "timing_repeats": 9,
+      "role": "measured",
+      "comparison_pair": "pair_1",
+      "variant": "candidate",
+      "required": true
+    },
+    {
+      "name": "pair_2_block_128_steps_64_batch_1024",
+      "build": "ptxas_default",
+      "nstates": 1024,
+      "steps": 64,
+      "block_size": 128,
+      "resident_steps": false,
+      "timing_repeats": 9,
+      "role": "measured",
+      "comparison_pair": "pair_2",
+      "variant": "candidate",
+      "required": true
+    },
+    {
+      "name": "pair_2_block_256_steps_64_batch_1024",
+      "build": "ptxas_default",
+      "nstates": 1024,
+      "steps": 64,
+      "block_size": 256,
+      "resident_steps": false,
+      "timing_repeats": 9,
+      "role": "measured",
+      "comparison_pair": "pair_2",
+      "variant": "baseline",
+      "required": true
+    },
+    {
+      "name": "pair_3_block_256_steps_64_batch_1024",
+      "build": "ptxas_default",
+      "nstates": 1024,
+      "steps": 64,
+      "block_size": 256,
+      "resident_steps": false,
+      "timing_repeats": 9,
+      "role": "measured",
+      "comparison_pair": "pair_3",
+      "variant": "baseline",
+      "required": true
+    },
+    {
+      "name": "pair_3_block_128_steps_64_batch_1024",
+      "build": "ptxas_default",
+      "nstates": 1024,
+      "steps": 64,
+      "block_size": 128,
+      "resident_steps": false,
+      "timing_repeats": 9,
+      "role": "measured",
+      "comparison_pair": "pair_3",
+      "variant": "candidate",
+      "required": true
+    }
+  ],
+  "comparison_policy": {
+    "comparison_type": "in_process_repeat_median_block_size_target_family_check",
+    "primary_metric": "gpu_event_timing_repeat.total_ms_median",
+    "baseline": "block_size_256",
+    "candidate": "block_size_128",
+    "warmup_runs": 2,
+    "measured_runs": 6,
+    "comparison_pair_count": 3,
+    "required_repeat_count": 9,
+    "speedup_acceptance_thresholds": {
+      "all_pair_deltas_positive": true,
+      "median_delta_percent_at_least": 5.0,
+      "minimum_delta_percent_at_least": 2.0,
+      "mean_delta_alone_supports_speedup": false
+    },
+    "required_timing_fields": [
+      "gpu_kernel_time_repeat_count",
+      "gpu_kernel_time_ms_total_min",
+      "gpu_kernel_time_ms_total_median",
+      "gpu_kernel_time_ms_total_max",
+      "gpu_kernel_time_ms_total_samples"
+    ],
+    "unsupported_with_timing_repeats": [
+      "patch_script",
+      "init_state",
+      "resident_steps"
+    ]
+  },
+  "acceptance_policy": {
+    "all_required_builds_pass": true,
+    "all_required_runs_pass": true,
+    "measured_runs_have_gpu_event_timing_repeat": true,
+    "required_repeat_count": 9,
+    "review_before_speedup_claim": true,
+    "speedup_claim_allowed_by_gate_alone": false
+  },
+  "correctness_policy": {
+    "required": true,
+    "expected_dump_bytes": "storage_size * nstates",
+    "required_run_status": "ok",
+    "non_claims": [
+      "not_full_state_equivalence",
+      "not_cpu_exactness_claim",
+      "not_zero_init_general_correctness_claim"
+    ]
+  },
+  "performance_policy": {
+    "primary_metric": "gpu_event_timing_repeat.total_ms_median",
+    "decision_rule": "record paired repeat-median deltas for review; do not claim speedup from this gate alone",
+    "non_claims": [
+      "not_optimization_speedup_claim_before_review",
+      "not_block_size_speedup_claim_before_review",
+      "not_block_size_general_speedup",
+      "not_mean_only_speedup_claim",
+      "not_launch_geometry_generalization",
+      "not_target_breadth_performance_generalization",
+      "not_target_family_generalization",
+      "not_resident_steps_fix_or_general_speedup",
+      "not_neural_network_model_or_training_or_inference_throughput_claim",
+      "not_cpu_speedup_claim",
+      "not_general_cuda_portability_claim",
+      "not_full_runtime_semantic_equivalence_for_repeated_samples"
+    ]
+  }
+}

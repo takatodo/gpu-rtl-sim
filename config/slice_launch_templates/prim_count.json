@@ -1,0 +1,333 @@
+{
+  "schema_version": 1,
+  "status": "active",
+  "target": "OpenTitan.prim_count",
+  "source_gate": "config/scaling_gates/prim_count_source_gate.json",
+  "top_module": "prim_count_gpu_cov_tb",
+  "build": {
+    "mdir": "artifacts/prim_count_obj_dir",
+    "work_dir": "work/slice_pilots/prim_count",
+    "host_probe_target": "prim_count_host_probe",
+    "cpu_reference_state": "artifacts/prim_count_obj_dir/prim_count_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_count_obj_dir/prim_count_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_count_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_count.sv"
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_count"
+    ],
+    "active_target_count_unchanged_until_first_pass": 57,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 35,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_count remains candidate-only until first pass and depth evidence pass"
+    ],
+    "promoted_to_active_scope": true
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_count_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_count_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_count.json",
+    "host_probe_target": "prim_count_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "overlay_ready_first_pass_and_depth_passed",
+    "planned_parameters": {
+      "Width": 4,
+      "ResetValue": "4'h0",
+      "EnableAlertTriggerSVA": 0,
+      "PossibleActions": [
+        "Clr",
+        "Set",
+        "Incr",
+        "Decr"
+      ],
+      "path": "clear_set_increment_decrement_commit_path"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3,
+    "host_probe_report": "reports/prim_count_host_probe.json"
+  },
+  "static_features": {
+    "schema_version": "opentitan-primitive-slice-static-features-v1",
+    "target": "OpenTitan.prim_count",
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_count.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_count_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_count_coverage_regions.json",
+    "tb_contract_ready": true,
+    "base_outputs_ready": true,
+    "real_toggle_outputs_ready": true,
+    "toggle_bitmap_outputs_ready": true,
+    "focused_wave_ready": true,
+    "source_line_count": 313,
+    "planned_Width": 4,
+    "planned_ResetValue": "4'h0",
+    "planned_EnableAlertTriggerSVA": 0,
+    "planned_PossibleActions": [
+      "Clr",
+      "Set",
+      "Incr",
+      "Decr"
+    ],
+    "region_names": [
+      "clear_set_flow",
+      "increment_decrement_flow",
+      "commit_and_after_commit_flow",
+      "error_sum_flow",
+      "signature_and_context"
+    ],
+    "structural_connectivity": {
+      "structural_connectivity_class": "source_backed_candidate_overlay_defined_first_pass_pending",
+      "nonclock_input_count": 7,
+      "nonclock_output_count": 3,
+      "reachable_output_fraction": null
+    },
+    "host_probe_makefile_hook_ready": true,
+    "coverage_manifest_ready": true,
+    "depth_gate_ready": true,
+    "real_toggle_word_count": 18,
+    "toggle_bitmap_word_count": 3,
+    "focused_wave_word_count": 8,
+    "region_count": 5,
+    "required_output_count": 38
+  },
+  "candidate_targets": [],
+  "active_target_count": 58,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 36,
+  "non_claims": [
+    "all prim_count Width/ResetValue/PossibleActions parameterizations",
+    "EnableAlertTriggerSVA=1 alert-trigger assertion integration",
+    "FPV PrimCountFpv force behavior or injected internal counter errors",
+    "all overflow and underflow corner cases beyond the selected generated vectors",
+    "assertion-policy proof",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full OpenTitan primitive-family support"
+  ],
+  "runner_args_template": {
+    "batch_defaults_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_slice_batch_default.json",
+    "batch_length": 12,
+    "campaign_gpu_nstates": 512,
+    "campaign_sequential_rep_graph_mode": "auto",
+    "cases": 25000,
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_count_coverage_regions.json",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_count_gpu_cov_tb.sv",
+    "cpu_reps": 1,
+    "dead_word_bias": true,
+    "debug_internal_output_names": [],
+    "driver_defaults": {},
+    "global_top_k": 128,
+    "gpu_nstates": 32,
+    "gpu_reps": 3,
+    "gpu_sequential_steps": 56,
+    "keep_top_k": 16,
+    "pilot_campaign_candidate_count": 4096,
+    "pilot_sweep_cases": 256,
+    "profile_family": "primitive_stateful_datapath",
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_count.sv",
+    "seed_fanout": 1,
+    "shard_count": 256,
+    "states_per_case": 4,
+    "target": "OpenTitan.prim_count",
+    "top_module": "prim_count_gpu_cov_tb",
+    "trace_length": 12,
+    "uniform_states": true,
+    "variants_per_case": 4,
+    "work_dir": "work/slice_pilots/prim_count"
+  },
+  "tb_core_contract": {
+    "kind": "gpu_toggle_shared_tb_v1",
+    "coverage_domain": "toggle_real_subset_bitmap",
+    "required_output_prefixes": [
+      "real_toggle_subset_word",
+      "toggle_bitmap_word",
+      "focused_wave_word"
+    ],
+    "baseline_reference_counts": {
+      "focused_wave_word": 8,
+      "real_toggle_subset_word": 18,
+      "toggle_bitmap_word": 3
+    },
+    "region_family_names": [
+      "clear_set_flow",
+      "increment_decrement_flow",
+      "commit_and_after_commit_flow",
+      "error_sum_flow",
+      "signature_and_context"
+    ]
+  },
+  "next_action": "hold_for_review_after_thirty_sixth_primitive_boundary",
+  "depth_gates": {
+    "gpu_repeated_steps_gate": "config/scaling_gates/prim_count_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_count_cpu_exact_loop_repeated_steps.json",
+    "coverage_output_depth_gate": "config/scaling_gates/prim_count_coverage_output_depth.json"
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_count_coverage_output_depth.json",
+    "gate": "config/scaling_gates/prim_count_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_count_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_count_cpu_exact_loop_repeated_steps.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "gpu_init_sanitized": true
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_count_source_gate.json",
+    "host_probe_report": "reports/prim_count_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "mismatch_count": 0,
+    "raw_full_state_mismatch_count": 35,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "storage_size": 640,
+    "manifest_valid": true,
+    "cpu_reference_state": "artifacts/prim_count_obj_dir/prim_count_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_count_obj_dir/prim_count_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "gpu_init_sanitized": true,
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "promotion_result": {
+    "schema_version": 1,
+    "status": "promoted_to_active_scope",
+    "target": "prim_count",
+    "completed_task": "promote_prim_count_to_active_target_scope",
+    "active_target_count": 58,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 36,
+    "candidate_targets": [],
+    "depth_result": "reports/prim_count_coverage_output_depth.json",
+    "non_claims_preserved": [
+      "all prim_count Width/ResetValue/PossibleActions parameterizations",
+      "EnableAlertTriggerSVA=1 alert-trigger assertion integration",
+      "FPV PrimCountFpv force behavior or injected internal counter errors",
+      "all overflow and underflow corner cases beyond the selected generated vectors",
+      "assertion-policy proof",
+      "raw full-state equality",
+      "zero-initialized GPU correctness",
+      "full OpenTitan primitive-family support"
+    ],
+    "next_action": "package_thirty_sixth_primitive_active_boundary"
+  },
+  "overlay": {
+    "schema_version": 1,
+    "status": "overlay_ready_first_pass_and_depth_passed",
+    "target": "prim_count",
+    "source_gate": "config/scaling_gates/prim_count_source_gate.json",
+    "launch_template": "config/slice_launch_templates/prim_count.json",
+    "coverage_tb": "overlays/rtlmeter/designs/OpenTitan/src/prim_count_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_count_coverage_regions.json",
+    "host_probe_target": "prim_count_host_probe",
+    "host_probe_report": "reports/prim_count_host_probe.json",
+    "makefile": "src/hybrid/Makefile",
+    "planned_parameters": {
+      "Width": 4,
+      "ResetValue": "4'h0",
+      "EnableAlertTriggerSVA": 0,
+      "PossibleActions": [
+        "Clr",
+        "Set",
+        "Incr",
+        "Decr"
+      ],
+      "path": "clear_set_increment_decrement_commit_path"
+    },
+    "generated_files": [
+      "overlays/rtlmeter/designs/OpenTitan/src/prim_count_gpu_cov_tb.sv",
+      "overlays/rtlmeter/designs/OpenTitan/tests/prim_count_coverage_regions.json"
+    ],
+    "verified_commands": [
+      "verilator --cc --timing -Wno-fatal ... --top-module prim_count_gpu_cov_tb",
+      "make -C src/hybrid prim_count_host_probe",
+      "artifacts/prim_count_obj_dir/tlul_slice_host_probe --reset-cycles 16 --post-reset-cycles 900"
+    ],
+    "host_probe_smoke": {
+      "constructor_ok": true,
+      "done_o": 1,
+      "rsp_queue_overflow_o": 0,
+      "root_size": 640,
+      "reset_cycles": 16,
+      "post_reset_cycles": 900
+    },
+    "first_pass_result": {
+      "status": "passed",
+      "report": "reports/prim_count_source_gate.json",
+      "host_probe_report": "reports/prim_count_host_probe.json",
+      "acceptance_policy": "coverage_output_equivalence",
+      "mismatch_count": 0,
+      "raw_full_state_mismatch_count": 35,
+      "compared_word_count": 29,
+      "compared_byte_count": 116,
+      "storage_size": 640,
+      "manifest_valid": true,
+      "cpu_reference_state": "artifacts/prim_count_obj_dir/prim_count_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_count_obj_dir/prim_count_gpu_from_cpu_reference_state.bin",
+      "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+      "gpu_init_sanitized": true,
+      "host_probe_reset_cycles": 16,
+      "host_probe_post_reset_cycles": 900
+    },
+    "depth_gates": {
+      "gpu_repeated_steps_gate": "config/scaling_gates/prim_count_repeated_steps.json",
+      "cpu_exact_loop_gate": "config/scaling_gates/prim_count_cpu_exact_loop_repeated_steps.json",
+      "coverage_output_depth_gate": "config/scaling_gates/prim_count_coverage_output_depth.json"
+    },
+    "depth_result": {
+      "status": "passed",
+      "report": "reports/prim_count_coverage_output_depth.json",
+      "gate": "config/scaling_gates/prim_count_coverage_output_depth.json",
+      "gpu_repeated_steps_report": "reports/prim_count_repeated_steps_scaling.json",
+      "cpu_exact_loop_report": "reports/prim_count_cpu_exact_loop_repeated_steps.json",
+      "comparison_count": 2,
+      "passed_count": 2,
+      "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+      "gpu_init_sanitized": true
+    },
+    "completed_task": "run_prim_count_coverage_output_depth_gate",
+    "active_targets_unchanged": true,
+    "active_target_count": 57,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 35,
+    "candidate_targets": [
+      "prim_count"
+    ],
+    "next_action": "promote_prim_count_to_active_target_scope"
+  }
+}

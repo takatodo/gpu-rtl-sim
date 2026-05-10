@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_prefill_decode_benchmark_review_gate",
+  "completed_task": "review_pulp_paged_kv_cache_prefill_decode_first_hybrid_benchmark_result_and_select_next_serving_rtl_gap",
+  "status": "passed",
+  "reviewed_gate": "config/scaling_gates/neural_network_rtl_prefill_decode_split_benchmark_gate.json",
+  "reviewed_summary": "reports/pulp_paged_kv_cache_prefill_decode_first_hybrid_benchmark_summary.json",
+  "accepted_result": {
+    "target": "pulp_paged_kv_cache_prefill_decode",
+    "coverage_output_equivalence": "passed_for_all_four_planned_shapes",
+    "measured_shapes": [
+      {
+        "shape": "1x1",
+        "class": "minimum_overhead_prefill_decode_smoke",
+        "cpu_to_hybrid_wall_speedup_ratio": 1.9870144732413326
+      },
+      {
+        "shape": "32x1",
+        "class": "prefill_state_parallel",
+        "cpu_to_hybrid_wall_speedup_ratio": 164.65086531226487
+      },
+      {
+        "shape": "1x32",
+        "class": "decode_repeated_single_state",
+        "cpu_to_hybrid_wall_speedup_ratio": 1.8317797270955167
+      },
+      {
+        "shape": "128x1",
+        "class": "decode_state_parallel",
+        "cpu_to_hybrid_wall_speedup_ratio": 2832.782383419689
+      }
+    ],
+    "strong_condition": "many independent states in one launch",
+    "weak_condition": "single state repeatedly launched for decode-like steps"
+  },
+  "weakest_point": "The serving-like repeated decode shape is still governed by per-step launch and transfer overhead. Adding another RTL seed would broaden evidence, but it would not address the main condition that makes hybrid weak for decode-like serving.",
+  "selected_next_gap": {
+    "task": "define_resident_execution_optimization_gate_for_decode_like_repeated_state",
+    "reason": "Resident execution is the narrowest next gate that directly targets the repeated single-state decode weakness while preserving the existing coverage-output contract.",
+    "target": "pulp_paged_kv_cache_prefill_decode",
+    "primary_shape": "1x32",
+    "comparison_baseline": "reports/pulp_paged_kv_cache_prefill_decode_hybrid_1x32.txt",
+    "candidate_policy": "reduce repeated-launch overhead without changing RTL coverage-output words"
+  },
+  "rejected_next_gaps_for_now": [
+    {
+      "gap": "full ITA/MHA execution",
+      "reason": "Higher source and dependency surface; useful later, but does not first resolve the repeated decode runtime weakness."
+    },
+    {
+      "gap": "quantized KV-cache",
+      "reason": "Important for LLM serving realism, but it changes datapath semantics before the runtime bottleneck is isolated."
+    },
+    {
+      "gap": "larger paged attention scale-up",
+      "reason": "Would likely keep strengthening the already-fast many-state class rather than the weak decode-like class."
+    }
+  ],
+  "claim_scope": "review of the prefill/decode split paged KV-cache first benchmark and selection of the next narrow runtime gate",
+  "non_claims": [
+    "not full paged attention",
+    "not full ITA MHA execution",
+    "not model-level Transformer inference",
+    "not production KV-cache memory hierarchy",
+    "not low-precision or compressed KV cache",
+    "not resident execution speedup yet",
+    "not broad modern-NN speedup",
+    "not raw full-state equality"
+  ],
+  "next_task": "define_resident_execution_optimization_gate_for_decode_like_repeated_state"
+}

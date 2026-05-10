@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "gate": "mobile_vit_reference_smoke_gate",
+  "status": "reference_model_smoke_and_cpu_kick_proxy_pipeline_passed_non_imagenet_no_accuracy_claim",
+  "prior_gate": "config/scaling_gates/mobile_vit_reference_dependency_venv_gate.json",
+  "objective": "Run a non-ImageNet smoke through MobileViT reference inference, CPU-kick proxying, and accuracy reporting to prove the local pipeline operates before real ImageNet data is available.",
+  "environment": {
+    "python": "artifacts/mobile_vit/venv/bin/python",
+    "torch": "2.11.0+cu130",
+    "transformers": "5.8.0",
+    "PIL": "12.2.0",
+    "torchvision": "0.26.0"
+  },
+  "inputs": {
+    "image": "artifacts/mobile_vit/smoke/images/smoke.jpg",
+    "labels": "artifacts/mobile_vit/smoke/labels.txt",
+    "manifest": "artifacts/mobile_vit/smoke/manifest.json",
+    "dataset_scope": "smoke_non_imagenet_generated_image"
+  },
+  "reports": {
+    "reference_predictions": "reports/mobile_vit_reference_smoke_predictions.json",
+    "cpu_kick_predictions": "reports/mobile_vit_cpu_kick_smoke_predictions.json",
+    "accuracy": "reports/mobile_vit_smoke_accuracy.json",
+    "pipeline_summary": "reports/mobile_vit_smoke_pipeline_summary.json"
+  },
+  "observed_result": {
+    "reference_prediction_count": 1,
+    "cpu_kick_prediction_count": 1,
+    "cpu_kick_count": 1,
+    "cpu_done_count": 1,
+    "pipeline_ready_accuracy_claim": false,
+    "top1_accuracy": 0.0,
+    "top5_accuracy": 0.0,
+    "top1_class_id": 549
+  },
+  "interpretation": "The selected MobileViT-S model can be loaded in the artifact venv and can produce a top-5 prediction for one generated smoke image. The prepared prediction can pass through the CPU-kick proxy and accuracy report path. This is a pipeline smoke only, not ImageNet validation and not RTL/full-CPU execution.",
+  "next_task": "provide_imagenet_validation_data_or_approved_scoped_subset_for_real_accuracy",
+  "completion_claim_allowed": false,
+  "non_claims": [
+    "not ImageNet data",
+    "not ImageNet top-1 or top-5 accuracy",
+    "not CPU-kicked RTL execution",
+    "not full CPU core execution",
+    "not model-quality claim"
+  ]
+}

@@ -66,6 +66,12 @@ Historical gate details live under `records/scaling_gates/`, with `config/scalin
 
 The config minimization audit is `records/scaling_gates/config_minimal_surface_completion_audit.json`.
 
+Upstream RTL source is provided through submodules. Initialize the active upstream source before running target templates:
+
+```bash
+git submodule update --init third_party/rtlmeter
+```
+
 ## Active Scope
 
 `active_targets:` are recorded in `config/selection.json`.

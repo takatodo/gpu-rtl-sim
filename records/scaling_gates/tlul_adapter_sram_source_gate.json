@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_adapter_sram_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "tlul_adapter_sram",
+  "family": "OpenTitan TL-UL",
+  "purpose": "Promote exactly one next source-backed TL-UL gate after the seven-seed review boundary once first-pass and depth evidence passed.",
+  "weakest_point": "tlul_adapter_sram is larger than the register adapter and adds SRAM request/response FIFOs, byte-write handling, optional integrity paths, and readback/error behavior. The first risk is adding too much overlay or target-specific runtime behavior before a first-pass coverage-output result exists.",
+  "selection_reason": [
+    "source-backed by upstream rtlmeter OpenTitan RTL",
+    "stays inside the TL-UL family",
+    "keeps a single clock and reset boundary",
+    "extends breadth from TL-UL-to-register adaptation to TL-UL-to-SRAM adaptation",
+    "is the next adapter step after tlul_adapter_reg while avoiding the multi-clock boundary in tlul_fifo_async and the debug-module typed interface in tlul_adapter_dmi"
+  ],
+  "rejected_alternatives_for_now": [
+    {
+      "target": "tlul_fifo_async",
+      "reason": "adds a multi-clock boundary before the memory-facing single-clock adapter is measured"
+    },
+    {
+      "target": "tlul_adapter_dmi",
+      "reason": "adds debug-module typed dependencies before the SRAM adapter path is exercised"
+    },
+    {
+      "target": "tlul_adapter_sram_racl",
+      "reason": "adds RACL policy typing on top of the SRAM adapter before the base SRAM adapter is measured"
+    },
+    {
+      "target": "tlul_err_resp",
+      "reason": "is a narrower error-response helper and does not exercise memory-facing adapter breadth"
+    }
+  ],
+  "source_backing": {
+    "upstream_module": "third_party/rtlmeter/designs/OpenTitan/src/tlul_adapter_sram.sv",
+    "module_name": "tlul_adapter_sram",
+    "primary_dependencies": [
+      "third_party/rtlmeter/designs/OpenTitan/src/tlul_pkg.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/top_pkg.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/prim_util_pkg.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/tlul_err.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/tlul_cmd_intg_chk.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/tlul_rsp_intg_gen.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/tlul_sram_byte.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/tlul_data_integ_enc.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/prim_fifo_sync.sv"
+    ],
+    "source_exists": true
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_adapter_sram_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_sram_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/tlul_adapter_sram.json",
+    "status": "defined",
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_adapter_sram_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_sram_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/tlul_adapter_sram.json",
+    "host_probe_target": "tlul_adapter_sram_host_probe"
+  },
+  "target_scope": [
+    {
+      "target": "tlul_adapter_sram",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/tlul_adapter_sram.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_sram_coverage_regions.json",
+      "mdir": "artifacts/tlul_adapter_sram_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_adapter_sram_obj_dir/tlul_adapter_sram_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_adapter_sram_obj_dir/tlul_adapter_sram_gpu_from_cpu_reference_state.bin",
+      "expected_report": "reports/tlul_adapter_sram_source_gate.json"
+    }
+  ],
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "coverage_output_contract": {
+    "planned_manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18,
+      "policy": "manifest regions must cover each real_toggle_subset_word[0..17]_o exactly once"
+    },
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116
+  },
+  "acceptance": {
+    "define_before_implementation": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg"
+    ],
+    "candidate_targets_contains_only": [
+      "tlul_adapter_sram"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that tlul_adapter_sram remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "claim_on_pass": {
+    "allowed": [
+      "one additional OpenTitan TL-UL source-backed SRAM-adapter seed reaches initialized-GPU coverage-output equivalence"
+    ],
+    "forbidden": [
+      "raw full-state equality",
+      "zero-initialized GPU scaling correctness",
+      "non-TL-UL generality",
+      "multi-clock TL-UL async correctness",
+      "RACL policy correctness",
+      "restored VeeR-EL2 or XuanTie-E902 support"
+    ]
+  },
+  "artifacts": {
+    "expected_report": "reports/tlul_adapter_sram_source_gate.json",
+    "generated_outputs_only": true
+  },
+  "next_action": "hold_for_review_after_eight_seed_boundary",
+  "next_action_on_fail": "choose_smaller_single_clock_tlul_gate",
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/tlul_adapter_sram_source_gate.json",
+    "mdir": "artifacts/tlul_adapter_sram_obj_dir",
+    "cubin": "artifacts/tlul_adapter_sram_obj_dir/vl_batch_gpu.cubin",
+    "acceptance_policy": "coverage_output_equivalence",
+    "strict_output_word_count": 29,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "manifest_valid": true,
+    "manifest_region_count": 5,
+    "storage_size": 960,
+    "cpu_reference_state": "artifacts/tlul_adapter_sram_obj_dir/tlul_adapter_sram_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/tlul_adapter_sram_obj_dir/tlul_adapter_sram_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "depth_result": {
+    "status": "passed",
+    "gate": "config/scaling_gates/tlul_adapter_sram_coverage_output_depth.json",
+    "report": "reports/tlul_adapter_sram_coverage_output_depth.json",
+    "gpu_repeated_steps_gate": "config/scaling_gates/tlul_adapter_sram_repeated_steps.json",
+    "gpu_repeated_steps_report": "reports/tlul_adapter_sram_repeated_steps_scaling.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/tlul_adapter_sram_cpu_exact_loop_repeated_steps.json",
+    "cpu_exact_loop_report": "reports/tlul_adapter_sram_cpu_exact_loop_repeated_steps.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_registry": "config/targets.json",
+    "shared_equivalence_gate": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+    "shared_depth_gate": "config/scaling_gates/tlul_coverage_output_depth.json",
+    "shared_depth_report": "reports/tlul_coverage_output_depth.json",
+    "shared_depth_comparison_count": 22,
+    "shared_depth_passed_count": 22
+  },
+  "next_action_on_pass": "hold_for_review_after_eight_seed_boundary"
+}

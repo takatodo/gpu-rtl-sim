@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "objective": "Make the representative modern-LLM-serving-like RTL hybrid result set reproducible from a single public command.",
+  "status": "passed_representative_results_have_one_command_reproduction_flow",
+  "source_packaging_gate": "config/scaling_gates/public_results_packaging_gate.json",
+  "current_priority": "hold_for_review_after_one_command_reproduction_flow",
+  "public_cli": "src/tools/run_results_reproduction.py",
+  "shared_module": "src/tools/results_reproduction.py",
+  "results_doc": "docs/results.md",
+  "dry_run_command": "python3 src/tools/run_results_reproduction.py --dry-run",
+  "full_run_command": "python3 src/tools/run_results_reproduction.py",
+  "mobile_vit_imagenet_128_dry_run_command": "python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128 --dry-run",
+  "mobile_vit_imagenet_128_full_run_command": "python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128",
+  "representative_workloads": [
+    {
+      "name": "full_ita_mha_prefill_like",
+      "shape": "64x1",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 64x1",
+      "summary": "reports/pulp_ita_mha_64x1_1x64_scaling_summary.json"
+    },
+    {
+      "name": "full_ita_mha_decode_like",
+      "shape": "1x64",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x64",
+      "summary": "reports/pulp_ita_mha_64x1_1x64_scaling_summary.json"
+    },
+    {
+      "name": "full_ita_mha_resident_decode",
+      "shape": "1x64",
+      "command_contains": "python3 src/tools/run_vl_hybrid.py --mdir artifacts/pulp_ita_mha_obj_dir --nstates 1 --steps 64 --resident-steps",
+      "compare": "reports/pulp_ita_mha_cpu_vs_hybrid_1x64_resident_coverage_output_compare.json"
+    },
+    {
+      "name": "full_ita_mha_resident_batch_decode",
+      "shape": "32x64",
+      "command_contains": "python3 src/tools/run_vl_hybrid.py --mdir artifacts/pulp_ita_mha_obj_dir --nstates 32 --steps 64 --resident-steps",
+      "compare": "reports/pulp_ita_mha_cpu_vs_hybrid_32x64_resident_coverage_output_compare.json"
+    },
+    {
+      "name": "paged_attention_kv_score_state_parallel",
+      "shape": "64x1",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_attention_kv_score.json --shape 64x1",
+      "summary": "reports/pulp_paged_attention_kv_score_first_hybrid_benchmark_summary.json"
+    },
+    {
+      "name": "mobile_vit_imagenet_128_cpu_kick_hybrid_proxy",
+      "shape": "cfg_batch_length=128",
+      "command": "python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128",
+      "summary": "reports/mobile_vit_hybrid_128_summary.json",
+      "compare": "reports/mobile_vit_cpu_kick_rtl_proxy_imagenet_batch1_128_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+    }
+  ],
+  "acceptance_policy": {
+    "public_cli_is_thin": true,
+    "reusable_logic_in_shared_module": true,
+    "dry_run_must_print_representative_commands": true,
+    "docs_results_must_reference_cli": true,
+    "contract_test_required": true,
+    "full_execution_not_required_for_contract_test": true
+  },
+  "non_claims": [
+    "not a CI runtime guarantee for full GPU execution",
+    "not multi-run statistical timing",
+    "not production LLM serving throughput",
+    "not raw full-state equality"
+  ],
+  "next_task": "hold_for_review_after_one_command_reproduction_flow"
+}

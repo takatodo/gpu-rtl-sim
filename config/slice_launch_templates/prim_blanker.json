@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "status": "active",
+  "target": "OpenTitan.prim_blanker",
+  "source_gate": "config/scaling_gates/prim_blanker_source_gate.json",
+  "top_module": "prim_blanker_gpu_cov_tb",
+  "build": {
+    "mdir": "artifacts/prim_blanker_obj_dir",
+    "work_dir": "work/slice_pilots/prim_blanker",
+    "host_probe_target": "prim_blanker_host_probe"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_and2.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_and2.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_blanker.sv"
+  ],
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_blanker"
+    ],
+    "active_target_count_unchanged_until_first_pass": 52,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 30,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_blanker remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_blanker_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_blanker_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_blanker.json",
+    "host_probe_target": "prim_blanker_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "overlay_ready_first_pass_and_depth_passed",
+    "planned_parameters": {
+      "Width": 8,
+      "path": "enable_gated_blanking_wrapper"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "overlay": {
+    "status": "overlay_ready_first_pass_and_depth_passed",
+    "target": "prim_blanker",
+    "source_gate": "config/scaling_gates/prim_blanker_source_gate.json",
+    "launch_template": "config/slice_launch_templates/prim_blanker.json",
+    "coverage_tb": "overlays/rtlmeter/designs/OpenTitan/src/prim_blanker_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_blanker_coverage_regions.json",
+    "host_probe_target": "prim_blanker_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "completed_task": "implement_prim_blanker_overlay_gate",
+    "next_action": "package_thirty_first_primitive_active_boundary"
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 20,
+    "prim_and2_source_line_count": 51,
+    "generic_and2_source_line_count": 17,
+    "planned_Width": 8,
+    "uses_prim_and2": true,
+    "blanking_enable_path": true,
+    "all_widths_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true
+  },
+  "candidate_targets": [],
+  "active_target_count": 53,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 31,
+  "recorded_outputs": [
+    "config/scaling_gates/prim_blanker_source_gate.json",
+    "config/slice_launch_templates/prim_blanker.json",
+    "overlays/rtlmeter/designs/OpenTitan/src/prim_blanker_gpu_cov_tb.sv",
+    "overlays/rtlmeter/designs/OpenTitan/tests/prim_blanker_coverage_regions.json",
+    "src/hybrid/Makefile",
+    "reports/prim_blanker_host_probe.json",
+    "reports/prim_blanker_source_gate.json",
+    "config/scaling_gates/prim_blanker_repeated_steps.json",
+    "config/scaling_gates/prim_blanker_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_blanker_coverage_output_depth.json",
+    "reports/prim_blanker_repeated_steps_scaling.json",
+    "reports/prim_blanker_cpu_exact_loop_repeated_steps.json",
+    "reports/prim_blanker_coverage_output_depth.json"
+  ],
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_blanker_source_gate.json",
+    "host_probe_report": "reports/prim_blanker_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "raw_full_state_mismatch_count": 31,
+    "manifest_valid": true,
+    "storage_size": 640,
+    "cpu_reference_state": "artifacts/prim_blanker_obj_dir/prim_blanker_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_blanker_obj_dir/prim_blanker_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_blanker_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gate": "config/scaling_gates/prim_blanker_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_blanker_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_blanker_cpu_exact_loop_repeated_steps.json",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "promotion_result": {
+    "schema_version": 1,
+    "status": "promoted_to_active_scope",
+    "target": "prim_blanker",
+    "completed_task": "promote_prim_blanker_to_active_target_scope",
+    "active_target_count": 53,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 31,
+    "candidate_targets": [],
+    "depth_result": "reports/prim_blanker_coverage_output_depth.json",
+    "non_claims_preserved": [
+      "all Width parameterizations",
+      "raw full-state equality",
+      "zero-initialized GPU correctness",
+      "full OpenTitan primitive-family support"
+    ]
+  },
+  "next_action": "package_thirty_first_primitive_active_boundary"
+}

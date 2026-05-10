@@ -1,0 +1,148 @@
+{
+  "schema_version": "scaling-gate-v1",
+  "gate": "tlul_err_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "tlul_err",
+  "family": "OpenTitan TL-UL",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "coverage_output_contract": {
+    "planned_manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18,
+      "policy": "manifest regions must cover each real_toggle_subset_word[0..17]_o exactly once"
+    },
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116
+  },
+  "target_scope": [
+    {
+      "target": "tlul_err",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/tlul_err.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_err_coverage_regions.json",
+      "mdir": "artifacts/tlul_err_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_err_obj_dir/tlul_err_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_err_obj_dir/tlul_err_gpu_from_cpu_reference_state.bin",
+      "expected_report": "reports/tlul_err_source_gate.json"
+    }
+  ],
+  "weakest_point": "tlul_err is already exercised transitively by active adapter and sink seeds; the standalone candidate is valuable only if it isolates TL-UL request error classification without adding a response path or broader dependency surface.",
+  "why_this_target": [
+    "single-clock TL-UL request classifier",
+    "source-backed by upstream rtlmeter",
+    "adds standalone opcode, size, mask, address-alignment, and instruction-type error behavior after the error responder seed",
+    "avoids the multi-clock boundary in tlul_fifo_async",
+    "avoids debug-module typed dependencies in tlul_adapter_dmi",
+    "avoids RACL policy package dependencies in the RACL adapters",
+    "does not restore archived non-TL-UL source",
+    "should reuse shared Verilator/GPU/runtime flow without target-specific hooks"
+  ],
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/tlul_err.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/tlul_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/top_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_pkg.sv"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_err_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_err_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/tlul_err.json",
+    "status": "defined",
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_err_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_err_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/tlul_err.json",
+    "host_probe_target": "tlul_err_host_probe",
+    "status": "defined"
+  },
+  "acceptance": {
+    "define_before_implementation": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp"
+    ],
+    "candidate_targets_contains_only": [
+      "tlul_err"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that tlul_err remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "non_claims": [
+    "not raw full-state equality",
+    "not zero-initialized GPU scaling correctness",
+    "not non-TL-UL coverage-output equivalence",
+    "not DMI adapter coverage",
+    "not RACL adapter coverage",
+    "not async FIFO coverage",
+    "not full RTL application coverage closure"
+  ],
+  "next_action": "package_eleven_seed_tlul_boundary",
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/tlul_err_source_gate.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "manifest_valid": true,
+    "storage_size": 704,
+    "cpu_reference_state": "artifacts/tlul_err_obj_dir/tlul_err_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/tlul_err_obj_dir/tlul_err_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "depth_result": {
+    "status": "passed",
+    "gate": "config/scaling_gates/tlul_err_coverage_output_depth.json",
+    "report": "reports/tlul_err_coverage_output_depth.json",
+    "gpu_repeated_steps_gate": "config/scaling_gates/tlul_err_repeated_steps.json",
+    "gpu_repeated_steps_report": "reports/tlul_err_repeated_steps_scaling.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/tlul_err_cpu_exact_loop_repeated_steps.json",
+    "cpu_exact_loop_report": "reports/tlul_err_cpu_exact_loop_repeated_steps.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_registry": "config/targets.json",
+    "shared_equivalence_gate": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+    "shared_depth_gate": "config/scaling_gates/tlul_coverage_output_depth.json",
+    "shared_depth_report": "reports/tlul_coverage_output_depth.json",
+    "shared_depth_comparison_count": 28,
+    "shared_depth_passed_count": 28
+  },
+  "next_action_on_pass": "package_eleven_seed_tlul_boundary"
+}

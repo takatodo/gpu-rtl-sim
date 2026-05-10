@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "gate": "llm_soc_real_cpu_core_source_selection_gate",
+  "status": "selected_real_cpu_candidate_without_import",
+  "objective": "If CPU in CPUからLLMのキック requires an architectural CPU core, select one real CPU source before importing code.",
+  "prior_gate": "config/scaling_gates/llm_soc_real_cpu_or_full_llm_next_gate.json",
+  "selected_candidate": {
+    "name": "Ibex",
+    "repository": "https://github.com/lowRISC/ibex",
+    "upstream_owner": "lowRISC",
+    "candidate_role": "single real CPU core candidate for an RV32 CPU-to-LLM-proxy kick gate",
+    "why_selected": [
+      "Ibex is a small 32-bit RISC-V CPU core written in SystemVerilog.",
+      "Ibex is close to the current OpenTitan-oriented repository context.",
+      "The lowRISC public material describes Ibex as suitable for embedded control, which matches a CPU-side accelerator kick role.",
+      "The repository is Apache-2.0, which is compatible with submodule-based evaluation subject to exact license verification before import."
+    ],
+    "first_gate_shape": {
+      "program": "minimal RV32 software image writes seed/shape/tensor registers, writes kick, polls done for Q/K/V stages, then halts",
+      "bridge": "minimal MMIO bridge from CPU data bus to existing pulp_quantized_kv_cache proxy control registers",
+      "comparison": "CPU-vs-hybrid coverage-output equivalence over CPU-visible kick/done/proxy output words",
+      "speedup_claim_allowed": false
+    }
+  },
+  "source_evidence": [
+    {
+      "source": "https://github.com/lowRISC/ibex",
+      "finding": "The repository identifies Ibex as a small 32-bit RISC-V CPU core and contains RTL under an Apache-2.0 license."
+    },
+    {
+      "source": "https://lowrisc.org/ibex/",
+      "finding": "lowRISC describes Ibex as an open-source embedded RISC-V processor with OpenTitan usage and embedded-control fit."
+    },
+    {
+      "source": "https://github.com/YosysHQ/picorv32",
+      "finding": "PicoRV32 is a smaller RV32IMC-oriented option, useful as a fallback if active surface is prioritized over OpenTitan affinity."
+    },
+    {
+      "source": "https://github.com/chipsalliance/Cores-VeeR-EL2",
+      "finding": "VeeR EL2 is a real RISC-V core, but the repo policy already removed VeeR/XuanTie active source and warns against restoring them casually."
+    }
+  ],
+  "rejected_or_deferred_candidates": [
+    {
+      "name": "PicoRV32",
+      "repository": "https://github.com/YosysHQ/picorv32",
+      "decision": "deferred",
+      "reason": "Likely smaller active surface, but less aligned with the existing OpenTitan/lowRISC context than Ibex."
+    },
+    {
+      "name": "VeeR EL2",
+      "repository": "https://github.com/chipsalliance/Cores-VeeR-EL2",
+      "decision": "rejected_for_current_active_surface",
+      "reason": "This repository intentionally archived VeeR-EL2 source and runtime hooks; restoring it would violate the current surface-reduction direction without a stronger reason."
+    },
+    {
+      "name": "XuanTie E902",
+      "repository": "https://github.com/XUANTIE-RV/opene902",
+      "decision": "rejected_for_current_active_surface",
+      "reason": "This repository intentionally archived XuanTie-E902 source and runtime hooks; restoring it would undo prior active-surface reduction."
+    }
+  ],
+  "import_gate_requirements": {
+    "required_next_artifact": "config/scaling_gates/llm_soc_ibex_cpu_kick_import_gate.json",
+    "must_decide_before_import": [
+      "exact Ibex commit",
+      "minimal submodule path under third_party/ibex",
+      "license and notice handling",
+      "whether to use Ibex simple system or bare core only",
+      "minimal instruction memory image format",
+      "MMIO bridge signal contract",
+      "coverage-output words that prove Q/K/V kick, poll, done, and proxy output progress"
+    ],
+    "must_not_do_before_import_gate": [
+      "vendor Ibex source directly into overlays/",
+      "restore archived VeeR-EL2 or XuanTie-E902 active sources",
+      "claim RV32 compliance from the existing tiny instruction-ROM CPU",
+      "claim full LLM inference or serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "define_only": true,
+    "selected_one_cpu_candidate": true,
+    "no_new_source_import": true,
+    "no_completion_claim": true,
+    "speedup_claim_allowed": false
+  },
+  "followup_gate": "config/scaling_gates/llm_soc_ibex_cpu_kick_import_gate.json",
+  "next_task": "instantiate_ibex_core_in_overlay_or_record_dependency_blocker"
+}

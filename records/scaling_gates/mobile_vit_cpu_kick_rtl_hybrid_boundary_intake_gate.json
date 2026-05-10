@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "gate": "mobile_vit_cpu_kick_rtl_hybrid_boundary_intake_gate",
+  "status": "first_cpu_vs_hybrid_coverage_output_equivalence_passed_for_rtl_proxy_control_scope",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "objective": "Move the completed MobileViT host CLI CPU-kick ImageNet evaluation toward the GPU-hybrid/RTL boundary by adding a minimal RTL proxy that reproduces the CPU-visible LOAD_MODEL / LOAD_IMAGE / KICK_INFER / POLL_DONE control sequence.",
+  "prior_goal_evidence": {
+    "goal_audit": "reports/mobile_vit_goal_completion_audit.json",
+    "pipeline_summary": "reports/mobile_vit_eval_pipeline_summary.json",
+    "cpu_kick_predictions": "reports/mobile_vit_cpu_kick_predictions.json",
+    "accuracy_report": "reports/mobile_vit_imagenet_accuracy.json",
+    "dataset_scope": "imagenet_validation",
+    "evaluated_count": 50000,
+    "cpu_kick_count": 50000,
+    "cpu_done_count": 50000,
+    "top1_accuracy": 0.77022,
+    "top5_accuracy": 0.93594
+  },
+  "new_rtl_surface": {
+    "target": "mobile_vit_cpu_kick_rtl_proxy",
+    "top_module": "mobile_vit_cpu_kick_rtl_proxy_gpu_cov_tb",
+    "overlay": "overlays/mobile_vit/src/mobile_vit_cpu_kick_rtl_proxy_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/mobile_vit/tests/mobile_vit_cpu_kick_rtl_proxy_coverage_regions.json",
+    "launch_template": "config/slice_launch_templates/mobile_vit_cpu_kick_rtl_proxy.json",
+    "host_probe_target": "mobile_vit_cpu_kick_rtl_proxy_host_probe"
+  },
+  "target_scope": [
+    {
+      "target": "mobile_vit_cpu_kick_rtl_proxy",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/mobile_vit_cpu_kick_rtl_proxy.json",
+      "coverage_manifest": "overlays/mobile_vit/tests/mobile_vit_cpu_kick_rtl_proxy_coverage_regions.json",
+      "mdir": "artifacts/mobile_vit_cpu_kick_rtl_proxy_obj_dir",
+      "cpu_reference_state": "artifacts/mobile_vit_cpu_kick_rtl_proxy_obj_dir/mobile_vit_cpu_kick_rtl_proxy_32_cpu.bin",
+      "gpu_candidate_state": "artifacts/mobile_vit_cpu_kick_rtl_proxy_obj_dir/mobile_vit_cpu_kick_rtl_proxy_32_gpu.bin"
+    }
+  ],
+  "control_sequence": [
+    "LOAD_MODEL",
+    "LOAD_IMAGE",
+    "KICK_INFER",
+    "POLL_DONE"
+  ],
+  "first_compare_scope": {
+    "dataset_scope": "scoped_subset:rtl_proxy_control",
+    "recommended_cfg_batch_length": 32,
+    "compare_outputs": [
+      "load_model_count",
+      "load_image_count",
+      "kick_count",
+      "poll_count",
+      "done_count",
+      "status",
+      "result_signature"
+    ],
+    "reason": "The completed full ImageNet run proves model accuracy through host CLI CPU-kick. This gate isolates the next missing claim: whether the CPU-visible control sequence has an RTL/hybrid coverage-output boundary."
+  },
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      }
+    ],
+    "manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18
+    },
+    "total_words_per_state": 21,
+    "total_bytes_per_state": 84,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "completion_claim_allowed": true,
+  "result": {
+    "verilator_obj_dir": "artifacts/mobile_vit_cpu_kick_rtl_proxy_obj_dir",
+    "gpu_cubin": "artifacts/mobile_vit_cpu_kick_rtl_proxy_obj_dir/vl_batch_gpu.cubin",
+    "storage_size_bytes": 576,
+    "cpu_reference_report": "reports/mobile_vit_cpu_kick_rtl_proxy_32_cpu_reference.json",
+    "hybrid_report": "reports/mobile_vit_cpu_kick_rtl_proxy_32_hybrid.txt",
+    "coverage_output_compare": "reports/mobile_vit_cpu_kick_rtl_proxy_32_cpu_vs_hybrid_coverage_output_compare.json",
+    "cfg_batch_length": 32,
+    "acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_equivalence": "passed",
+    "coverage_output_mismatch_count": 0,
+    "coverage_output_compared_words": 21,
+    "coverage_output_compared_bytes": 84,
+    "raw_state_match": false,
+    "raw_state_first_non_internal_mismatch": "progress_cycle_count_o/focused_wave_word0_o one eval-cycle boundary difference; excluded from the CPU-visible control contract"
+  },
+  "next_task": "select_next_goal_after_mobile_vit_cpu_kick_rtl_hybrid_boundary",
+  "non_claims": [
+    "not MobileViT numerical inference in RTL",
+    "not ImageNet accuracy in RTL",
+    "not full CPU-core execution",
+    "not full SoC boot",
+    "not raw final-state equality",
+    "not cycle-count equality for focused_wave_word0_o",
+    "not broad speedup"
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "schema_version": "slice-launch-template-v1",
+  "slice_name": "prim_xoshiro256pp",
+  "target": "OpenTitan.prim_xoshiro256pp",
+  "family": "OpenTitan primitive",
+  "status": "active",
+  "pilot_gate": "Source-backed prim_xoshiro256pp candidate after seventy-fifth primitive review acceptance.",
+  "source_gate": "config/scaling_gates/prim_xoshiro256pp_source_gate.json",
+  "top_module": "prim_xoshiro256pp_gpu_cov_tb",
+  "source": {
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xoshiro256pp.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xoshiro256pp_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xoshiro256pp_coverage_regions.json"
+  },
+  "build": {
+    "mdir": "artifacts/prim_xoshiro256pp_obj_dir",
+    "work_dir": "work/slice_pilots/prim_xoshiro256pp",
+    "host_probe_target": "prim_xoshiro256pp_host_probe"
+  },
+  "coverage_output_contract": {
+    "gate": "config/scaling_gates/prim_xoshiro256pp_source_gate.json",
+    "strict_output_words": 29,
+    "strict_output_bytes": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_xoshiro256pp"
+    ],
+    "active_target_count_unchanged_until_first_pass": 97,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 75
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 87,
+    "planned_OutputDw": 64,
+    "planned_DefaultSeed_nonzero": true,
+    "single_stage_only_claimed": true
+  },
+  "candidate_targets": [],
+  "active_target_count": 98,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 76,
+  "next_action": "hold_for_review_after_seventy_sixth_primitive_boundary",
+  "first_pass_result": {
+    "report": "reports/prim_xoshiro256pp_source_gate.json",
+    "selected_acceptance_policy_passed": true,
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_mismatch_count": 0,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "raw_mismatch_count": 32,
+    "mismatch_role_summary": {
+      "verilator_internal": {
+        "field_count": 4,
+        "mismatch_bytes": 32
+      }
+    },
+    "storage_size": 1024,
+    "root_layout_member_count": 141
+  },
+  "depth_gate_paths": [
+    "config/scaling_gates/prim_xoshiro256pp_repeated_steps.json",
+    "config/scaling_gates/prim_xoshiro256pp_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_xoshiro256pp_coverage_output_depth.json"
+  ],
+  "depth_result": {
+    "report": "reports/prim_xoshiro256pp_coverage_output_depth.json",
+    "status": "ok",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "acceptance": {
+      "all_comparisons_have_cpu_and_gpu_dump_paths": true,
+      "all_dump_byte_counts_match_expected_dump_bytes": true,
+      "all_comparisons_pass_coverage_output_equivalence": true
+    }
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_count": 98,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 76,
+    "candidate_targets": [],
+    "primitive_equivalence_gate": "config/scaling_gates/prim_xoshiro256pp_source_gate.json",
+    "primitive_depth_gate": "config/scaling_gates/prim_xoshiro256pp_coverage_output_depth.json",
+    "primitive_depth_report": "reports/prim_xoshiro256pp_coverage_output_depth.json"
+  }
+}

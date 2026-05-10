@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "gate": "prim_xilinx_flop_en_coverage_output_depth",
+  "status": "defined",
+  "source_equivalence_gate": "config/scaling_gates/prim_xilinx_flop_en_source_gate.json",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "purpose": "Compare candidate prim_xilinx_flop_en CPU exact-loop final-state dumps against initialized GPU depth dumps with coverage_output_equivalence.",
+  "report_contract": {
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "cpu_dump_field": "cpu_final_state_dump",
+    "gpu_dump_field": "generated_gpu_dump",
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "comparisons": [
+    {
+      "name": "prim_xilinx_flop_en_repeated_steps_32x1",
+      "target": "prim_xilinx_flop_en",
+      "cpu_report": "reports/prim_xilinx_flop_en_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/prim_xilinx_flop_en_repeated_steps.json",
+      "gpu_report": "reports/prim_xilinx_flop_en_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "prim_xilinx_flop_en_repeated_steps_32x4",
+      "target": "prim_xilinx_flop_en",
+      "cpu_report": "reports/prim_xilinx_flop_en_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/prim_xilinx_flop_en_repeated_steps.json",
+      "gpu_report": "reports/prim_xilinx_flop_en_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    }
+  ],
+  "acceptance": {
+    "all_comparisons_have_cpu_and_gpu_dump_paths": true,
+    "all_dump_byte_counts_match_expected_dump_bytes": true,
+    "all_comparisons_pass_coverage_output_equivalence": true
+  },
+  "non_claims": [
+    "not raw full-state equality",
+    "not zero-initialized GPU scaling correctness",
+    "not broad non-TL-UL runtime generality",
+    "not clock-gating correctness",
+    "not security buffer hardening",
+    "not active-target promotion until this gate passes and source of truth is updated"
+  ],
+  "artifacts": {
+    "report": "reports/prim_xilinx_flop_en_coverage_output_depth.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "promote_prim_xilinx_flop_en_to_active_target_scope",
+  "next_action_on_fail": "diagnose_prim_xilinx_flop_en_coverage_output_depth_mismatch"
+}

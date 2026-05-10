@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_hybrid_goal_completion_audit",
+  "status": "objective_satisfied_for_scoped_rtl_seed_investigation",
+  "objective": "Neural Network RTLをhybridで実行し、CPU実行よりどれぐらい早くなるのか、どのようなテストベンチなら早くなるのかを調査する",
+  "success_criteria": [
+    {
+      "requirement": "Run real neural-network accelerator RTL through the hybrid path.",
+      "evidence": [
+        "config/scaling_gates/neural_network_rtl_nvdla_cmac_a2cacc_first_hybrid_benchmark_gate.json",
+        "config/scaling_gates/neural_network_rtl_nvdla_cmac_core_mac_first_compute_benchmark_gate.json",
+        "config/scaling_gates/neural_network_rtl_pulp_ita_dotp_first_hybrid_benchmark_gate.json",
+        "config/scaling_gates/neural_network_rtl_pulp_ita_softmax_top_first_hybrid_benchmark_gate.json"
+      ],
+      "result": "satisfied"
+    },
+    {
+      "requirement": "Compare CPU execution against hybrid execution with coverage-output equivalence.",
+      "evidence": [
+        "reports/nvdla_cmac_a2cacc_first_hybrid_benchmark_summary.json",
+        "reports/nvdla_cmac_core_mac_first_compute_benchmark_summary.json",
+        "reports/nvdla_cmac_core_mac_state_parallel_shape_expansion_summary.json",
+        "reports/pulp_ita_dotp_first_hybrid_benchmark_summary.json",
+        "reports/pulp_ita_softmax_top_first_hybrid_benchmark_summary.json"
+      ],
+      "result": "satisfied"
+    },
+    {
+      "requirement": "Quantify how much faster hybrid is than CPU.",
+      "evidence": {
+        "nvdla_cmac_a2cacc": "six shapes passed; maximum CPU-to-hybrid-wall speedup 11764.742765273311x",
+        "nvdla_cmac_core_mac_flat": "five first compute shapes passed; 1x64 was slower at 0.133671475441474x, while state-parallel shapes were faster",
+        "nvdla_cmac_core_mac_state_parallel": "three additional state-parallel shapes passed; speedup range 15.288825334405816x to 310.9863588667366x",
+        "pulp_ita_dotp": "three shapes passed; speedup range 0.5756171840517875x to 1431.55023923445x",
+        "pulp_ita_softmax_top": "three shapes passed; speedup range 0.9760930159724396x to 943.6308724832215x"
+      },
+      "result": "satisfied"
+    },
+    {
+      "requirement": "Identify which testbench shapes are fast.",
+      "evidence": "State-parallel many-state shapes are consistently fast; minimum-overhead 1x1 can be faster but fixed-overhead dominated; single-state repeated-launch shapes are weak or slower.",
+      "result": "satisfied"
+    },
+    {
+      "requirement": "Preserve non-claims and distinguish scoped RTL-seed results from full modern NN execution.",
+      "evidence": [
+        "docs/status.md",
+        "docs/roadmap.md",
+        "README.md"
+      ],
+      "result": "satisfied"
+    }
+  ],
+  "prompt_to_artifact_checklist": [
+    {
+      "prompt_item": "NN RTLをhybridで実行",
+      "artifacts": [
+        "artifacts/nvdla_cmac_a2cacc_obj_dir/vl_batch_gpu.cubin",
+        "artifacts/nvdla_cmac_core_mac_flat_obj_dir/vl_batch_gpu.cubin",
+        "artifacts/pulp_ita_dotp_obj_dir/vl_batch_gpu.cubin",
+        "artifacts/pulp_ita_softmax_top_obj_dir/vl_batch_gpu.cubin"
+      ],
+      "verified_by": "benchmark gates and hybrid reports"
+    },
+    {
+      "prompt_item": "CPU実行よりどれぐらい早いか",
+      "artifacts": [
+        "reports/pulp_ita_dotp_first_hybrid_benchmark_summary.json",
+        "reports/pulp_ita_softmax_top_first_hybrid_benchmark_summary.json"
+      ],
+      "verified_by": "CPU elapsed, hybrid GPU-event time, hybrid wall time, and speedup ratios"
+    },
+    {
+      "prompt_item": "どのテストベンチなら早いか",
+      "artifacts": [
+        "docs/status.md",
+        "docs/roadmap.md",
+        "config/selection.json"
+      ],
+      "verified_by": "shape classifications across NVDLA and PULP ITA"
+    },
+    {
+      "prompt_item": "現在の最新NNに足りない物を調査",
+      "artifacts": [
+        "docs/status.md",
+        "docs/roadmap.md",
+        "README.md"
+      ],
+      "verified_by": "modern NN gap notes: attention, softmax, KV-cache, low precision, MoE/GQA/MQA/speculative decoding, modern graph/model ingestion"
+    }
+  ],
+  "covered_scope": [
+    "NVDLA CNN-era routing and CMAC datapath seeds",
+    "PULP ITA attention-score dot-product datapath seed",
+    "PULP ITA integer softmax/reduction datapath seed",
+    "CPU-vs-hybrid wall-time classification for smoke, state-parallel, and single-state repeated shapes"
+  ],
+  "residual_non_claims": [
+    "not full NVDLA accelerator execution",
+    "not full ITA MHA execution",
+    "not model-level Transformer inference",
+    "not KV-cache benchmark",
+    "not low-precision FP8/FP4/NVFP4/INT4 execution",
+    "not broad modern-NN accelerator completeness",
+    "not broad speedup beyond measured RTL seeds"
+  ],
+  "completion_decision": "complete_for_the_user_objective_as_scoped_investigation",
+  "next_optional_followup": "define_full_ita_or_kv_cache_modern_nn_gap_gate"
+}

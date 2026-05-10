@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "gate": "prim_flop_2sync_cpu_exact_loop_repeated_steps",
+  "target": "prim_flop_2sync",
+  "source_gpu_gate": "config/scaling_gates/prim_flop_2sync_repeated_steps.json",
+  "purpose": "Generate candidate CPU exact-loop final-state dumps for the prim_flop_2sync repeated-step depth gate.",
+  "preconditions": [
+    "prim_flop_2sync_repeated_steps_scaling passes",
+    "prim_flop_2sync host probe is built with make -C src/hybrid prim_flop_2sync_host_probe",
+    "reports/prim_flop_2sync_repeated_steps_scaling.json exists when CPU/GPU comparison fields are requested"
+  ],
+  "runs": [
+    {
+      "name": "steps_1_batch_32_cpu_exact_loop",
+      "nstates": 32,
+      "steps": 1,
+      "reset_cycles": 16,
+      "post_reset_cycles": 900,
+      "required": true
+    },
+    {
+      "name": "steps_4_batch_32_cpu_exact_loop",
+      "nstates": 32,
+      "steps": 4,
+      "reset_cycles": 16,
+      "post_reset_cycles": 900,
+      "required": true
+    }
+  ],
+  "acceptance": {
+    "run_exits_zero": true,
+    "each_loop_reports_constructor_ok": true,
+    "each_loop_root_size_matches_gpu_storage_size": true,
+    "each_loop_writes_cpu_final_state_dump": true,
+    "compare_against_gpu_scaling_report_when_present": true
+  },
+  "comparison_policy": {
+    "allowed_claims": [
+      "single-process CPU repeated eval_step final-state dumps for prim_flop_2sync at nstates=32",
+      "CPU/GPU state-step throughput ratio for this candidate gate shape",
+      "CPU final-state dumps are suitable inputs for candidate coverage-output depth comparison"
+    ],
+    "non_claims": [
+      "not raw full-state equality",
+      "not active-target promotion by itself",
+      "CPU repeated steps are modeled as repeated eval_step calls after the same 900-event initialized reference point used by the one-state source gate",
+      "not SIMULATION random-delay correctness",
+      "not clock-gating correctness",
+      "not security buffer hardening"
+    ],
+    "next_precision_step": "run prim_flop_2sync coverage-output depth using initialized GPU candidates"
+  },
+  "artifacts": {
+    "report": "reports/prim_flop_2sync_cpu_exact_loop_repeated_steps.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "run_prim_flop_2sync_coverage_output_depth_gate",
+  "next_action_on_fail": "diagnose_prim_flop_2sync_cpu_exact_loop_repeated_steps"
+}

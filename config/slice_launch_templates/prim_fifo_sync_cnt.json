@@ -1,0 +1,48 @@
+{
+  "schema_version": "slice-launch-template-v1",
+  "slice_name": "prim_fifo_sync_cnt",
+  "target": "OpenTitan.prim_fifo_sync_cnt",
+  "family": "OpenTitan primitive",
+  "status": "promoted_to_active_scope",
+  "pilot_gate": "Source-backed prim_fifo_sync_cnt gate promoted after first-pass and depth coverage-output evidence.",
+  "source_gate": "config/scaling_gates/prim_fifo_sync_cnt_source_gate.json",
+  "top_module": "prim_fifo_sync_cnt_gpu_cov_tb",
+  "source": {
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_fifo_sync_cnt.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_fifo_sync_cnt_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_fifo_sync_cnt_coverage_regions.json"
+  },
+  "build": {
+    "mdir": "artifacts/prim_fifo_sync_cnt_obj_dir",
+    "work_dir": "work/slice_pilots/prim_fifo_sync_cnt",
+    "host_probe_target": "prim_fifo_sync_cnt_host_probe"
+  },
+  "coverage_output_contract": {
+    "gate": "config/scaling_gates/prim_fifo_sync_cnt_source_gate.json",
+    "strict_output_words": 29,
+    "strict_output_bytes": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance": {
+    "first_pass_coverage_output_equivalence_passed": true,
+    "depth_coverage_output_equivalence_passed": true,
+    "candidate_targets_empty_after_promotion": true,
+    "active_target_count_after_promotion": 85,
+    "active_tlul_target_count_after_promotion": 22,
+    "active_primitive_target_count_after_promotion": 63
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 131,
+    "planned_depth": 4,
+    "planned_secure": 0
+  },
+  "candidate_targets": [],
+  "active_target_count": 85,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 63,
+  "next_action": "hold_for_review_after_sixty_third_primitive_boundary"
+}

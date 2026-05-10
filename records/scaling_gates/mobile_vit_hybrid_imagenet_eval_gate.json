@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "gate": "mobile_vit_hybrid_imagenet_eval_gate",
+  "status": "hybrid_imagenet_eval_enabled_limit_128_scaleup_passed",
+  "objective": "Enable MobileViT ImageNet evaluation to include the hybrid RTL control-boundary run instead of reporting only the CPU-kick host accuracy.",
+  "prior_gates": [
+    "config/scaling_gates/mobile_vit_cpu_kick_imagenet_goal_completion_audit.json",
+    "config/scaling_gates/mobile_vit_cpu_kick_rtl_hybrid_boundary_intake_gate.json"
+  ],
+  "tool": {
+    "path": "src/tools/mobile_vit_hybrid_imagenet_eval.py",
+    "dependency_requirements": "requirements/mobile_vit.txt",
+    "dependency_install_command": "python3 -m pip install -r requirements/mobile_vit.txt",
+    "local_cache_manifest_command": "python3 src/tools/mobile_vit_imagenet_manifest.py --hf-cache-dir ~/.cache/huggingface/hub/datasets--ILSVRC--imagenet-1k --hf-output-dir artifacts/mobile_vit/apple_mobilevit_small/hf_imagenet_val --dataset-scope imagenet_validation --output artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest.json",
+    "preflight_command": "python3 src/tools/mobile_vit_hybrid_imagenet_eval.py --manifest artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest.json --cpu-kick-predictions reports/mobile_vit_cpu_kick_predictions.json --accuracy-report reports/mobile_vit_hybrid_imagenet_accuracy.json --summary reports/mobile_vit_hybrid_imagenet_preflight.json --run-cpu-kick-infer --preflight",
+    "dry_run_command": "python3 src/tools/mobile_vit_hybrid_imagenet_eval.py --manifest artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest.json --cpu-kick-predictions reports/mobile_vit_cpu_kick_predictions.json --accuracy-report reports/mobile_vit_hybrid_imagenet_accuracy.json --summary reports/mobile_vit_hybrid_imagenet_eval_summary.json --run-cpu-kick-infer --dry-run",
+    "full_run_command": "python3 src/tools/mobile_vit_hybrid_imagenet_eval.py --manifest artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest.json --cpu-kick-predictions reports/mobile_vit_cpu_kick_predictions.json --accuracy-report reports/mobile_vit_hybrid_imagenet_accuracy.json --summary reports/mobile_vit_hybrid_imagenet_eval_summary.json --run-cpu-kick-infer"
+  },
+  "pipeline_stages": [
+    "load ImageNet manifest",
+    "load or generate CPU-kick MobileViT predictions",
+    "compute top-1/top-5 accuracy",
+    "split manifest into hybrid RTL proxy batches",
+    "run mobile_vit_cpu_kick_rtl_proxy through run_hybrid_template",
+    "check CPU-vs-hybrid coverage-output equivalence for each batch"
+  ],
+  "hybrid_boundary": {
+    "template": "config/slice_launch_templates/mobile_vit_cpu_kick_rtl_proxy.json",
+    "target": "mobile_vit_cpu_kick_rtl_proxy",
+    "max_cfg_batch_length": 1024,
+    "acceptance_policy": "coverage_output_equivalence",
+    "control_sequence": [
+      "LOAD_MODEL",
+      "LOAD_IMAGE",
+      "KICK_INFER",
+      "POLL_DONE"
+    ]
+  },
+  "accuracy_source": {
+    "prediction_source": "cpu_kicked_mobile_vit_inference",
+    "accuracy_tool": "src/tools/mobile_vit_accuracy.py",
+    "accuracy_is_from_cpu_kick_predictions": true
+  },
+  "test_evidence": {
+    "contract_test": "tests/contract/test_mobile_vit_hybrid_imagenet_eval.py",
+    "covered": [
+      "dry-run plans one or more hybrid batches from an ImageNet-style manifest",
+      "preflight reports missing manifest, prediction, dependency, and tool checks without executing inference or hybrid RTL",
+      "preflight detects local Hugging Face validation parquet cache separately from generated manifest presence",
+      "manifest builder can target local Hugging Face parquet cache through --hf-cache-dir",
+      "dry-run can plan CPU-kick inference generation before accuracy and hybrid checks",
+      "top-1/top-5 accuracy is computed from CPU-kick predictions",
+      "hybrid batch size is capped to the RTL proxy limit",
+      "summary keeps RTL numerical non-claims explicit"
+    ]
+  },
+  "smoke_evidence": {
+    "dataset_scope": "scoped_subset:hybrid_smoke",
+    "evaluated_count": 2,
+    "top1_accuracy": 1.0,
+    "top5_accuracy": 1.0,
+    "hybrid_execution_status": "executed",
+    "hybrid_batch_count": 1,
+    "coverage_output_equivalence_complete": true,
+    "manifest": "artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest_smoke.json",
+    "cpu_kick_predictions": "reports/mobile_vit_hybrid_smoke_cpu_kick_predictions.json",
+    "accuracy_report": "reports/mobile_vit_hybrid_smoke_accuracy.json",
+    "summary": "reports/mobile_vit_hybrid_smoke_summary.json",
+    "compare_report": "reports/mobile_vit_cpu_kick_rtl_proxy_imagenet_batch1_2_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "retained_generated_outputs": true
+  },
+  "limit_128_scaleup_evidence": {
+    "dataset_scope": "scoped_subset:imagenet_local_cache_128",
+    "evaluated_count": 128,
+    "top1_accuracy": 0.7734375,
+    "top5_accuracy": 0.953125,
+    "cpu_kick_batch_size": 16,
+    "cpu_kick_prediction_count": 128,
+    "cpu_kick_count": 128,
+    "cpu_done_count": 128,
+    "hybrid_execution_status": "executed",
+    "hybrid_batch_size": 128,
+    "hybrid_batch_count": 1,
+    "coverage_output_equivalence_complete": true,
+    "compare_mismatch_count": 0,
+    "compared_word_count": 21,
+    "manifest": "artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest_128.json",
+    "cpu_kick_predictions": "reports/mobile_vit_hybrid_128_cpu_kick_predictions.json",
+    "accuracy_report": "reports/mobile_vit_hybrid_128_accuracy.json",
+    "summary": "reports/mobile_vit_hybrid_128_summary.json",
+    "compare_report": "reports/mobile_vit_cpu_kick_rtl_proxy_imagenet_batch1_128_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "completion_audit": "records/scaling_gates/mobile_vit_hybrid_imagenet_limit_128_scaleup_completion_audit.json",
+    "retained_generated_outputs": true
+  },
+  "completion_claim_allowed": true,
+  "blocked_by": [
+    "full 50k non-dry-run hybrid ImageNet proxy batches have not been regenerated in this working tree",
+    "MobileViT numerical logits are still not computed by RTL"
+  ],
+  "next_task": "optional_scale_mobile_vit_hybrid_imagenet_eval_from_scoped_subset_to_full_50k",
+  "non_claims": [
+    "not MobileViT numerical inference in RTL",
+    "not ImageNet accuracy from RTL logits",
+    "not full CPU-core execution",
+    "not full SoC boot",
+    "dry-run planning is not completion evidence for real hybrid execution"
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "gate": "prefill_decode_split_mha_benchmark",
+  "objective": "LLM serving\u306b\u8fd1\u3044\u898b\u65b9\u3078\u9032\u3081\u308b\u305f\u3081\u3001Full MHA\u3092prefill\u578b\u3068decode\u578b\u306b\u5206\u3051\u3066\u6e2c\u308b\u3002",
+  "status": "passed_prefill_decode_split_recorded_from_full_mha_scaleup",
+  "target": "pulp_ita_mha",
+  "current_priority": "hold_for_review_after_prefill_decode_split_mha_benchmark",
+  "summary": "reports/pulp_ita_mha_prefill_decode_split_summary.json",
+  "source_gate": "config/scaling_gates/full_mha_scaleup_64x1_1x64_gate.json",
+  "prefill_like": {
+    "shape": "64x1",
+    "mapping": "many independent state instances in one launch, used as a prefill-like batch proxy",
+    "source_kind": "state_parallel",
+    "cpu_elapsed_ms": 451.227,
+    "gpu_kernel_total_ms": 0.913408,
+    "hybrid_reported_wall_ms": 0.948,
+    "cpu_elapsed_ms_div_hybrid_reported_wall_ms": 475.9778481012658,
+    "coverage_output_passed": true,
+    "coverage_output_mismatch_count": 0,
+    "compared_state_pair_count": 64,
+    "evidence": {
+      "cpu_report": "reports/pulp_ita_mha_cpu_repeat_64x1.json",
+      "hybrid_report": "reports/pulp_ita_mha_hybrid_64x1.txt",
+      "compare": "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json"
+    },
+    "classification": "hybrid_favorable"
+  },
+  "decode_like": {
+    "shape": "1x64",
+    "mapping": "one state advanced for many repeated steps, used as a decode-like serial token-step proxy",
+    "source_kind": "single_state_repeated",
+    "cpu_elapsed_ms": 2.95033,
+    "gpu_kernel_total_ms": 3.154944,
+    "hybrid_reported_wall_ms": 3.248,
+    "cpu_elapsed_ms_div_hybrid_reported_wall_ms": 0.9083528325123152,
+    "coverage_output_passed": true,
+    "coverage_output_mismatch_count": 0,
+    "compared_state_pair_count": 1,
+    "evidence": {
+      "cpu_report": "reports/pulp_ita_mha_cpu_repeat_1x64.json",
+      "hybrid_report": "reports/pulp_ita_mha_hybrid_1x64.txt",
+      "compare": "reports/pulp_ita_mha_cpu_vs_hybrid_1x64_coverage_output_compare.json"
+    },
+    "classification": "hybrid_weak"
+  },
+  "acceptance_policy": {
+    "prefill_like_coverage_output_equivalence_passed": true,
+    "decode_like_coverage_output_equivalence_passed": true,
+    "prefill_like_mismatch_count": 0,
+    "decode_like_mismatch_count": 0,
+    "prefill_like_hybrid_favorable": true,
+    "decode_like_hybrid_weak": true,
+    "speedup_claim_allowed_by_gate_alone": false
+  },
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "Split Full MHA into a prefill-like measurement.",
+      "evidence": [
+        "64x1 state-parallel run",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+        "reports/pulp_ita_mha_prefill_decode_split_summary.json serving_view.prefill_like"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "Split Full MHA into a decode-like measurement.",
+      "evidence": [
+        "1x64 single-state repeated-step run",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+        "reports/pulp_ita_mha_prefill_decode_split_summary.json serving_view.decode_like"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "Verify CPU vs hybrid coverage-output equivalence for both views.",
+      "evidence": [
+        "prefill_like coverage_output_mismatch_count=0",
+        "decode_like coverage_output_mismatch_count=0"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "Record CPU elapsed, GPU kernel, and hybrid wall timing.",
+      "evidence": [
+        "reports/pulp_ita_mha_prefill_decode_split_summary.json",
+        "reports/pulp_ita_mha_64x1_1x64_scaling_summary.json"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "State the LLM-serving implication and non-claims.",
+      "evidence": [
+        "interpretation.serving_implication",
+        "non_claims"
+      ],
+      "covered": true
+    }
+  ],
+  "non_claims": [
+    "not production LLM serving throughput",
+    "not real token prefill/decode semantics",
+    "not KV-cache aware decode",
+    "not raw full-state equality",
+    "single-run timing only"
+  ],
+  "next_task": "review_prefill_decode_split_or_try_resident_decode_optimization"
+}

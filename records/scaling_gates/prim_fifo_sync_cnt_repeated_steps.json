@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "gate": "prim_fifo_sync_cnt_repeated_steps_scaling",
+  "target": "prim_fifo_sync_cnt",
+  "purpose": "Validate the candidate prim_fifo_sync_cnt seed can run repeated GPU steps through the existing shared runtime before depth comparison.",
+  "preconditions": [
+    "prim_fifo_sync_cnt Verilator obj_dir is generated",
+    "prim_fifo_sync_cnt GPU cubin is built",
+    "artifacts/ and reports/ are ignored generated outputs"
+  ],
+  "runs": [
+    {
+      "name": "steps_1_batch_32",
+      "nstates": 32,
+      "steps": 1,
+      "required": true
+    },
+    {
+      "name": "steps_4_batch_32",
+      "nstates": 32,
+      "steps": 4,
+      "required": true
+    }
+  ],
+  "artifacts": {
+    "report": "reports/prim_fifo_sync_cnt_repeated_steps_scaling.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "run_prim_fifo_sync_cnt_cpu_exact_loop_repeated_steps",
+  "next_action_on_fail": "diagnose_prim_fifo_sync_cnt_repeated_steps_scaling_failure"
+}

@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "gate": "prim_sec_anchor_buf_repeated_steps_scaling",
+  "target": "prim_sec_anchor_buf",
+  "purpose": "Validate the candidate prim_sec_anchor_buf seed can run repeated GPU steps through the existing shared runtime before depth comparison.",
+  "preconditions": [
+    "prim_sec_anchor_buf Verilator obj_dir is generated",
+    "prim_sec_anchor_buf GPU PTX module is built",
+    "artifacts/ and reports/ are ignored generated outputs"
+  ],
+  "runs": [
+    {
+      "name": "steps_1_batch_32",
+      "nstates": 32,
+      "steps": 1,
+      "required": true
+    },
+    {
+      "name": "steps_4_batch_32",
+      "nstates": 32,
+      "steps": 4,
+      "required": true
+    }
+  ],
+  "correctness_policy": {
+    "batched_gpu_runs": [
+      "run exits with status 0",
+      "dumped state byte size equals storage_size * nstates when dump is requested",
+      "the generated zero-initialized GPU dumps are runtime evidence only"
+    ],
+    "non_claims": [
+      "not raw full-state equality",
+      "not zero-initialized GPU scaling correctness",
+      "not broad non-TL-UL runtime generality",
+      "not security hardening proof",
+      "not all Width parameterizations",
+      "not full OpenTitan primitive-family support"
+    ]
+  },
+  "performance_policy": {
+    "record": [
+      "nstates",
+      "steps",
+      "elapsed_ms",
+      "state_steps_per_second"
+    ],
+    "non_claims": [
+      "the zero-initialized GPU report is not the correctness input for coverage-output depth",
+      "target breadth remains candidate-only until the depth gate passes and promotion is recorded"
+    ]
+  },
+  "artifacts": {
+    "report": "reports/prim_sec_anchor_buf_repeated_steps_scaling.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "run_prim_sec_anchor_buf_cpu_exact_loop_repeated_steps",
+  "next_action_on_fail": "diagnose_prim_sec_anchor_buf_repeated_steps_scaling_failure"
+}

@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "gate": "mobile_vit_imagenet_input_blocker_gate",
+  "status": "blocked_no_local_imagenet_validation_images_or_labels",
+  "prior_gate": "config/scaling_gates/mobile_vit_reference_smoke_gate.json",
+  "objective": "Move the MobileViT CPU-kick ImageNet accuracy goal from non-ImageNet smoke evidence toward a real ImageNet or approved scoped-subset measurement.",
+  "input_check_report": "reports/mobile_vit_eval_input_check.json",
+  "input_check_result": {
+    "torch": "present",
+    "transformers": "present",
+    "PIL": "present",
+    "datasets": "present",
+    "dataset_candidates": [],
+    "ready_for_reference_eval": false,
+    "missing_python_dependencies": [],
+    "imagenet_dataset_with_labels_missing": true
+  },
+  "local_search_result": {
+    "searched_markers": [
+      "imagenet",
+      "ilsvrc",
+      "val label"
+    ],
+    "local_imagenet_data_or_label_candidates_found": false
+  },
+  "hf_dataset_access_probe": {
+    "report": "reports/mobile_vit_hf_imagenet_access_probe.json",
+    "dataset": "ILSVRC/imagenet-1k",
+    "split": "validation",
+    "streaming": true,
+    "status": "superseded_by_authenticated_probe",
+    "error_type": "DatasetNotFoundError",
+    "error_summary": "Unauthenticated access is gated; authenticated access was later confirmed through a 2-image materialization probe."
+  },
+  "hf_token_presence_probe": {
+    "report": "reports/mobile_vit_hf_token_presence.json",
+    "env": "HF_TOKEN",
+    "present": true,
+    "authenticated": true,
+    "status": "authenticated_and_dataset_access_confirmed_by_probe",
+    "token_value_recorded": false,
+    "error_summary": null,
+    "access_probe_report": "reports/mobile_vit_imagenet_data_clone_probe_report.json",
+    "access_probe_manifest": "artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest_probe.json",
+    "access_probe_image_count": 2
+  },
+  "measured_so_far": {
+    "report": "reports/mobile_vit_smoke_pipeline_summary.json",
+    "dataset_scope": "smoke_non_imagenet_generated_image",
+    "evaluated_count": 1,
+    "top1_accuracy": 0.0,
+    "top5_accuracy": 0.0,
+    "ready_accuracy_claim": false,
+    "cpu_kick_count": 1,
+    "cpu_done_count": 1
+  },
+  "required_next_input": "Run full ImageNet validation materialization from ILSVRC/imagenet-1k or explicitly approve a larger named scoped subset whose labels can be used for a scoped accuracy report.",
+  "completion_claim_allowed": false,
+  "next_task": "provide_imagenet_validation_data_or_approved_scoped_subset_for_real_accuracy",
+  "non_claims": [
+    "not ImageNet accuracy",
+    "not approved scoped-subset accuracy",
+    "not RTL execution",
+    "not full CPU-core execution",
+    "not a model-quality claim"
+  ]
+}

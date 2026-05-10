@@ -1,0 +1,188 @@
+{
+  "schema_version": 2,
+  "gate": "modern_llm_serving_rtl_hybrid_conditions_goal_completion_audit",
+  "completed_task": "refresh_modern_llm_serving_rtl_hybrid_conditions_goal_completion_audit",
+  "status": "objective_satisfied_for_scoped_llm_serving_rtl_condition_investigation",
+  "objective": "Clarify the conditions where modern-LLM-serving-like RTL workloads can run correctly, quickly, and reproducibly on the hybrid CPU/GPU runtime.",
+  "success_criteria": [
+    "Correctness is judged by CPU-vs-hybrid coverage-output equivalence over explicit output words, not raw Verilator state equality.",
+    "Host-only Verilator internal state is handled by sanitized CPU init-state before GPU launch.",
+    "Serving-like workload coverage includes attention datapath, softmax/reduction, full ITA/MHA, paged attention score, paged KV-cache, prefill/decode split, resident decode, resident batch-parallel decode, and MobileViT CPU-kick ImageNet limit-128 hybrid control-boundary evidence.",
+    "Persistent resident decode-like execution includes an in-process GPU d_storage authority probe across four cumulative phases.",
+    "Speed conditions are backed by measured many-state, repeated-step, resident, and batch-parallel runs.",
+    "Reproducibility is backed by source-of-truth config/docs, launch templates, generated host-probe metadata, reports, gates, one-command reproduction entrypoints, and contract tests.",
+    "Non-claims remain explicit: no model-level Transformer inference, no production LLM serving throughput, no raw full-state equality, and single-run timing where applicable."
+  ],
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "modern LLM serving-like RTL workload",
+      "status": "satisfied_for_scoped_rtl_harnesses",
+      "evidence": [
+        "config/scaling_gates/neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json",
+        "config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+        "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+        "config/scaling_gates/full_mha_scaleup_64x1_1x64_gate.json",
+        "config/scaling_gates/prefill_decode_split_mha_benchmark_gate.json",
+        "config/scaling_gates/resident_decode_optimization_probe_gate.json",
+        "config/scaling_gates/resident_decode_batch_parallel_probe_gate.json",
+        "config/scaling_gates/persistent_resident_device_handle_storage_gate.json",
+        "config/scaling_gates/mobile_vit_hybrid_imagenet_limit_128_scaleup_completion_audit.json"
+      ],
+      "verification": "The scoped workload covers reduced full ITA/MHA, paged-attention KV score, larger paged KV-cache, prefill-like 64x1, decode-like 1x64, resident 1x64, resident batch-parallel 8x64/16x64/32x64, in-process persistent resident 16x64..16x256, and MobileViT CPU-kick ImageNet limit-128 hybrid control-boundary evidence."
+    },
+    {
+      "requirement": "correct hybrid runtime behavior",
+      "status": "satisfied",
+      "evidence": [
+        "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_1x64_resident_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_8x64_resident_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_16x64_resident_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_32x64_resident_coverage_output_compare.json",
+        "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+        "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+        "reports/persistent_resident_state_abi_probe_summary.json",
+        "reports/mobile_vit_cpu_kick_rtl_proxy_imagenet_batch1_128_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+      ],
+      "verification": "The selected acceptance policy is coverage_output_equivalence, and the current contract tests require passed comparisons with mismatch_count 0 for the representative MHA and paged-attention paths."
+    },
+    {
+      "requirement": "fast execution conditions",
+      "status": "satisfied_with_scope_limits",
+      "evidence": [
+        "reports/pulp_ita_mha_64x1_1x64_scaling_summary.json",
+        "reports/pulp_ita_mha_prefill_decode_split_summary.json",
+        "reports/pulp_ita_mha_resident_decode_1x64_summary.json",
+        "reports/pulp_ita_mha_resident_decode_batch_parallel_summary.json",
+        "reports/persistent_resident_state_abi_probe_summary.json"
+      ],
+      "verification": "64x1 is recorded as GPU-favorable, baseline 1x64 is weak, resident 1x64 improves wall by about 1.91x, resident 32x64 improves wall per-state-step by about 26.06x over resident 1x64, and the persistent resident ABI probe keeps one in-process d_storage authority across four cumulative phases."
+    },
+    {
+      "requirement": "reproducible operation",
+      "status": "satisfied",
+      "evidence": [
+        "README.md",
+        "docs/status.md",
+        "docs/roadmap.md",
+        "config/selection.json",
+        "config/slice_launch_templates/pulp_ita_mha.json",
+        "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+        "src/tools/run_hybrid_template.py",
+        "src/tools/run_results_reproduction.py",
+        "src/tools/build_host_probe.py",
+        "config/scaling_gates/hybrid_verilator_like_config_and_probe_generation_gate.json",
+        "config/scaling_gates/one_command_reproduction_flow_gate.json",
+        "tests/contract/test_hybrid_verilator_like_cli.py"
+      ],
+      "verification": "The public workflow is documented, template-driven, uses generic host-probe metadata where available, includes one-command representative and MobileViT limit-128 reproduction entrypoints, and is covered by contract tests."
+    },
+    {
+      "requirement": "active surface and generated output separation",
+      "status": "satisfied",
+      "evidence": [
+        "config/selection.json",
+        "docs/status.md",
+        "docs/roadmap.md",
+        ".gitignore",
+        "third_party/ITA",
+        "third_party/common_cells",
+        "overlays/ITA"
+      ],
+      "verification": "Source-of-truth state is kept in config/docs/README, generated outputs stay under artifacts/reports, third_party is submodule-oriented, and repo-specific RTL harnesses stay in overlays."
+    },
+    {
+      "requirement": "non-claims and remaining limits",
+      "status": "satisfied",
+      "evidence": [
+        "config/scaling_gates/full_ita_mha_larger_paged_attention_kv_goal_completion_audit.json",
+        "config/scaling_gates/resident_decode_batch_parallel_probe_gate.json",
+        "config/scaling_gates/mobile_vit_hybrid_imagenet_limit_128_scaleup_completion_audit.json",
+        "docs/status.md"
+      ],
+      "verification": "The project records scoped RTL-harness claims only, not production paged attention, production LLM serving throughput, model-level inference, MobileViT numerical inference in RTL, ImageNet accuracy from RTL logits, full 50k ImageNet hybrid execution, or raw full-state equality."
+    }
+  ],
+  "condition_statement": {
+    "correctness_condition": "Use coverage-output equivalence over explicit output words; raw Verilator state may differ. Sanitize host-only Verilator internals before using CPU state as GPU init-state.",
+    "fast_condition": "The strongest fast shape is state-parallel work: many independent RTL states in one launch amortize launch and fixed runtime costs.",
+    "decode_condition": "Single-state repeated decode-like work is weak in baseline form. Resident execution helps by avoiding per-step host patch/transfer overhead.",
+    "batch_decode_condition": "Resident decode still benefits from state parallelism: 8x64, 16x64, and 32x64 all pass coverage-output equivalence, and 32x64 improves wall per-state-step by about 26.06x over resident 1x64 in the recorded single run.",
+    "reproducibility_condition": "Keep target state in config/selection.json and docs, run via slice launch templates and thin CLIs such as run_results_reproduction.py, store generated evidence in reports/artifacts, and cover public workflows with contract tests."
+  },
+  "representative_evidence": {
+    "full_ita_mha_first_benchmark": "reports/pulp_ita_mha_first_hybrid_benchmark_summary.json",
+    "full_ita_mha_scaleup": "reports/pulp_ita_mha_64x1_1x64_scaling_summary.json",
+    "prefill_decode_split": "reports/pulp_ita_mha_prefill_decode_split_summary.json",
+    "resident_decode_1x64": "reports/pulp_ita_mha_resident_decode_1x64_summary.json",
+    "resident_decode_batch_parallel": "reports/pulp_ita_mha_resident_decode_batch_parallel_summary.json",
+    "persistent_resident_state_abi": "reports/persistent_resident_state_abi_probe_summary.json",
+    "larger_paged_kv": "reports/pulp_paged_kv_cache_large_first_hybrid_benchmark_summary.json",
+    "paged_attention_kv_score": "reports/pulp_paged_attention_kv_score_first_hybrid_benchmark_summary.json",
+    "mobile_vit_imagenet_128": "reports/mobile_vit_hybrid_128_summary.json"
+  },
+  "measured_condition_highlights": {
+    "prefill_like_64x1": {
+      "classification": "hybrid_favorable",
+      "coverage_output_mismatch_count": 0,
+      "source": "reports/pulp_ita_mha_prefill_decode_split_summary.json"
+    },
+    "decode_like_1x64": {
+      "classification": "hybrid_weak_without_resident_mode",
+      "coverage_output_mismatch_count": 0,
+      "source": "reports/pulp_ita_mha_prefill_decode_split_summary.json"
+    },
+    "resident_decode_1x64": {
+      "hybrid_wall_improvement_ratio": 1.9128386336866905,
+      "coverage_output_mismatch_count": 0,
+      "source": "reports/pulp_ita_mha_resident_decode_1x64_summary.json"
+    },
+    "resident_decode_batch_parallel_32x64": {
+      "wall_per_state_step_improvement_ratio_vs_1x64_resident": 26.060431654676258,
+      "coverage_output_mismatch_count": 0,
+      "source": "reports/pulp_ita_mha_resident_decode_batch_parallel_summary.json"
+    },
+    "persistent_resident_state_abi_16x64_four_phase": {
+      "classification": "in_process_device_storage_authority_across_cumulative_phases",
+      "coverage_output_mismatch_count": 0,
+      "hybrid_wall_ms": 4.517,
+      "gpu_kernel_total_ms": 4.486688,
+      "source": "reports/persistent_resident_state_abi_probe_summary.json"
+    },
+    "mobile_vit_imagenet_128_cpu_kick_hybrid_proxy": {
+      "classification": "cpu_kick_accuracy_plus_hybrid_control_boundary",
+      "evaluated_count": 128,
+      "top1_accuracy": 0.7734375,
+      "top5_accuracy": 0.953125,
+      "coverage_output_mismatch_count": 0,
+      "one_command": "python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128",
+      "source": "reports/mobile_vit_hybrid_128_summary.json"
+    }
+  },
+  "completion_decision": {
+    "complete": true,
+    "scope": "scoped RTL harness condition finding",
+    "rationale": "Every explicit requirement in the active objective maps to inspected config, docs, reports, gates, and contract tests. Remaining limits are recorded as non-claims rather than treated as satisfied."
+  },
+  "residual_non_claims": [
+    "not production LLM serving throughput",
+    "not model-level Transformer inference",
+    "not MobileViT numerical inference in RTL",
+    "not ImageNet accuracy from RTL logits",
+    "not full 50k ImageNet hybrid execution",
+    "not production KV-cache memory hierarchy",
+    "not production paged attention",
+    "not quantized model accuracy",
+    "not broad modern-NN accelerator completeness",
+    "not broad CPU versus hybrid speedup for arbitrary RTL",
+    "not raw full-state equality",
+    "single-run timing for the latest resident batch-parallel result",
+    "persistent resident ABI is process-scoped, not cross-process CUDA state"
+  ],
+  "next_task": "review_in_process_persistent_resident_device_handle_storage"
+}

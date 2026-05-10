@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_decode_resident_execution_optimization_gate",
+  "completed_task": "run_pulp_paged_kv_cache_prefill_decode_resident_execution_optimization_gate",
+  "status": "resident_candidate_passed_coverage_output_equivalence",
+  "objective": "Define a resident execution optimization benchmark for the weak decode-like repeated single-state prefill/decode shape.",
+  "source_review": "config/scaling_gates/neural_network_rtl_prefill_decode_benchmark_review_gate.json",
+  "baseline": {
+    "target": "pulp_paged_kv_cache_prefill_decode",
+    "shape": "1x32",
+    "cpu_report": "reports/pulp_paged_kv_cache_prefill_decode_cpu_repeat_1x32.json",
+    "hybrid_report": "reports/pulp_paged_kv_cache_prefill_decode_hybrid_1x32.txt",
+    "coverage_output_compare_report": "reports/pulp_paged_kv_cache_prefill_decode_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+    "cpu_elapsed_ms": 9.39703,
+    "hybrid_wall_time_ms": 5.13,
+    "hybrid_gpu_kernel_time_ms_total": 4.28032,
+    "cpu_to_hybrid_wall_speedup_ratio": 1.8317797270955167,
+    "classification": "weak_repeated_single_state_decode_like_shape"
+  },
+  "candidate": {
+    "target": "pulp_paged_kv_cache_prefill_decode",
+    "shape": "1x32",
+    "mode": "resident_steps",
+    "existing_runtime_flag": "--resident-steps",
+    "candidate_report": "reports/pulp_paged_kv_cache_prefill_decode_resident_sanitized_init_1x32.txt",
+    "candidate_state": "artifacts/pulp_paged_kv_cache_prefill_decode_obj_dir/pulp_paged_kv_cache_prefill_decode_gpu_resident_sanitized_init_1x32.bin",
+    "coverage_output_compare_report": "reports/pulp_paged_kv_cache_prefill_decode_cpu_vs_resident_sanitized_init_1x32_coverage_output_compare.json",
+    "intended_effect": "keep the single decode-like state resident on device across repeated eval steps and reduce per-step host/device overhead",
+    "patch_policy": "no per-step patch script for this first gate; use the same sanitized initial state and step count as the non-resident 1x32 baseline",
+    "init_state_policy": "CPU state images used as GPU init-state must be sanitized with --sanitize-host-only-internals before upload"
+  },
+  "run_result": {
+    "status": "passed",
+    "primary_candidate_report": "reports/pulp_paged_kv_cache_prefill_decode_resident_1x32.txt",
+    "smoke_candidate_report": "reports/pulp_paged_kv_cache_prefill_decode_resident_1x1_probe.txt",
+    "trace_report": "reports/pulp_paged_kv_cache_prefill_decode_resident_1x1_trace.txt",
+    "sanitized_candidate_report": "reports/pulp_paged_kv_cache_prefill_decode_resident_sanitized_init_1x32.txt",
+    "coverage_output_compare_report": "reports/pulp_paged_kv_cache_prefill_decode_cpu_vs_resident_sanitized_init_1x32_coverage_output_compare.json",
+    "nonresident_vs_resident_compare_report": "reports/pulp_paged_kv_cache_prefill_decode_nonresident_vs_resident_sanitized_init_1x32_coverage_output_compare.json",
+    "primary_shape": "1x32",
+    "smoke_shape": "1x1",
+    "initial_failure": "CUDA illegal memory access when uploading an unsanitized CPU state image as GPU init-state",
+    "initial_failure_location": "src/hybrid/run_vl_hybrid.c:1436 during final cuCtxSynchronize after launching from an unsanitized init-state",
+    "trace_observation": "The failing 1x1 trace reaches before_first_kernel_launch, after_first_kernel_launch, and before_final_sync before CUDA error 700, so module load, kernel resolution, allocation, and init-state upload complete before the device fault is reported.",
+    "diagnosis": "The failure was caused by unsanitized host-only Verilator state in the CPU state image, not by resident_steps itself.",
+    "coverage_output_equivalence": "passed",
+    "coverage_output_mismatch_count": 0,
+    "nonresident_vs_resident_strict_match": true,
+    "cpu_elapsed_ms": 9.39703,
+    "nonresident_hybrid_wall_time_ms": 5.13,
+    "resident_hybrid_wall_time_ms": 0.83,
+    "resident_gpu_kernel_time_ms_total": 0.789504,
+    "cpu_to_resident_wall_speedup_ratio": 11.321722891566265,
+    "nonresident_to_resident_wall_speedup_ratio": 6.180722891566265,
+    "interpretation": "With sanitized CPU init-state, resident_steps preserves coverage-output equivalence and materially reduces the weak 1x32 repeated decode wall time for this harness."
+  },
+  "acceptance_policy": {
+    "baseline_coverage_output_equivalence_required": true,
+    "resident_run_required": true,
+    "resident_coverage_output_equivalence_required": true,
+    "timing_metrics_required": [
+      "hybrid_wall_time_ms",
+      "gpu_kernel_time_ms_total"
+    ],
+    "speedup_claim_allowed_by_gate_alone": false,
+    "review_required_before_speedup_claim": true
+  },
+  "measurement_policy": {
+    "primary_metric": "hybrid_wall_time_ms",
+    "secondary_metric": "gpu_kernel_time_ms_total",
+    "baseline_shape": "1x32 non-resident",
+    "candidate_shape": "1x32 resident_steps",
+    "interpretation": "A faster resident candidate would support a narrow claim that repeated decode-like single-state launch overhead is reducible for this RTL harness only."
+  },
+  "claim_scope": "definition of a resident execution optimization gate for one prefill/decode split paged KV-cache shape",
+  "non_claims": [
+    "not reviewed resident execution speedup claim",
+    "not full paged attention",
+    "not full ITA MHA execution",
+    "not model-level Transformer inference",
+    "not production KV-cache memory hierarchy",
+    "not low-precision or compressed KV cache",
+    "not broad modern-NN speedup",
+    "not raw full-state equality"
+  ],
+  "next_task": "review_pulp_paged_kv_cache_prefill_decode_resident_execution_result_and_select_next_gap"
+}

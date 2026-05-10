@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_full_ita_mha_dependency_audit_gate",
+  "completed_task": "define_full_ita_mha_dependency_and_stimulus_audit_gate",
+  "status": "dependency_overlays_lint_passed_select_full_ita_overlay_next",
+  "objective": "Define the smallest honest path from completed ITA dotp/softmax subseeds toward a full ITA/MHA RTL harness without claiming full ITA/MHA execution yet.",
+  "parent_followup_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_and_larger_paged_kv_next_gate.json",
+  "previous_evidence": {
+    "completed_dotp_seed": "config/scaling_gates/neural_network_rtl_pulp_ita_dotp_first_hybrid_benchmark_gate.json",
+    "completed_softmax_seed": "config/scaling_gates/neural_network_rtl_pulp_ita_softmax_top_first_hybrid_benchmark_gate.json",
+    "large_paged_kv_review": "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_review_gate.json"
+  },
+  "candidate_top": {
+    "target": "pulp_ita_mha",
+    "upstream_top_module": "ita",
+    "upstream_top_source": "third_party/ITA/src/ita.sv",
+    "planned_overlay": "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+    "planned_coverage_manifest": "overlays/ITA/tests/pulp_ita_mha_coverage_regions.json",
+    "planned_launch_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "planned_host_probe_target": "pulp_ita_mha_host_probe"
+  },
+  "candidate_source_files": [
+    "third_party/common_cells/src/cf_math_pkg.sv",
+    "third_party/common_cells/src/lzc.sv",
+    "third_party/common_cells/src/fifo_v3.sv",
+    "overlays/ITA/src/pulp_ita_cluster_clock_gating_sim.sv",
+    "overlays/ITA/src/pulp_ita_tc_sram_sim.sv",
+    "third_party/ITA/src/ita_package.sv",
+    "third_party/ITA/src/ita_controller.sv",
+    "third_party/ITA/src/ita_input_sampler.sv",
+    "third_party/ITA/src/ita_inp1_mux.sv",
+    "third_party/ITA/src/ita_inp2_mux.sv",
+    "third_party/ITA/src/ita_dotp.sv",
+    "third_party/ITA/src/ita_sumdotp.sv",
+    "third_party/ITA/src/ita_accumulator.sv",
+    "third_party/ITA/src/ita_max_finder.sv",
+    "third_party/ITA/src/ita_register_file_1w_multi_port_read.sv",
+    "third_party/ITA/src/ita_softmax.sv",
+    "third_party/ITA/src/ita_serdiv.sv",
+    "third_party/ITA/src/ita_softmax_top.sv",
+    "third_party/ITA/src/ita_requantization_controller.sv",
+    "third_party/ITA/src/ita_requantizer.sv",
+    "third_party/ITA/src/ita_gelu.sv",
+    "third_party/ITA/src/ita_relu.sv",
+    "third_party/ITA/src/ita_activation.sv",
+    "third_party/ITA/src/ita_fifo_controller.sv",
+    "third_party/ITA/src/ita_output_controller.sv",
+    "third_party/ITA/src/ita_weight_controller.sv",
+    "third_party/ITA/src/ita_register_file_1w_multi_port_read_we.sv",
+    "third_party/ITA/src/ita.sv"
+  ],
+  "direct_lint_probe": {
+    "command": "verilator --lint-only --timing --flatten -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-COMBDLY -Wno-UNSIGNED -Wno-UNOPTFLAT +define+ITA_M=16 +define+ITA_N=16 +define+ITA_S=16 +define+ITA_P=16 +define+ITA_E=16 <candidate_source_files> --top-module ita",
+    "status": "passed_after_dependency_overlays",
+    "observed_missing_modules": [
+      {
+        "module": "cluster_clock_gating",
+        "source": "third_party/ITA/src/ita_register_file_1w_multi_port_read.sv and third_party/ITA/src/ita_register_file_1w_multi_port_read_we.sv",
+        "resolution": "use existing overlays/ITA/src/pulp_ita_cluster_clock_gating_sim.sv"
+      },
+      {
+        "module": "tc_sram",
+        "source": "third_party/ITA/src/ita_accumulator.sv",
+        "resolution": "use overlays/ITA/src/pulp_ita_tc_sram_sim.sv as a repo-specific minimal simulation overlay for the ITA accumulator partial-sum memory"
+      }
+    ],
+    "resolved_missing_modules": [
+      "cluster_clock_gating",
+      "tc_sram"
+    ],
+    "lint_result": {
+      "status": "passed",
+      "module_count": 30,
+      "source_size_mb": 1.706,
+      "generated_cpp_file_count": 5,
+      "required_warning_suppression": [
+        "-Wno-UNOPTFLAT"
+      ]
+    },
+    "blocked_reason": null
+  },
+  "stimulus_audit": {
+    "first_overlay_scope": "single Attention-layer control sequence through Q, K, V, QK, AV, and OW enough to observe controller progress, weight handshakes, input/bias sampling, accumulator activity, softmax handoff, output FIFO, valid output, and output-word checksums.",
+    "initial_parameter_scope": {
+      "ITA_M": 16,
+      "ITA_N": 16,
+      "ITA_S": 16,
+      "ITA_P": 16,
+      "ITA_E": 16,
+      "reason": "Matches the completed softmax_top reduction of the package surface and keeps the first full-top lint/build small."
+    },
+    "coverage_output_words": [
+      "controller step/progress counters",
+      "input, weight, and bias handshake counts",
+      "softmax done and FIFO pop/push observations",
+      "valid output count",
+      "output checksum and representative output samples"
+    ],
+    "first_compare_policy": "coverage_output_equivalence"
+  },
+  "acceptance_policy": {
+    "new_tc_sram_overlay_required": false,
+    "new_tc_sram_overlay": "overlays/ITA/src/pulp_ita_tc_sram_sim.sv",
+    "full_ita_overlay_required": true,
+    "coverage_manifest_required": true,
+    "launch_template_required": true,
+    "host_probe_target_required": true,
+    "verilator_lint_or_build_required_before_benchmark": true,
+    "gpu_cubin_build_required_before_hybrid_compare": true,
+    "cpu_reference_and_hybrid_dump_required": true,
+    "coverage_output_equivalence_required": true,
+    "speedup_claim_requires_measured_summary_report": true,
+    "full_ita_mha_claim_allowed_by_audit_alone": false
+  },
+  "non_claims": [
+    "not full ITA/MHA execution yet",
+    "not full PULP ITA HWPE integration",
+    "not model-level Transformer inference",
+    "not production memory hierarchy",
+    "not arbitrary ITA parameter coverage",
+    "not numerical ML accuracy",
+    "not raw full-state equality"
+  ],
+  "next_task": "implement_pulp_ita_mha_overlay_manifest_template_host_probe"
+}

@@ -1,0 +1,194 @@
+{
+  "schema_version": "opentitan-tlul-slice-launch-template-v1",
+  "slice_name": "tlul_sram_byte",
+  "target": "OpenTitan.tlul_sram_byte",
+  "status": "active",
+  "priority": 21,
+  "pilot_gate": "Candidate source-backed tlul_sram_byte after seventeen-seed review acceptance.",
+  "notes": [
+    "Candidate-only until first-pass and depth evidence pass.",
+    "The overlay drives TL-UL reads, full writes, and partial byte writes through tlul_sram_byte with EnableIntg=1 to isolate read-modify-write integrity recompute behavior."
+  ],
+  "runner_args_template": {
+    "batch_defaults_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_slice_batch_default.json",
+    "batch_length": 12,
+    "campaign_gpu_nstates": 512,
+    "campaign_sequential_rep_graph_mode": "auto",
+    "cases": 25000,
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_sram_byte_coverage_regions.json",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_sram_byte_gpu_cov_tb.sv",
+    "cpu_reps": 1,
+    "dead_word_bias": true,
+    "debug_internal_output_names": [],
+    "driver_defaults": {},
+    "global_top_k": 128,
+    "gpu_nstates": 32,
+    "gpu_reps": 3,
+    "gpu_sequential_steps": 56,
+    "keep_top_k": 16,
+    "pilot_campaign_candidate_count": 4096,
+    "pilot_sweep_cases": 256,
+    "profile_family": "mixed",
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_sram_byte.sv",
+    "seed_fanout": 1,
+    "shard_count": 256,
+    "states_per_case": 4,
+    "target": "OpenTitan.tlul_sram_byte",
+    "top_module": "tlul_sram_byte_gpu_cov_tb",
+    "trace_length": 12,
+    "uniform_states": true,
+    "variants_per_case": 4,
+    "work_dir": "work/slice_pilots/tlul_sram_byte"
+  },
+  "static_features": {
+    "schema_version": "opentitan-tlul-slice-static-features-v1",
+    "target": "OpenTitan.tlul_sram_byte",
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_sram_byte.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_sram_byte_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_sram_byte_coverage_regions.json",
+    "tb_contract_ready": true,
+    "base_outputs_ready": true,
+    "real_toggle_outputs_ready": true,
+    "toggle_bitmap_outputs_ready": true,
+    "focused_wave_ready": true,
+    "real_toggle_word_count": 18,
+    "exclusive_word_count": 18,
+    "exclusive_word_fraction": 1.0,
+    "overlap_word_count": 0,
+    "region_count": 5,
+    "region_names": [
+      "host_transaction_flow",
+      "byte_write_and_sram_flow",
+      "sram_response_and_error_flow",
+      "compound_transaction_tracking",
+      "signature_and_context"
+    ],
+    "required_output_count": 38,
+    "tb_output_count": 79,
+    "rtl_clock_ports": [
+      "clk_i"
+    ],
+    "rtl_reset_ports": [
+      "rst_ni"
+    ],
+    "rtl_input_port_count": 11,
+    "rtl_output_port_count": 7,
+    "multi_clock": false,
+    "search_prior_class": "standard",
+    "singleton_region_count": 0,
+    "words_per_region_avg": 3.6,
+    "words_per_region_max": 4,
+    "words_per_region_min": 3,
+    "structural_connectivity": {
+      "structural_connectivity_class": "source_backed_candidate_overlay_defined",
+      "instance_block_count": 3,
+      "nonclock_input_count": 9,
+      "nonclock_output_count": 7,
+      "reachable_output_fraction": null
+    }
+  },
+  "tb_core_contract": {
+    "kind": "gpu_toggle_shared_tb_v1",
+    "coverage_domain": "toggle_real_subset_bitmap",
+    "required_output_prefixes": [
+      "real_toggle_subset_word",
+      "toggle_bitmap_word",
+      "focused_wave_word"
+    ],
+    "baseline_reference_counts": {
+      "focused_wave_word": 8,
+      "real_toggle_subset_word": 18,
+      "toggle_bitmap_word": 3
+    },
+    "region_family_names": [
+      "host_transaction_flow",
+      "byte_write_and_sram_flow",
+      "sram_response_and_error_flow",
+      "compound_transaction_tracking",
+      "signature_and_context"
+    ]
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": false,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec"
+    ],
+    "candidate_targets_contains_only": [
+      "tlul_sram_byte"
+    ],
+    "first_pass_requires": [
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized coverage_output_equivalence passes"
+    ],
+    "historical_candidate_gate": false,
+    "promoted_to_active_scope": true,
+    "active_targets_at_promotion": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte"
+    ]
+  },
+  "next_action": "package_eighteen_seed_tlul_boundary",
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/tlul_sram_byte_source_gate.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "manifest_valid": true,
+    "storage_size": 896,
+    "cpu_reference_state": "artifacts/tlul_sram_byte_obj_dir/tlul_sram_byte_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/tlul_sram_byte_obj_dir/tlul_sram_byte_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "depth_result": {
+    "status": "passed",
+    "gate": "config/scaling_gates/tlul_sram_byte_coverage_output_depth.json",
+    "report": "reports/tlul_sram_byte_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_registry": "config/targets.json",
+    "shared_equivalence_gate": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+    "shared_depth_gate": "config/scaling_gates/tlul_coverage_output_depth.json",
+    "shared_depth_report": "reports/tlul_coverage_output_depth.json",
+    "shared_depth_comparison_count": 42,
+    "shared_depth_passed_count": 42
+  }
+}

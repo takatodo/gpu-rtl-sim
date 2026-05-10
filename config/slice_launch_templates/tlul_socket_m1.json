@@ -1,0 +1,154 @@
+{
+  "schema_version": "opentitan-tlul-slice-launch-template-v1",
+  "slice_name": "tlul_socket_m1",
+  "target": "OpenTitan.tlul_socket_m1",
+  "status": "active",
+  "priority": 7,
+  "pilot_gate": "Build the source-backed tlul_socket_m1 overlay, then run a one-state initialized coverage_output_equivalence pass before any active-target promotion.",
+  "notes": [
+    "This template was promoted to active after one-state and depth coverage-output equivalence passed.",
+    "The overlay intentionally fixes M=2 to keep the first arbitration gate small."
+  ],
+  "runner_args_template": {
+    "batch_defaults_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_slice_batch_default.json",
+    "batch_length": 12,
+    "campaign_gpu_nstates": 512,
+    "campaign_sequential_rep_graph_mode": "auto",
+    "cases": 25000,
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_socket_m1_coverage_regions.json",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_socket_m1_gpu_cov_tb.sv",
+    "cpu_reps": 1,
+    "dead_word_bias": true,
+    "debug_internal_output_names": [],
+    "driver_defaults": {},
+    "global_top_k": 128,
+    "gpu_nstates": 32,
+    "gpu_reps": 3,
+    "gpu_sequential_steps": 56,
+    "keep_top_k": 16,
+    "pilot_campaign_candidate_count": 4096,
+    "pilot_sweep_cases": 256,
+    "profile_family": "mixed",
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_socket_m1.sv",
+    "seed_fanout": 1,
+    "shard_count": 256,
+    "states_per_case": 4,
+    "target": "OpenTitan.tlul_socket_m1",
+    "top_module": "tlul_socket_m1_gpu_cov_tb",
+    "trace_length": 12,
+    "uniform_states": true,
+    "variants_per_case": 4,
+    "work_dir": "work/slice_pilots/tlul_socket_m1"
+  },
+  "static_features": {
+    "schema_version": "opentitan-tlul-slice-static-features-v1",
+    "target": "OpenTitan.tlul_socket_m1",
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_socket_m1.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_socket_m1_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_socket_m1_coverage_regions.json",
+    "tb_contract_ready": true,
+    "base_outputs_ready": true,
+    "real_toggle_outputs_ready": true,
+    "toggle_bitmap_outputs_ready": true,
+    "focused_wave_ready": true,
+    "real_toggle_word_count": 18,
+    "exclusive_word_count": 18,
+    "exclusive_word_fraction": 1.0,
+    "overlap_word_count": 0,
+    "region_count": 5,
+    "region_names": [
+      "request_accept_and_progress",
+      "response_return_and_routing",
+      "arbitration_semantics",
+      "signatures",
+      "payload_and_phase_context"
+    ],
+    "required_output_count": 38,
+    "tb_output_count": 80,
+    "rtl_clock_ports": [
+      "clk_i"
+    ],
+    "rtl_reset_ports": [
+      "rst_ni"
+    ],
+    "rtl_input_port_count": 4,
+    "rtl_output_port_count": 2,
+    "multi_clock": false,
+    "search_prior_class": "standard",
+    "singleton_region_count": 0,
+    "words_per_region_avg": 3.6,
+    "words_per_region_max": 4,
+    "words_per_region_min": 3,
+    "recommended_budget_scale": {
+      "cases": 1.0,
+      "keep_top_k": 1.0
+    },
+    "structural_connectivity": {
+      "structural_connectivity_class": "source_backed_active_promoted_after_measurement",
+      "instance_block_count": 1,
+      "nonclock_input_count": 2,
+      "nonclock_output_count": 2,
+      "reachable_output_fraction": null
+    }
+  },
+  "tb_core_contract": {
+    "kind": "gpu_toggle_shared_tb_v1",
+    "coverage_domain": "toggle_real_subset_bitmap",
+    "required_output_prefixes": [
+      "real_toggle_subset_word",
+      "toggle_bitmap_word",
+      "focused_wave_word"
+    ],
+    "baseline_reference_counts": {
+      "focused_wave_word": 8,
+      "real_toggle_subset_word": 18,
+      "toggle_bitmap_word": 3
+    },
+    "region_family_names": [
+      "request_accept_and_progress",
+      "response_return_and_routing",
+      "arbitration_semantics",
+      "signatures",
+      "payload_and_phase_context"
+    ]
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "historical_candidate_gate": true,
+    "promoted_to_active_scope": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback"
+    ],
+    "first_pass_requires": [
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized coverage_output_equivalence passes"
+    ]
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/tlul_socket_m1_source_gate.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "storage_size": 1024,
+    "strict_output_word_count": 29,
+    "compared_word_count": 29,
+    "compared_byte_count": 116
+  },
+  "depth_result": {
+    "status": "passed",
+    "gate": "config/scaling_gates/tlul_socket_m1_coverage_output_depth.json",
+    "report": "reports/tlul_socket_m1_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "shared_depth_report": "reports/tlul_coverage_output_depth.json",
+    "shared_depth_comparison_count": 14,
+    "shared_depth_passed_count": 14
+  },
+  "next_action": "package_four_seed_tlul_boundary"
+}

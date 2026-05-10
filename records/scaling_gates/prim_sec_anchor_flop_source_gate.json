@@ -1,0 +1,228 @@
+{
+  "schema_version": 1,
+  "status": "promoted_to_active_scope",
+  "gate": "prim_sec_anchor_flop_source_backed_gate",
+  "target": "prim_sec_anchor_flop",
+  "source_gate_name": "prim_sec_anchor_flop_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Source-backed gate selected after the fiftieth primitive review; remains candidate-only until first-pass and depth evidence pass.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_sec_anchor_flop.json",
+  "build": {
+    "mdir": "artifacts/prim_sec_anchor_flop_obj_dir",
+    "work_dir": "work/slice_pilots/prim_sec_anchor_flop",
+    "host_probe_target": "prim_sec_anchor_flop_host_probe",
+    "cpu_reference_state": "artifacts/prim_sec_anchor_flop_obj_dir/prim_sec_anchor_flop_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_sec_anchor_flop_obj_dir/prim_sec_anchor_flop_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_sec_anchor_flop.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_sec_anchor_flop",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/prim_sec_anchor_flop.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sec_anchor_flop_coverage_regions.json",
+      "mdir": "artifacts/prim_sec_anchor_flop_obj_dir",
+      "expected_report": "reports/prim_sec_anchor_flop_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_sec_anchor_flop_obj_dir/prim_sec_anchor_flop_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_sec_anchor_flop_obj_dir/prim_sec_anchor_flop_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "define_after_fiftieth_primitive_review_acceptance": true,
+    "active_target_count_unchanged_until_first_pass": 72,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 50,
+    "candidate_targets_contains_only": [
+      "prim_sec_anchor_flop"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_sec_anchor_flop remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_sec_anchor_flop_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sec_anchor_flop_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_sec_anchor_flop.json",
+    "host_probe_target": "prim_sec_anchor_flop_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "implemented",
+    "planned_parameters": {
+      "Width": 8,
+      "ResetValue": "8'h3c",
+      "path": "fixed_width_secure_anchor_flop_wrapper"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 21,
+    "prim_flop_source_line_count": 56,
+    "generic_flop_source_line_count": 25,
+    "planned_Width": 8,
+    "planned_ResetValue": "8'h3c",
+    "uses_prim_flop": true,
+    "secure_anchor_wrapper_path": true,
+    "all_widths_not_claimed": true,
+    "security_hardening_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true
+  },
+  "weakest_point": "The active primitive set exercises prim_flop directly and prim_sec_anchor_buf as a secure-anchor wrapper, but it does not directly claim the source-backed secure-anchor flop wrapper. The first prim_sec_anchor_flop gate fixes Width=8 and ResetValue=8'h3c and treats security hardening as a non-claim.",
+  "selection_reason": [
+    "removes the narrow prim_sec_anchor_flop non-claim left by prim_sec_anchor_buf without broadening into clocking, CDC, memory, alert, escalation, or crypto primitives",
+    "extends the already active prim_flop path through the smallest remaining secure-anchor sequential wrapper",
+    "uses dependencies already present in the active primitive surface",
+    "preserves the single-candidate discipline after the fiftieth primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_clock_buf",
+      "reason": "clock buffering introduces clock-specific behavior beyond this data-state wrapper step"
+    },
+    {
+      "target": "prim_diff_decode",
+      "reason": "differential decode signal-integrity behavior and optional async synchronization are broader than this wrapper gate"
+    },
+    {
+      "target": "prim_intr_hw",
+      "reason": "interrupt register semantics introduce a wider CSR-facing behavior surface"
+    },
+    {
+      "target": "prim_secded_inv_28_22_dec",
+      "reason": "decoder syndrome, correction, and error classification behavior is broader than this wrapper gate"
+    }
+  ],
+  "active_target_count": 73,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 51,
+  "recorded_outputs": [
+    "config/scaling_gates/prim_sec_anchor_flop_source_gate.json",
+    "config/slice_launch_templates/prim_sec_anchor_flop.json"
+  ],
+  "non_claims": [
+    "all Width parameterizations",
+    "all ResetValue parameterizations",
+    "security hardening proof",
+    "assertion-policy proof",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full OpenTitan primitive-family support"
+  ],
+  "next_action": "package_fifty_first_primitive_active_boundary",
+  "overlay_result": {
+    "status": "implemented",
+    "coverage_tb": "overlays/rtlmeter/designs/OpenTitan/src/prim_sec_anchor_flop_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sec_anchor_flop_coverage_regions.json",
+    "host_probe_target": "prim_sec_anchor_flop_host_probe",
+    "host_probe_report": "reports/prim_sec_anchor_flop_host_probe.json",
+    "verilator_elaboration": "passed_warning_free",
+    "host_probe_build": "passed",
+    "host_probe_done_o": 1,
+    "next_action": "build_prim_sec_anchor_flop_first_pass"
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_sec_anchor_flop_source_gate.json",
+    "host_probe_report": "reports/prim_sec_anchor_flop_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "selected_acceptance_policy_passed": true,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "coverage_output_mismatch_count": 0,
+    "raw_mismatch_count": 32,
+    "storage_size": 640,
+    "manifest_valid": true,
+    "cpu_reference_state": "artifacts/prim_sec_anchor_flop_obj_dir/prim_sec_anchor_flop_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_sec_anchor_flop_obj_dir/prim_sec_anchor_flop_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "gpu_init_sanitized": true,
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_gate_definition": {
+    "status": "defined",
+    "repeated_steps_gate": "config/scaling_gates/prim_sec_anchor_flop_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_sec_anchor_flop_cpu_exact_loop_repeated_steps.json",
+    "coverage_output_depth_gate": "config/scaling_gates/prim_sec_anchor_flop_coverage_output_depth.json",
+    "candidate_targets": [
+      "prim_sec_anchor_flop"
+    ]
+  },
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_sec_anchor_flop_coverage_output_depth.json",
+    "gate": "config/scaling_gates/prim_sec_anchor_flop_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_sec_anchor_flop_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_sec_anchor_flop_cpu_exact_loop_repeated_steps.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "mismatch_count": 0,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "gpu_init_sanitized": true
+  },
+  "promotion_result": {
+    "schema_version": 1,
+    "status": "promoted_to_active_scope",
+    "target": "prim_sec_anchor_flop",
+    "completed_task": "promote_prim_sec_anchor_flop_to_active_target_scope",
+    "active_target_count": 73,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 51,
+    "candidate_targets": [],
+    "depth_result": "reports/prim_sec_anchor_flop_coverage_output_depth.json",
+    "non_claims_preserved": [
+      "all Width parameterizations",
+      "all ResetValue parameterizations",
+      "security hardening proof",
+      "assertion-policy proof",
+      "raw full-state equality",
+      "zero-initialized GPU correctness",
+      "full OpenTitan primitive-family support"
+    ],
+    "next_action": "package_fifty_first_primitive_active_boundary",
+    "source_gate": "config/scaling_gates/prim_sec_anchor_flop_source_gate.json",
+    "source_gate_report": "reports/prim_sec_anchor_flop_source_gate.json",
+    "depth_gate": "config/scaling_gates/prim_sec_anchor_flop_coverage_output_depth.json",
+    "depth_report": "reports/prim_sec_anchor_flop_coverage_output_depth.json"
+  }
+}

@@ -1,0 +1,220 @@
+{
+  "schema_version": "scaling-gate-v1",
+  "gate": "prim_rst_sync_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "prim_rst_sync",
+  "family": "OpenTitan primitive",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "purpose": "Define exactly one next source-backed gate after the fourth primitive review boundary.",
+  "coverage_output_contract": {
+    "planned_manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18,
+      "policy": "manifest regions must cover each real_toggle_subset_word[0..17]_o exactly once"
+    },
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116
+  },
+  "target_scope": [
+    {
+      "target": "prim_rst_sync",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/prim_rst_sync.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_rst_sync_coverage_regions.json",
+      "mdir": "artifacts/prim_rst_sync_obj_dir",
+      "cpu_reference_state": "artifacts/prim_rst_sync_obj_dir/prim_rst_sync_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_rst_sync_obj_dir/prim_rst_sync_gpu_from_cpu_reference_state.bin",
+      "expected_report": "reports/prim_rst_sync_source_gate.json"
+    }
+  ],
+  "weakest_point": "prim_rst_sync adds only a small reset synchronizer path with scan mux disabled in the planned overlay; it does not prove full reset-tree behavior, scan-mode muxing, broad primitive-family support, full CDC correctness, raw full-state equality, or zero-initialized GPU correctness.",
+  "why_this_target": [
+    "the fourth primitive review accepted async FIFO, req/ack data, pulse CDC, and edge-detector primitive seeds",
+    "prim_rst_sync is a small 65-line source-backed primitive",
+    "it exercises reset assertion and synchronized deassertion while reusing the existing prim_flop_2sync path",
+    "the planned first overlay keeps SkipScan enabled to avoid broadening into clock mux or scan-mode behavior before the first pass",
+    "it is more behaviorally useful than simple buffer/and/xor wrappers and narrower than generated mubi sync families, alert/esc primitives, SRAM/FIFO adapters, or full IP blocks",
+    "it does not restore archived XuanTie-E902 or VeeR-EL2 source",
+    "it should reuse the shared Verilator/GPU/runtime flow without target-specific runtime hooks"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_clock_gating",
+      "reason": "small, but clock-gating latch behavior is clock-special and broader than one reset-synchronizer gate"
+    },
+    {
+      "target": "prim_mubi4_sync",
+      "reason": "generated mubi-family sync primitive with broader package-specific surface and stability-check variants"
+    },
+    {
+      "target": "prim_mubi8_sync",
+      "reason": "generated mubi-family sync primitive with broader package-specific surface"
+    },
+    {
+      "target": "prim_mubi32_sync",
+      "reason": "generated mubi-family sync primitive with broader package-specific surface"
+    },
+    {
+      "target": "prim_buf_or_logic_wrappers",
+      "reason": "narrower, but too trivial to advance reset/CDC-like primitive coverage"
+    },
+    {
+      "target": "alert_or_esc_primitives",
+      "reason": "alert and escalation primitives introduce protocol breadth beyond the next narrow primitive gate"
+    },
+    {
+      "target": "full_ip_blocks",
+      "reason": "full IP blocks are too large for the next narrow source-backed primitive gate"
+    }
+  ],
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_rst_sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop_2sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop_2sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_rst_sync_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_rst_sync_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_rst_sync.json",
+    "status": "overlay_ready_first_pass_passed",
+    "host_probe_target": "prim_rst_sync_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "planned_parameters": {
+      "ActiveHigh": "cover active-low and active-high reset stimulus in the overlay if it stays within the same single target",
+      "SkipScan": 1
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "acceptance": {
+    "define_after_fourth_primitive_review_acceptance": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte",
+      "tlul_adapter_dmi",
+      "tlul_adapter_reg_racl",
+      "tlul_adapter_sram_racl",
+      "tlul_fifo_async",
+      "prim_fifo_async_simple",
+      "prim_sync_reqack_data",
+      "prim_pulse_sync",
+      "prim_edge_detector"
+    ],
+    "candidate_targets_contains_only": [
+      "prim_rst_sync"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_rst_sync remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "non_claims": [
+    "not raw full-state equality",
+    "not zero-initialized GPU scaling correctness",
+    "not broad non-TL-UL runtime generality",
+    "not full CDC correctness",
+    "not full reset-tree correctness",
+    "not scan-mode mux coverage",
+    "not full OpenTitan primitive family support"
+  ],
+  "artifacts": {
+    "expected_report": "reports/prim_rst_sync_source_gate.json",
+    "generated_outputs_only": true
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_rst_sync_source_gate.json",
+    "host_probe_report": "reports/prim_rst_sync_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "manifest_valid": true,
+    "storage_size": 576,
+    "cpu_reference_state": "artifacts/prim_rst_sync_obj_dir/prim_rst_sync_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_rst_sync_obj_dir/prim_rst_sync_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_gate_definition": {
+    "status": "defined",
+    "gate": "config/scaling_gates/prim_rst_sync_coverage_output_depth.json",
+    "gpu_repeated_steps_gate": "config/scaling_gates/prim_rst_sync_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_rst_sync_cpu_exact_loop_repeated_steps.json",
+    "report": "reports/prim_rst_sync_coverage_output_depth.json",
+    "comparison_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "candidate_targets": [
+      "prim_rst_sync"
+    ],
+    "active_targets_unchanged": true
+  },
+  "depth_candidate_gate": "config/scaling_gates/prim_rst_sync_coverage_output_depth.json",
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_rst_sync_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gate": "config/scaling_gates/prim_rst_sync_coverage_output_depth.json",
+    "gpu_repeated_steps_report": "reports/prim_rst_sync_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_rst_sync_cpu_exact_loop_repeated_steps.json",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_count": 27,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 5,
+    "candidate_targets": [],
+    "primitive_equivalence_gate": "config/scaling_gates/prim_rst_sync_source_gate.json",
+    "primitive_depth_gate": "config/scaling_gates/prim_rst_sync_coverage_output_depth.json",
+    "primitive_depth_report": "reports/prim_rst_sync_coverage_output_depth.json"
+  },
+  "next_action": "package_fifth_primitive_active_boundary",
+  "next_action_on_selection": "record_next_source_backed_gate_after_fourth_primitive_review",
+  "next_action_on_pass": "define_prim_rst_sync_depth_gate_before_promotion",
+  "next_action_on_fail": "diagnose_prim_rst_sync_source_gate_selection",
+  "next_action_on_depth_pass": "promote_prim_rst_sync_to_active_target_scope",
+  "next_action_on_promotion": "package_fifth_primitive_active_boundary"
+}

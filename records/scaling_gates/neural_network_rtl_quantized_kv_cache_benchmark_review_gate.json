@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_quantized_kv_cache_benchmark_review_gate",
+  "completed_task": "review_pulp_quantized_kv_cache_first_hybrid_benchmark_result_and_select_next_serving_rtl_gap",
+  "status": "passed",
+  "reviewed_gate": "config/scaling_gates/neural_network_rtl_quantized_kv_cache_harness_gate.json",
+  "accepted_report": "reports/pulp_quantized_kv_cache_first_hybrid_benchmark_summary.json",
+  "accepted_result": "four quantized KV-cache shapes passed CPU-vs-hybrid coverage-output equivalence",
+  "accepted_shapes": [
+    {
+      "shape": "1x1",
+      "mode": "nonresident",
+      "cpu_to_hybrid_wall_speedup_ratio": 2.691745589600743
+    },
+    {
+      "shape": "32x1",
+      "mode": "nonresident",
+      "cpu_to_hybrid_wall_speedup_ratio": 2193.195238095238
+    },
+    {
+      "shape": "1x32",
+      "mode": "resident_steps",
+      "cpu_to_hybrid_wall_speedup_ratio": 2.1825,
+      "required_condition": "sanitized CPU init-state before GPU upload"
+    },
+    {
+      "shape": "128x1",
+      "mode": "nonresident",
+      "cpu_to_hybrid_wall_speedup_ratio": 8217.116666666667
+    }
+  ],
+  "accepted_claim": "For this minimal quantized KV-cache RTL harness, hybrid execution preserves coverage-output equivalence and is faster than CPU for all four planned shapes; many independent states remain the strongest class, while resident single-state decode is faster than CPU but still much weaker than state-parallel execution.",
+  "weakest_point_after_review": "The repository has enough scoped RTL-seed evidence to summarize conditions for modern LLM-serving-like workloads, but the claim is still scattered across gates and reports. The next step should be a completion audit that maps the full user-provided flow to concrete artifacts before deciding whether the active thread goal is complete.",
+  "selected_next_gap": {
+    "task": "audit_modern_llm_serving_rtl_hybrid_conditions_goal_completion",
+    "reason": "NVDLA CNN-era seeds, ITA attention datapaths, paged KV-cache, prefill/decode, resident decode, and quantized KV-cache have all produced scoped CPU-vs-hybrid evidence. Adding another RTL seed now is less useful than auditing whether the stated objective has been satisfied and preserving exact non-claims.",
+    "expected_scope": "prompt-to-artifact completion audit, evidence checklist, condition summary, remaining non-claims, and completion decision"
+  },
+  "rejected_next_gaps_for_now": [
+    {
+      "gap": "full ITA/MHA execution",
+      "reason": "Useful as future work, but larger dependency/runtime surface is not required to state the already observed hybrid conditions."
+    },
+    {
+      "gap": "larger paged attention scale-up",
+      "reason": "Would broaden the already-fast state-parallel class rather than clarify a new condition."
+    },
+    {
+      "gap": "additional quantized KV-cache numerical variants",
+      "reason": "Would require a separate numeric-equivalence goal; the current harness intentionally claims only coverage-output equivalence and dequant-like observables."
+    }
+  ],
+  "required_non_claims": [
+    "not full paged attention",
+    "not full ITA MHA execution",
+    "not model-level Transformer inference",
+    "not production KV-cache memory hierarchy",
+    "not real FP8/FP4/NVFP4 numerical equivalence",
+    "not quantized model accuracy",
+    "not broad modern-NN speedup",
+    "not raw full-state equality"
+  ],
+  "required_non_claims_preserved": true,
+  "next_task": "audit_modern_llm_serving_rtl_hybrid_conditions_goal_completion"
+}

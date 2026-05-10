@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "status": "promoted_to_active_scope",
+  "gate": "prim_diff_decode_source_backed_gate",
+  "target": "prim_diff_decode",
+  "source_gate_name": "prim_diff_decode_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Source-backed gate selected after the sixtieth primitive review; remains candidate-only until first-pass and depth evidence pass.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_diff_decode.json",
+  "build": {
+    "mdir": "artifacts/prim_diff_decode_obj_dir",
+    "work_dir": "work/slice_pilots/prim_diff_decode",
+    "host_probe_target": "prim_diff_decode_host_probe",
+    "cpu_reference_state": "artifacts/prim_diff_decode_obj_dir/prim_diff_decode_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_diff_decode_obj_dir/prim_diff_decode_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_xnor2.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_xnor2.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_diff_decode.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_diff_decode",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_diff_decode.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_diff_decode_coverage_regions.json",
+      "mdir": "artifacts/prim_diff_decode_obj_dir",
+      "expected_report": "reports/prim_diff_decode_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_diff_decode_obj_dir/prim_diff_decode_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_diff_decode_obj_dir/prim_diff_decode_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "define_after_sixtieth_primitive_review_acceptance": true,
+    "active_target_count_unchanged_until_first_pass": 82,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 60,
+    "candidate_targets_contains_only": [
+      "prim_diff_decode"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_diff_decode remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_diff_decode_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_diff_decode_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_diff_decode.json",
+    "host_probe_target": "prim_diff_decode_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "implemented",
+    "planned_parameters": {
+      "AsyncOn": 0,
+      "Width": 1,
+      "path": "synchronous_diff_pair_decode"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 194,
+    "planned_AsyncOn": 0,
+    "planned_Width": 1,
+    "uses_active_prim_xnor2": true,
+    "async_synchronizer_not_claimed": true,
+    "skew_fsm_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true,
+    "overlay_implemented": true,
+    "depth_gate_passed": true,
+    "host_probe_makefile_hook_ready": true,
+    "coverage_manifest_ready": true,
+    "depth_gate_ready": true
+  },
+  "weakest_point": "prim_diff_decode is scoped to AsyncOn=0 synchronous differential decoding; async resynchronization, skew detection, CDC correctness, metastability behavior, and alert protocol integration remain outside this gate.",
+  "selection_reason": [
+    "continues from active prim_xnor2 with a small source-backed differential decoder",
+    "keeps the next step narrower than prim_subreg_shadow, prim_intr_hw, prim_reg_cdc, alert, RAM, escalation, or crypto primitives",
+    "covers a stateful edge/event primitive without claiming CDC or alert protocol correctness",
+    "preserves the single-candidate discipline after the sixtieth primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_subreg_shadow",
+      "reason": "shadow phase and storage-error semantics are broader than the synchronous differential decode gate"
+    },
+    {
+      "target": "prim_intr_hw",
+      "reason": "interrupt register semantics introduce a wider CSR-facing behavior surface"
+    },
+    {
+      "target": "prim_reg_cdc",
+      "reason": "CDC behavior is broader than an AsyncOn=0 differential decoder gate"
+    },
+    {
+      "target": "prim_alert_sender",
+      "reason": "alert protocol behavior is broader than the decoder-only synchronous gate"
+    }
+  ],
+  "active_target_count": 83,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 61,
+  "recorded_outputs": [
+    "config/scaling_gates/prim_diff_decode_source_gate.json",
+    "config/slice_launch_templates/prim_diff_decode.json",
+    "overlays/rtlmeter/designs/OpenTitan/src/prim_diff_decode_gpu_cov_tb.sv",
+    "overlays/rtlmeter/designs/OpenTitan/tests/prim_diff_decode_coverage_regions.json",
+    "reports/prim_diff_decode_host_probe.json",
+    "reports/prim_diff_decode_source_gate.json",
+    "reports/prim_diff_decode_repeated_steps_scaling.json",
+    "reports/prim_diff_decode_cpu_exact_loop_repeated_steps.json",
+    "reports/prim_diff_decode_coverage_output_depth.json"
+  ],
+  "non_claims": [
+    "AsyncOn=1 synchronizer and skew-detection FSM behavior",
+    "CDC correctness and metastability behavior",
+    "alert sender or receiver protocol behavior",
+    "assertion-policy proof",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full differential alert path support",
+    "full OpenTitan primitive-family support"
+  ],
+  "next_action": "package_sixty_first_primitive_active_boundary"
+}

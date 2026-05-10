@@ -1,0 +1,144 @@
+{
+  "schema_version": "slice-launch-template-v1",
+  "slice_name": "prim_pulse_sync",
+  "target": "OpenTitan.prim_pulse_sync",
+  "family": "OpenTitan primitive",
+  "status": "active",
+  "pilot_gate": "Source-backed prim_pulse_sync candidate after second primitive review acceptance.",
+  "source_gate": "config/scaling_gates/prim_pulse_sync_source_gate.json",
+  "top_module": "prim_pulse_sync_gpu_cov_tb",
+  "source": {
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_pulse_sync.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_pulse_sync_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_pulse_sync_coverage_regions.json"
+  },
+  "build": {
+    "mdir": "artifacts/prim_pulse_sync_obj_dir",
+    "work_dir": "work/slice_pilots/prim_pulse_sync"
+  },
+  "coverage_output_contract": {
+    "gate": "config/scaling_gates/prim_pulse_sync_source_gate.json",
+    "strict_output_words": 29,
+    "strict_output_bytes": 116
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": false,
+    "candidate_only_until_depth_gate": false,
+    "candidate_only_until_promotion": false,
+    "candidate_targets_contains_only": [
+      "prim_pulse_sync"
+    ],
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte",
+      "tlul_adapter_dmi",
+      "tlul_adapter_reg_racl",
+      "tlul_adapter_sram_racl",
+      "tlul_fifo_async",
+      "prim_fifo_async_simple",
+      "prim_sync_reqack_data"
+    ],
+    "first_pass_requires": [
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized coverage_output_equivalence passes"
+    ],
+    "promoted_to_active_scope": true,
+    "active_targets_at_promotion": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte",
+      "tlul_adapter_dmi",
+      "tlul_adapter_reg_racl",
+      "tlul_adapter_sram_racl",
+      "tlul_fifo_async",
+      "prim_fifo_async_simple",
+      "prim_sync_reqack_data",
+      "prim_pulse_sync"
+    ]
+  },
+  "static_features": {
+    "tb_contract_ready": true,
+    "real_toggle_outputs_ready": true,
+    "toggle_bitmap_outputs_ready": true,
+    "focused_wave_ready": true,
+    "real_toggle_word_count": 18,
+    "region_count": 5,
+    "region_names": [
+      "source_pulse_path",
+      "destination_pulse_path",
+      "clock_domain_context",
+      "reset_context",
+      "config_progress"
+    ],
+    "tb_output_count": 51,
+    "storage_size": 640,
+    "multi_clock": true,
+    "rtl_clock_ports": [
+      "clk_src_i",
+      "clk_dst_i"
+    ],
+    "depends_on_prim_flop_2sync": true
+  },
+  "overlay": {
+    "status": "implemented",
+    "host_probe_target": "prim_pulse_sync_host_probe"
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_pulse_sync_source_gate.json",
+    "host_probe_report": "reports/prim_pulse_sync_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "manifest_valid": true,
+    "storage_size": 640
+  },
+  "next_action": "package_third_primitive_active_boundary",
+  "depth_result": {
+    "status": "passed",
+    "gate": "config/scaling_gates/prim_pulse_sync_coverage_output_depth.json",
+    "report": "reports/prim_pulse_sync_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2
+  },
+  "promotion": {
+    "status": "promoted_to_active_scope",
+    "target_registry": "config/targets.json",
+    "primitive_equivalence_gate": "config/scaling_gates/prim_pulse_sync_source_gate.json",
+    "primitive_depth_gate": "config/scaling_gates/prim_pulse_sync_coverage_output_depth.json",
+    "primitive_depth_report": "reports/prim_pulse_sync_coverage_output_depth.json"
+  }
+}

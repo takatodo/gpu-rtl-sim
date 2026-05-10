@@ -1,0 +1,81 @@
+{
+  "schema_version": "slice-launch-template-v1",
+  "slice_name": "prim_xilinx_ram_1p",
+  "target": "OpenTitan.prim_xilinx_ram_1p",
+  "family": "OpenTitan primitive",
+  "status": "promoted_to_active_scope",
+  "pilot_gate": "Source-backed prim_xilinx_ram_1p candidate after ninety-seventh primitive review acceptance.",
+  "source_gate": "config/scaling_gates/prim_xilinx_ram_1p_source_gate.json",
+  "top_module": "prim_xilinx_ram_1p_gpu_cov_tb",
+  "source": {
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ram_1p.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ram_1p_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ram_1p_coverage_regions.json"
+  },
+  "build": {
+    "mdir": "artifacts/prim_xilinx_ram_1p_obj_dir",
+    "work_dir": "work/slice_pilots/prim_xilinx_ram_1p",
+    "host_probe_target": "prim_xilinx_ram_1p_host_probe"
+  },
+  "coverage_output_contract": {
+    "gate": "config/scaling_gates/prim_xilinx_ram_1p_source_gate.json",
+    "strict_output_words": 29,
+    "strict_output_bytes": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_xilinx_ram_1p"
+    ],
+    "active_target_count_unchanged_until_first_pass": 119,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 97
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 67,
+    "planned_Width": 8,
+    "planned_Depth": 16,
+    "planned_DataBitsPerMask": 1,
+    "xilinx_ultrascale_wrapper_only_claimed": false,
+    "xpm_behavior_not_claimed": true,
+    "memory_init_file_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": false,
+    "coverage_manifest_planned": false,
+    "xilinx_wrapper_only_claimed": true,
+    "xpm_fallback_not_exercised_by_current_source_pkg": true,
+    "host_probe_makefile_hook_implemented": true,
+    "coverage_manifest_implemented": true
+  },
+  "candidate_targets": [],
+  "active_target_count": 120,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 98,
+  "next_action": "package_ninety_eighth_primitive_active_boundary",
+  "first_pass_evidence": {
+    "host_probe_report": "reports/prim_xilinx_ram_1p_host_probe.json",
+    "source_gate_report": "reports/prim_xilinx_ram_1p_source_gate.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "raw_mismatch_count": 7
+  },
+  "promotion_evidence": {
+    "host_probe_report": "reports/prim_xilinx_ram_1p_host_probe.json",
+    "first_pass_report": "reports/prim_xilinx_ram_1p_source_gate.json",
+    "repeated_steps_report": "reports/prim_xilinx_ram_1p_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_xilinx_ram_1p_cpu_exact_loop_repeated_steps.json",
+    "depth_report": "reports/prim_xilinx_ram_1p_coverage_output_depth.json",
+    "passed_count": 2,
+    "comparison_count": 2
+  }
+}

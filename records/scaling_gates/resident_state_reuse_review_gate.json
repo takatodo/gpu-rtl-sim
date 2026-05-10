@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "objective": "review_resident_state_reuse_and_select_runtime_abi_or_paged_attention_scaleup",
+  "status": "reviewed_select_persistent_resident_state_abi_probe_next",
+  "source_gate": "config/scaling_gates/resident_state_reuse_measurement_gate.json",
+  "current_priority": "define_persistent_resident_state_abi_probe_gate",
+  "reviewed_summary": "reports/resident_state_reuse_experiment_summary.json",
+  "decision": {
+    "selected_workstream": "persistent_resident_state_abi_probe",
+    "deferred_workstream": "paged_attention_kv_cache_scaleup",
+    "rationale": "file-boundary state reuse preserved coverage-output equivalence across four cumulative phases, but it still reloads state between public invocations and therefore leaves the persistent GPU-resident state ABI gap open"
+  },
+  "reviewed_result": {
+    "shape": "16x64",
+    "phase_shapes": [
+      "16x64",
+      "16x128",
+      "16x192",
+      "16x256"
+    ],
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "best_wall_per_state_step_phase": 4,
+    "best_wall_per_state_step_shape": "16x256",
+    "best_wall_per_state_step_ms": 0.000572265625
+  },
+  "next_probe_contract": {
+    "name": "persistent_resident_state_abi_probe",
+    "target": "pulp_ita_mha",
+    "required_correctness_policy": "coverage_output_equivalence",
+    "minimum_shape": "16x64",
+    "minimum_phases": 4,
+    "required_behaviors": [
+      "initialize device resident state once from the CPU-generated 1x1 init-state",
+      "advance multiple resident phases without reloading the previous phase GPU dump through a file boundary",
+      "compare each cumulative phase against a CPU cumulative repeat reference",
+      "capture setup, kernel, teardown, and compare timing separately",
+      "keep host-only Verilator internals out of the correctness word set"
+    ],
+    "planned_public_workflow": "define a public dry-run first, then measure only after the ABI contract is documented and covered by a contract test"
+  },
+  "acceptance_policy": {
+    "next_runtime_abi_change_requires_separate_implementation_gate": true,
+    "coverage_output_equivalence_required": true,
+    "raw_full_state_equality_required": false,
+    "file_boundary_state_reuse_not_enough_for_persistent_abi_claim": true,
+    "paged_attention_kv_scaleup_remains_deferred_not_cancelled": true,
+    "new_public_cli_requires_contract_test_and_doc_mention": true
+  },
+  "non_claims": [
+    "not persistent GPU-resident state implemented yet",
+    "not a runtime ABI change",
+    "not paged attention or KV-cache scale-up",
+    "not production LLM serving throughput",
+    "not raw full-state equality"
+  ],
+  "next_task": "define_persistent_resident_state_abi_probe_gate"
+}

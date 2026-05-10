@@ -1,0 +1,190 @@
+{
+  "schema_version": "scaling-gate-v1",
+  "gate": "prim_sync_reqack_data_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "prim_sync_reqack_data",
+  "family": "OpenTitan primitive",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "purpose": "Define exactly one next source-backed gate after the first primitive review boundary.",
+  "coverage_output_contract": {
+    "planned_manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18,
+      "policy": "manifest regions must cover each real_toggle_subset_word[0..17]_o exactly once"
+    },
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116
+  },
+  "target_scope": [
+    {
+      "target": "prim_sync_reqack_data",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/prim_sync_reqack_data.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sync_reqack_data_coverage_regions.json",
+      "mdir": "artifacts/prim_sync_reqack_data_obj_dir",
+      "cpu_reference_state": "artifacts/prim_sync_reqack_data_obj_dir/prim_sync_reqack_data_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_sync_reqack_data_obj_dir/prim_sync_reqack_data_gpu_from_cpu_reference_state.bin",
+      "expected_report": "reports/prim_sync_reqack_data_source_gate.json"
+    }
+  ],
+  "weakest_point": "prim_sync_reqack_data stays inside the req/ack CDC primitive family already touched by prim_fifo_async_simple; it adds associated data handling but does not prove broad non-TL-UL runtime generality or full CDC correctness.",
+  "why_this_target": [
+    "the first primitive review accepted prim_fifo_async_simple as a narrow multi-clock primitive boundary",
+    "prim_sync_reqack_data is a small 178-line source-backed primitive that extends the accepted req/ack CDC surface with associated data",
+    "it directly depends on prim_sync_reqack, which is already in the active primitive dependency path",
+    "it is smaller than prim_fifo_async, prim_fifo_async_sram_adapter, SRAM-backed adapters, and full IP blocks",
+    "it does not restore archived XuanTie-E902 or VeeR-EL2 source",
+    "it should reuse shared Verilator/GPU/runtime flow without target-specific runtime hooks"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_fifo_async",
+      "reason": "larger FIFO primitive already exercised transitively by tlul_fifo_async; use the smaller data req/ack primitive first"
+    },
+    {
+      "target": "prim_fifo_async_sram_adapter",
+      "reason": "larger 441-line SRAM-backed async FIFO adapter; too broad before a second primitive gate passes"
+    },
+    {
+      "target": "prim_pulse_sync",
+      "reason": "smaller but less directly connected to the accepted req/ack data-path question"
+    },
+    {
+      "target": "full_ip_blocks",
+      "reason": "full IP blocks are too large for the next narrow source-backed gate"
+    }
+  ],
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_sync_reqack_data.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_sync_reqack.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop_2sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop_2sync.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh"
+  ],
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_sync_reqack_data_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sync_reqack_data_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_sync_reqack_data.json",
+    "status": "overlay_ready_first_pass_passed",
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_sync_reqack_data_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sync_reqack_data_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_sync_reqack_data.json",
+    "host_probe_target": "prim_sync_reqack_data_host_probe",
+    "status": "implemented"
+  },
+  "acceptance": {
+    "define_before_implementation": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte",
+      "tlul_adapter_dmi",
+      "tlul_adapter_reg_racl",
+      "tlul_adapter_sram_racl",
+      "tlul_fifo_async",
+      "prim_fifo_async_simple"
+    ],
+    "candidate_targets_contains_only": [
+      "prim_sync_reqack_data"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_sync_reqack_data remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "non_claims": [
+    "not raw full-state equality",
+    "not zero-initialized GPU scaling correctness",
+    "not broad non-TL-UL runtime generality",
+    "not full CDC correctness",
+    "not full OpenTitan primitive family support"
+  ],
+  "artifacts": {
+    "expected_report": "reports/prim_sync_reqack_data_source_gate.json",
+    "generated_outputs_only": true
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_sync_reqack_data_source_gate.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "manifest_valid": true,
+    "storage_size": 640,
+    "cpu_reference_state": "artifacts/prim_sync_reqack_data_obj_dir/prim_sync_reqack_data_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_sync_reqack_data_obj_dir/prim_sync_reqack_data_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "host_probe_report": "reports/prim_sync_reqack_data_host_probe.json",
+    "host_probe_reset_cycles": 16,
+    "host_probe_post_reset_cycles": 900
+  },
+  "depth_candidate_gate": "config/scaling_gates/prim_sync_reqack_data_coverage_output_depth.json",
+  "depth_result": {
+    "status": "passed",
+    "report": "reports/prim_sync_reqack_data_coverage_output_depth.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gate": "config/scaling_gates/prim_sync_reqack_data_coverage_output_depth.json",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_registry": "config/targets.json",
+    "active_target_count": 24,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 2,
+    "candidate_targets": [],
+    "primitive_equivalence_gate": "config/scaling_gates/prim_sync_reqack_data_source_gate.json",
+    "primitive_depth_gate": "config/scaling_gates/prim_sync_reqack_data_coverage_output_depth.json",
+    "primitive_depth_report": "reports/prim_sync_reqack_data_coverage_output_depth.json",
+    "tlul_shared_depth_gate": "config/scaling_gates/tlul_coverage_output_depth.json",
+    "tlul_shared_depth_report": "reports/tlul_coverage_output_depth.json",
+    "tlul_shared_depth_comparison_count": 50,
+    "tlul_shared_depth_passed_count": 50
+  },
+  "candidate_targets": [],
+  "next_action": "package_second_primitive_active_boundary",
+  "next_action_on_pass": "package_second_primitive_active_boundary",
+  "next_action_on_fail": "diagnose_prim_sync_reqack_data_active_scope_promotion"
+}

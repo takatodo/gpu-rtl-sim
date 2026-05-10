@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_request_loopback_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "tlul_request_loopback",
+  "family": "OpenTitan TL-UL",
+  "purpose": "Record the exactly-one source-backed TL-UL generalization gate that was promoted after the packaged TL-UL depth boundary.",
+  "weakest_point": "The source-backed overlay now passes one-state and active shared depth coverage-output equivalence; the remaining weak point is holding the three-seed package for review before adding any broader target claim.",
+  "source_backing": {
+    "upstream_module": "third_party/rtlmeter/designs/OpenTitan/src/tlul_request_loopback.sv",
+    "module_name": "tlul_request_loopback",
+    "primary_dependencies": [
+      "third_party/rtlmeter/designs/OpenTitan/src/tlul_pkg.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/top_pkg.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/tlul_rsp_intg_gen.sv"
+    ],
+    "source_exists": true
+  },
+  "overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_request_loopback_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_request_loopback_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/tlul_request_loopback.json",
+    "status": "defined",
+    "files_added_before_first_gate_pass": 3,
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "target_scope": [
+    {
+      "target": "tlul_request_loopback",
+      "launch_template": "config/slice_launch_templates/tlul_request_loopback.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_request_loopback_coverage_regions.json",
+      "mdir": "artifacts/tlul_request_loopback_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_request_loopback_obj_dir/tlul_request_loopback_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_request_loopback_obj_dir/tlul_request_loopback_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18,
+      "policy": "manifest regions must cover each real_toggle_subset_word[0..17]_o exactly once"
+    },
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/tlul_request_loopback_source_gate.json",
+    "mdir": "artifacts/tlul_request_loopback_obj_dir",
+    "cubin": "artifacts/tlul_request_loopback_obj_dir/vl_batch_gpu.cubin",
+    "cpu_reference_state": "artifacts/tlul_request_loopback_obj_dir/tlul_request_loopback_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/tlul_request_loopback_obj_dir/tlul_request_loopback_gpu_from_cpu_reference_state.bin",
+    "storage_size": 896,
+    "acceptance_policy": "coverage_output_equivalence",
+    "strict_output_word_count": 29,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "manifest_valid": true
+  },
+  "depth_result": {
+    "status": "passed",
+    "gate": "config/scaling_gates/tlul_request_loopback_coverage_output_depth.json",
+    "report": "reports/tlul_request_loopback_coverage_output_depth.json",
+    "gpu_repeated_steps_gate": "config/scaling_gates/tlul_request_loopback_repeated_steps.json",
+    "gpu_repeated_steps_report": "reports/tlul_request_loopback_repeated_steps_scaling.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/tlul_request_loopback_cpu_exact_loop_repeated_steps.json",
+    "cpu_exact_loop_report": "reports/tlul_request_loopback_cpu_exact_loop_repeated_steps.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_registry": "config/targets.json",
+    "shared_equivalence_gate": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+    "shared_depth_gate": "config/scaling_gates/tlul_coverage_output_depth.json",
+    "shared_depth_report": "reports/tlul_coverage_output_depth.json",
+    "shared_depth_comparison_count": 12,
+    "shared_depth_passed_count": 12
+  },
+  "acceptance": {
+    "define_before_implementation": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "first_pass_requires": [
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records the historical candidate-only guard before first pass"
+    ]
+  },
+  "claim_on_pass": {
+    "allowed": [
+      "one additional OpenTitan TL-UL source-backed seed reaches initialized-GPU coverage-output equivalence"
+    ],
+    "forbidden": [
+      "raw full-state equality",
+      "non-TL-UL generality",
+      "broad OpenTitan subsystem coverage",
+      "restored VeeR-EL2 or XuanTie-E902 support"
+    ]
+  },
+  "artifacts": {
+    "expected_report": "reports/tlul_request_loopback_source_gate.json",
+    "generated_outputs_only": true
+  },
+  "next_action_on_pass": "hold_for_review_after_three_seed_boundary",
+  "next_action_on_fail": "diagnose_tlul_request_loopback_overlay_or_runtime_gap"
+}

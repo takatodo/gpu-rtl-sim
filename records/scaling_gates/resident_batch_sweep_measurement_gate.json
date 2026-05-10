@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "objective": "measure resident batch sweep with explicit init-state generation",
+  "status": "passed_resident_batch_sweep_measurement",
+  "source_gate": "config/scaling_gates/resident_execution_optimization_next_gate.json",
+  "current_priority": "hold_for_review_after_resident_batch_sweep_measurement",
+  "public_cli": "src/tools/run_results_reproduction.py",
+  "shared_module": "src/tools/results_reproduction.py",
+  "command": "python3 src/tools/run_results_reproduction.py --resident-batch-sweep 1,8,16,32 --resident-batch-sweep-repeat 3",
+  "dry_run_command": "python3 src/tools/run_results_reproduction.py --resident-batch-sweep 1,8,16,32 --resident-batch-sweep-repeat 3 --dry-run",
+  "summary_report": "reports/resident_batch_sweep_summary.json",
+  "repeat_count": 3,
+  "batch_states": [
+    1,
+    8,
+    16,
+    32
+  ],
+  "required_reports": [
+    "reports/pulp_ita_mha_1x64_resident_batch_sweep.json",
+    "reports/pulp_ita_mha_8x64_resident_batch_sweep.json",
+    "reports/pulp_ita_mha_16x64_resident_batch_sweep.json",
+    "reports/pulp_ita_mha_32x64_resident_batch_sweep.json"
+  ],
+  "result": {
+    "all_workloads_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "best_total_wall_shape": "16x64",
+    "best_total_wall_ms": 1.736,
+    "best_wall_per_state_step_shape": "32x64",
+    "best_wall_per_state_step_ms": 0.0010625,
+    "wall_per_state_step_ratio_1x64_over_32x64": 28.01470588235294,
+    "best_gpu_per_state_step_shape": "32x64",
+    "best_gpu_per_state_step_ms": 0.0010455
+  },
+  "measured_shapes": [
+    {
+      "shape": "1x64",
+      "resident_mode": true,
+      "cpu_elapsed_ms_median": 3.60335,
+      "gpu_kernel_total_ms_median": 1.869824,
+      "hybrid_wall_ms_median": 1.905,
+      "hybrid_wall_ms_per_state_step_median": 0.029765625,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "report": "reports/pulp_ita_mha_1x64_resident_batch_sweep.json"
+    },
+    {
+      "shape": "8x64",
+      "resident_mode": true,
+      "cpu_elapsed_ms_median": 20.3317,
+      "gpu_kernel_total_ms_median": 1.74592,
+      "hybrid_wall_ms_median": 1.78,
+      "hybrid_wall_ms_per_state_step_median": 0.0034765625,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "report": "reports/pulp_ita_mha_8x64_resident_batch_sweep.json"
+    },
+    {
+      "shape": "16x64",
+      "resident_mode": true,
+      "cpu_elapsed_ms_median": 37.7213,
+      "gpu_kernel_total_ms_median": 1.665024,
+      "hybrid_wall_ms_median": 1.736,
+      "hybrid_wall_ms_per_state_step_median": 0.0016953125,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "report": "reports/pulp_ita_mha_16x64_resident_batch_sweep.json"
+    },
+    {
+      "shape": "32x64",
+      "resident_mode": true,
+      "cpu_elapsed_ms_median": 77.4151,
+      "gpu_kernel_total_ms_median": 2.141184,
+      "hybrid_wall_ms_median": 2.176,
+      "hybrid_wall_ms_per_state_step_median": 0.0010625,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "report": "reports/pulp_ita_mha_32x64_resident_batch_sweep.json"
+    }
+  ],
+  "acceptance_policy": {
+    "coverage_output_equivalence_required": true,
+    "max_mismatch_count_required": 0,
+    "repeat_count_required": 3,
+    "all_batch_states_required": true,
+    "init_state_generation_required": true,
+    "compare_stdout_capture_required": true,
+    "per_state_step_metrics_required": true,
+    "contract_tests_required": true,
+    "raw_full_state_equality_required": false
+  },
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "Run resident batch sweep for 1,8,16,32 states at 64 steps",
+      "artifact": "reports/resident_batch_sweep_summary.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Use explicit init-state generation",
+      "artifact": "reports/pulp_ita_mha_resident_batch_sweep_init_1x1_cpu.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Verify CPU vs hybrid coverage-output equivalence",
+      "artifact": "reports/*resident_median_sample_*_compare.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Record per-state-step metrics",
+      "artifact": "reports/pulp_ita_mha_*x64_resident_batch_sweep.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Contract-test the gate and source reports",
+      "artifact": "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+      "status": "satisfied"
+    }
+  ],
+  "non_claims": [
+    "not production LLM serving throughput",
+    "not proof that resident mode alone fixes single-request decode latency",
+    "not model-level Transformer inference",
+    "not raw full-state equality"
+  ],
+  "next_task": "review_resident_batch_sweep_and_select_state_reuse_or_paged_attention_scaleup"
+}

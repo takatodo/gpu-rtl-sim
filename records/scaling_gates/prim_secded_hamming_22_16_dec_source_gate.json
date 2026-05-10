@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "status": "promoted_to_active_scope",
+  "gate": "prim_secded_hamming_22_16_dec_source_backed_gate",
+  "target": "prim_secded_hamming_22_16_dec",
+  "source_gate_name": "prim_secded_hamming_22_16_dec_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Source-backed gate selected after the sixty-third primitive review; remains candidate-only until first-pass and depth evidence pass.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_secded_hamming_22_16_dec.json",
+  "build": {
+    "mdir": "artifacts/prim_secded_hamming_22_16_dec_obj_dir",
+    "work_dir": "work/slice_pilots/prim_secded_hamming_22_16_dec",
+    "host_probe_target": "prim_secded_hamming_22_16_dec_host_probe",
+    "cpu_reference_state": "artifacts/prim_secded_hamming_22_16_dec_obj_dir/prim_secded_hamming_22_16_dec_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_secded_hamming_22_16_dec_obj_dir/prim_secded_hamming_22_16_dec_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_22_16_dec.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_secded_hamming_22_16_dec",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/prim_secded_hamming_22_16_dec.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_hamming_22_16_dec_coverage_regions.json",
+      "mdir": "artifacts/prim_secded_hamming_22_16_dec_obj_dir",
+      "expected_report": "reports/prim_secded_hamming_22_16_dec_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_secded_hamming_22_16_dec_obj_dir/prim_secded_hamming_22_16_dec_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_secded_hamming_22_16_dec_obj_dir/prim_secded_hamming_22_16_dec_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "define_after_sixty_third_primitive_review_acceptance": true,
+    "active_target_count_unchanged_until_first_pass": 85,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 63,
+    "candidate_targets_contains_only": [
+      "prim_secded_hamming_22_16_dec"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_22_16_dec_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_hamming_22_16_dec_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_secded_hamming_22_16_dec.json",
+    "host_probe_target": "prim_secded_hamming_22_16_dec_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "implemented",
+    "planned_parameters": {
+      "DataWidth": 16,
+      "CodeWidth": 22,
+      "path": "fixed_22_16_hamming_secded_decode"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 45,
+    "planned_DataWidth": 16,
+    "planned_CodeWidth": 22,
+    "decoder_path_planned": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true
+  },
+  "weakest_point": "prim_secded_hamming_22_16_dec is scoped to the fixed 22-to-16 generated hamming SECDED decoder surface; correction/syndrome classification breadth, other decoder widths, inverse variants, assertion-policy proof, raw full-state equality, and zero-initialized GPU correctness remain outside this gate.",
+  "selection_reason": [
+    "extends the active fixed SECDED encoder family to its smallest generated decoder counterpart",
+    "keeps the next source-backed primitive combinational and smaller than alert, escalation, RAM, CDC register, crypto, or LFSR primitives",
+    "uses one upstream source file with no clock, reset, or package dependency",
+    "preserves the single-candidate discipline after the sixty-third primitive review"
+  ],
+  "next_action": "hold_for_review_after_sixty_fourth_primitive_boundary",
+  "source_review": "sixty_third_primitive_review_hold",
+  "active_target_count": 86,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 64,
+  "first_pass_result": {
+    "selected_acceptance_policy_passed": true,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "coverage_output_mismatch_count": 0,
+    "raw_mismatch_count": 34,
+    "storage_size": 704,
+    "root_layout_member_count": 149
+  },
+  "depth_result": {
+    "status": "ok",
+    "comparison_count": 2,
+    "passed_count": 2
+  }
+}

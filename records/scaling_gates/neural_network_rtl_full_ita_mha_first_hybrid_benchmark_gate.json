@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate",
+  "target": "pulp_ita_mha",
+  "upstream_module": "ita",
+  "upstream_source": "third_party/ITA/src/ita.sv",
+  "source_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_dependency_audit_gate.json",
+  "status": "three_shapes_passed_coverage_output_equivalence",
+  "objective": "Run the first scoped CPU-vs-hybrid coverage-output comparison for the full PULP ITA top-level MHA harness, after dependency overlays and reduced-parameter lint/build have passed.",
+  "overlay": {
+    "coverage_tb": "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/ITA/tests/pulp_ita_mha_coverage_regions.json",
+    "launch_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "host_probe_target": "pulp_ita_mha_host_probe",
+    "makefile": "src/hybrid/Makefile"
+  },
+  "build_evidence": {
+    "verilator_mdir": "artifacts/pulp_ita_mha_obj_dir",
+    "cpu_reference_report": "reports/pulp_ita_mha_cpu_repeat_1x1.json",
+    "cpu_reference_state": "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_cpu_repeat_1x1.bin",
+    "gpu_cubin": "artifacts/pulp_ita_mha_obj_dir/vl_batch_gpu.cubin",
+    "gpu_meta": "artifacts/pulp_ita_mha_obj_dir/vl_batch_gpu.meta.json",
+    "storage_size_bytes": 6144,
+    "verilator_mode": "flattened"
+  },
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "target_scope": [
+    {
+      "target": "pulp_ita_mha",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/pulp_ita_mha.json",
+      "coverage_manifest": "overlays/ITA/tests/pulp_ita_mha_coverage_regions.json",
+      "mdir": "artifacts/pulp_ita_mha_obj_dir",
+      "cpu_reference_state": "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_cpu_repeat_1x1.bin",
+      "gpu_candidate_state": "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_gpu_from_cpu_init_1x1.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18
+    },
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "planned_shapes": [
+    {
+      "name": "full_ita_mha_minimum_overhead_probe",
+      "nstates": 1,
+      "steps": 1,
+      "purpose": "Smoke hybrid launch and scoped coverage-output equivalence for the first full ITA/MHA top-level harness."
+    },
+    {
+      "name": "full_ita_mha_state_parallel_probe",
+      "nstates": 32,
+      "steps": 1,
+      "purpose": "Check whether independent full ITA/MHA states preserve the state-parallel fast condition."
+    },
+    {
+      "name": "full_ita_mha_single_state_repeated_probe",
+      "nstates": 1,
+      "steps": 32,
+      "purpose": "Check whether a single full ITA/MHA state over repeated launches remains weaker than state-parallel execution."
+    }
+  ],
+  "required_commands": {
+    "hybrid": "PYTHONPATH=src/tools python3 src/tools/run_vl_hybrid.py --mdir artifacts/pulp_ita_mha_obj_dir --nstates 1 --steps 1 --init-state artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_cpu_repeat_1x1.bin --sanitize-host-only-internals --dump-state artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_gpu_from_cpu_init_1x1.bin",
+    "compare": "PYTHONPATH=src/tools python3 src/tools/compare_vl_hybrid_modes.py artifacts/pulp_ita_mha_obj_dir --compare-dumps artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_cpu_repeat_1x1.bin artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_gpu_from_cpu_init_1x1.bin --reference-label cpu_repeat_1x1 --candidate-label hybrid_from_cpu_init_1x1 --acceptance-policy coverage_output_equivalence --coverage-output-gate config/scaling_gates/neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json --coverage-output-target pulp_ita_mha --json-out reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+  },
+  "acceptance_policy": {
+    "overlay_and_manifest_exist": true,
+    "cpu_reference_built": true,
+    "gpu_cubin_built": true,
+    "cpu_vs_hybrid_compared": true,
+    "coverage_output_equivalence_required": true,
+    "coverage_output_equivalence_gate_passed": true,
+    "timing_classification_uses_hybrid_wall_time": true,
+    "speedup_claim_allowed_by_gate_alone": false
+  },
+  "result": {
+    "status": "three_shapes_passed_coverage_output_equivalence",
+    "summary_report": "reports/pulp_ita_mha_first_hybrid_benchmark_summary.json",
+    "storage_size_bytes": 6144,
+    "measured_shape_count": 3,
+    "all_planned_shapes_passed_coverage_output_equivalence": true,
+    "measured_shapes": [
+      {
+        "name": "full_ita_mha_minimum_overhead_probe",
+        "nstates": 1,
+        "steps": 1,
+        "cpu_report": "reports/pulp_ita_mha_cpu_repeat_1x1.json",
+        "hybrid_report": "reports/pulp_ita_mha_hybrid_1x1.txt",
+        "coverage_output_compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "cpu_elapsed_ms": 3.48495,
+        "hybrid_gpu_kernel_time_ms_total": 1.298432,
+        "hybrid_wall_time_ms": 1.363,
+        "cpu_to_gpu_kernel_speedup_ratio": 2.683968047614353,
+        "cpu_to_hybrid_wall_speedup_ratio": 2.5568231841526043,
+        "coverage_output_equivalence_passed": true,
+        "coverage_output_mismatch_count": 0,
+        "raw_state_mismatch_count": 32,
+        "raw_state_mismatch_scope": "verilator_internal_only"
+      },
+      {
+        "name": "full_ita_mha_state_parallel_probe",
+        "nstates": 32,
+        "steps": 1,
+        "cpu_report": "reports/pulp_ita_mha_cpu_repeat_32x1.json",
+        "hybrid_report": "reports/pulp_ita_mha_hybrid_32x1.txt",
+        "coverage_output_compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+        "cpu_elapsed_ms": 70.5897,
+        "hybrid_gpu_kernel_time_ms_total": 0.93184,
+        "hybrid_wall_time_ms": 0.982,
+        "cpu_to_gpu_kernel_speedup_ratio": 75.7530262706044,
+        "cpu_to_hybrid_wall_speedup_ratio": 71.88360488798371,
+        "coverage_output_equivalence_passed": true,
+        "coverage_output_mismatch_count": 0,
+        "raw_state_mismatch_count": 1193,
+        "raw_state_mismatch_scope": "non_claim_diagnostic_only_normalized_design_state_and_coverage_output_pass"
+      },
+      {
+        "name": "full_ita_mha_single_state_repeated_probe",
+        "nstates": 1,
+        "steps": 32,
+        "cpu_report": "reports/pulp_ita_mha_cpu_repeat_1x32.json",
+        "hybrid_report": "reports/pulp_ita_mha_hybrid_1x32.txt",
+        "coverage_output_compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+        "cpu_elapsed_ms": 3.6426,
+        "hybrid_gpu_kernel_time_ms_total": 1.221632,
+        "hybrid_wall_time_ms": 1.292,
+        "cpu_to_gpu_kernel_speedup_ratio": 2.981749004610226,
+        "cpu_to_hybrid_wall_speedup_ratio": 2.819349845201238,
+        "coverage_output_equivalence_passed": true,
+        "coverage_output_mismatch_count": 0,
+        "raw_state_mismatch_count": 37,
+        "raw_state_mismatch_scope": "verilator_internal_only"
+      }
+    ],
+    "compare_reports": [
+      "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+      "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json"
+    ],
+    "classification": "The first full PULP ITA top-level MHA harness passes scoped CPU-vs-hybrid coverage-output equivalence for 1x1, 32x1, and 1x32. The 32x1 state-parallel shape is much faster on hybrid wall time than CPU, while 1x32 is also faster in this harness but remains a repeated-launch shape and should not be generalized without a larger resident/decode-style gate."
+  },
+  "claim_scope": "first scoped full PULP ITA top-level MHA harness CPU versus hybrid comparison only",
+  "non_claims": [
+    "not full PULP ITA HWPE integration",
+    "not model-level Transformer inference",
+    "not production memory hierarchy",
+    "not arbitrary ITA parameter coverage",
+    "not numerical ML accuracy",
+    "not broad modern-NN speedup",
+    "not raw full-state equality"
+  ],
+  "next_task": "review_full_ita_mha_and_larger_paged_kv_goal_completion_or_select_paged_attention_gap"
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": "coverage-region-manifest-v1",
+  "target": "OpenTitan.tlul_socket_m1",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "regions": [
+    {
+      "name": "request_accept_and_progress",
+      "words": [
+        "real_toggle_subset_word0_o",
+        "real_toggle_subset_word1_o",
+        "real_toggle_subset_word2_o",
+        "real_toggle_subset_word3_o"
+      ]
+    },
+    {
+      "name": "response_return_and_routing",
+      "words": [
+        "real_toggle_subset_word4_o",
+        "real_toggle_subset_word5_o",
+        "real_toggle_subset_word6_o",
+        "real_toggle_subset_word7_o"
+      ]
+    },
+    {
+      "name": "arbitration_semantics",
+      "words": [
+        "real_toggle_subset_word8_o",
+        "real_toggle_subset_word9_o",
+        "real_toggle_subset_word10_o",
+        "real_toggle_subset_word11_o"
+      ]
+    },
+    {
+      "name": "signatures",
+      "words": [
+        "real_toggle_subset_word12_o",
+        "real_toggle_subset_word13_o",
+        "real_toggle_subset_word14_o"
+      ]
+    },
+    {
+      "name": "payload_and_phase_context",
+      "words": [
+        "real_toggle_subset_word15_o",
+        "real_toggle_subset_word16_o",
+        "real_toggle_subset_word17_o"
+      ]
+    }
+  ]
+}

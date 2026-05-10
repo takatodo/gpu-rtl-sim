@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "gate": "mobile_vit_cpu_kick_imagenet_goal_completion_audit",
+  "status": "complete_full_imagenet_validation_cpu_kick_accuracy_measured",
+  "objective": "モバイル向けのViTモデルをCPUからキックさせ動作させてImageNetで正答率を検証する。",
+  "concrete_success_criteria": [
+    "A single mobile-oriented ViT reference model is selected.",
+    "An ImageNet validation or explicitly scoped subset manifest exists with labels.",
+    "MobileViT predictions are generated from real images.",
+    "The CPU-kick control path produces prediction records.",
+    "Top-1 and top-5 accuracy are computed from the CPU-kicked prediction records.",
+    "The final report identifies the dataset scope, evaluated count, model, commands, and accuracy values."
+  ],
+  "prompt_to_artifact_checklist": [
+    {
+      "prompt_item": "モバイル向けのViTモデル",
+      "status": "satisfied",
+      "evidence": [
+        "config/scaling_gates/mobile_vit_model_source_selection_gate.json"
+      ],
+      "verified_result": "apple/mobilevit-small / MobileViT-S selected with ImageNet-1k reference top-1 78.4% and top-5 94.1%; full validation inference completed locally",
+      "remaining_gap": null
+    },
+    {
+      "prompt_item": "CPUからキック",
+      "status": "satisfied_for_current_host_cli_scope",
+      "evidence": [
+        "config/scaling_gates/mobile_vit_cpu_kick_control_contract_gate.json",
+        "config/scaling_gates/mobile_vit_cpu_kick_proxy_contract_gate.json",
+        "config/scaling_gates/mobile_vit_cpu_kick_inference_contract_gate.json",
+        "config/scaling_gates/mobile_vit_cpu_kick_scope_decision_gate.json",
+        "src/tools/mobile_vit_cpu_kick_proxy.py",
+        "src/tools/mobile_vit_cpu_kick_infer.py",
+        "reports/mobile_vit_cpu_kick_smoke_predictions.json",
+        "reports/mobile_vit_cpu_kick_infer_smoke_predictions.json"
+      ],
+      "verified_result": "LOAD_MODEL/LOAD_IMAGE/KICK_INFER/POLL_DONE contract and proxy records are defined; host CLI CPU-kick scope is accepted for the current accuracy goal; full ImageNet validation run produced 50,000 KICK_INFER and 50,000 POLL_DONE records",
+      "remaining_gap": null
+    },
+    {
+      "prompt_item": "動作させる",
+      "status": "satisfied",
+      "evidence": [
+        "config/scaling_gates/mobile_vit_reference_inference_contract_gate.json",
+        "config/scaling_gates/mobile_vit_reference_smoke_gate.json",
+        "reports/mobile_vit_reference_smoke_predictions.json",
+        "reports/mobile_vit_cpu_kick_infer_smoke_predictions.json",
+        "reports/mobile_vit_pipeline_cpu_kick_infer_smoke_summary.json"
+      ],
+      "verified_result": "apple/mobilevit-small loaded in artifacts/mobile_vit/venv and produced predictions for all 50,000 ImageNet validation images through the CPU-kick inference CLI",
+      "remaining_gap": null
+    },
+    {
+      "prompt_item": "ImageNetで正答率を検証",
+      "status": "satisfied",
+      "evidence": [
+        "config/scaling_gates/mobile_vit_imagenet_eval_manifest_gate.json",
+        "reports/mobile_vit_eval_input_check.json",
+        "config/scaling_gates/mobile_vit_imagenet_input_blocker_gate.json",
+        "config/scaling_gates/mobile_vit_imagenet_manifest_builder_contract_gate.json",
+        "config/scaling_gates/mobile_vit_imagenet_data_clone_contract_gate.json",
+        "config/scaling_gates/mobile_vit_accuracy_metric_contract_gate.json",
+        "src/tools/mobile_vit_accuracy.py"
+      ],
+      "verified_result": "ILSVRC/imagenet-1k validation materialized 50,000 labeled images; CPU-kicked prediction report and accuracy report exist with top-1 0.77022 and top-5 0.93594",
+      "remaining_gap": null
+    },
+    {
+      "prompt_item": "再現可能な一連の実行フロー",
+      "status": "satisfied",
+      "evidence": [
+        "config/scaling_gates/mobile_vit_eval_pipeline_contract_gate.json",
+        "src/tools/mobile_vit_eval_pipeline.py",
+        "config/scaling_gates/mobile_vit_goal_audit_contract_gate.json",
+        "src/tools/mobile_vit_goal_audit.py",
+        "reports/mobile_vit_goal_audit_smoke.json"
+      ],
+      "verified_result": "pipeline CLI ran direct CPU-kick MobileViT inference on full ImageNet validation and reports/mobile_vit_goal_completion_audit.json completed with completion_claim_allowed=true",
+      "remaining_gap": null
+    },
+    {
+      "prompt_item": "contract tests",
+      "status": "satisfied_for_contract_surface",
+      "evidence": [
+        "tests/contract/test_mobile_vit_eval_inputs.py",
+        "tests/contract/test_mobile_vit_imagenet_manifest.py",
+        "tests/contract/test_mobile_vit_clone_imagenet_data.py",
+        "tests/contract/test_mobile_vit_reference_infer.py",
+        "tests/contract/test_mobile_vit_cpu_kick_proxy.py",
+        "tests/contract/test_mobile_vit_cpu_kick_infer.py",
+        "tests/contract/test_mobile_vit_accuracy.py",
+        "tests/contract/test_mobile_vit_eval_pipeline.py",
+        "tests/contract/test_mobile_vit_cpu_kick_infer.py",
+        "tests/contract/test_mobile_vit_goal_audit.py",
+        "tests/contract/test_mobile_vit_cpu_kick_imagenet.py"
+      ],
+      "verified_result": "43 MobileViT contract tests passed in the latest run",
+      "remaining_gap": null
+    }
+  ],
+  "latest_verification": {
+    "command": "python3 -m unittest tests.contract.test_mobile_vit_clone_imagenet_data tests.contract.test_mobile_vit_imagenet_manifest tests.contract.test_mobile_vit_goal_audit tests.contract.test_mobile_vit_cpu_kick_infer tests.contract.test_mobile_vit_eval_pipeline tests.contract.test_mobile_vit_cpu_kick_imagenet",
+    "result": "passed",
+    "tests_run": 43
+  },
+  "final_evidence": {
+    "manifest": "artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest.json",
+    "clone_report": "reports/mobile_vit_imagenet_data_clone_report.json",
+    "pipeline_summary": "reports/mobile_vit_eval_pipeline_summary.json",
+    "cpu_kick_predictions": "reports/mobile_vit_cpu_kick_predictions.json",
+    "accuracy_report": "reports/mobile_vit_imagenet_accuracy.json",
+    "goal_audit_report": "reports/mobile_vit_goal_completion_audit.json",
+    "dataset_scope": "imagenet_validation",
+    "evaluated_count": 50000,
+    "cpu_kick_count": 50000,
+    "cpu_done_count": 50000,
+    "top1_accuracy": 0.77022,
+    "top5_accuracy": 0.93594
+  },
+  "blocking_requirements": [],
+  "completion_decision": "complete",
+  "completion_claim_allowed": true,
+  "next_task": "select_next_goal_after_mobile_vit_cpu_kick_imagenet_accuracy",
+  "non_claims": [
+    "not RTL execution",
+    "not GPU-hybrid RTL execution",
+    "not full CPU-core execution",
+    "not a claim beyond apple/mobilevit-small on ImageNet validation via the host CLI CPU-kick scope"
+  ]
+}

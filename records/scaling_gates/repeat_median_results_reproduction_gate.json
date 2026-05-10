@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "objective": "repeat/median timing for representative modern-LLM-serving-like RTL hybrid results",
+  "status": "passed_repeat_median_representative_results",
+  "source_gate": "config/scaling_gates/one_command_reproduction_flow_gate.json",
+  "current_priority": "hold_for_review_after_repeat_median_results_reproduction",
+  "public_cli": "src/tools/run_results_reproduction.py",
+  "shared_module": "src/tools/results_reproduction.py",
+  "dry_run_command": "python3 src/tools/run_results_reproduction.py --repeat-median 3 --dry-run",
+  "command": "python3 src/tools/run_results_reproduction.py --repeat-median 3",
+  "repeat_count": 3,
+  "summary_report": "reports/results_reproduction_median_summary.json",
+  "required_workloads": [
+    {
+      "name": "pulp_ita_mha_64x1",
+      "shape": "64x1",
+      "resident_mode": false,
+      "median_report": "reports/pulp_ita_mha_64x1_median.json",
+      "source_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json"
+    },
+    {
+      "name": "pulp_ita_mha_1x64",
+      "shape": "1x64",
+      "resident_mode": false,
+      "median_report": "reports/pulp_ita_mha_1x64_median.json",
+      "source_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json"
+    },
+    {
+      "name": "pulp_ita_mha_1x64_resident",
+      "shape": "1x64",
+      "resident_mode": true,
+      "median_report": "reports/pulp_ita_mha_1x64_resident_median.json",
+      "source_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json"
+    },
+    {
+      "name": "pulp_ita_mha_32x64_resident",
+      "shape": "32x64",
+      "resident_mode": true,
+      "median_report": "reports/pulp_ita_mha_32x64_resident_median.json",
+      "source_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json"
+    },
+    {
+      "name": "pulp_paged_attention_kv_score_64x1",
+      "shape": "64x1",
+      "resident_mode": false,
+      "median_report": "reports/pulp_paged_attention_kv_score_64x1_median.json",
+      "source_gate": "config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json"
+    }
+  ],
+  "acceptance_policy": {
+    "repeat_count_required": 3,
+    "all_workloads_require_coverage_output_passed": true,
+    "max_mismatch_count_required": 0,
+    "median_reports_required": true,
+    "source_reports_required": true,
+    "docs_results_updated_to_median_table": true,
+    "contract_tests_required": true,
+    "raw_full_state_equality_required": false
+  },
+  "result": {
+    "all_workloads_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "median_report_count": 5,
+    "source_report_count_per_workload": {
+      "cpu": 3,
+      "hybrid": 3,
+      "compare": 3
+    },
+    "median_highlights": {
+      "pulp_ita_mha_64x1": {
+        "cpu_elapsed_ms": 177.257,
+        "hybrid_wall_ms": 1.286,
+        "cpu_elapsed_div_hybrid_wall": 137.84
+      },
+      "pulp_ita_mha_1x64": {
+        "cpu_elapsed_ms": 3.03036,
+        "hybrid_wall_ms": 1.622,
+        "cpu_elapsed_div_hybrid_wall": 1.87
+      },
+      "pulp_ita_mha_1x64_resident": {
+        "cpu_elapsed_ms": 3.21449,
+        "hybrid_wall_ms": 2.02,
+        "wall_ratio_nonresident_over_resident": 0.8
+      },
+      "pulp_ita_mha_32x64_resident": {
+        "cpu_elapsed_ms": 72.5432,
+        "hybrid_wall_ms": 1.918,
+        "wall_per_state_step_ratio_vs_1x64_resident": 33.7
+      },
+      "pulp_paged_attention_kv_score_64x1": {
+        "cpu_elapsed_ms": 145.323,
+        "hybrid_wall_ms": 1.199,
+        "cpu_elapsed_div_hybrid_wall": 121.2
+      }
+    }
+  },
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "run_results_reproduction.py repeat/median option",
+      "artifact": "src/tools/run_results_reproduction.py",
+      "evidence": "--repeat-median N dispatches to run_median_measurements",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "64x1, 1x64, 1x64 resident, 32x64 resident, paged_attention 64x1 measured multiple times",
+      "artifact": "reports/results_reproduction_median_summary.json",
+      "evidence": "five workloads, repeat_count 3",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "reports/*median*.json generated",
+      "artifact": "reports/*_median.json",
+      "evidence": "five per-workload median reports plus aggregate summary",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "docs/results.md table updated to median basis",
+      "artifact": "docs/results.md",
+      "evidence": "Repeat-median timing highlights table references median reports",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "gate and contract tests verify repeat count, median, and source reports",
+      "artifact": "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+      "evidence": "repeat_median_results_records_required_workloads",
+      "status": "satisfied"
+    }
+  ],
+  "non_claims": [
+    "not paper-grade statistical confidence",
+    "not production LLM serving throughput",
+    "not model-level Transformer inference",
+    "not raw full-state equality"
+  ],
+  "next_task": "hold_for_review_after_repeat_median_results_reproduction"
+}

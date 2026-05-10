@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "status": "defined_source_gap",
+  "goal": "run_neural_network_rtl_hybrid_cpu_comparison",
+  "prior_gap_gate": "config/scaling_gates/neural_network_rtl_modern_transformer_attention_gap_gate.json",
+  "source_inventory": {
+    "searched_paths": [
+      "third_party",
+      "overlays",
+      "src",
+      "config"
+    ],
+    "search_terms": [
+      "attention",
+      "transformer",
+      "qkv",
+      "softmax",
+      "kv",
+      "llm",
+      "gpt",
+      "bert",
+      "matmul",
+      "gemm",
+      "systolic"
+    ],
+    "available_related_but_rejected": [
+      {
+        "path": "third_party/rtlmeter/designs/NVDLA",
+        "reason": "CNN-era DLA RTL; useful scoped CMAC evidence already exists, but no Transformer attention or KV-cache path."
+      },
+      {
+        "path": "third_party/rtlmeter/designs/Vortex/tests/sgemm",
+        "reason": "SGEMM binary/test collateral, not a standalone attention-style RTL seed with coverage-output ports."
+      },
+      {
+        "path": "third_party/rtlmeter/designs/Caliptra/src/caliptra-rtl/kv*.sv",
+        "reason": "Key-vault security RTL; the name is unrelated to Transformer KV cache."
+      }
+    ],
+    "attention_rtl_found_in_current_tree": false
+  },
+  "selected_intake_strategy": {
+    "option": "source_gap_then_select_or_import_one_minimal_attention_rtl_seed",
+    "reason": "The active source tree does not contain a source-backed attention/QKV/softmax/KV-cache RTL target. Adding another NVDLA CMAC or generic SGEMM-adjacent target would not address the modern-NN gap.",
+    "next_task": "select_or_import_minimal_transformer_attention_rtl_source"
+  },
+  "candidate_requirements": {
+    "must_have_at_least_one": [
+      "Q/K/V projection datapath",
+      "attention score dot-product datapath",
+      "softmax or normalization datapath",
+      "KV-cache read/write state path",
+      "small transformer block RTL with observable attention-related outputs"
+    ],
+    "must_be": [
+      "source-backed and reproducible",
+      "small enough for one active seed target",
+      "adaptable to a thin coverage-output testbench",
+      "measurable with CPU reference and hybrid runtime timing"
+    ],
+    "first_benchmark_shape_policy": [
+      "one small 1x1 smoke shape for CPU/GPU launch and coverage-output equivalence",
+      "one state-parallel shape to test amortized launch overhead",
+      "one repeated-step or token-like shape to test decode-style behavior"
+    ],
+    "metrics": [
+      "coverage_output_equivalence_passed",
+      "cpu_elapsed_ms",
+      "hybrid_wall_time_ms",
+      "gpu_kernel_time_ms_total",
+      "cpu_to_hybrid_wall_speedup_ratio"
+    ]
+  },
+  "acceptance_policy": {
+    "define_only": true,
+    "speedup_claim_allowed": false,
+    "completion_for_current_gate": "The current tree has been audited for attention-style RTL and the next required action is source selection/import, not implementation.",
+    "required_next_artifact": "config/scaling_gates/neural_network_rtl_minimal_transformer_attention_source_selection_gate.json"
+  },
+  "non_claims": [
+    "not modern Transformer RTL execution yet",
+    "not model-level LLM inference",
+    "not numerical model correctness",
+    "not a speedup claim",
+    "not permission to broaden active source surface without a source-selection gate"
+  ],
+  "next_task": "select_or_import_minimal_transformer_attention_rtl_source"
+}

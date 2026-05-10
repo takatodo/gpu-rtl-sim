@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "status": "defined_next_gap",
+  "goal": "run_neural_network_rtl_hybrid_cpu_comparison",
+  "prior_gate": "config/scaling_gates/neural_network_rtl_nvdla_cmac_core_mac_state_parallel_shape_expansion_gate.json",
+  "prior_summary_report": "reports/nvdla_cmac_core_mac_state_parallel_shape_expansion_summary.json",
+  "reviewed_result": {
+    "target": "nvdla_cmac_core_mac",
+    "verilator_mode": "flattened",
+    "measured_shapes": [
+      {
+        "shape": "64x1",
+        "coverage_output_equivalence_passed": true,
+        "cpu_elapsed_ms": 1046.84,
+        "hybrid_wall_time_ms": 9.467,
+        "cpu_to_hybrid_wall_speedup_ratio": 110.57779550015845
+      },
+      {
+        "shape": "128x1",
+        "coverage_output_equivalence_passed": true,
+        "cpu_elapsed_ms": 2074.59,
+        "hybrid_wall_time_ms": 6.671,
+        "cpu_to_hybrid_wall_speedup_ratio": 310.9863588667366
+      },
+      {
+        "shape": "64x8",
+        "coverage_output_equivalence_passed": true,
+        "cpu_elapsed_ms": 1026.4,
+        "hybrid_wall_time_ms": 67.134,
+        "cpu_to_hybrid_wall_speedup_ratio": 15.288825334405816
+      }
+    ],
+    "shape_classification": "For flattened NVDLA CMAC_CORE_mac, many independent states are consistently faster than CPU. Repeated steps are still faster when enough independent states amortize launch overhead, but single-state repeated-step shapes remain weak or slower.",
+    "non_flat_status": "Non-flattened timed Syms speedup remains unclaimed because CPU/GPU coverage-output semantics still mismatch after scheduler/time alignment attempts."
+  },
+  "modern_nn_gap_review": {
+    "status": "current_nvdla_cmac_scope_is_not_modern_nn_representative",
+    "finding": "The current NVDLA CMAC evidence answers a scoped CNN-era MAC/datapath question, but it does not exercise the dominant current Transformer, LLM, VLM, or generative inference paths.",
+    "sources": [
+      "https://nvdla.org/hw/v1/hwarch.html",
+      "https://mlcommons.org/2026/04/mlperf-inference-v6-0-results/",
+      "https://www.nvidia.com/en-gb/data-center/technologies/blackwell-architecture/",
+      "https://developer.nvidia.com/blog/optimizing-inference-for-long-context-and-large-batch-sizes-with-nvfp4-kv-cache/"
+    ],
+    "missing_capabilities": [
+      "Transformer Q/K/V projection and attention score datapath",
+      "softmax or attention reduction behavior",
+      "KV-cache resident state and prefill/decode serving split",
+      "FP8/FP4/NVFP4/INT4 low-precision inference data paths",
+      "GQA/MQA/MoE/speculative decoding behavior",
+      "model or graph ingestion and fused operator scheduling",
+      "token-latency oriented benchmark metrics"
+    ]
+  },
+  "selected_next_gap": {
+    "task": "define_minimal_transformer_attention_rtl_intake_gate_after_modern_nn_gap_review",
+    "reason": "The current objective still needs a benchmark that is representative of modern NN inference; expanding older NVDLA CMAC shapes would add less information than defining a minimal attention-style RTL seed.",
+    "candidate_policy": [
+      "Prefer an existing source-backed RTL target if available in third_party or overlays.",
+      "Keep one active seed target until the first attention-style CPU-vs-hybrid metric exists.",
+      "Require coverage-output equivalence before any speedup claim.",
+      "Measure at least one state-parallel shape and one repeated-step/token-like shape.",
+      "Preserve NVDLA CMAC results as scoped CNN-era evidence, not broad NN evidence."
+    ],
+    "acceptance_policy": {
+      "define_only": true,
+      "required_next_artifact": "config/scaling_gates/neural_network_rtl_minimal_transformer_attention_intake_gate.json",
+      "must_record": [
+        "candidate RTL source or explicit source gap",
+        "first benchmark shape policy",
+        "coverage-output signal policy",
+        "CPU-vs-hybrid timing metrics",
+        "non-claims for full LLM/model execution"
+      ]
+    }
+  },
+  "non_claims": [
+    "not full NVDLA accelerator execution",
+    "not modern Transformer/LLM execution yet",
+    "not model accuracy or numerical inference correctness",
+    "not a broad CPU-vs-hybrid speedup claim",
+    "not non-flattened timed Syms speedup"
+  ],
+  "next_task": "define_minimal_transformer_attention_rtl_intake_gate_after_modern_nn_gap_review"
+}

@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_nvdla_cmac_core_mac_non_flat_hierarchy_support_gate",
+  "target": "nvdla_cmac_core_mac",
+  "upstream_module": "NV_NVDLA_CMAC_CORE_mac",
+  "upstream_source": "third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_CMAC_CORE_mac.v",
+  "prior_gate": "config/scaling_gates/neural_network_rtl_nvdla_cmac_core_mac_first_compute_benchmark_gate.json",
+  "objective": "Define the smallest support gate needed to run CMAC_CORE_mac without Verilator --flatten, so larger NVDLA hierarchy work is not blocked by root-only state images.",
+  "observed_blocker": {
+    "status": "non_flat_hybrid_execution_blocked",
+    "report": "reports/nvdla_cmac_core_mac_hybrid_1x1.txt",
+    "symptom": "The non-flattened build reaches cubin generation, but the first hybrid run fails with CUDA illegal memory access.",
+    "root_cause_hypothesis": "Generated GPU code follows Verilator vlSymsp/Syms references into submodule storage that is not represented in the current serialized root-only state image.",
+    "why_flatten_is_not_enough": "The flattened Verilator build is useful for scoped shape classification, but it cannot prove that the hybrid runtime can execute realistic NVDLA hierarchy boundaries."
+  },
+  "current_working_fallback": {
+    "verilator_mode": "flattened",
+    "template": "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+    "benchmark_gate": "config/scaling_gates/neural_network_rtl_nvdla_cmac_core_mac_first_compute_benchmark_gate.json",
+    "measured_shape_count": 5,
+    "coverage_output_equivalence_passed": true
+  },
+  "implementation_scope": {
+    "primary_files_to_inspect": [
+      "src/tools/gen_vl_gpu_kernel.py",
+      "src/tools/vl_runtime_filter.py",
+      "src/tools/run_vl_hybrid.py",
+      "src/hybrid/run_vl_hybrid.c",
+      "src/hybrid/tlul_slice_host_probe.cpp"
+    ],
+    "required_capability": [
+      "detect whether generated non-flattened GPU IR dereferences Verilator Syms submodule state",
+      "either serialize required submodule/Syms storage into the per-state image or reject the target before launch with a structured unsupported-hierarchy error",
+      "preserve the existing flattened CMAC_CORE_mac path as the measured fallback"
+    ],
+    "out_of_scope": [
+      "full NVDLA accelerator execution",
+      "modern Transformer/LLM feature support",
+      "new model-level NN frontend",
+      "broad non-flattened hierarchy generalization beyond this seed"
+    ]
+  },
+  "acceptance_policy": {
+    "define_only": true,
+    "implementation_required_by_next_gate": true,
+    "must_not_replace_flattened_benchmark_evidence": true,
+    "next_gate_must_run_non_flat_cmac_core_mac_1x1_or_emit_structured_prelaunch_rejection": true,
+    "if_execution_runs_then_cpu_vs_hybrid_coverage_output_equivalence_required": true,
+    "speedup_claim_allowed_by_gate_alone": false
+  },
+  "implementation_result": {
+    "status": "structured_prelaunch_rejection_implemented",
+    "code_path": "src/tools/run_vl_hybrid.py",
+    "report": "reports/nvdla_cmac_core_mac_non_flat_prelaunch_rejection_1x1.txt",
+    "exit_code": 2,
+    "reason": "unsupported_nonflat_verilator_syms_state",
+    "cuda_launch_reached": false,
+    "remaining_gap": "Non-flattened CMAC_CORE_mac still does not execute; it now fails safely before CUDA launch instead of as an illegal memory access."
+  },
+  "selected_next_task": "define_syms_submodule_state_serialization_gate_for_non_flat_nvdla",
+  "claim_scope": "non-flattened hierarchy support definition for the scoped CMAC_CORE_mac seed only",
+  "non_claims": [
+    "not neural-network model execution",
+    "not current LLM accelerator completeness",
+    "not NVDLA full accelerator execution",
+    "not broad hierarchy support",
+    "not CPU versus hybrid speedup claim",
+    "not benchmark result",
+    "not complete CMAC arithmetic validation"
+  ]
+}

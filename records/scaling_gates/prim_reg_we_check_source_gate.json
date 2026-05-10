@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "status": "promoted_to_active_scope",
+  "gate": "prim_reg_we_check_source_backed_gate",
+  "target": "prim_reg_we_check",
+  "source_gate_name": "prim_reg_we_check_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Source-backed gate selected after the fifty-ninth primitive review; remains candidate-only until first-pass and depth evidence pass.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_reg_we_check.json",
+  "build": {
+    "mdir": "artifacts/prim_reg_we_check_obj_dir",
+    "work_dir": "work/slice_pilots/prim_reg_we_check",
+    "host_probe_target": "prim_reg_we_check_host_probe",
+    "cpu_reference_state": "artifacts/prim_reg_we_check_obj_dir/prim_reg_we_check_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_reg_we_check_obj_dir/prim_reg_we_check_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert_dummy_macros.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_util_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_buf.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_buf.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_onehot_check.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_reg_we_check.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_reg_we_check",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_reg_we_check.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_reg_we_check_coverage_regions.json",
+      "mdir": "artifacts/prim_reg_we_check_obj_dir",
+      "expected_report": "reports/prim_reg_we_check_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_reg_we_check_obj_dir/prim_reg_we_check_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_reg_we_check_obj_dir/prim_reg_we_check_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "define_after_fifty_ninth_primitive_review_acceptance": true,
+    "active_target_count_unchanged_until_first_pass": 81,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 59,
+    "candidate_targets_contains_only": [
+      "prim_reg_we_check"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_reg_we_check remains candidate-only until first pass and depth evidence pass"
+    ]
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_reg_we_check_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_reg_we_check_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_reg_we_check.json",
+    "host_probe_target": "prim_reg_we_check_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "implemented",
+    "planned_parameters": {
+      "OneHotWidth": 4,
+      "EnableCheck": 1,
+      "AddrCheck": 0,
+      "StrictCheck": 0,
+      "path": "regwen_masked_write_enable_checker"
+    },
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 47,
+    "planned_OneHotWidth": 4,
+    "planned_EnableCheck": 1,
+    "planned_AddrCheck": 0,
+    "planned_StrictCheck": 0,
+    "composes_active_prim_buf": true,
+    "composes_active_prim_onehot_check": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true,
+    "host_probe_makefile_hook_ready": true,
+    "coverage_manifest_ready": true,
+    "depth_gate_ready": true
+  },
+  "weakest_point": "prim_reg_we_check is scoped to OneHotWidth=4 with EnableCheck=1, AddrCheck=0, StrictCheck=0; broader onehot widths, address checking, strict REGWEN behavior, assertion proof, and full CSR/register family support remain outside this gate.",
+  "selection_reason": [
+    "continues the CSR/register control-integrity family after prim_subreg_arb without jumping to shadow-register semantics",
+    "reuses already active prim_buf and prim_onehot_check composition",
+    "keeps the next step narrower than prim_subreg_shadow, prim_intr_hw, RAM, CDC, alert, escalation, or crypto primitives",
+    "preserves the single-candidate discipline after the fifty-ninth primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_subreg_shadow",
+      "reason": "shadow update and error semantics are broader than the fixed write-enable checker composition"
+    },
+    {
+      "target": "prim_intr_hw",
+      "reason": "interrupt register semantics introduce a wider CSR-facing behavior surface"
+    },
+    {
+      "target": "prim_reg_cdc",
+      "reason": "CDC behavior is broader than a combinational REGWEN checker gate"
+    },
+    {
+      "target": "prim_ram_1p",
+      "reason": "memory macro behavior and vendor implementation boundaries are broader than this source gate"
+    }
+  ],
+  "active_target_count": 82,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 60,
+  "recorded_outputs": [
+    "config/scaling_gates/prim_reg_we_check_source_gate.json",
+    "config/slice_launch_templates/prim_reg_we_check.json",
+    "overlays/rtlmeter/designs/OpenTitan/src/prim_reg_we_check_gpu_cov_tb.sv",
+    "overlays/rtlmeter/designs/OpenTitan/tests/prim_reg_we_check_coverage_regions.json",
+    "reports/prim_reg_we_check_host_probe.json",
+    "reports/prim_reg_we_check_source_gate.json",
+    "reports/prim_reg_we_check_repeated_steps_scaling.json",
+    "reports/prim_reg_we_check_cpu_exact_loop_repeated_steps.json",
+    "reports/prim_reg_we_check_coverage_output_depth.json"
+  ],
+  "non_claims": [
+    "OneHotWidth values other than 4",
+    "AddrCheck-enabled behavior",
+    "StrictCheck-enabled behavior",
+    "assertion-policy proof",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full CSR/register primitive-family support",
+    "full OpenTitan primitive-family support"
+  ],
+  "next_action": "package_sixtieth_primitive_active_boundary"
+}

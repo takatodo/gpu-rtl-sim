@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_full_ita_mha_and_larger_paged_kv_next_gate",
+  "status": "defined_dual_followup_select_larger_paged_kv_first",
+  "objective": "Extend the completed modern LLM-serving-like RTL condition investigation toward full ITA/MHA execution and larger paged attention / KV-cache scale-up without broadening prior non-claims.",
+  "prior_completion_audit": "config/scaling_gates/modern_llm_serving_rtl_hybrid_conditions_goal_completion_audit.json",
+  "prior_condition_summary": {
+    "correctness": "coverage-output equivalence over explicit output words",
+    "fast": "many independent RTL states in one launch",
+    "weak": "single-state repeated launches",
+    "resident_refinement": "resident execution with sanitized CPU init-state improves decode-like repeated state but remains weaker than state-parallel execution"
+  },
+  "requested_followups": [
+    "full ITA/MHA execution",
+    "larger paged attention / KV-cache scale-up"
+  ],
+  "workstreams": [
+    {
+      "name": "full_ita_mha_execution",
+      "status": "dependency_audit_required_before_overlay",
+      "candidate_upstream_top": "third_party/ITA/src/ita.sv",
+      "known_completed_subseeds": [
+        "pulp_ita_dotp",
+        "pulp_ita_softmax_top"
+      ],
+      "why_not_first": [
+        "full ita.sv reaches controller, input sampler, weight controller, accumulator, output FIFO, activation, softmax, and package-level parameter surface",
+        "the completed dotp and softmax_top gates do not prove full MHA handshake, memory tiling, or complete ITA controller sequencing",
+        "dependency and stimulus surface is larger than a bounded KV-cache scale-up gate"
+      ],
+      "required_first_gate": "define_full_ita_mha_dependency_and_stimulus_audit_gate",
+      "planned_artifacts": {
+        "dependency_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_dependency_audit_gate.json",
+        "future_overlay": "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+        "future_coverage_manifest": "overlays/ITA/tests/pulp_ita_mha_coverage_regions.json",
+        "future_launch_template": "config/slice_launch_templates/pulp_ita_mha.json"
+      }
+    },
+    {
+      "name": "larger_paged_attention_kv_cache_scaleup",
+      "status": "selected_first",
+      "base_target": "pulp_paged_kv_cache",
+      "base_overlay": "overlays/ITA/src/pulp_paged_kv_cache_gpu_cov_tb.sv",
+      "base_summary": "reports/pulp_paged_kv_cache_first_hybrid_benchmark_summary.json",
+      "selected_target": "pulp_paged_kv_cache_large",
+      "planned_overlay": "overlays/ITA/src/pulp_paged_kv_cache_large_gpu_cov_tb.sv",
+      "planned_coverage_manifest": "overlays/ITA/tests/pulp_paged_kv_cache_large_coverage_regions.json",
+      "planned_launch_template": "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+      "planned_host_probe_target": "pulp_paged_kv_cache_large_host_probe",
+      "scaleup_intent": {
+        "minimum_page_count": 8,
+        "minimum_slots_per_page": 16,
+        "minimum_total_logical_slots": 128,
+        "stress": [
+          "more page-table entries",
+          "more page-boundary events",
+          "more wrap/remap events",
+          "larger state image",
+          "larger many-state launch shape"
+        ]
+      },
+      "required_first_gate": "define_pulp_paged_kv_cache_large_scaleup_gate"
+    }
+  ],
+  "selected_next_task": "define_pulp_paged_kv_cache_large_scaleup_gate",
+  "acceptance_policy": {
+    "keep_prior_completion_audit_unchanged": true,
+    "new_overlay_requires_manifest_template_host_probe": true,
+    "new_public_workflow_requires_contract_test_and_doc_mention": true,
+    "first_large_kv_run_requires_verilator_build": true,
+    "first_large_kv_run_requires_gpu_cubin_build": true,
+    "first_large_kv_run_requires_cpu_reference_and_hybrid_dump": true,
+    "first_large_kv_run_requires_coverage_output_equivalence": true,
+    "speedup_claim_requires_measured_report": true,
+    "full_ita_mha_claim_requires_separate_dependency_and_stimulus_audit": true
+  },
+  "non_claims": [
+    "not full ITA/MHA execution yet",
+    "not full paged attention yet",
+    "not production KV-cache memory hierarchy",
+    "not model-level Transformer inference",
+    "not real FP8/FP4/NVFP4 numerical equivalence",
+    "not quantized model accuracy",
+    "not broad arbitrary-RTL speedup",
+    "not raw full-state equality"
+  ]
+}

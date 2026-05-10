@@ -1,0 +1,139 @@
+{
+  "schema_version": "slice-launch-template-v1",
+  "slice_name": "prim_secded_inv_39_32_dec",
+  "target": "OpenTitan.prim_secded_inv_39_32_dec",
+  "family": "OpenTitan primitive",
+  "status": "promoted_to_active_scope",
+  "pilot_gate": "Source-backed prim_secded_inv_39_32_dec promoted after first-pass and depth coverage-output acceptance.",
+  "source_gate": "config/scaling_gates/prim_secded_inv_39_32_dec_source_gate.json",
+  "top_module": "prim_secded_inv_39_32_dec_gpu_cov_tb",
+  "source": {
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_39_32_dec.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_39_32_dec_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_39_32_dec_coverage_regions.json"
+  },
+  "build": {
+    "mdir": "artifacts/prim_secded_inv_39_32_dec_obj_dir",
+    "work_dir": "work/slice_pilots/prim_secded_inv_39_32_dec",
+    "host_probe_target": "prim_secded_inv_39_32_dec_host_probe"
+  },
+  "coverage_output_contract": {
+    "gate": "config/scaling_gates/prim_secded_inv_39_32_dec_source_gate.json",
+    "strict_output_words": 29,
+    "strict_output_bytes": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_secded_inv_39_32_dec"
+    ],
+    "active_target_count_unchanged_until_first_pass": 89,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 67
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 62,
+    "planned_DataWidth": 32,
+    "planned_CodeWidth": 39
+  },
+  "candidate_targets": [],
+  "active_target_count": 90,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 68,
+  "next_action": "package_sixty_eighth_primitive_active_boundary",
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_39_32_dec_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_39_32_dec_coverage_regions.json",
+    "host_probe_target": "prim_secded_inv_39_32_dec_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "overlay_ready_first_pass_and_depth_passed"
+  },
+  "overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_39_32_dec_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_39_32_dec_coverage_regions.json",
+    "host_probe_target": "prim_secded_inv_39_32_dec_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "overlay_ready_first_pass_and_depth_passed"
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/prim_secded_inv_39_32_dec_source_gate.json",
+    "host_probe_report": "reports/prim_secded_inv_39_32_dec_host_probe.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "selected_acceptance_policy_passed": true,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "coverage_output_mismatch_count": 0,
+    "raw_mismatch_count": 36,
+    "storage_size": 704,
+    "root_layout_member_count": 150
+  },
+  "depth_gate_paths": [
+    "config/scaling_gates/prim_secded_inv_39_32_dec_repeated_steps.json",
+    "config/scaling_gates/prim_secded_inv_39_32_dec_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_secded_inv_39_32_dec_coverage_output_depth.json"
+  ],
+  "depth_result": {
+    "status": "ok",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "report": "reports/prim_secded_inv_39_32_dec_coverage_output_depth.json"
+  },
+  "promotion_result": {
+    "schema_version": 1,
+    "status": "promoted_to_active_scope",
+    "completed_task": "promote_prim_secded_inv_39_32_dec_to_active_target_scope",
+    "target": "prim_secded_inv_39_32_dec",
+    "source_gate": "config/scaling_gates/prim_secded_inv_39_32_dec_source_gate.json",
+    "launch_template": "config/slice_launch_templates/prim_secded_inv_39_32_dec.json",
+    "coverage_tb": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_39_32_dec_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_39_32_dec_coverage_regions.json",
+    "host_probe_report": "reports/prim_secded_inv_39_32_dec_host_probe.json",
+    "first_pass_report": "reports/prim_secded_inv_39_32_dec_source_gate.json",
+    "gpu_repeated_steps_report": "reports/prim_secded_inv_39_32_dec_repeated_steps_scaling.json",
+    "cpu_exact_loop_report": "reports/prim_secded_inv_39_32_dec_cpu_exact_loop_repeated_steps.json",
+    "depth_report": "reports/prim_secded_inv_39_32_dec_coverage_output_depth.json",
+    "first_pass_result": {
+      "status": "passed",
+      "report": "reports/prim_secded_inv_39_32_dec_source_gate.json",
+      "host_probe_report": "reports/prim_secded_inv_39_32_dec_host_probe.json",
+      "acceptance_policy": "coverage_output_equivalence",
+      "selected_acceptance_policy_passed": true,
+      "compared_word_count": 29,
+      "compared_byte_count": 116,
+      "coverage_output_mismatch_count": 0,
+      "raw_mismatch_count": 36,
+      "storage_size": 704,
+      "root_layout_member_count": 150
+    },
+    "depth_result": {
+      "status": "ok",
+      "comparison_count": 2,
+      "passed_count": 2,
+      "report": "reports/prim_secded_inv_39_32_dec_coverage_output_depth.json"
+    },
+    "active_target_count": 90,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 68,
+    "latest_primitive": "prim_secded_inv_39_32_dec",
+    "candidate_targets": [],
+    "claim": "Twenty-two active TL-UL seeds plus sixty-eight active OpenTitan primitive seeds through prim_secded_inv_39_32_dec pass scoped coverage-output equivalence; TL-UL shared depth remains 50/50 and all sixty-eight primitive depth gates pass 2/2.",
+    "non_claims": [
+      "exhaustive SECDED correction or syndrome classification",
+      "hamming SECDED variants",
+      "other decoder widths",
+      "assertion-policy proof",
+      "raw full-state equality",
+      "zero-initialized GPU correctness",
+      "full OpenTitan primitive-family support"
+    ],
+    "next_action": "package_sixty_eighth_primitive_active_boundary"
+  }
+}

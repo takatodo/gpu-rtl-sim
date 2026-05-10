@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "objective": "define_persistent_resident_state_abi_probe_implementation_gate",
+  "status": "implemented_persistent_resident_state_abi_runtime_surface_probe_only",
+  "source_gate": "config/scaling_gates/persistent_resident_state_abi_probe_gate.json",
+  "current_priority": "define_persistent_resident_device_handle_storage_gate",
+  "target": "pulp_ita_mha",
+  "problem_statement": "the dry-run command now describes a persistent handle flow, but run_vl_hybrid.py and run_vl_hybrid.c do not yet expose or enforce a runtime ABI for that handle",
+  "implementation_plan": [
+    {
+      "step": "add_python_wrapper_flags",
+      "files": [
+        "src/tools/run_vl_hybrid.py"
+      ],
+      "required_behavior": [
+        "accept --persistent-resident-state-abi-handle",
+        "accept --persistent-resident-state-abi-phase",
+        "forward them as explicit RUN_VL_HYBRID_* environment variables",
+        "reject phase > 1 with --init-state because that would recreate file-boundary state reuse"
+      ]
+    },
+    {
+      "step": "add_c_runner_surface",
+      "files": [
+        "src/hybrid/run_vl_hybrid.c"
+      ],
+      "required_behavior": [
+        "read the persistent resident handle and phase environment variables",
+        "print the requested persistent handle and phase in the run report",
+        "reject non-phase-1 persistent use until real device handle persistence is implemented",
+        "keep existing --resident-steps behavior unchanged"
+      ]
+    },
+    {
+      "step": "enable_reproduction_non_dry_run_after_surface",
+      "files": [
+        "src/tools/results_reproduction.py",
+        "src/tools/run_results_reproduction.py"
+      ],
+      "required_behavior": [
+        "only enable the persistent ABI measurement after the wrapper and C runner expose deterministic rejection or execution behavior",
+        "write reports/persistent_resident_state_abi_probe_summary.json only after all phases run and compare"
+      ]
+    }
+  ],
+  "implemented_runtime_surface": {
+    "python_wrapper": {
+      "file": "src/tools/run_vl_hybrid.py",
+      "flags": [
+        "--persistent-resident-state-abi-handle",
+        "--persistent-resident-state-abi-phase"
+      ],
+      "forwarded_environment": [
+        "RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_HANDLE",
+        "RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_PHASE"
+      ],
+      "guards": [
+        "handle and phase must be provided together",
+        "phase must be >= 1",
+        "persistent ABI flags require --resident-steps",
+        "phase > 1 must not use --init-state"
+      ]
+    },
+    "c_runner": {
+      "file": "src/hybrid/run_vl_hybrid.c",
+      "environment": [
+        "RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_HANDLE",
+        "RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_PHASE"
+      ],
+      "surface_status": "probe_surface_phase1_only",
+      "phase_gt_1_behavior": "deterministic rejection until real device handle persistence exists",
+      "report_line": "persistent_resident_state_abi: handle=<handle> phase=<phase> status=probe_surface_phase1_only"
+    },
+    "verification": [
+      "python3 src/tools/run_vl_hybrid.py --storage-size 1 --cubin missing.cubin --nstates 16 --steps 64 --resident-steps --persistent-resident-state-abi-handle pulp_ita_mha_16x64 --persistent-resident-state-abi-phase 2 --init-state previous_phase_gpu_dump.bin",
+      "make -C src/hybrid run_vl_hybrid"
+    ]
+  },
+  "acceptance_policy": {
+    "coverage_output_equivalence_required_for_measurement": true,
+    "raw_full_state_equality_required": false,
+    "phase_gt_1_init_state_reload_forbidden": true,
+    "existing_file_boundary_state_reuse_flow_must_remain_available": true,
+    "existing_resident_steps_flow_must_remain_available": true,
+    "deterministic_rejection_is_acceptable_before_real_handle_persistence": true,
+    "measurement_claim_requires_all_phases_pass": true,
+    "new_public_runtime_flags_require_contract_tests": true,
+    "docs_must_record_non_claims": true
+  },
+  "planned_runtime_contract": {
+    "python_flags": {
+      "--persistent-resident-state-abi-handle": "stable logical resident handle name for a multi-phase probe",
+      "--persistent-resident-state-abi-phase": "1-based phase index; phase 1 may use --init-state, later phases may not"
+    },
+    "environment": {
+      "RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_HANDLE": "forwarded handle name",
+      "RUN_VL_HYBRID_PERSISTENT_RESIDENT_STATE_PHASE": "forwarded phase index"
+    },
+    "initial_surface_semantics": {
+      "phase_1": "may initialize from CPU 1x1 init-state and run the normal resident step path",
+      "phase_gt_1": "must reject until real persistent device handle restore/lookup exists",
+      "forbidden": "silently falling back to --init-state from a previous phase GPU dump"
+    }
+  },
+  "measurement_contract": {
+    "public_command": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4",
+    "summary_report": "reports/persistent_resident_state_abi_probe_summary.json",
+    "phase_shapes": [
+      "16x64",
+      "16x128",
+      "16x192",
+      "16x256"
+    ],
+    "required_compare_policy": "coverage_output_equivalence",
+    "required_phase_count": 4
+  },
+  "non_claims": [
+    "not real persistent device handle storage",
+    "not measured by this gate",
+    "not persistent GPU-resident state proven yet",
+    "not paged attention or KV-cache scale-up",
+    "not production LLM serving throughput",
+    "not raw full-state equality"
+  ],
+  "next_task": "define_persistent_resident_device_handle_storage_gate"
+}

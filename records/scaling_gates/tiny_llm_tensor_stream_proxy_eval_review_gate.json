@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "gate": "tiny_llm_tensor_stream_proxy_eval_review_gate",
+  "completed_task": "review_tiny_llm_tensor_stream_proxy_eval_and_select_next_serving_gap",
+  "status": "passed",
+  "reviewed_gate": "config/scaling_gates/tiny_llm_weight_tensor_streaming_proxy_gate.json",
+  "accepted_report": "reports/tiny_llm_tensor_stream_pulp_quantized_kv_cache_eval_summary.json",
+  "accepted_result": {
+    "target": "pulp_quantized_kv_cache",
+    "stream_count": 3,
+    "coverage_output_equivalence": "passed_all_streams",
+    "minimum_cpu_to_hybrid_wall_speedup_ratio": 0.2787120398398594,
+    "maximum_cpu_to_hybrid_wall_speedup_ratio": 3.66086129753915,
+    "timing_classification": "mixed_smoke_result"
+  },
+  "accepted_claim": "Selected tiny LLM attention tensor byte ranges can drive the quantized KV-cache RTL proxy with CPU-vs-hybrid coverage-output equivalence.",
+  "rejected_claim": "The 1x1 tensor-stream smoke result does not support a broad hybrid speedup claim because attn_q is slower on hybrid wall time.",
+  "weakest_point_after_review": "Single-state tensor-stream smoke runs are too launch-overhead-sensitive for serving throughput. The next measurement should use the same fixture-derived tensor streams in a state-parallel shape.",
+  "selected_next_gap": {
+    "task": "run_tiny_llm_tensor_stream_state_parallel_proxy_eval",
+    "target": "pulp_quantized_kv_cache",
+    "shape": "32x1",
+    "reason": "State-parallel measurement is the smallest serving-like throughput step after a mixed 1x1 result, and it directly tests the previously established fast condition on actual selected tensor byte streams.",
+    "expected_scope": "repeat the three selected tensor streams at 32 independent states, compare coverage outputs, and summarize timing without claiming full model inference"
+  },
+  "rejected_next_gaps_for_now": [
+    {
+      "gap": "full ITA/MHA execution",
+      "reason": "Still important, but it is a larger integration step than resolving whether tensor-stream proxy throughput improves under state parallelism."
+    },
+    {
+      "gap": "token generation harness",
+      "reason": "Requires a fuller model datapath; first measure the state-parallel proxy path that already exists."
+    }
+  ],
+  "non_claims": [
+    "not full tensor streaming hardware",
+    "not full model graph execution",
+    "not tokenizer-compatible text generation",
+    "not HuggingFace or MLPerf numerical equivalence",
+    "not end-to-end LLM serving throughput",
+    "not broad hybrid speedup"
+  ],
+  "next_task": "run_tiny_llm_tensor_stream_state_parallel_proxy_eval"
+}

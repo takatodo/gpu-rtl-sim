@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "objective": "review resident batch sweep and choose the next optimization workstream",
+  "status": "reviewed_select_resident_state_reuse_experiment_next",
+  "source_gate": "config/scaling_gates/resident_batch_sweep_measurement_gate.json",
+  "current_priority": "define_resident_state_reuse_experiment",
+  "reviewed_summary": "reports/resident_batch_sweep_summary.json",
+  "decision": {
+    "selected_workstream": "resident_state_reuse_experiment",
+    "reason": "resident batch sweep shows strong per-state-step amortization, so the next runtime-facing question is whether state residency can reduce repeated decode-like host/GPU boundary cost without changing the correctness policy",
+    "deferred_workstream": "paged_attention_kv_cache_scaleup",
+    "deferred_reason": "paged-attention scale-up remains useful, but resident state reuse is the narrower follow-up to the current sweep evidence"
+  },
+  "reviewed_result": {
+    "all_workloads_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "best_total_wall_shape": "16x64",
+    "best_total_wall_ms": 1.736,
+    "best_wall_per_state_step_shape": "32x64",
+    "best_wall_per_state_step_ms": 0.0010625,
+    "wall_per_state_step_ratio_1x64_over_32x64": 28.01470588235294
+  },
+  "next_experiment_contract": {
+    "name": "resident_state_reuse_experiment",
+    "goal": "define and measure whether repeated decode-like steps can reuse resident state across host/GPU boundaries more directly than the current per-run init-state flow",
+    "baseline_shapes": [
+      "1x64 resident",
+      "16x64 resident",
+      "32x64 resident"
+    ],
+    "required_correctness_policy": "coverage_output_equivalence",
+    "required_outputs": [
+      "an explicit gate before runtime ABI changes",
+      "a documented public command or dry-run command",
+      "a generated report under reports/",
+      "contract tests for source reports and mismatch count"
+    ],
+    "first_design_questions": [
+      "can init-state generation be reused across samples without hiding source evidence",
+      "can resident execution report launch/setup time separately from kernel time",
+      "can repeated decode-like work be expressed as a single public CLI flow",
+      "which state is authoritative when CPU and GPU both advance across multiple resident phases"
+    ]
+  },
+  "acceptance_policy": {
+    "review_must_preserve_measurement_gate": true,
+    "next_runtime_abi_change_requires_separate_gate": true,
+    "coverage_output_equivalence_required": true,
+    "raw_full_state_equality_required": false,
+    "contract_tests_required": true
+  },
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "Review resident batch sweep measurement",
+      "artifact": "config/scaling_gates/resident_batch_sweep_measurement_gate.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Choose state reuse or paged-attention scale-up",
+      "artifact": "decision.selected_workstream",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Define next experiment without changing runtime ABI yet",
+      "artifact": "next_experiment_contract",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Keep correctness policy explicit",
+      "artifact": "acceptance_policy.coverage_output_equivalence_required",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Contract-test source-of-truth references",
+      "artifact": "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+      "status": "satisfied"
+    }
+  ],
+  "non_claims": [
+    "not a runtime ABI change",
+    "not production LLM serving throughput",
+    "not proof that resident mode alone fixes single-request decode latency",
+    "not raw full-state equality"
+  ],
+  "next_task": "define_resident_state_reuse_experiment_gate"
+}

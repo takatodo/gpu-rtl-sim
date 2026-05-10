@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_nvdla_cmac_core_mac_first_compute_benchmark_gate",
+  "target": "nvdla_cmac_core_mac",
+  "upstream_module": "NV_NVDLA_CMAC_CORE_mac",
+  "upstream_source": "third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_CMAC_CORE_mac.v",
+  "overlay": {
+    "coverage_tb": "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_core_mac_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json",
+    "launch_template": "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+    "host_probe_target": "nvdla_cmac_core_mac_host_probe",
+    "makefile": "src/hybrid/Makefile"
+  },
+  "build_evidence": {
+    "verilator_mdir": "artifacts/nvdla_cmac_core_mac_flat_obj_dir",
+    "host_probe_report": "reports/nvdla_cmac_core_mac_flat_host_probe.json",
+    "gpu_cubin": "artifacts/nvdla_cmac_core_mac_flat_obj_dir/vl_batch_gpu.cubin",
+    "gpu_meta": "artifacts/nvdla_cmac_core_mac_flat_obj_dir/vl_batch_gpu.meta.json",
+    "verilator_mode": "flattened",
+    "non_flat_blocker": "The non-flattened CMAC_CORE_mac build reaches cubin generation but hybrid execution fails with CUDA illegal memory access because generated code references Verilator Syms submodule state outside the root-only state image."
+  },
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "target_scope": [
+    {
+      "target": "nvdla_cmac_core_mac",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json",
+      "mdir": "artifacts/nvdla_cmac_core_mac_flat_obj_dir",
+      "cpu_reference_state": "artifacts/nvdla_cmac_core_mac_flat_obj_dir/nvdla_cmac_core_mac_cpu_repeat_1x1.bin",
+      "gpu_candidate_state": "artifacts/nvdla_cmac_core_mac_flat_obj_dir/nvdla_cmac_core_mac_gpu_from_cpu_init_1x1.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18
+    },
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "benchmark_summary": "reports/nvdla_cmac_core_mac_first_compute_benchmark_summary.json",
+  "measured_shapes": [
+    {
+      "name": "minimum_overhead_compute_probe_flattened",
+      "nstates": 1,
+      "steps": 1,
+      "cpu_report": "reports/nvdla_cmac_core_mac_flat_cpu_repeat_1x1.json",
+      "hybrid_report": "reports/nvdla_cmac_core_mac_flat_hybrid_1x1.txt",
+      "coverage_output_compare_report": "reports/nvdla_cmac_core_mac_flat_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+      "cpu_elapsed_ms": 9.61777,
+      "hybrid_gpu_kernel_time_ms_total": 2.849792,
+      "hybrid_wall_time_ms": 2.965,
+      "cpu_to_gpu_kernel_speedup_ratio": 3.374902800621519,
+      "cpu_to_hybrid_wall_speedup_ratio": 3.244610455311973,
+      "coverage_output_equivalence_passed": true
+    },
+    {
+      "name": "small_parallel_compute_probe_flattened",
+      "nstates": 32,
+      "steps": 4,
+      "cpu_report": "reports/nvdla_cmac_core_mac_flat_cpu_repeat_32x4.json",
+      "hybrid_report": "reports/nvdla_cmac_core_mac_flat_hybrid_32x4.txt",
+      "coverage_output_compare_report": "reports/nvdla_cmac_core_mac_flat_cpu_vs_hybrid_32x4_coverage_output_compare.json",
+      "cpu_elapsed_ms": 331.124,
+      "hybrid_gpu_kernel_time_ms_total": 5.723136,
+      "hybrid_wall_time_ms": 5.775,
+      "cpu_to_gpu_kernel_speedup_ratio": 57.8553281956499,
+      "cpu_to_hybrid_wall_speedup_ratio": 57.33748917748918,
+      "coverage_output_equivalence_passed": true
+    },
+    {
+      "name": "single_state_repeated_step_compute_probe_flattened",
+      "nstates": 1,
+      "steps": 64,
+      "cpu_report": "reports/nvdla_cmac_core_mac_flat_cpu_repeat_1x64.json",
+      "hybrid_report": "reports/nvdla_cmac_core_mac_flat_hybrid_1x64.txt",
+      "coverage_output_compare_report": "reports/nvdla_cmac_core_mac_flat_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+      "cpu_elapsed_ms": 11.0819,
+      "hybrid_gpu_kernel_time_ms_total": 82.838531,
+      "hybrid_wall_time_ms": 82.904,
+      "cpu_to_gpu_kernel_speedup_ratio": 0.133777118766145,
+      "cpu_to_hybrid_wall_speedup_ratio": 0.133671475441474,
+      "coverage_output_equivalence_passed": true
+    },
+    {
+      "name": "many_state_single_step_compute_probe_flattened",
+      "nstates": 32,
+      "steps": 1,
+      "cpu_report": "reports/nvdla_cmac_core_mac_flat_cpu_repeat_32x1.json",
+      "hybrid_report": "reports/nvdla_cmac_core_mac_flat_hybrid_32x1.txt",
+      "coverage_output_compare_report": "reports/nvdla_cmac_core_mac_flat_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "cpu_elapsed_ms": 271.969,
+      "hybrid_gpu_kernel_time_ms_total": 1.43872,
+      "hybrid_wall_time_ms": 1.488,
+      "cpu_to_gpu_kernel_speedup_ratio": 189.03539257117438,
+      "cpu_to_hybrid_wall_speedup_ratio": 182.77486559139785,
+      "coverage_output_equivalence_passed": true
+    },
+    {
+      "name": "larger_parallel_repeated_compute_probe_flattened",
+      "nstates": 256,
+      "steps": 16,
+      "cpu_report": "reports/nvdla_cmac_core_mac_flat_cpu_repeat_256x16.json",
+      "hybrid_report": "reports/nvdla_cmac_core_mac_flat_hybrid_256x16.txt",
+      "coverage_output_compare_report": "reports/nvdla_cmac_core_mac_flat_cpu_vs_hybrid_256x16_coverage_output_compare.json",
+      "cpu_elapsed_ms": 2032.81,
+      "hybrid_gpu_kernel_time_ms_total": 25.396223,
+      "hybrid_wall_time_ms": 25.471,
+      "cpu_to_gpu_kernel_speedup_ratio": 80.0437923387269,
+      "cpu_to_hybrid_wall_speedup_ratio": 79.80880216717051,
+      "coverage_output_equivalence_passed": true
+    }
+  ],
+  "acceptance_policy": {
+    "overlay_and_manifest_exist": true,
+    "cpu_reference_built": true,
+    "gpu_cubin_built": true,
+    "cpu_vs_hybrid_compared": true,
+    "coverage_output_equivalence_required": true,
+    "coverage_output_equivalence_gate_passed": true,
+    "speedup_claim_allowed_by_gate_alone": false
+  },
+  "result": {
+    "status": "passed_five_flattened_compute_shapes_with_coverage_output_equivalence_and_selected_hierarchy_gate",
+    "measured_shape_count": 5,
+    "minimum_measured_cpu_to_hybrid_wall_speedup_ratio": 0.133671475441474,
+    "maximum_measured_cpu_to_hybrid_wall_speedup_ratio": 182.77486559139785,
+    "measured_shapes_hybrid_faster_than_cpu_wall": 4,
+    "measured_shapes_hybrid_slower_than_cpu_wall": 1,
+    "classification_so_far": "For the flattened scoped CMAC_CORE_mac compute seed, all five measured shapes pass coverage-output equivalence. Many-state shapes are materially faster on hybrid wall time, while the single-state 64-step shape is slower because repeated launches without state parallelism expose fixed GPU overhead.",
+    "remaining_gap": "This is still not neural-network model execution, full NVDLA execution, broad shape classification, non-flattened hierarchy support, or modern Transformer/LLM accelerator completeness."
+  },
+  "next_task": "define_nvdla_cmac_core_mac_non_flat_hierarchy_support_gate_after_flat_shape_review",
+  "claim_scope": "first scoped NVDLA CMAC_CORE_mac compute-path CPU versus hybrid timing comparison only",
+  "non_claims": [
+    "not neural-network model execution",
+    "not current LLM accelerator completeness",
+    "not NVDLA full accelerator execution",
+    "not complete CMAC arithmetic validation",
+    "not broad CPU versus hybrid speedup claim",
+    "not target-breadth performance generalization",
+    "not non-flattened Verilator hierarchy support"
+  ]
+}

@@ -218,63 +218,62 @@ Tracked evidence:
 
 Recommended next gate:
 
-`public_benchmark_pack_externalization_ready`
+`active_inventory_records_rtlmeter_boundary`
 
 Acceptance criteria:
 
-- keep the public benchmark pack external-reader ready
-- keep wrapper summaries and prerequisites pinned by contract tests
-- keep public dry-run smoke commands passing
-- keep the public release checklist satisfied before handoff
-- keep archive planning dry-run only unless a generated-output archive is explicitly requested outside canonical state
-- optional: add repeat-median timing for persistent resident ABI
-- optional: pursue cross-process persistence or paged-attention/KV scale-up as new goals
+- move historical gate records out of the active `config/` surface while preserving `config/scaling_gates/...` compatibility
+- keep `config/scaling_gates` as a symlink to `../records/scaling_gates`
+- keep current config source-of-truth files small and explicit
+- keep every path referenced by active target metadata present from a clean checkout
+- keep `third_party/rtlmeter` as the only upstream submodule in this review boundary
+- keep runtime/pass changes and non-rtlmeter third-party imports out of this review boundary
 
 Working tree review boundary:
 
-`next_task: working_tree_review_boundary`
+`next_task: active_inventory_records_rtlmeter_boundary`
 
-Review `public_pack_archive_ready` together with the public-pack support files it references. This is the smallest current review boundary that can still work from a clean checkout.
+Review records migration together with the active target inventory boundary it references. This is the smallest current review boundary that can still work from a clean checkout after `config/targets.json` points at gate records, slice-launch templates, repo overlays, and upstream rtlmeter source paths.
 
 Review/stage boundary:
 
-- `README.md`
-- `config/selection.json`
-- `docs/results.md`
-- `docs/status.md`
 - `docs/roadmap.md`
-- `records/scaling_gates/public_results_packaging_gate.json`
-- `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json`
-- `records/scaling_gates/generic_hybrid_benchmark_cli_gate.json`
-- `src/tools/run_results_reproduction.py`
-- `src/tools/results_reproduction.py`
-- `src/tools/run_hybrid_benchmark.py`
-- `src/tools/hybrid_benchmark.py`
-- `src/tools/run_hybrid_template.py`
-- `config/slice_launch_templates/pulp_ita_mha.json`
-- `config/slice_launch_templates/pulp_paged_attention_kv_score.json`
-- `config/slice_launch_templates/mobile_vit_cpu_kick_rtl_proxy.json`
-- `tests/contract/test_hybrid_verilator_like_cli.py`
+- `.gitignore`
+- `config/README.md`
+- `config/archived_targets.json`
+- `config/targets.json`
+- `config/scaling_gates`
+- tracked removals under the old `config/scaling_gates/*.json` location
+- `records/README.md`
+- `records/scaling_gates/README.md`
+- `records/scaling_gates/*.json`
+- `.gitmodules`
+- `third_party/rtlmeter`
+- every `config/slice_launch_templates/*.json` path referenced by `config/targets.json`
+- every `overlays/rtlmeter/...` path referenced by `config/targets.json`
+- `tests/contract/test_resident_runtime_contract.py`
 - `tests/contract/test_full_ita_mha_larger_paged_kv_next.py`
 
 Exclude from this review boundary:
 
-- `.gitmodules`
-- `third_party/`
-- `overlays/`
-- historical `config/scaling_gates/*` mass moves
+- `third_party/ITA`
+- `third_party/common_cells`
+- `third_party/ibex`
+- non-rtlmeter overlays such as ITA, ibex, and MobileViT
+- `overlays/rtlmeter/designs/NVDLA`
 - runtime/pass implementation changes under `src/hybrid/` and `src/passes/`
-- broad target inventory changes such as `config/targets.json`
+- broad tool changes under `src/tools/`
+- unrelated local config experiments and generated output under `reports/` and `artifacts/`
 
 Boundary acceptance:
 
-- `python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run` succeeds
-- the archive plan is dry-run only and does not create an archive
-- the archive remains generated output, not source of truth
-- no separate manifest file is introduced beyond `docs/results.md`
-- public dry-run output does not expose local absolute paths
-- `third_party/`, `overlays/`, `.gitmodules`, and historical gate mass moves are not part of the public archive include list
-- generated `reports/` snapshots may be included in a review bundle as evidence, but they remain regenerable outputs and are not part of the source-of-truth review/stage boundary
+- `config/scaling_gates` resolves to `../records/scaling_gates`
+- current gate references through `config/scaling_gates/...` still resolve
+- all active target references in `config/targets.json` resolve to present paths
+- `.gitmodules` contains only the `third_party/rtlmeter` submodule for this boundary
+- generated `reports/` and `artifacts/` remain ignored and are not source of truth
+- `python3 -m unittest tests.contract.test_resident_runtime_contract -q` passes
+- `python3 -m unittest discover -s tests/contract -q` passes
 
 ## Archive Boundary
 

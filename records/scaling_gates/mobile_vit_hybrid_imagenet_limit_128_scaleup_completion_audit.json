@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "gate": "mobile_vit_hybrid_imagenet_limit_128_scaleup_completion_audit",
+  "objective": "limit 128 の MobileViT hybrid ImageNet scale-up を走らせる",
+  "status": "complete_for_scoped_real_imagenet_limit_128_hybrid_eval",
+  "completion_decision": "complete",
+  "completion_claim_allowed": true,
+  "audited_gate": "records/scaling_gates/mobile_vit_hybrid_imagenet_eval_gate.json",
+  "success_criteria": [
+    {
+      "criterion": "Generate a real ImageNet local-cache manifest with exactly 128 images.",
+      "evidence": [
+        "artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest_128.json",
+        "image_count=128",
+        "source=local_huggingface_cache_parquet_shards",
+        "dataset_scope=scoped_subset:imagenet_local_cache_128"
+      ],
+      "passed": true
+    },
+    {
+      "criterion": "Run CPU-kick MobileViT inference for the same 128-image manifest.",
+      "evidence": [
+        "reports/mobile_vit_hybrid_128_cpu_kick_predictions.json"
+      ],
+      "verification": "prediction_count=128, requested_image_count=128, cpu_kick_count=128, cpu_done_count=128, complete_cpu_kick_prediction_set=true",
+      "passed": true
+    },
+    {
+      "criterion": "Compute top-1/top-5 ImageNet accuracy for the 128 evaluated images.",
+      "evidence": [
+        "reports/mobile_vit_hybrid_128_accuracy.json",
+        "reports/mobile_vit_hybrid_128_summary.json"
+      ],
+      "verification": "evaluated_count=128, top1_accuracy=0.7734375, top5_accuracy=0.953125, accuracy_claim_allowed=true",
+      "passed": true
+    },
+    {
+      "criterion": "Run the hybrid RTL control-boundary proxy with cfg_batch_length=128.",
+      "evidence": [
+        "reports/mobile_vit_hybrid_128_summary.json",
+        "reports/mobile_vit_cpu_kick_rtl_proxy_imagenet_batch1_128_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+      ],
+      "verification": "hybrid_control.execution_status=executed, image_count=128, hybrid_batch_size=128, batch_count=1, coverage_output_equivalence_complete=true",
+      "passed": true
+    },
+    {
+      "criterion": "Confirm CPU-vs-hybrid coverage-output equivalence for the scale-up batch.",
+      "evidence": [
+        "reports/mobile_vit_cpu_kick_rtl_proxy_imagenet_batch1_128_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+      ],
+      "verification": "selected_acceptance_policy.name=coverage_output_equivalence, selected_acceptance_policy.passed=true, compared_word_count=21, mismatch_count=0",
+      "passed": true
+    },
+    {
+      "criterion": "Keep claim scope explicit.",
+      "evidence": [
+        "reports/mobile_vit_hybrid_128_summary.json",
+        "records/scaling_gates/mobile_vit_hybrid_imagenet_eval_gate.json"
+      ],
+      "verification": "The result is a hybrid RTL proxy control-boundary check plus CPU-kick accuracy; it is not RTL MobileViT numerical logits and not full 50k ImageNet validation.",
+      "passed": true
+    }
+  ],
+  "prompt_to_artifact_checklist": [
+    {
+      "prompt_item": "limit 128",
+      "status": "satisfied",
+      "artifacts": [
+        "artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest_128.json",
+        "reports/mobile_vit_hybrid_128_summary.json"
+      ]
+    },
+    {
+      "prompt_item": "MobileViT",
+      "status": "satisfied_for_cpu_kick_reference_inference",
+      "artifacts": [
+        "reports/mobile_vit_hybrid_128_cpu_kick_predictions.json",
+        "reports/mobile_vit_hybrid_128_accuracy.json"
+      ]
+    },
+    {
+      "prompt_item": "hybrid ImageNet scale-up",
+      "status": "satisfied_for_rtl_proxy_control_boundary",
+      "artifacts": [
+        "config/slice_launch_templates/mobile_vit_cpu_kick_rtl_proxy.json",
+        "reports/mobile_vit_cpu_kick_rtl_proxy_imagenet_batch1_128_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+      ]
+    },
+    {
+      "prompt_item": "走らせる",
+      "status": "satisfied",
+      "artifacts": [
+        "reports/mobile_vit_hybrid_128_summary.json"
+      ]
+    }
+  ],
+  "verification_commands": [
+    {
+      "command": "artifacts/mobile_vit/venv/bin/python src/tools/mobile_vit_imagenet_manifest.py --hf-cache-dir /home/takatodo/.cache/huggingface/hub/datasets--ILSVRC--imagenet-1k --hf-output-dir artifacts/mobile_vit/apple_mobilevit_small/hf_imagenet_val_128 --dataset-scope scoped_subset:imagenet_local_cache_128 --output artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest_128.json --limit 128",
+      "passed": true
+    },
+    {
+      "command": "HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 artifacts/mobile_vit/venv/bin/python src/tools/mobile_vit_hybrid_imagenet_eval.py --manifest artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest_128.json --cpu-kick-predictions reports/mobile_vit_hybrid_128_cpu_kick_predictions.json --accuracy-report reports/mobile_vit_hybrid_128_accuracy.json --summary reports/mobile_vit_hybrid_128_summary.json --run-cpu-kick-infer --cpu-kick-batch-size 16 --hybrid-batch-size 128",
+      "passed": true
+    }
+  ],
+  "non_claims": [
+    "not full 50k ImageNet validation evaluation in this audit",
+    "not MobileViT numerical inference in RTL",
+    "not ImageNet accuracy from RTL logits",
+    "not full CPU-core execution",
+    "not full SoC boot",
+    "hybrid RTL proxy checks the CPU-visible LOAD_MODEL/LOAD_IMAGE/KICK_INFER/POLL_DONE boundary"
+  ],
+  "next_task": "decide_between_full_50k_imageNet_proxy_batches_or_results_packaging"
+}

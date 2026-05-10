@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "gate": "full_ita_mha_larger_paged_attention_kv_goal_completion_audit",
+  "status": "objective_satisfied_for_scoped_rtl_harness_goal",
+  "objective": "Complete the active thread goal: full ITA/MHA execution plus larger paged attention / KV-cache scale-up, using scoped RTL harnesses and CPU-vs-hybrid coverage-output equivalence.",
+  "success_criteria": [
+    "larger paged KV-cache scale-up has a reproducible RTL harness and CPU-vs-hybrid coverage-output equivalence evidence",
+    "full ITA/MHA has a reproducible reduced-parameter full-top RTL harness and CPU-vs-hybrid coverage-output equivalence evidence",
+    "the remaining paged-attention gap is covered by a minimal harness that combines page-table KV lookup with attention-score style Q/K work",
+    "all new public workflows have gate, source-of-truth documentation, and contract-test coverage",
+    "non-claims remain explicit"
+  ],
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "larger paged attention / KV-cache scale-up",
+      "status": "satisfied",
+      "evidence": [
+        "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+        "overlays/ITA/src/pulp_paged_kv_cache_large_gpu_cov_tb.sv",
+        "overlays/ITA/tests/pulp_paged_kv_cache_large_coverage_regions.json",
+        "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+        "reports/pulp_paged_kv_cache_large_first_hybrid_benchmark_summary.json"
+      ],
+      "notes": "The large paged KV-cache harness uses 8 pages x 16 slots / 128 logical slots and passes 1x1, 64x1, 1x64, and 256x1 coverage-output equivalence."
+    },
+    {
+      "requirement": "full ITA/MHA execution",
+      "status": "satisfied_for_scoped_reduced_parameter_full_top",
+      "evidence": [
+        "config/scaling_gates/neural_network_rtl_full_ita_mha_dependency_audit_gate.json",
+        "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+        "overlays/ITA/tests/pulp_ita_mha_coverage_regions.json",
+        "config/slice_launch_templates/pulp_ita_mha.json",
+        "config/scaling_gates/neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json",
+        "reports/pulp_ita_mha_first_hybrid_benchmark_summary.json"
+      ],
+      "notes": "The full PULP ITA top module is instantiated with reduced 16x16 parameters and passes 1x1, 32x1, and 1x32 coverage-output equivalence."
+    },
+    {
+      "requirement": "paged attention, not only KV-cache",
+      "status": "satisfied_for_minimal_paged_attention_kv_score_harness",
+      "evidence": [
+        "config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+        "overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv",
+        "overlays/ITA/tests/pulp_paged_attention_kv_score_coverage_regions.json",
+        "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+        "reports/pulp_paged_attention_kv_score_first_hybrid_benchmark_summary.json"
+      ],
+      "notes": "The harness combines page-table KV lookup, prior-slot reads, deterministic Q/K-style score accumulation, best-slot selection, and coverage-output words. It passes 1x1, 64x1, and 1x64 coverage-output equivalence."
+    },
+    {
+      "requirement": "correctness uses coverage-output equivalence, not raw state equality",
+      "status": "satisfied",
+      "evidence": [
+        "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+        "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+        "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+        "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+        "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json"
+      ],
+      "notes": "All listed reports select coverage_output_equivalence and have zero coverage-output mismatches."
+    },
+    {
+      "requirement": "source of truth and contract coverage",
+      "status": "satisfied",
+      "evidence": [
+        "config/selection.json",
+        "docs/status.md",
+        "docs/roadmap.md",
+        "README.md",
+        "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+        "tests/contract/test_mobile_vit_cpu_kick_imagenet.py",
+        "tests/contract/test_resident_runtime_contract.py"
+      ],
+      "notes": "The source-of-truth files name the current gate/result path and contract tests cover the added gates, manifests, templates, host-probe wiring, and summaries."
+    }
+  ],
+  "completion_decision": {
+    "complete": true,
+    "claim_scope": "scoped RTL harnesses for full ITA/MHA, larger paged KV-cache scale-up, and minimal paged-attention KV-score behavior",
+    "reason": "Every explicit requirement in the active goal now maps to concrete gates, overlays, manifests, launch templates, host-probe wiring, generated reports, and passing coverage-output comparisons."
+  },
+  "non_claims": [
+    "not production paged attention",
+    "not full PULP ITA HWPE integration",
+    "not model-level Transformer inference",
+    "not production KV-cache memory hierarchy",
+    "not numerical ML accuracy",
+    "not broad modern-NN speedup",
+    "not raw full-state equality"
+  ],
+  "next_task": "hold_for_review_after_full_ita_mha_larger_paged_attention_kv_goal_completion"
+}

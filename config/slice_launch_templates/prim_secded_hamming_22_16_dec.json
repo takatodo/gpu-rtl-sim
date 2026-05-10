@@ -1,0 +1,65 @@
+{
+  "schema_version": "slice-launch-template-v1",
+  "slice_name": "prim_secded_hamming_22_16_dec",
+  "target": "OpenTitan.prim_secded_hamming_22_16_dec",
+  "family": "OpenTitan primitive",
+  "status": "promoted_to_active_scope",
+  "pilot_gate": "Source-backed prim_secded_hamming_22_16_dec candidate after sixty-third primitive review acceptance.",
+  "source_gate": "config/scaling_gates/prim_secded_hamming_22_16_dec_source_gate.json",
+  "top_module": "prim_secded_hamming_22_16_dec_gpu_cov_tb",
+  "source": {
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_22_16_dec.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_22_16_dec_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_hamming_22_16_dec_coverage_regions.json"
+  },
+  "build": {
+    "mdir": "artifacts/prim_secded_hamming_22_16_dec_obj_dir",
+    "work_dir": "work/slice_pilots/prim_secded_hamming_22_16_dec",
+    "host_probe_target": "prim_secded_hamming_22_16_dec_host_probe"
+  },
+  "coverage_output_contract": {
+    "gate": "config/scaling_gates/prim_secded_hamming_22_16_dec_source_gate.json",
+    "strict_output_words": 29,
+    "strict_output_bytes": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_secded_hamming_22_16_dec"
+    ],
+    "active_target_count_unchanged_until_first_pass": 85,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 63
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 45,
+    "planned_DataWidth": 16,
+    "planned_CodeWidth": 22
+  },
+  "candidate_targets": [],
+  "active_target_count": 86,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 64,
+  "next_action": "hold_for_review_after_sixty_fourth_primitive_boundary",
+  "first_pass_result": {
+    "selected_acceptance_policy_passed": true,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "coverage_output_mismatch_count": 0,
+    "raw_mismatch_count": 34,
+    "storage_size": 704,
+    "root_layout_member_count": 149
+  },
+  "depth_result": {
+    "status": "ok",
+    "comparison_count": 2,
+    "passed_count": 2
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": "slice-launch-template-v1",
+  "slice_name": "prim_subreg_arb",
+  "target": "OpenTitan.prim_subreg_arb",
+  "family": "OpenTitan primitive",
+  "status": "candidate_defined",
+  "pilot_gate": "Source-backed prim_subreg_arb candidate after fifty-eighth primitive review acceptance.",
+  "source_gate": "config/scaling_gates/prim_subreg_arb_source_gate.json",
+  "top_module": "prim_subreg_arb_gpu_cov_tb",
+  "source": {
+    "rtl_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_subreg_arb.sv",
+    "package_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_subreg_pkg.sv",
+    "mubi_package_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi_pkg.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_subreg_arb_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_subreg_arb_coverage_regions.json"
+  },
+  "build": {
+    "mdir": "artifacts/prim_subreg_arb_obj_dir",
+    "work_dir": "work/slice_pilots/prim_subreg_arb",
+    "host_probe_target": "prim_subreg_arb_host_probe"
+  },
+  "coverage_output_contract": {
+    "gate": "config/scaling_gates/prim_subreg_arb_source_gate.json",
+    "strict_output_words": 29,
+    "strict_output_bytes": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "candidate_only_until_depth_gate": true,
+    "candidate_only_until_promotion": true,
+    "candidate_targets_contains_only": [
+      "prim_subreg_arb"
+    ],
+    "active_target_count_unchanged_until_first_pass": 80,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 58,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized coverage_output_equivalence passes"
+    ]
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 187,
+    "planned_dw": 8,
+    "planned_sw_access": "SwAccessRW",
+    "planned_mubi": false,
+    "rw_arbitration_only": true
+  },
+  "candidate_targets": [
+    "prim_subreg_arb"
+  ],
+  "active_target_count": 80,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 58,
+  "next_action": "implement_prim_subreg_arb_overlay_gate"
+}

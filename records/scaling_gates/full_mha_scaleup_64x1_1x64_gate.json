@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "gate": "full_mha_scaleup_64x1_and_1x64",
+  "objective": "Full MHA \u3092\u8a66\u3057\u305f\u72b6\u614b\u304b\u3089\u3001state-parallel \u3068 repeated-step \u306e\u6027\u80fd\u50be\u5411\u3092\u3082\u3046\u4e00\u6bb5\u6e2c\u308b\u3002",
+  "status": "passed_coverage_output_equivalence_and_recorded_timing_tendency",
+  "target": "pulp_ita_mha",
+  "current_priority": "hold_for_review_after_full_mha_scaleup_64x1_1x64",
+  "summary": "reports/pulp_ita_mha_64x1_1x64_scaling_summary.json",
+  "runs": {
+    "state_parallel_64x1": {
+      "cpu_report": "reports/pulp_ita_mha_cpu_repeat_64x1.json",
+      "cpu_time": "reports/pulp_ita_mha_cpu_repeat_64x1_time.json",
+      "hybrid_report": "reports/pulp_ita_mha_hybrid_64x1.txt",
+      "hybrid_time": "reports/pulp_ita_mha_hybrid_64x1_time.json",
+      "compare": "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "cpu_elapsed_ms": 451.227,
+      "gpu_kernel_total_ms": 0.913408,
+      "hybrid_reported_wall_ms": 0.948,
+      "cpu_elapsed_ms_div_hybrid_reported_wall_ms": 475.9778481012658
+    },
+    "single_state_repeated_1x64": {
+      "cpu_report": "reports/pulp_ita_mha_cpu_repeat_1x64.json",
+      "cpu_time": "reports/pulp_ita_mha_cpu_repeat_1x64_time.json",
+      "hybrid_report": "reports/pulp_ita_mha_hybrid_1x64.txt",
+      "hybrid_time": "reports/pulp_ita_mha_hybrid_1x64_time.json",
+      "compare": "reports/pulp_ita_mha_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "cpu_elapsed_ms": 2.95033,
+      "gpu_kernel_total_ms": 3.154944,
+      "hybrid_reported_wall_ms": 3.248,
+      "cpu_elapsed_ms_div_hybrid_reported_wall_ms": 0.9083528325123152
+    }
+  },
+  "conclusion": {
+    "state_parallel": "64x1 is strongly favorable for GPU/hybrid in reported wall time and kernel time.",
+    "repeated_step": "1x64 remains weak; CPU elapsed is slightly lower than GPU kernel total and reported hybrid wall for this run.",
+    "matches_prior_hypothesis": true
+  },
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "Run Full MHA 64x1 as a state-parallel shape.",
+      "evidence": [
+        "reports/pulp_ita_mha_cpu_repeat_64x1.json",
+        "reports/pulp_ita_mha_hybrid_64x1.txt",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "Run Full MHA 1x64 as a repeated-step shape.",
+      "evidence": [
+        "reports/pulp_ita_mha_cpu_repeat_1x64.json",
+        "reports/pulp_ita_mha_hybrid_1x64.txt",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_1x64_coverage_output_compare.json"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "CPU vs hybrid coverage-output equivalence passes for both shapes.",
+      "evidence": [
+        "coverage_output_mismatch_count=0 for 64x1",
+        "coverage_output_mismatch_count=0 for 1x64"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "Record wall/GPU timing and compare performance tendency.",
+      "evidence": [
+        "reports/pulp_ita_mha_64x1_1x64_scaling_summary.json",
+        "reports/pulp_ita_mha_cpu_repeat_64x1_time.json",
+        "reports/pulp_ita_mha_hybrid_64x1_time.json",
+        "reports/pulp_ita_mha_cpu_repeat_1x64_time.json",
+        "reports/pulp_ita_mha_hybrid_1x64_time.json"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "State the scoped conclusion without claiming raw full-state equality or stable benchmark statistics.",
+      "evidence": [
+        "non_claims",
+        "conclusion",
+        "summary interpretation"
+      ],
+      "covered": true
+    }
+  ],
+  "non_claims": [
+    "not raw full-state equality",
+    "not production MHA throughput",
+    "single-run timings only; not a statistically stable benchmark",
+    "no rebuild time included in timing comparison"
+  ],
+  "next_task": "review_full_mha_scaleup_or_select_prefill_decode_benchmark"
+}

@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "status": "promoted_to_active_scope",
+  "gate": "prim_xilinx_ultrascale_clock_mux2_source_backed_gate",
+  "target": "prim_xilinx_ultrascale_clock_mux2",
+  "source_gate_name": "prim_xilinx_ultrascale_clock_mux2_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Define one source-backed candidate after the ninetieth primitive boundary review passed.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_xilinx_ultrascale_clock_mux2.json",
+  "build": {
+    "mdir": "artifacts/prim_xilinx_ultrascale_clock_mux2_obj_dir",
+    "work_dir": "work/slice_pilots/prim_xilinx_ultrascale_clock_mux2",
+    "host_probe_target": "prim_xilinx_ultrascale_clock_mux2_host_probe",
+    "cpu_reference_state": "artifacts/prim_xilinx_ultrascale_clock_mux2_obj_dir/prim_xilinx_ultrascale_clock_mux2_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_xilinx_ultrascale_clock_mux2_obj_dir/prim_xilinx_ultrascale_clock_mux2_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_mux2.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_xilinx_ultrascale_clock_mux2",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_xilinx_ultrascale_clock_mux2.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_clock_mux2_coverage_regions.json",
+      "mdir": "artifacts/prim_xilinx_ultrascale_clock_mux2_obj_dir",
+      "expected_report": "reports/prim_xilinx_ultrascale_clock_mux2_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_xilinx_ultrascale_clock_mux2_obj_dir/prim_xilinx_ultrascale_clock_mux2_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_xilinx_ultrascale_clock_mux2_obj_dir/prim_xilinx_ultrascale_clock_mux2_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "active_target_count_unchanged_until_first_pass": 112,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 90,
+    "candidate_targets_contains_only": [
+      "prim_xilinx_ultrascale_clock_mux2"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_mux2_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_clock_mux2_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_clock_mux2.json",
+    "host_probe_target": "prim_xilinx_ultrascale_clock_mux2_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "implemented",
+    "planned_parameters": {
+      "NoFpgaBufG": true,
+      "path": "ultrascale_no_fpga_bufg_assign"
+    }
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 28,
+    "generic_clock_mux2_source_line_count": 21,
+    "planned_NoFpgaBufG": true,
+    "uses_prim_generic_clock_mux2": true,
+    "generic_impl_only_claimed": true,
+    "vendor_specific_impls_not_claimed": true,
+    "clock_correctness_not_claimed": true,
+    "raw_full_state_equality_not_claimed": true,
+    "zero_initialized_gpu_correctness_not_claimed": true,
+    "host_probe_makefile_hook_planned": true,
+    "coverage_manifest_planned": true,
+    "xilinx_wrapper_only_claimed": true,
+    "no_fpga_bufg_assign_path_only": true,
+    "bufgmux_path_not_claimed": true,
+    "clock_tree_correctness_not_claimed": true,
+    "glitch_free_clocking_not_claimed": true,
+    "ultrascale_wrapper_only_claimed": true
+  },
+  "weakest_point": "prim_xilinx_ultrascale_clock_mux2 is scoped to NoFpgaBufG=1 assign-path coverage-output behavior; BUFGMUX FPGA mux path, clock-tree correctness, glitch-free clocking proof, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and full primitive-family support remain non-claims.",
+  "selection_reason": [
+    "extends the active clock primitive surface with the smallest remaining combinational generated clock wrapper",
+    "keeps the next step narrower than clock dividers, timeouts, differential decoders, memories, alert, escalation, or crypto primitives",
+    "uses a generic implementation with simple two-input mux behavior",
+    "preserves the single-candidate discipline after the eighty-second primitive review"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_clock_div",
+      "reason": "clock division introduces stateful clocking behavior broader than a fixed two-input mux wrapper"
+    },
+    {
+      "target": "prim_clock_timeout",
+      "reason": "timeout detection introduces multi-clock request/ack and counter behavior broader than a combinational mux gate"
+    },
+    {
+      "target": "prim_diff_decode",
+      "reason": "differential decode signal-integrity behavior and optional async synchronization are broader than this wrapper gate"
+    },
+    {
+      "target": "prim_intr_hw",
+      "reason": "interrupt register semantics introduce a wider CSR-facing behavior surface"
+    }
+  ],
+  "active_target_count": 113,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 91,
+  "non_claims": [
+    "vendor-specific Xilinx or Ultrascale clock-mux implementations",
+    "clock-tree correctness",
+    "glitch-free clocking proof",
+    "assertion-policy proof",
+    "raw full-state equality",
+    "zero-initialized GPU correctness",
+    "full OpenTitan primitive-family support"
+  ],
+  "next_action": "hold_for_review_after_ninety_first_primitive_boundary",
+  "source_review": "ninetieth_primitive_review_hold",
+  "first_pass_result": {
+    "report": "reports/prim_xilinx_ultrascale_clock_mux2_source_gate.json",
+    "selected_acceptance_policy_passed": true,
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_mismatch_count": 0,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "raw_mismatch_count": 31,
+    "mismatch_role_summary": {
+      "verilator_internal": {
+        "field_count": 3,
+        "mismatch_bytes": 31
+      }
+    },
+    "storage_size": 640,
+    "root_layout_member_count": 133
+  },
+  "depth_gate_paths": [
+    "config/scaling_gates/prim_xilinx_ultrascale_clock_mux2_repeated_steps.json",
+    "config/scaling_gates/prim_xilinx_ultrascale_clock_mux2_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_xilinx_ultrascale_clock_mux2_coverage_output_depth.json"
+  ],
+  "depth_result": {
+    "report": "reports/prim_xilinx_ultrascale_clock_mux2_coverage_output_depth.json",
+    "status": "ok",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "acceptance": {
+      "all_comparisons_have_cpu_and_gpu_dump_paths": true,
+      "all_dump_byte_counts_match_expected_dump_bytes": true,
+      "all_comparisons_pass_coverage_output_equivalence": true
+    }
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_count": 113,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 91,
+    "candidate_targets": [],
+    "primitive_equivalence_gate": "config/scaling_gates/prim_xilinx_ultrascale_clock_mux2_source_gate.json",
+    "primitive_depth_gate": "config/scaling_gates/prim_xilinx_ultrascale_clock_mux2_coverage_output_depth.json",
+    "primitive_depth_report": "reports/prim_xilinx_ultrascale_clock_mux2_coverage_output_depth.json"
+  }
+}

@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_socket_1n_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "tlul_socket_1n",
+  "family": "OpenTitan TL-UL",
+  "purpose": "Define exactly one next source-backed TL-UL gate after the four-seed review boundary.",
+  "weakest_point": "tlul_socket_1n adds fanout steering, outstanding-request holdoff, and explicit error response after the four-seed TL-UL boundary. The first risk is overlay complexity, so implementation must stay limited to a minimal coverage TB, manifest, and launch template before any active-target promotion.",
+  "selection_reason": [
+    "source-backed by upstream rtlmeter OpenTitan RTL",
+    "stays inside the TL-UL family",
+    "keeps a single clock and reset boundary",
+    "extends breadth from multi-host arbitration to single-host multi-device steering",
+    "reuses existing TL-UL fifo, error-response, and shared runtime assumptions before considering broader targets"
+  ],
+  "rejected_alternatives_for_now": [
+    {
+      "target": "tlul_fifo_async",
+      "reason": "adds a multi-clock boundary before the single-clock TL-UL package is reviewed further"
+    },
+    {
+      "target": "tlul_adapter_sram",
+      "reason": "adds a larger memory-facing adapter and SRAM behavior before the smaller socket fanout step is exercised"
+    },
+    {
+      "target": "tlul_cmd_intg_gen",
+      "reason": "is a narrow combinational integrity helper and does not exercise TL-UL routing breadth"
+    }
+  ],
+  "source_backing": {
+    "upstream_module": "third_party/rtlmeter/designs/OpenTitan/src/tlul_socket_1n.sv",
+    "module_name": "tlul_socket_1n",
+    "primary_dependencies": [
+      "third_party/rtlmeter/designs/OpenTitan/src/tlul_pkg.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/top_pkg.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/tlul_fifo_sync.sv",
+      "third_party/rtlmeter/designs/OpenTitan/src/tlul_err_resp.sv"
+    ],
+    "source_exists": true
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_socket_1n_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_socket_1n_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/tlul_socket_1n.json",
+    "status": "defined",
+    "max_new_overlay_files_before_first_gate_pass": 3
+  },
+  "overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/tlul_socket_1n_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_socket_1n_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/tlul_socket_1n.json",
+    "status": "defined"
+  },
+  "target_scope": [
+    {
+      "target": "tlul_socket_1n",
+      "status": "active",
+      "launch_template": "config/slice_launch_templates/tlul_socket_1n.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_socket_1n_coverage_regions.json",
+      "mdir": "artifacts/tlul_socket_1n_obj_dir",
+      "cpu_reference_state": "artifacts/tlul_socket_1n_obj_dir/tlul_socket_1n_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/tlul_socket_1n_obj_dir/tlul_socket_1n_gpu_from_cpu_reference_state.bin",
+      "expected_report": "reports/tlul_socket_1n_source_gate.json"
+    }
+  ],
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "coverage_output_contract": {
+    "planned_manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18,
+      "policy": "manifest regions must cover each real_toggle_subset_word[0..17]_o exactly once"
+    },
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116
+  },
+  "acceptance": {
+    "define_before_implementation": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1"
+    ],
+    "candidate_targets_contains_only": [
+      "tlul_socket_1n"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that tlul_socket_1n remains candidate-only until first pass"
+    ]
+  },
+  "claim_on_pass": {
+    "allowed": [
+      "one additional OpenTitan TL-UL source-backed fanout seed reaches initialized-GPU coverage-output equivalence"
+    ],
+    "forbidden": [
+      "raw full-state equality",
+      "zero-initialized GPU scaling correctness",
+      "non-TL-UL generality",
+      "broad OpenTitan subsystem coverage",
+      "restored VeeR-EL2 or XuanTie-E902 support"
+    ]
+  },
+  "artifacts": {
+    "expected_report": "reports/tlul_socket_1n_source_gate.json",
+    "generated_outputs_only": true
+  },
+  "first_pass_result": {
+    "status": "passed",
+    "report": "reports/tlul_socket_1n_source_gate.json",
+    "mdir": "artifacts/tlul_socket_1n_obj_dir",
+    "cubin": "artifacts/tlul_socket_1n_obj_dir/vl_batch_gpu.cubin",
+    "acceptance_policy": "coverage_output_equivalence",
+    "strict_output_word_count": 29,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "mismatch_count": 0,
+    "manifest_valid": true,
+    "manifest_region_count": 5,
+    "storage_size": 1280,
+    "cpu_reference_state": "artifacts/tlul_socket_1n_obj_dir/tlul_socket_1n_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/tlul_socket_1n_obj_dir/tlul_socket_1n_gpu_from_cpu_reference_state.bin",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state"
+  },
+  "depth_result": {
+    "status": "passed",
+    "gate": "config/scaling_gates/tlul_socket_1n_coverage_output_depth.json",
+    "report": "reports/tlul_socket_1n_coverage_output_depth.json",
+    "gpu_repeated_steps_gate": "config/scaling_gates/tlul_socket_1n_repeated_steps.json",
+    "gpu_repeated_steps_report": "reports/tlul_socket_1n_repeated_steps_scaling.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/tlul_socket_1n_cpu_exact_loop_repeated_steps.json",
+    "cpu_exact_loop_report": "reports/tlul_socket_1n_cpu_exact_loop_repeated_steps.json",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_registry": "config/targets.json",
+    "shared_equivalence_gate": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+    "shared_depth_gate": "config/scaling_gates/tlul_coverage_output_depth.json",
+    "shared_depth_report": "reports/tlul_coverage_output_depth.json",
+    "shared_depth_comparison_count": 16,
+    "shared_depth_passed_count": 16
+  },
+  "next_action_on_pass": "package_five_seed_tlul_boundary",
+  "next_action_on_fail": "diagnose_tlul_socket_1n_overlay_or_runtime_gap"
+}

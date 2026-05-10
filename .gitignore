@@ -3,6 +3,16 @@
 !/artifacts/.gitignore
 /reports/**
 !/reports/.gitignore
+/work/**
+
+# Local generated logs from imported RTL testbenches.
+/GPR.log
+/_rtlmeter_cycles.txt
+/uart_output.inf
+
+# Local Codex session metadata.
+/.codex
+/.codex/
 
 # Local build products.
 /src/hybrid/run_vl_hybrid

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "gate": "tiny_llm_fixture_first_proxy_hybrid_eval_review_gate",
+  "completed_task": "review_tiny_llm_fixture_first_proxy_hybrid_eval_and_select_next_model_level_gap",
+  "status": "passed",
+  "reviewed_gate": "config/scaling_gates/modern_llm_serving_small_weight_hybrid_eval_intake_gate.json",
+  "accepted_report": "reports/tiny_llm_fixture_pulp_quantized_kv_cache_first_hybrid_eval_summary.json",
+  "accepted_result": {
+    "target": "pulp_quantized_kv_cache",
+    "shape": "1x1",
+    "fixture_derived_config": true,
+    "coverage_output_equivalence": "passed",
+    "cpu_elapsed_ms": 3.68804,
+    "hybrid_wall_time_ms": 0.862,
+    "cpu_to_hybrid_wall_speedup_ratio": 4.2784686774942
+  },
+  "accepted_claim": "A deterministic tiny LLM-shaped int4 weight fixture exists, and one RTL proxy smoke run uses fixture-derived configuration while preserving CPU-vs-hybrid coverage-output equivalence and measuring hybrid wall speed.",
+  "weakest_point_after_review": "The first run still does not stream actual tensor bytes through the RTL proxy datapath; it derives scalar configuration from the weight hash. The next step must consume at least selected tensor byte ranges as proxy payload/config data before claiming small-weight serving speed evaluation.",
+  "selected_next_gap": {
+    "task": "define_tiny_llm_weight_tensor_streaming_proxy_gate",
+    "target": "pulp_quantized_kv_cache",
+    "reason": "Streaming selected tensor bytes into the quantized KV-cache proxy is the smallest step from fixture-derived scalar config toward real weight-consuming RTL evaluation, without jumping directly to a full model graph.",
+    "expected_scope": "select tensor byte ranges from the manifest, map them to proxy configuration or payload stimulus, run CPU and hybrid smoke shapes, and compare coverage outputs"
+  },
+  "rejected_next_gaps_for_now": [
+    {
+      "gap": "download a trained HuggingFace small LLM",
+      "reason": "Would add licensing, size, tokenizer, and model-runtime surface before the RTL proxy can consume even the deterministic local fixture tensors."
+    },
+    {
+      "gap": "full ITA/MHA execution",
+      "reason": "Still useful, but larger than the immediate missing link between prepared weights and RTL proxy inputs."
+    },
+    {
+      "gap": "model-level token generation",
+      "reason": "Blocked until a fixture-consuming datapath and token prefill/decode harness exist."
+    }
+  ],
+  "non_claims": [
+    "not a trained LLM",
+    "not model-level inference",
+    "not tokenizer-compatible text generation",
+    "not HuggingFace or MLPerf numerical equivalence",
+    "not full ITA/MHA execution",
+    "not end-to-end LLM serving throughput",
+    "not model quality, perplexity, or accuracy"
+  ],
+  "next_task": "define_tiny_llm_weight_tensor_streaming_proxy_gate"
+}

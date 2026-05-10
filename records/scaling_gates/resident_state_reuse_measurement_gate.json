@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "objective": "measure_resident_state_reuse_experiment",
+  "status": "passed_resident_state_reuse_experiment",
+  "source_gate": "config/scaling_gates/resident_state_reuse_experiment_gate.json",
+  "current_priority": "hold_for_review_after_resident_state_reuse_measurement",
+  "target": "pulp_ita_mha",
+  "command": "python3 src/tools/run_results_reproduction.py --resident-state-reuse 16x64 --resident-state-reuse-phases 4",
+  "dry_run_command": "python3 src/tools/run_results_reproduction.py --resident-state-reuse 16x64 --resident-state-reuse-phases 4 --dry-run",
+  "summary_report": "reports/resident_state_reuse_experiment_summary.json",
+  "result": {
+    "status": "measured_resident_state_reuse_experiment",
+    "shape": "16x64",
+    "phase_count": 4,
+    "phase_shapes": [
+      "16x64",
+      "16x128",
+      "16x192",
+      "16x256"
+    ],
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "best_wall_per_state_step_phase": 4,
+    "best_wall_per_state_step_shape": "16x256",
+    "best_wall_per_state_step_ms": 0.000572265625
+  },
+  "measured_phases": [
+    {
+      "phase": 1,
+      "shape": "16x64",
+      "phase_step_count": 64,
+      "cumulative_step_count": 64,
+      "state_step_count": 1024,
+      "cpu_elapsed_ms": 50.9931,
+      "gpu_kernel_total_ms": 2.5088,
+      "hybrid_wall_ms": 2.581,
+      "hybrid_wall_ms_per_state_step": 0.0025205078125,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "reports": {
+        "cpu_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_1_cpu_16x64.json",
+        "hybrid_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_1_hybrid_16x64.txt",
+        "compare_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_1_compare_16x64.json",
+        "compare_stdout_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_1_compare_16x64_stdout.txt"
+      }
+    },
+    {
+      "phase": 2,
+      "shape": "16x128",
+      "phase_step_count": 64,
+      "cumulative_step_count": 128,
+      "state_step_count": 2048,
+      "cpu_elapsed_ms": 38.5436,
+      "gpu_kernel_total_ms": 1.625696,
+      "hybrid_wall_ms": 1.668,
+      "hybrid_wall_ms_per_state_step": 0.000814453125,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "reports": {
+        "cpu_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_2_cpu_16x128.json",
+        "hybrid_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_2_hybrid_16x128.txt",
+        "compare_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_2_compare_16x128.json",
+        "compare_stdout_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_2_compare_16x128_stdout.txt"
+      }
+    },
+    {
+      "phase": 3,
+      "shape": "16x192",
+      "phase_step_count": 64,
+      "cumulative_step_count": 192,
+      "state_step_count": 3072,
+      "cpu_elapsed_ms": 40.2198,
+      "gpu_kernel_total_ms": 2.415744,
+      "hybrid_wall_ms": 2.452,
+      "hybrid_wall_ms_per_state_step": 0.0007981770833333334,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "reports": {
+        "cpu_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_3_cpu_16x192.json",
+        "hybrid_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_3_hybrid_16x192.txt",
+        "compare_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_3_compare_16x192.json",
+        "compare_stdout_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_3_compare_16x192_stdout.txt"
+      }
+    },
+    {
+      "phase": 4,
+      "shape": "16x256",
+      "phase_step_count": 64,
+      "cumulative_step_count": 256,
+      "state_step_count": 4096,
+      "cpu_elapsed_ms": 39.0889,
+      "gpu_kernel_total_ms": 2.302016,
+      "hybrid_wall_ms": 2.344,
+      "hybrid_wall_ms_per_state_step": 0.000572265625,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "reports": {
+        "cpu_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_4_cpu_16x256.json",
+        "hybrid_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_4_hybrid_16x256.txt",
+        "compare_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_4_compare_16x256.json",
+        "compare_stdout_report": "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_4_compare_16x256_stdout.txt"
+      }
+    }
+  ],
+  "acceptance_policy": {
+    "coverage_output_equivalence_required": true,
+    "max_mismatch_count_required": 0,
+    "public_cli_required": true,
+    "explicit_phase_state_authority_required": true,
+    "compare_stdout_capture_required": true,
+    "runtime_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_required": false,
+    "contract_tests_required": true
+  },
+  "interpretation": {
+    "phase_model": "phase 1 starts from a CPU-generated 1x1 init-state; phases 2..N start from the previous phase GPU dump and compare against cumulative CPU repeat references",
+    "correctness_result": "coverage-output equivalence passed for all measured phases",
+    "timing_result": "phase 4 has the best wall time per state-step among measured phases",
+    "state_authority": "file-boundary state reuse was measured; this is not a persistent in-GPU resident state ABI"
+  },
+  "non_claims": [
+    "not a runtime ABI change",
+    "not persistent GPU-resident state across API calls",
+    "not raw full-state equality",
+    "not production LLM serving throughput",
+    "not paged attention or KV-cache scale-up"
+  ],
+  "next_task": "review_resident_state_reuse_and_select_runtime_abi_or_paged_attention_scaleup"
+}

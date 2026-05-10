@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "objective": "resident execution optimization next step from repeat-median evidence",
+  "status": "implemented_public_resident_batch_sweep_dry_run_ready",
+  "source_gate": "config/scaling_gates/repeat_median_results_reproduction_gate.json",
+  "current_priority": "measure_resident_batch_sweep_with_init_state_generation",
+  "source_summary": "reports/results_reproduction_median_summary.json",
+  "repeat_count": 3,
+  "target": "pulp_ita_mha",
+  "median_evidence": {
+    "decode_like_1x64_nonresident": {
+      "report": "reports/pulp_ita_mha_1x64_median.json",
+      "shape": "1x64",
+      "resident_mode": false,
+      "cpu_elapsed_ms_median": 3.03036,
+      "gpu_kernel_total_ms_median": 1.595392,
+      "hybrid_wall_ms_median": 1.622,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0
+    },
+    "decode_like_1x64_resident": {
+      "report": "reports/pulp_ita_mha_1x64_resident_median.json",
+      "shape": "1x64",
+      "resident_mode": true,
+      "cpu_elapsed_ms_median": 3.21449,
+      "gpu_kernel_total_ms_median": 1.90976,
+      "hybrid_wall_ms_median": 2.02,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0
+    },
+    "batch_decode_like_32x64_resident": {
+      "report": "reports/pulp_ita_mha_32x64_resident_median.json",
+      "shape": "32x64",
+      "resident_mode": true,
+      "cpu_elapsed_ms_median": 72.5432,
+      "gpu_kernel_total_ms_median": 1.888256,
+      "hybrid_wall_ms_median": 1.918,
+      "coverage_output_passed": true,
+      "coverage_output_mismatch_count": 0
+    }
+  },
+  "derived_metrics": {
+    "resident_1x64_vs_nonresident_1x64": {
+      "gpu_kernel_total_ratio_nonresident_over_resident": 0.835,
+      "hybrid_wall_ratio_nonresident_over_resident": 0.803,
+      "classification": "resident_single_state_median_slower"
+    },
+    "resident_batch_32x64_vs_resident_1x64": {
+      "resident_1x64_wall_ms_per_state_step": 0.0315625,
+      "resident_32x64_wall_ms_per_state_step": 0.0009365234375,
+      "wall_per_state_step_ratio_1x64_over_32x64": 33.7,
+      "classification": "strong_batch_amortization"
+    }
+  },
+  "bottleneck_assessment": [
+    {
+      "area": "single_state_repeated_launch",
+      "evidence": "1x64 resident median wall is 0.803x vs non-resident 1x64",
+      "assessment": "resident mode alone does not create a decode-like speedup in this median run"
+    },
+    {
+      "area": "batch_parallel_resident_decode",
+      "evidence": "32x64 resident median wall per state-step improves 33.70x over 1x64 resident",
+      "assessment": "amortizing resident execution across many states is the favorable optimization direction"
+    },
+    {
+      "area": "correctness",
+      "evidence": "all referenced median reports pass coverage-output equivalence with mismatch count 0",
+      "assessment": "next optimization must preserve coverage-output equivalence, not raw full-state equality"
+    },
+    {
+      "area": "operator_usability",
+      "evidence": "repeat-median flow still depends on existing object directories and init-state artifacts",
+      "assessment": "next CLI improvement should reduce manual init/build assumptions"
+    }
+  ],
+  "selected_next_workstream": {
+    "name": "resident_state_reuse_and_batch_decode_optimization_plan",
+    "goal": "make resident batch-decode measurements easier to reproduce and prepare a stricter resident-state reuse experiment",
+      "candidate_changes": [
+      "done: make repeat-median init-state generation explicit inside the reproduction flow",
+      "done: add a resident batch sweep option instead of hard-coding only 32x64",
+      "done: record per-state-step metrics directly in median reports",
+      "done: capture compare stdout to report files to keep the public command readable",
+      "next: run the resident batch sweep and define a follow-up resident-state reuse experiment before changing runtime ABI"
+    ]
+  },
+  "acceptance_policy": {
+    "repeat_median_evidence_required": true,
+    "coverage_output_equivalence_required": true,
+    "max_mismatch_count_required": 0,
+    "derived_metrics_recorded": true,
+    "large_speedup_claim_requires_batch_parallel_resident_shape": true,
+    "single_state_resident_speedup_claim_allowed": false,
+    "runtime_abi_change_allowed_by_this_gate": false,
+    "contract_tests_required": true
+  },
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "Compare 1x64 non-resident and resident median timing",
+      "artifact": "reports/results_reproduction_median_summary.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Identify whether resident alone solves the repeated-step weakness",
+      "artifact": "config/scaling_gates/resident_execution_optimization_next_gate.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Record 32x64 resident per-state-step improvement",
+      "artifact": "config/scaling_gates/resident_execution_optimization_next_gate.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Select the next optimization workstream without changing runtime ABI yet",
+      "artifact": "selected_next_workstream",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Contract-test current priority, evidence, and derived metrics",
+      "artifact": "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+      "status": "satisfied"
+    }
+  ],
+  "non_claims": [
+    "not a production decode throughput claim",
+    "not proof that resident mode alone fixes single-request decode latency",
+    "not a runtime ABI change",
+    "not raw full-state equality"
+  ],
+  "implemented_public_commands": [
+    "python3 src/tools/run_results_reproduction.py --repeat-median 3",
+    "python3 src/tools/run_results_reproduction.py --resident-batch-sweep 1,8,16,32 --resident-batch-sweep-repeat 3"
+  ],
+  "next_task": "run_resident_batch_sweep_measurement_and_record_gate"
+}

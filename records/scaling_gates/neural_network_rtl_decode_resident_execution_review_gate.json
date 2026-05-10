@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_decode_resident_execution_review_gate",
+  "completed_task": "review_pulp_paged_kv_cache_prefill_decode_resident_execution_result_and_select_next_gap",
+  "status": "passed",
+  "reviewed_gate": "config/scaling_gates/neural_network_rtl_decode_resident_execution_optimization_gate.json",
+  "accepted_result": {
+    "target": "pulp_paged_kv_cache_prefill_decode",
+    "shape": "1x32",
+    "baseline_report": "reports/pulp_paged_kv_cache_prefill_decode_hybrid_1x32.txt",
+    "resident_report": "reports/pulp_paged_kv_cache_prefill_decode_resident_sanitized_init_1x32.txt",
+    "coverage_output_compare_report": "reports/pulp_paged_kv_cache_prefill_decode_cpu_vs_resident_sanitized_init_1x32_coverage_output_compare.json",
+    "coverage_output_equivalence": "passed",
+    "coverage_output_mismatch_count": 0,
+    "cpu_elapsed_ms": 9.39703,
+    "nonresident_hybrid_wall_time_ms": 5.13,
+    "resident_hybrid_wall_time_ms": 0.83,
+    "cpu_to_resident_wall_speedup_ratio": 11.321722891566265,
+    "nonresident_to_resident_wall_speedup_ratio": 6.180722891566265,
+    "required_condition": "CPU state images used as GPU init-state must be sanitized with --sanitize-host-only-internals before upload"
+  },
+  "accepted_claim": "For this prefill/decode paged KV-cache RTL harness, resident_steps with sanitized CPU init-state reduces the weak 1x32 repeated decode wall time while preserving coverage-output equivalence.",
+  "weakest_point_after_review": "The workload now covers prefill/decode and resident repeated decode behavior, but it still uses full-width synthetic key/value words. Modern LLM serving also depends on quantized or compressed KV-cache data paths and scale metadata.",
+  "selected_next_gap": {
+    "task": "define_quantized_kv_cache_rtl_harness_gate_after_resident_decode_review",
+    "target": "pulp_quantized_kv_cache",
+    "reason": "Quantized KV-cache is the next smallest serving-relevant RTL gap after resident decode overhead is addressed; it adds low-precision storage/dequant-like behavior without jumping to full MHA or model-level inference.",
+    "base_seed": "overlays/ITA/src/pulp_paged_kv_cache_prefill_decode_gpu_cov_tb.sv"
+  },
+  "rejected_next_gaps_for_now": [
+    {
+      "gap": "full ITA/MHA execution",
+      "reason": "Larger dependency and integration surface; useful later, but quantized KV-cache is a narrower serving-specific gap."
+    },
+    {
+      "gap": "larger paged attention scale-up",
+      "reason": "Would mostly broaden the already-fast many-state class rather than add a missing LLM serving datapath feature."
+    }
+  ],
+  "claim_scope": "review of one resident prefill/decode repeated-state benchmark result",
+  "non_claims": [
+    "not full paged attention",
+    "not full ITA MHA execution",
+    "not model-level Transformer inference",
+    "not production KV-cache memory hierarchy",
+    "not low-precision or compressed KV cache yet",
+    "not broad resident execution speedup",
+    "not broad modern-NN speedup",
+    "not raw full-state equality"
+  ],
+  "next_task": "define_quantized_kv_cache_rtl_harness_gate_after_resident_decode_review"
+}

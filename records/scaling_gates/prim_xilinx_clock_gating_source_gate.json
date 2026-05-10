@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "gate": "prim_xilinx_clock_gating_source_backed_gate",
+  "status": "promoted_to_active_scope",
+  "target": "prim_xilinx_clock_gating",
+  "family": "OpenTitan primitive",
+  "purpose": "Define one source-backed candidate after the eighty-third primitive boundary review passed.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "target_scope": [
+    {
+      "target": "prim_xilinx_clock_gating",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_xilinx_clock_gating.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_clock_gating_coverage_regions.json",
+      "mdir": "artifacts/prim_xilinx_clock_gating_obj_dir",
+      "expected_report": "reports/prim_xilinx_clock_gating_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_xilinx_clock_gating_obj_dir/prim_xilinx_clock_gating_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_xilinx_clock_gating_obj_dir/prim_xilinx_clock_gating_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "define_after_twentieth_primitive_review_acceptance": true,
+    "active_targets_unchanged_until_first_pass": [
+      "tlul_fifo_sync",
+      "tlul_sink",
+      "tlul_request_loopback",
+      "tlul_socket_m1",
+      "tlul_socket_1n",
+      "tlul_adapter_host",
+      "tlul_adapter_reg",
+      "tlul_adapter_sram",
+      "tlul_lc_gate",
+      "tlul_err_resp",
+      "tlul_err",
+      "tlul_cmd_intg_chk",
+      "tlul_cmd_intg_gen",
+      "tlul_rsp_intg_gen",
+      "tlul_rsp_intg_chk",
+      "tlul_data_integ_enc",
+      "tlul_data_integ_dec",
+      "tlul_sram_byte",
+      "tlul_adapter_dmi",
+      "tlul_adapter_reg_racl",
+      "tlul_adapter_sram_racl",
+      "tlul_fifo_async",
+      "prim_fifo_async_simple",
+      "prim_sync_reqack_data",
+      "prim_pulse_sync",
+      "prim_edge_detector",
+      "prim_rst_sync",
+      "prim_flop_en",
+      "prim_flop",
+      "prim_flop_2sync",
+      "prim_mubi4_dec",
+      "prim_mubi4_sync",
+      "prim_mubi4_sender",
+      "prim_mubi8_sender",
+      "prim_mubi8_sync",
+      "prim_mubi32_sync",
+      "prim_multibit_sync",
+      "prim_lc_sync",
+      "prim_lc_sender",
+      "prim_lc_or_hardened",
+      "prim_sync_reqack",
+      "prim_arbiter_fixed"
+    ],
+    "candidate_targets_contains_only": [
+      "prim_xilinx_clock_gating"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true,
+    "no_overlay_until_gate_definition_recorded": true,
+    "first_pass_requires": [
+      "minimal overlay testbench and coverage manifest exist before build",
+      "Verilator object directory builds from upstream source plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "one-state initialized CPU/GPU coverage_output_equivalence passes",
+      "contract test records that prim_xilinx_clock_gating remains candidate-only until first pass and depth evidence pass"
+    ],
+    "active_target_count_unchanged_until_first_pass": 105,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 83
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_clock_gating_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_clock_gating_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_xilinx_clock_gating.json",
+    "host_probe_target": "prim_xilinx_clock_gating_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "implemented",
+    "planned_parameters": {
+      "NoFpgaGate": true,
+      "FpgaBufGlobal": true,
+      "path": "xilinx_no_fpga_gate_assign"
+    }
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_clock_gating.sv"
+  ],
+  "weakest_point": "prim_xilinx_clock_gating is scoped to NoFpgaGate=1 assign-path coverage-output behavior; BUFGCE/BUFHCE FPGA gating paths, enable-latch semantics, glitch-free clock-gating proof, raw full-state equality, zero-initialized GPU correctness, and full primitive-family support remain non-claims.",
+  "why_this_target": [
+    "the eighty-third primitive review accepted prim_arbiter_fixed and leaves clock-gating behavior explicitly outside the active claim",
+    "prim_xilinx_clock_gating is a small upstream OpenTitan primitive wrapper with a concrete generic implementation path",
+    "selecting prim_pkg::ImplGeneric keeps the gate narrower than vendor-specific Xilinx clock buffers",
+    "it adds more claim value than standalone security-anchor wrappers that already appear in active dependency paths",
+    "it is narrower than alert/esc differential signaling and broader arbiter-tree or PPC arbitration families"
+  ],
+  "rejected_for_now": [
+    {
+      "target": "prim_sec_anchor_buf",
+      "reason": "standalone buffer wrapper is only 21 lines and has already appeared in active life-cycle and MuBi dependency paths"
+    },
+    {
+      "target": "prim_sec_anchor_flop",
+      "reason": "standalone flop wrapper is already exercised indirectly through prim_lc_sender and adds less new behavior than a clock-gating gate"
+    },
+    {
+      "target": "prim_diff_decode",
+      "reason": "differential decode reaches alert/esc signal-integrity behavior and async skew handling; keep the next gate to one clock-gating primitive path first"
+    },
+    {
+      "target": "prim_arbiter_tree_or_ppc",
+      "reason": "broader arbiter families add policy breadth immediately after prim_arbiter_fixed; defer until the clock-gating non-claim is addressed"
+    },
+    {
+      "target": "full_ip_blocks",
+      "reason": "full IP blocks are too large for the next narrow source-backed primitive gate"
+    }
+  ],
+  "constraints": [
+    "define exactly one source-backed gate after the eighty-third primitive review passes",
+    "keep active_targets unchanged until prim_xilinx_clock_gating first-pass and depth evidence pass",
+    "keep candidate_targets limited to prim_xilinx_clock_gating",
+    "do not broaden the twenty-primitive active claim",
+    "do not claim vendor-specific Xilinx or Ultrascale clock-gating implementations",
+    "do not claim glitch-free clock gating or arbitrary clocking correctness",
+    "do not restore archived XuanTie-E902 or VeeR-EL2 source",
+    "do not add target-specific runtime hooks"
+  ],
+  "next_action": "hold_for_review_after_eighty_fourth_primitive_boundary",
+  "task": "define_one_next_source_backed_gate_after_eighty-third_primitive_review",
+  "source_review": "eighty_third_primitive_review_hold",
+  "source_gate_name": "prim_xilinx_clock_gating_source_backed_gate",
+  "launch_template": "config/slice_launch_templates/prim_xilinx_clock_gating.json",
+  "active_target_count": 106,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 84,
+  "overlay": {
+    "status": "active",
+    "target": "prim_xilinx_clock_gating",
+    "source_gate": "config/scaling_gates/prim_xilinx_clock_gating_source_gate.json",
+    "launch_template": "config/slice_launch_templates/prim_xilinx_clock_gating.json",
+    "coverage_tb": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_clock_gating_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_clock_gating_coverage_regions.json",
+    "host_probe_target": "prim_xilinx_clock_gating_host_probe",
+    "completed_task": "implement_prim_xilinx_clock_gating_overlay_gate",
+    "next_action": "package_twenty_first_primitive_active_boundary"
+  },
+  "depth_gate_definition": {
+    "status": "defined",
+    "gate": "config/scaling_gates/prim_xilinx_clock_gating_coverage_output_depth.json",
+    "gpu_repeated_steps_gate": "config/scaling_gates/prim_xilinx_clock_gating_repeated_steps.json",
+    "cpu_exact_loop_gate": "config/scaling_gates/prim_xilinx_clock_gating_cpu_exact_loop_repeated_steps.json",
+    "report": "reports/prim_xilinx_clock_gating_coverage_output_depth.json",
+    "comparison_count": 2,
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "candidate_targets": [
+      "prim_xilinx_clock_gating"
+    ],
+    "active_targets_unchanged": true
+  },
+  "depth_candidate_gates": [
+    "config/scaling_gates/prim_xilinx_clock_gating_repeated_steps.json",
+    "config/scaling_gates/prim_xilinx_clock_gating_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_xilinx_clock_gating_coverage_output_depth.json"
+  ],
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "source_line_count": 32,
+    "planned_NoFpgaGate": true,
+    "planned_FpgaBufGlobal": true,
+    "xilinx_wrapper_only_claimed": true,
+    "no_fpga_gate_assign_path_only": true,
+    "bufgce_bufhce_paths_not_claimed": true,
+    "enable_latch_semantics_not_claimed": true,
+    "glitch_free_clocking_not_claimed": true
+  },
+  "first_pass_result": {
+    "report": "reports/prim_xilinx_clock_gating_source_gate.json",
+    "selected_acceptance_policy_passed": true,
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_mismatch_count": 0,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "raw_mismatch_count": 30,
+    "mismatch_role_summary": {
+      "verilator_internal": {
+        "field_count": 3,
+        "mismatch_bytes": 30
+      }
+    },
+    "storage_size": 576,
+    "root_layout_member_count": 118
+  },
+  "depth_gate_paths": [
+    "config/scaling_gates/prim_xilinx_clock_gating_repeated_steps.json",
+    "config/scaling_gates/prim_xilinx_clock_gating_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_xilinx_clock_gating_coverage_output_depth.json"
+  ],
+  "depth_result": {
+    "report": "reports/prim_xilinx_clock_gating_coverage_output_depth.json",
+    "status": "ok",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "acceptance": {
+      "all_comparisons_have_cpu_and_gpu_dump_paths": true,
+      "all_dump_byte_counts_match_expected_dump_bytes": true,
+      "all_comparisons_pass_coverage_output_equivalence": true
+    }
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_count": 106,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 84,
+    "candidate_targets": [],
+    "primitive_equivalence_gate": "config/scaling_gates/prim_xilinx_clock_gating_source_gate.json",
+    "primitive_depth_gate": "config/scaling_gates/prim_xilinx_clock_gating_coverage_output_depth.json",
+    "primitive_depth_report": "reports/prim_xilinx_clock_gating_coverage_output_depth.json"
+  }
+}

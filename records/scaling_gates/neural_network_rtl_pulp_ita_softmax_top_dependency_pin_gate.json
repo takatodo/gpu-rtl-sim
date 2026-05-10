@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_pulp_ita_softmax_top_dependency_pin_gate",
+  "status": "defined_dependency_boundary",
+  "goal": "run_neural_network_rtl_hybrid_cpu_comparison",
+  "prior_review_gate": "config/scaling_gates/neural_network_rtl_pulp_ita_dotp_benchmark_review_gate.json",
+  "target": "pulp_ita_softmax_top",
+  "upstream_module": "ita_softmax_top",
+  "upstream_source": "third_party/ITA/src/ita_softmax_top.sv",
+  "source_root": "third_party/ITA",
+  "why_next": "The dot-product seed answered the first attention-score datapath shape question, but modern attention still needs softmax/reduction behavior before full MHA claims.",
+  "local_dependency_boundary": {
+    "required_ita_sources": [
+      "third_party/ITA/src/ita_package.sv",
+      "third_party/ITA/src/ita_max_finder.sv",
+      "third_party/ITA/src/ita_register_file_1w_multi_port_read.sv",
+      "third_party/ITA/src/ita_softmax.sv",
+      "third_party/ITA/src/ita_serdiv.sv",
+      "third_party/ITA/src/ita_softmax_top.sv"
+    ],
+    "deferred_ita_sources": [
+      "third_party/ITA/src/ita.sv",
+      "third_party/ITA/src/ita_controller.sv",
+      "third_party/ITA/src/ita_sumdotp.sv",
+      "third_party/ITA/src/ita_input_sampler.sv",
+      "third_party/ITA/src/ita_output_controller.sv"
+    ],
+    "reason": "Only the package, softmax datapath, max finder, register file, and divider are needed for the next softmax-top attempt; full accelerator/controller sources remain out of scope."
+  },
+  "external_dependency_boundary": {
+    "required_before_implementation": [
+      {
+        "package": "common_cells",
+        "upstream": "https://github.com/pulp-platform/common_cells",
+        "pin": "Bender.lock revision c27bce39ebb2e6bae52f60960814a2afca7bd4cb",
+        "bender_yml_version": "1.23.0",
+        "bender_lock_version": "1.37.0",
+        "bender_lock_revision": "c27bce39ebb2e6bae52f60960814a2afca7bd4cb",
+        "needed_symbols": [
+          "cf_math_pkg::idx_width",
+          "fifo_v3"
+        ]
+      }
+    ],
+    "explicitly_deferred": [
+      "hwpe-stream",
+      "hci",
+      "hwpe-ctrl",
+      "scm",
+      "tech_cells_generic"
+    ],
+    "import_policy": "Do not recursively import all Bender dependencies. Add only the common_cells source subset required by ita_package and ita_softmax, preferably as a pinned third_party submodule plus repo overlay if local wrapping is needed."
+  },
+  "planned_overlay": {
+    "coverage_tb": "overlays/ITA/src/pulp_ita_softmax_top_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/ITA/tests/pulp_ita_softmax_top_coverage_regions.json",
+    "launch_template": "config/slice_launch_templates/pulp_ita_softmax_top.json",
+    "benchmark_gate": "config/scaling_gates/neural_network_rtl_pulp_ita_softmax_top_first_hybrid_benchmark_gate.json",
+    "host_probe_target": "pulp_ita_softmax_top_host_probe"
+  },
+  "first_shape_policy": [
+    {
+      "nstates": 1,
+      "steps": 1,
+      "purpose": "dependency and launch smoke"
+    },
+    {
+      "nstates": 32,
+      "steps": 1,
+      "purpose": "state-parallel softmax datapath throughput"
+    },
+    {
+      "nstates": 1,
+      "steps": 32,
+      "purpose": "single-state repeated launch overhead risk"
+    }
+  ],
+  "acceptance_policy": {
+    "define_only": false,
+    "only_one_active_ita_followup_seed": true,
+    "must_pin_common_cells_before_overlay": true,
+    "coverage_output_equivalence_required_before_timing_classification": true,
+    "speedup_claim_allowed_by_gate_alone": false
+  },
+  "pin_attempt": {
+    "status": "pin_selected_submodule_clone_blocked",
+    "command": "git ls-remote --tags https://github.com/pulp-platform/common_cells.git 'v1.23.0' '1.23.0'",
+    "observed_error": "submodule clone failed with Could not resolve host: github.com after successful ls-remote tag checks",
+    "retry_count": 4,
+    "local_lock_observation": "third_party/ITA/Bender.yml requests common_cells version 1.23.0, while third_party/ITA/Bender.lock records common_cells version 1.37.0 at revision c27bce39ebb2e6bae52f60960814a2afca7bd4cb.",
+    "remote_tag_evidence": {
+      "v1.23.0": "dc555643226419b7a602f0aa39d449545ea4c1f2",
+      "v1.37.0": "c27bce39ebb2e6bae52f60960814a2afca7bd4cb"
+    },
+    "selected_pin_reason": "Use the committed Bender.lock revision because it records the exact dependency resolution for the imported ITA checkout; the Bender.yml version is a looser package requirement and disagrees with the lock.",
+    "tarball_fallback_rejected": "A codeload tarball is reachable, but third_party is reserved for upstream submodules only, so tarball extraction is not used as source of truth.",
+    "next_required_action": "Retry git submodule add for common_cells at c27bce39ebb2e6bae52f60960814a2afca7bd4cb when the git transport is stable."
+  },
+  "non_claims": [
+    "not dependency import yet",
+    "not softmax execution yet",
+    "not full ITA execution",
+    "not MHA execution",
+    "not model-level Transformer inference",
+    "not broad modern-NN speedup"
+  ],
+  "next_task": "import_common_cells_v1_37_0_for_pulp_ita_softmax_top"
+}

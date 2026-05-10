@@ -1,0 +1,50 @@
+{
+  "schema_version": "coverage-region-manifest-v1",
+  "target": "OpenTitan.prim_fifo_async_simple",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "regions": [
+    {
+      "name": "write_domain_handshake",
+      "words": [
+        "real_toggle_subset_word0_o",
+        "real_toggle_subset_word2_o",
+        "real_toggle_subset_word3_o",
+        "real_toggle_subset_word10_o"
+      ]
+    },
+    {
+      "name": "read_domain_handshake",
+      "words": [
+        "real_toggle_subset_word1_o",
+        "real_toggle_subset_word4_o",
+        "real_toggle_subset_word5_o",
+        "real_toggle_subset_word12_o"
+      ]
+    },
+    {
+      "name": "data_hold",
+      "words": [
+        "real_toggle_subset_word6_o",
+        "real_toggle_subset_word8_o",
+        "real_toggle_subset_word9_o",
+        "real_toggle_subset_word14_o"
+      ]
+    },
+    {
+      "name": "reqack_sync",
+      "words": [
+        "real_toggle_subset_word7_o",
+        "real_toggle_subset_word11_o",
+        "real_toggle_subset_word13_o",
+        "real_toggle_subset_word15_o"
+      ]
+    },
+    {
+      "name": "async_context",
+      "words": [
+        "real_toggle_subset_word16_o",
+        "real_toggle_subset_word17_o"
+      ]
+    }
+  ]
+}

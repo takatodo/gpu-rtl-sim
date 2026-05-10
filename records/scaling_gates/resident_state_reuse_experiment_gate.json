@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "objective": "define resident state reuse experiment before runtime ABI changes",
+  "status": "implemented_resident_state_reuse_dry_run_cli",
+  "source_gate": "config/scaling_gates/resident_batch_sweep_review_gate.json",
+  "current_priority": "measure_resident_state_reuse_experiment",
+  "target": "pulp_ita_mha",
+  "reviewed_summary": "reports/resident_batch_sweep_summary.json",
+  "experiment": {
+    "name": "resident_state_reuse_experiment",
+    "question": "Can repeated decode-like resident phases reduce host/GPU boundary cost by reusing the resident state path without changing the correctness policy?",
+    "baseline": {
+      "command": "python3 src/tools/run_results_reproduction.py --resident-batch-sweep 1,16,32 --resident-batch-sweep-repeat 3",
+      "summary": "reports/resident_batch_sweep_summary.json",
+      "shapes": [
+        "1x64 resident",
+        "16x64 resident",
+        "32x64 resident"
+      ]
+    },
+    "planned_public_dry_run_command": "python3 src/tools/run_results_reproduction.py --resident-state-reuse 16x64 --resident-state-reuse-phases 4 --dry-run",
+    "planned_public_command": "python3 src/tools/run_results_reproduction.py --resident-state-reuse 16x64 --resident-state-reuse-phases 4",
+    "planned_report": "reports/resident_state_reuse_experiment_summary.json",
+    "planned_phase_reports": [
+      "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_1.json",
+      "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_2.json",
+      "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_3.json",
+      "reports/pulp_ita_mha_16x64_resident_state_reuse_phase_4.json"
+    ]
+  },
+  "implemented_dry_run": {
+    "command": "python3 src/tools/run_results_reproduction.py --resident-state-reuse 16x64 --resident-state-reuse-phases 4 --dry-run",
+    "cli": "src/tools/run_results_reproduction.py",
+    "shared_module": "src/tools/results_reproduction.py",
+    "phase_model": "phase 1 starts from the CPU 1x1 init-state; phases 2..N start from the previous phase GPU dump; each phase compares against a cumulative CPU repeat reference",
+    "observed_phase_shapes": [
+      "16x64",
+      "16x128",
+      "16x192",
+      "16x256"
+    ],
+    "stdout_capture": "compare stdout is redirected to reports/*_stdout.txt"
+  },
+  "state_authority_contract": {
+    "initial_authority": "CPU-generated 1x1 init-state remains the documented starting point",
+    "phase_reference": "each phase must have an explicit CPU reference state or a documented reference derivation",
+    "candidate_state": "GPU resident candidate state must be dumped or summarized per phase",
+    "comparison_policy": "coverage_output_equivalence",
+    "raw_state_policy": "diagnostic only; raw full-state equality is not required"
+  },
+  "measurement_contract": {
+    "must_record": [
+      "init-state generation report",
+      "per-phase CPU reference report",
+      "per-phase hybrid report",
+      "per-phase compare JSON",
+      "per-phase compare stdout capture",
+      "kernel total ms",
+      "wall ms",
+      "wall ms per state-step",
+      "coverage-output mismatch count"
+    ],
+    "must_separate": [
+      "init-state generation",
+      "host launch/setup-visible wall time",
+      "GPU kernel timing",
+      "compare/reporting"
+    ],
+    "minimum_phases": 4,
+    "default_shape": "16x64",
+    "why_default_shape": "16x64 had the best total wall median in the resident batch sweep, while 32x64 remains the per-state-step reference point"
+  },
+  "acceptance_policy": {
+    "runtime_abi_change_allowed_by_this_gate": false,
+    "public_dry_run_required_before_measurement": true,
+    "public_dry_run_implemented": true,
+    "coverage_output_equivalence_required": true,
+    "max_mismatch_count_required": 0,
+    "raw_full_state_equality_required": false,
+    "generated_reports_under_reports_required": true,
+    "contract_tests_required": true,
+    "docs_required": true
+  },
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "Define resident state reuse experiment",
+      "artifact": "config/scaling_gates/resident_state_reuse_experiment_gate.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Anchor experiment to resident batch sweep evidence",
+      "artifact": "reports/resident_batch_sweep_summary.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Keep runtime ABI unchanged at this gate",
+      "artifact": "acceptance_policy.runtime_abi_change_allowed_by_this_gate",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Define public dry-run command",
+      "artifact": "experiment.planned_public_dry_run_command",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Define state authority and correctness policy",
+      "artifact": "state_authority_contract",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Implement public dry-run command",
+      "artifact": "src/tools/run_results_reproduction.py",
+      "status": "satisfied"
+    }
+  ],
+  "non_claims": [
+    "not a runtime ABI implementation yet",
+    "not a measured resident state reuse result yet",
+    "not production LLM serving throughput",
+    "not raw full-state equality"
+  ],
+  "next_task": "run_resident_state_reuse_experiment_and_record_gate"
+}

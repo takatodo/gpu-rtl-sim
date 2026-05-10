@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "status": "promoted_to_active_scope",
+  "gate": "prim_rom_source_backed_gate",
+  "target": "prim_rom",
+  "source_gate_name": "prim_rom_source_backed_gate",
+  "family": "OpenTitan primitive",
+  "purpose": "Define one source-backed candidate after the seventy-sixth primitive boundary review passed.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "launch_template": "config/slice_launch_templates/prim_rom.json",
+  "build": {
+    "mdir": "artifacts/prim_rom_obj_dir",
+    "work_dir": "work/slice_pilots/prim_rom",
+    "host_probe_target": "prim_rom_host_probe",
+    "cpu_reference_state": "artifacts/prim_rom_obj_dir/prim_rom_cpu_reference_state.bin",
+    "gpu_candidate_state": "artifacts/prim_rom_obj_dir/prim_rom_gpu_from_cpu_reference_state.bin"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_rom_pkg.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_assert.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_util_memload.svh",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_rom.sv",
+    "third_party/rtlmeter/designs/OpenTitan/src/prim_rom.sv"
+  ],
+  "target_scope": [
+    {
+      "target": "prim_rom",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/prim_rom.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/OpenTitan/tests/prim_rom_coverage_regions.json",
+      "mdir": "artifacts/prim_rom_obj_dir",
+      "expected_report": "reports/prim_rom_source_gate.json",
+      "cpu_reference_state": "artifacts/prim_rom_obj_dir/prim_rom_cpu_reference_state.bin",
+      "gpu_candidate_state": "artifacts/prim_rom_obj_dir/prim_rom_gpu_from_cpu_reference_state.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "candidate_targets": [],
+  "acceptance": {
+    "active_target_count_unchanged_until_first_pass": 98,
+    "active_tlul_target_count_unchanged_until_first_pass": 22,
+    "active_primitive_target_count_unchanged_until_first_pass": 76,
+    "candidate_targets_contains_only": [
+      "prim_rom"
+    ],
+    "no_archived_non_tlul_restore": true,
+    "no_target_specific_runtime_hooks": true
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_rom_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_rom_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/prim_rom.json",
+    "host_probe_target": "prim_rom_host_probe",
+    "makefile": "src/hybrid/Makefile",
+    "status": "planned",
+    "planned_parameters": {
+      "Width": 32,
+      "Depth": 16,
+      "MemInitFile": "",
+      "Impl": "ImplGeneric"
+    }
+  },
+  "static_features": {
+    "tb_contract_planned": true,
+    "real_toggle_outputs_planned": true,
+    "toggle_bitmap_outputs_planned": true,
+    "focused_wave_planned": true,
+    "wrapper_source_line_count": 56,
+    "generic_source_line_count": 54,
+    "planned_Width": 32,
+    "planned_Depth": 16,
+    "no_mem_init_file_claimed": true,
+    "generic_impl_only_claimed": true,
+    "synthesis_define_required_to_exclude_dpi_memload": true
+  },
+  "weakest_point": "prim_rom is scoped to fixed Width=32 Depth=16 generic ROM coverage-output behavior without an initialization file and with -DSYNTHESIS excluding DPI memload; VMEM loading semantics, vendor ROM implementations, arbitrary memory dimensions, memory inference proof, raw full-state equality, and zero-initialized GPU correctness remain outside this gate.",
+  "source_review": "seventy_sixth_primitive_review_hold",
+  "active_target_count": 99,
+  "active_tlul_target_count": 22,
+  "active_primitive_target_count": 77,
+  "next_action": "hold_for_review_after_seventy_seventh_primitive_boundary",
+  "build_options": {
+    "verilator_defines": [
+      "SYNTHESIS"
+    ]
+  },
+  "first_pass_result": {
+    "report": "reports/prim_rom_source_gate.json",
+    "selected_acceptance_policy_passed": true,
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_mismatch_count": 0,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "raw_mismatch_count": 30,
+    "mismatch_role_summary": {
+      "verilator_internal": {
+        "field_count": 3,
+        "mismatch_bytes": 30
+      }
+    },
+    "storage_size": 640,
+    "root_layout_member_count": 107
+  },
+  "depth_gate_paths": [
+    "config/scaling_gates/prim_rom_repeated_steps.json",
+    "config/scaling_gates/prim_rom_cpu_exact_loop_repeated_steps.json",
+    "config/scaling_gates/prim_rom_coverage_output_depth.json"
+  ],
+  "depth_result": {
+    "report": "reports/prim_rom_coverage_output_depth.json",
+    "status": "ok",
+    "comparison_count": 2,
+    "passed_count": 2,
+    "acceptance": {
+      "all_comparisons_have_cpu_and_gpu_dump_paths": true,
+      "all_dump_byte_counts_match_expected_dump_bytes": true,
+      "all_comparisons_pass_coverage_output_equivalence": true
+    }
+  },
+  "promotion_result": {
+    "status": "promoted_to_active_scope",
+    "active_target_count": 99,
+    "active_tlul_target_count": 22,
+    "active_primitive_target_count": 77,
+    "candidate_targets": [],
+    "primitive_equivalence_gate": "config/scaling_gates/prim_rom_source_gate.json",
+    "primitive_depth_gate": "config/scaling_gates/prim_rom_coverage_output_depth.json",
+    "primitive_depth_report": "reports/prim_rom_coverage_output_depth.json"
+  }
+}

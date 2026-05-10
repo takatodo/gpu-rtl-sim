@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "objective": "hybrid\u306e\u4e26\u5217\u5316\u306b\u3088\u308b\u9ad8\u901f\u5316\u3092\u691c\u8a0e\u3059\u308b",
+  "status": "passed_resident_decode_batch_parallel_improves_per_state_step_and_keeps_coverage_output_equivalence",
+  "target": "pulp_ita_mha",
+  "source_gate": "config/scaling_gates/resident_decode_optimization_probe_gate.json",
+  "summary": "reports/pulp_ita_mha_resident_decode_batch_parallel_summary.json",
+  "current_priority": "hold_for_review_after_resident_decode_batch_parallel_probe",
+  "acceptance_policy": {
+    "coverage_output_equivalence_required": true,
+    "coverage_output_mismatch_count_required": 0,
+    "resident_mode_required": true,
+    "compare_shapes": [
+      "8x64",
+      "16x64",
+      "32x64"
+    ],
+    "baseline_shape": "1x64",
+    "required_improvement": "at least one batch-parallel resident shape improves per-state-step cost over 1x64 resident"
+  },
+  "result": {
+    "all_coverage_output_passed": true,
+    "all_resident_mode": true,
+    "best_gpu_per_state_step_shape": "32x64",
+    "best_gpu_per_state_step_improvement_ratio": 25.96498249124562,
+    "best_wall_per_state_step_shape": "32x64",
+    "best_wall_per_state_step_improvement_ratio": 26.060431654676258
+  },
+  "checklist": [
+    {
+      "item": "measure 8x64 resident",
+      "status": "done",
+      "report": "reports/pulp_ita_mha_hybrid_8x64_resident.txt"
+    },
+    {
+      "item": "measure 16x64 resident",
+      "status": "done",
+      "report": "reports/pulp_ita_mha_hybrid_16x64_resident.txt"
+    },
+    {
+      "item": "measure 32x64 resident",
+      "status": "done",
+      "report": "reports/pulp_ita_mha_hybrid_32x64_resident.txt"
+    },
+    {
+      "item": "compare CPU vs hybrid coverage outputs",
+      "status": "done",
+      "summary": "reports/pulp_ita_mha_resident_decode_batch_parallel_summary.json"
+    },
+    {
+      "item": "record source-of-truth state",
+      "status": "done",
+      "files": [
+        "config/selection.json",
+        "docs/status.md",
+        "docs/roadmap.md",
+        "README.md"
+      ]
+    },
+    {
+      "item": "contract-test the gate",
+      "status": "done",
+      "test": "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+    }
+  ],
+  "non_claims": [
+    "not production LLM serving throughput",
+    "not KV-cache aware decode",
+    "not raw full-state equality",
+    "single-run timing only",
+    "not a claim that larger batches reduce single-request latency"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "gate": "mobile_vit_cpu_kick_proxy_contract_gate",
+  "status": "cpu_kick_proxy_cli_defined_waiting_for_manifest_and_predictions",
+  "prior_gates": [
+    "config/scaling_gates/mobile_vit_cpu_kick_control_contract_gate.json",
+    "config/scaling_gates/mobile_vit_imagenet_manifest_builder_contract_gate.json",
+    "config/scaling_gates/mobile_vit_reference_inference_contract_gate.json",
+    "config/scaling_gates/mobile_vit_accuracy_metric_contract_gate.json"
+  ],
+  "objective": "Define the CPU-kick control proxy that consumes prepared MobileViT predictions and emits CPU-kicked prediction records compatible with accuracy calculation.",
+  "tool": {
+    "path": "src/tools/mobile_vit_cpu_kick_proxy.py",
+    "example_command": "python3 src/tools/mobile_vit_cpu_kick_proxy.py --manifest artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest.json --predictions reports/mobile_vit_reference_predictions.json --output reports/mobile_vit_cpu_kick_predictions.json"
+  },
+  "control_sequence": [
+    "LOAD_MODEL",
+    "LOAD_IMAGE",
+    "KICK_INFER",
+    "POLL_DONE"
+  ],
+  "output_contract": {
+    "path_role": "CPU-kicked predictions JSON consumed by src/tools/mobile_vit_accuracy.py",
+    "required_top_level_keys": [
+      "target",
+      "dataset_scope",
+      "cpu_kick_count",
+      "cpu_done_count",
+      "complete_cpu_kick_prediction_set",
+      "predictions"
+    ],
+    "per_prediction_required_keys": [
+      "image_id",
+      "label",
+      "top5",
+      "cpu_sequence_index"
+    ]
+  },
+  "test_evidence": {
+    "contract_test": "tests/contract/test_mobile_vit_cpu_kick_proxy.py",
+    "covered": [
+      "complete CPU-kick proxy trace",
+      "missing prediction blocks complete CPU-kick prediction set",
+      "invalid top5 rejection"
+    ]
+  },
+  "blocked_by": [
+    "no ImageNet or scoped subset manifest",
+    "no MobileViT reference or CPU-kicked predictions"
+  ],
+  "next_task": "provide_imagenet_validation_data_and_inference_dependencies_or_select_scoped_subset",
+  "completion_claim_allowed": false,
+  "non_claims": [
+    "not model inference by itself",
+    "not RTL execution",
+    "not full CPU core execution",
+    "not ImageNet accuracy measurement",
+    "not model-quality claim"
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "gate": "neural_network_rtl_pulp_ita_dotp_benchmark_review_gate",
+  "status": "selected_next_attention_seed_dependency_gate",
+  "goal": "run_neural_network_rtl_hybrid_cpu_comparison",
+  "prior_benchmark_gate": "config/scaling_gates/neural_network_rtl_pulp_ita_dotp_first_hybrid_benchmark_gate.json",
+  "prior_summary_report": "reports/pulp_ita_dotp_first_hybrid_benchmark_summary.json",
+  "reviewed_result": {
+    "target": "pulp_ita_dotp",
+    "upstream_module": "ita_dotp",
+    "classification": "minimal attention-score dot-product datapath seed",
+    "measured_shapes": [
+      {
+        "shape": "1x1",
+        "coverage_output_equivalence_passed": true,
+        "cpu_elapsed_ms": 5.0117,
+        "hybrid_wall_time_ms": 2.313,
+        "cpu_to_hybrid_wall_speedup_ratio": 2.1667531344574145,
+        "classification": "minimum_overhead_modestly_fast"
+      },
+      {
+        "shape": "64x1",
+        "coverage_output_equivalence_passed": true,
+        "cpu_elapsed_ms": 299.194,
+        "hybrid_wall_time_ms": 0.209,
+        "cpu_to_hybrid_wall_speedup_ratio": 1431.55023923445,
+        "classification": "state_parallel_fast"
+      },
+      {
+        "shape": "1x64",
+        "coverage_output_equivalence_passed": true,
+        "cpu_elapsed_ms": 3.91247,
+        "hybrid_wall_time_ms": 6.797,
+        "cpu_to_hybrid_wall_speedup_ratio": 0.5756171840517875,
+        "classification": "single_state_repeated_slow"
+      }
+    ],
+    "shape_classification": "State-parallel dot-product states are favorable for hybrid execution; single-state repeated launches are unfavorable without state-level parallelism."
+  },
+  "remaining_modern_attention_gap": {
+    "status": "softmax_and_mha_still_missing",
+    "why_dotp_is_not_enough": "The selected seed exercises attention-score dot-product arithmetic, but it does not exercise attention reduction, integer softmax, A*V value aggregation, controller scheduling, or KV-cache-like state.",
+    "next_missing_capabilities": [
+      "integer softmax/reduction datapath",
+      "multi-lane sumdotp packaging",
+      "MHA controller sequencing",
+      "dependency-pinned common_cells package support",
+      "token-like prefill/decode benchmark shape"
+    ]
+  },
+  "candidate_next_seeds": [
+    {
+      "module": "ita_sumdotp",
+      "selection": "deferred",
+      "reason": "Useful multi-lane dot-product packaging, but it adds less modern-attention information than softmax after the single dot-product seed passed."
+    },
+    {
+      "module": "ita_softmax_top",
+      "selection": "selected_after_dependency_pin",
+      "reason": "Most direct next missing attention capability after dot product; requires narrowing ITA package and common_cells dependencies before overlay work."
+    },
+    {
+      "module": "ita",
+      "selection": "deferred",
+      "reason": "Full accelerator top is still too broad before softmax and dependency handling are proven."
+    }
+  ],
+  "selected_next_task": {
+    "task": "define_pulp_ita_softmax_top_dependency_pin_gate",
+    "reason": "Softmax is the next weakest modern-attention gap, but the repository invariants require a narrow dependency gate before adding recursive Bender/common_cells surface.",
+    "required_next_artifact": "config/scaling_gates/neural_network_rtl_pulp_ita_softmax_top_dependency_pin_gate.json"
+  },
+  "non_claims": [
+    "not full ITA execution",
+    "not softmax execution yet",
+    "not MHA execution",
+    "not model-level Transformer inference",
+    "not broad modern-NN speedup",
+    "not recursive Bender dependency support"
+  ],
+  "next_task": "define_pulp_ita_softmax_top_dependency_pin_gate"
+}

@@ -1,0 +1,486 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_coverage_output_depth",
+  "status": "defined_runner_available",
+  "runner": "src/tools/run_tlul_coverage_output_depth.py",
+  "source_equivalence_gate": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "purpose": "Compare active TL-UL CPU exact-loop final-state dumps against matching GPU depth dumps with coverage_output_equivalence.",
+  "report_contract": {
+    "cpu_dump_field": "cpu_final_state_dump",
+    "gpu_dump_field": "dump_state",
+    "gpu_candidate_mode": "generated_from_cpu_reference_init_state",
+    "dump_layout": "concat_root_storage_by_state",
+    "expected_dump_bytes": "storage_size * nstates",
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "comparisons": [
+    {
+      "name": "tlul_fifo_sync_repeated_steps_512x1",
+      "target": "tlul_fifo_sync",
+      "cpu_report": "reports/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_512_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
+      "gpu_report": "reports/tlul_fifo_sync_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_512"
+    },
+    {
+      "name": "tlul_fifo_sync_repeated_steps_512x8",
+      "target": "tlul_fifo_sync",
+      "cpu_report": "reports/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_8_batch_512_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
+      "gpu_report": "reports/tlul_fifo_sync_repeated_steps_scaling.json",
+      "gpu_run": "steps_8_batch_512"
+    },
+    {
+      "name": "tlul_fifo_sync_repeated_steps_512x32",
+      "target": "tlul_fifo_sync",
+      "cpu_report": "reports/tlul_fifo_sync_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_32_batch_512_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
+      "gpu_report": "reports/tlul_fifo_sync_repeated_steps_scaling.json",
+      "gpu_run": "steps_32_batch_512"
+    },
+    {
+      "name": "tlul_fifo_sync_resident_patch_schedule_1x6",
+      "target": "tlul_fifo_sync",
+      "cpu_report": "reports/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json",
+      "cpu_run": "resident_patch_schedule_smoke_1x6_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_fifo_sync_resident_patch_schedule.json",
+      "gpu_report": "reports/tlul_fifo_sync_resident_patch_schedule.json",
+      "gpu_run": "resident_patch_schedule_smoke_1x6"
+    },
+    {
+      "name": "tlul_fifo_sync_resident_patch_schedule_512x32",
+      "target": "tlul_fifo_sync",
+      "cpu_report": "reports/tlul_fifo_sync_cpu_exact_loop_resident_patch_schedule.json",
+      "cpu_run": "resident_patch_schedule_batch_512x32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_fifo_sync_resident_patch_schedule.json",
+      "gpu_report": "reports/tlul_fifo_sync_resident_patch_schedule.json",
+      "gpu_run": "resident_patch_schedule_batch_512x32"
+    },
+    {
+      "name": "tlul_sink_repeated_steps_512x1",
+      "target": "tlul_sink",
+      "cpu_report": "reports/tlul_sink_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_512_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_sink_repeated_steps.json",
+      "gpu_report": "reports/tlul_sink_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_512"
+    },
+    {
+      "name": "tlul_sink_repeated_steps_512x8",
+      "target": "tlul_sink",
+      "cpu_report": "reports/tlul_sink_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_8_batch_512_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_sink_repeated_steps.json",
+      "gpu_report": "reports/tlul_sink_repeated_steps_scaling.json",
+      "gpu_run": "steps_8_batch_512"
+    },
+    {
+      "name": "tlul_sink_repeated_steps_512x32",
+      "target": "tlul_sink",
+      "cpu_report": "reports/tlul_sink_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_32_batch_512_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_sink_repeated_steps.json",
+      "gpu_report": "reports/tlul_sink_repeated_steps_scaling.json",
+      "gpu_run": "steps_32_batch_512"
+    },
+    {
+      "name": "tlul_sink_resident_patch_schedule_1x6",
+      "target": "tlul_sink",
+      "cpu_report": "reports/tlul_sink_cpu_exact_loop_resident_patch_schedule.json",
+      "cpu_run": "tlul_sink_resident_patch_schedule_smoke_1x6_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_sink_resident_patch_schedule.json",
+      "gpu_report": "reports/tlul_sink_resident_patch_schedule.json",
+      "gpu_run": "tlul_sink_resident_patch_schedule_smoke_1x6"
+    },
+    {
+      "name": "tlul_sink_resident_patch_schedule_512x32",
+      "target": "tlul_sink",
+      "cpu_report": "reports/tlul_sink_cpu_exact_loop_resident_patch_schedule.json",
+      "cpu_run": "tlul_sink_resident_patch_schedule_batch_512x32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_sink_resident_patch_schedule.json",
+      "gpu_report": "reports/tlul_sink_resident_patch_schedule.json",
+      "gpu_run": "tlul_sink_resident_patch_schedule_batch_512x32"
+    },
+    {
+      "name": "tlul_request_loopback_repeated_steps_32x1",
+      "target": "tlul_request_loopback",
+      "cpu_report": "reports/tlul_request_loopback_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_request_loopback_repeated_steps.json",
+      "gpu_report": "reports/tlul_request_loopback_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_request_loopback_repeated_steps_32x4",
+      "target": "tlul_request_loopback",
+      "cpu_report": "reports/tlul_request_loopback_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_request_loopback_repeated_steps.json",
+      "gpu_report": "reports/tlul_request_loopback_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_socket_m1_repeated_steps_32x1",
+      "target": "tlul_socket_m1",
+      "cpu_report": "reports/tlul_socket_m1_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_socket_m1_repeated_steps.json",
+      "gpu_report": "reports/tlul_socket_m1_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_socket_m1_repeated_steps_32x4",
+      "target": "tlul_socket_m1",
+      "cpu_report": "reports/tlul_socket_m1_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_socket_m1_repeated_steps.json",
+      "gpu_report": "reports/tlul_socket_m1_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_socket_1n_repeated_steps_32x1",
+      "target": "tlul_socket_1n",
+      "cpu_report": "reports/tlul_socket_1n_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_socket_1n_repeated_steps.json",
+      "gpu_report": "reports/tlul_socket_1n_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_socket_1n_repeated_steps_32x4",
+      "target": "tlul_socket_1n",
+      "cpu_report": "reports/tlul_socket_1n_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_socket_1n_repeated_steps.json",
+      "gpu_report": "reports/tlul_socket_1n_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_adapter_host_repeated_steps_32x1",
+      "target": "tlul_adapter_host",
+      "cpu_report": "reports/tlul_adapter_host_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_adapter_host_repeated_steps.json",
+      "gpu_report": "reports/tlul_adapter_host_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_adapter_host_repeated_steps_32x4",
+      "target": "tlul_adapter_host",
+      "cpu_report": "reports/tlul_adapter_host_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_adapter_host_repeated_steps.json",
+      "gpu_report": "reports/tlul_adapter_host_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_adapter_reg_repeated_steps_32x1",
+      "target": "tlul_adapter_reg",
+      "cpu_report": "reports/tlul_adapter_reg_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_adapter_reg_repeated_steps.json",
+      "gpu_report": "reports/tlul_adapter_reg_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_adapter_reg_repeated_steps_32x4",
+      "target": "tlul_adapter_reg",
+      "cpu_report": "reports/tlul_adapter_reg_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_adapter_reg_repeated_steps.json",
+      "gpu_report": "reports/tlul_adapter_reg_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_adapter_sram_repeated_steps_32x1",
+      "target": "tlul_adapter_sram",
+      "cpu_report": "reports/tlul_adapter_sram_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_adapter_sram_repeated_steps.json",
+      "gpu_report": "reports/tlul_adapter_sram_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_adapter_sram_repeated_steps_32x4",
+      "target": "tlul_adapter_sram",
+      "cpu_report": "reports/tlul_adapter_sram_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_adapter_sram_repeated_steps.json",
+      "gpu_report": "reports/tlul_adapter_sram_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_lc_gate_repeated_steps_32x1",
+      "target": "tlul_lc_gate",
+      "cpu_report": "reports/tlul_lc_gate_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_lc_gate_repeated_steps.json",
+      "gpu_report": "reports/tlul_lc_gate_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_lc_gate_repeated_steps_32x4",
+      "target": "tlul_lc_gate",
+      "cpu_report": "reports/tlul_lc_gate_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_lc_gate_repeated_steps.json",
+      "gpu_report": "reports/tlul_lc_gate_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_err_resp_repeated_steps_32x1",
+      "target": "tlul_err_resp",
+      "cpu_report": "reports/tlul_err_resp_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_err_resp_repeated_steps.json",
+      "gpu_report": "reports/tlul_err_resp_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_err_resp_repeated_steps_32x4",
+      "target": "tlul_err_resp",
+      "cpu_report": "reports/tlul_err_resp_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_err_resp_repeated_steps.json",
+      "gpu_report": "reports/tlul_err_resp_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_err_repeated_steps_32x1",
+      "target": "tlul_err",
+      "cpu_report": "reports/tlul_err_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_err_repeated_steps.json",
+      "gpu_report": "reports/tlul_err_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_err_repeated_steps_32x4",
+      "target": "tlul_err",
+      "cpu_report": "reports/tlul_err_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_err_repeated_steps.json",
+      "gpu_report": "reports/tlul_err_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_cmd_intg_chk_repeated_steps_32x1",
+      "target": "tlul_cmd_intg_chk",
+      "cpu_report": "reports/tlul_cmd_intg_chk_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_cmd_intg_chk_repeated_steps.json",
+      "gpu_report": "reports/tlul_cmd_intg_chk_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_cmd_intg_chk_repeated_steps_32x4",
+      "target": "tlul_cmd_intg_chk",
+      "cpu_report": "reports/tlul_cmd_intg_chk_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_cmd_intg_chk_repeated_steps.json",
+      "gpu_report": "reports/tlul_cmd_intg_chk_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_cmd_intg_gen_repeated_steps_32x1",
+      "target": "tlul_cmd_intg_gen",
+      "cpu_report": "reports/tlul_cmd_intg_gen_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_cmd_intg_gen_repeated_steps.json",
+      "gpu_report": "reports/tlul_cmd_intg_gen_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_cmd_intg_gen_repeated_steps_32x4",
+      "target": "tlul_cmd_intg_gen",
+      "cpu_report": "reports/tlul_cmd_intg_gen_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_cmd_intg_gen_repeated_steps.json",
+      "gpu_report": "reports/tlul_cmd_intg_gen_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_rsp_intg_gen_repeated_steps_32x1",
+      "target": "tlul_rsp_intg_gen",
+      "cpu_report": "reports/tlul_rsp_intg_gen_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_rsp_intg_gen_repeated_steps.json",
+      "gpu_report": "reports/tlul_rsp_intg_gen_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_rsp_intg_gen_repeated_steps_32x4",
+      "target": "tlul_rsp_intg_gen",
+      "cpu_report": "reports/tlul_rsp_intg_gen_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_rsp_intg_gen_repeated_steps.json",
+      "gpu_report": "reports/tlul_rsp_intg_gen_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_rsp_intg_chk_repeated_steps_32x1",
+      "target": "tlul_rsp_intg_chk",
+      "cpu_report": "reports/tlul_rsp_intg_chk_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_rsp_intg_chk_repeated_steps.json",
+      "gpu_report": "reports/tlul_rsp_intg_chk_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_rsp_intg_chk_repeated_steps_32x4",
+      "target": "tlul_rsp_intg_chk",
+      "cpu_report": "reports/tlul_rsp_intg_chk_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_rsp_intg_chk_repeated_steps.json",
+      "gpu_report": "reports/tlul_rsp_intg_chk_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_data_integ_enc_repeated_steps_32x1",
+      "target": "tlul_data_integ_enc",
+      "cpu_report": "reports/tlul_data_integ_enc_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_data_integ_enc_repeated_steps.json",
+      "gpu_report": "reports/tlul_data_integ_enc_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_data_integ_enc_repeated_steps_32x4",
+      "target": "tlul_data_integ_enc",
+      "cpu_report": "reports/tlul_data_integ_enc_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_data_integ_enc_repeated_steps.json",
+      "gpu_report": "reports/tlul_data_integ_enc_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_data_integ_dec_repeated_steps_32x1",
+      "target": "tlul_data_integ_dec",
+      "cpu_report": "reports/tlul_data_integ_dec_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_data_integ_dec_repeated_steps.json",
+      "gpu_report": "reports/tlul_data_integ_dec_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_data_integ_dec_repeated_steps_32x4",
+      "target": "tlul_data_integ_dec",
+      "cpu_report": "reports/tlul_data_integ_dec_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_data_integ_dec_repeated_steps.json",
+      "gpu_report": "reports/tlul_data_integ_dec_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_sram_byte_repeated_steps_32x1",
+      "target": "tlul_sram_byte",
+      "cpu_report": "reports/tlul_sram_byte_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_sram_byte_repeated_steps.json",
+      "gpu_report": "reports/tlul_sram_byte_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_sram_byte_repeated_steps_32x4",
+      "target": "tlul_sram_byte",
+      "cpu_report": "reports/tlul_sram_byte_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_sram_byte_repeated_steps.json",
+      "gpu_report": "reports/tlul_sram_byte_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_adapter_dmi_repeated_steps_32x1",
+      "target": "tlul_adapter_dmi",
+      "cpu_report": "reports/tlul_adapter_dmi_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_adapter_dmi_repeated_steps.json",
+      "gpu_report": "reports/tlul_adapter_dmi_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_adapter_dmi_repeated_steps_32x4",
+      "target": "tlul_adapter_dmi",
+      "cpu_report": "reports/tlul_adapter_dmi_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_adapter_dmi_repeated_steps.json",
+      "gpu_report": "reports/tlul_adapter_dmi_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_adapter_reg_racl_repeated_steps_32x1",
+      "target": "tlul_adapter_reg_racl",
+      "cpu_report": "reports/tlul_adapter_reg_racl_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_adapter_reg_racl_repeated_steps.json",
+      "gpu_report": "reports/tlul_adapter_reg_racl_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_adapter_reg_racl_repeated_steps_32x4",
+      "target": "tlul_adapter_reg_racl",
+      "cpu_report": "reports/tlul_adapter_reg_racl_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_adapter_reg_racl_repeated_steps.json",
+      "gpu_report": "reports/tlul_adapter_reg_racl_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_adapter_sram_racl_repeated_steps_32x1",
+      "target": "tlul_adapter_sram_racl",
+      "cpu_report": "reports/tlul_adapter_sram_racl_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_adapter_sram_racl_repeated_steps.json",
+      "gpu_report": "reports/tlul_adapter_sram_racl_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_adapter_sram_racl_repeated_steps_32x4",
+      "target": "tlul_adapter_sram_racl",
+      "cpu_report": "reports/tlul_adapter_sram_racl_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_adapter_sram_racl_repeated_steps.json",
+      "gpu_report": "reports/tlul_adapter_sram_racl_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    },
+    {
+      "name": "tlul_fifo_async_repeated_steps_32x1",
+      "target": "tlul_fifo_async",
+      "cpu_report": "reports/tlul_fifo_async_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_1_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_fifo_async_repeated_steps.json",
+      "gpu_report": "reports/tlul_fifo_async_repeated_steps_scaling.json",
+      "gpu_run": "steps_1_batch_32"
+    },
+    {
+      "name": "tlul_fifo_async_repeated_steps_32x4",
+      "target": "tlul_fifo_async",
+      "cpu_report": "reports/tlul_fifo_async_cpu_exact_loop_repeated_steps.json",
+      "cpu_run": "steps_4_batch_32_cpu_exact_loop",
+      "gpu_gate": "config/scaling_gates/tlul_fifo_async_repeated_steps.json",
+      "gpu_report": "reports/tlul_fifo_async_repeated_steps_scaling.json",
+      "gpu_run": "steps_4_batch_32"
+    }
+  ],
+  "acceptance": {
+    "all_comparisons_have_cpu_and_gpu_dump_paths": true,
+    "all_dump_byte_counts_match_expected_dump_bytes": true,
+    "all_comparisons_pass_coverage_output_equivalence": true
+  },
+  "artifacts": {
+    "report": "reports/tlul_coverage_output_depth.json",
+    "generated_outputs_only": true
+  },
+  "non_claims": [
+    "not raw full-state byte equality",
+    "not non-TL-UL coverage-output depth",
+    "not full RTL application coverage closure"
+  ],
+  "next_action_on_pass": "package_twenty_two_seed_tlul_boundary",
+  "next_action_on_fail": "diagnose_tlul_coverage_output_depth_mismatch",
+  "weakest_point": "The passed depth result depends on generated GPU candidates initialized from each CPU reference state; it is a twenty-two-seed TL-UL coverage-output depth claim, not raw full-state equality or a zero-initialized GPU scaling claim."
+}

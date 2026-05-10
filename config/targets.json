@@ -1,59 +1,2425 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "active_targets": [
     {
       "name": "tlul_fifo_sync",
-      "role": "first_minimal_seed",
-      "status": "seed_config_copied",
+      "family": "OpenTitan TL-UL",
+      "role": "first_active_seed",
+      "status": "active",
       "launch_template_path": "config/slice_launch_templates/tlul_fifo_sync.json",
-      "scaling_gate_path": "config/scaling_gates/tlul_fifo_sync.json",
-      "cpu_baseline_gate_path": "config/scaling_gates/tlul_fifo_sync_cpu_baseline.json",
-      "reason": "Preserves the most source-backed GPU responsibility expansion value from the exploration repository."
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_fifo_sync_coverage_regions.json",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_fifo_sync_repeated_steps.json",
+        "config/scaling_gates/tlul_fifo_sync_resident_patch_schedule.json"
+      ],
+      "reason": "Primary checked-in TL-UL seed for normalized CPU/GPU state comparison and coverage-output equivalence."
     },
     {
       "name": "tlul_sink",
-      "role": "second_minimal_seed",
-      "status": "cpu_gpu_repeated_steps_speedup_pass",
+      "family": "OpenTitan TL-UL",
+      "role": "second_active_seed",
+      "status": "active",
       "launch_template_path": "config/slice_launch_templates/tlul_sink.json",
-      "scaling_gate_path": "config/scaling_gates/tlul_sink_repeated_steps.json",
-      "cpu_exact_loop_gate_path": "config/scaling_gates/tlul_sink_cpu_exact_loop_repeated_steps.json",
-      "reason": "Adds target breadth with a second OpenTitan TL-UL seed that has source-backed frozen multi-step GPU-win evidence in the exploration repository."
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_sink_coverage_regions.json",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_sink_repeated_steps.json",
+        "config/scaling_gates/tlul_sink_resident_patch_schedule.json"
+      ],
+      "reason": "Second checked-in TL-UL seed for bounded coverage-output claim breadth."
     },
     {
-      "name": "xuantie_e902",
-      "role": "first_non_tlul_breadth_candidate",
-      "status": "true_resident_runtime_boundary_packaged",
-      "launch_template_path": "config/slice_launch_templates/xuantie_e902.json",
-      "scaling_gate_path": "config/scaling_gates/xuantie_e902_scaling.json",
-      "cpu_exact_loop_gate_path": "config/scaling_gates/xuantie_e902_cpu_exact_loop_repeated_steps.json",
-      "large_workload_gate_path": "config/scaling_gates/xuantie_e902_large_workload.json",
-      "cpu_exact_loop_large_workload_gate_path": "config/scaling_gates/xuantie_e902_cpu_exact_loop_large_workload.json",
-      "memory_resident_workload_gate_path": "config/scaling_gates/xuantie_e902_memory_resident_workload.json",
-      "cpu_exact_loop_memory_resident_workload_gate_path": "config/scaling_gates/xuantie_e902_cpu_exact_loop_memory_resident_workload.json",
-      "reason": "First non-TL-UL resident runtime boundary with a limited XuanTie-E902 GPU win; broad family/general RTL claims remain out of scope."
+      "name": "tlul_request_loopback",
+      "family": "OpenTitan TL-UL",
+      "role": "third_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_request_loopback.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_request_loopback_coverage_regions.json",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_request_loopback_repeated_steps.json",
+        "config/scaling_gates/tlul_request_loopback_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_request_loopback_coverage_output_depth.json"
+      ],
+      "source_gate_path": "config/scaling_gates/tlul_request_loopback_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_request_loopback.sv",
+      "reason": "Third active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed."
     },
     {
-      "name": "veer_el2",
-      "role": "next_non_tlul_resident_breadth_candidate",
-      "status": "packaged_larger_resident_boundary",
-      "launch_template_path": "config/slice_launch_templates/veer_el2.json",
-      "resident_workload_gate_path": "config/scaling_gates/veer_el2_resident_workload.json",
-      "cpu_exact_loop_resident_workload_gate_path": "config/scaling_gates/veer_el2_cpu_exact_loop_resident_workload.json",
-      "larger_resident_workload_gate_path": "config/scaling_gates/veer_el2_larger_resident_workload.json",
-      "cpu_exact_loop_larger_resident_workload_gate_path": "config/scaling_gates/veer_el2_cpu_exact_loop_larger_resident_workload.json",
-      "asset_boundary_path": "third_party/rtlmeter/designs/VeeR-EL2",
-      "mdir": "artifacts/veer_el2_obj_dir",
-      "cubin": "artifacts/veer_el2_obj_dir/vl_batch_gpu.cubin",
-      "gpu_smoke_state": "artifacts/veer_el2_obj_dir/veer_el2_gpu_smoke_state.bin",
-      "host_probe": "artifacts/veer_el2_obj_dir/veer_el2_host_probe",
-      "cpu_reference_state": "artifacts/veer_el2_obj_dir/veer_el2_cpu_reference_state.bin",
-      "gpu_from_cpu_reference_state": "artifacts/veer_el2_obj_dir/veer_el2_gpu_from_cpu_reference_state.bin",
-      "cpu_gpu_compare_report": "reports/veer_el2_cpu_vs_gpu_from_cpu_init_compare.json",
-      "resident_workload_report": "reports/veer_el2_resident_workload_scaling.json",
-      "cpu_exact_loop_resident_workload_report": "reports/veer_el2_cpu_exact_loop_resident_workload.json",
-      "larger_resident_workload_report": "reports/veer_el2_larger_resident_workload_scaling.json",
-      "cpu_exact_loop_larger_resident_workload_report": "reports/veer_el2_cpu_exact_loop_larger_resident_workload.json",
-      "reason": "Next bounded non-TL-UL resident runtime candidate selected from old-repo VeeR-EL2 gpu_cov_gate evidence; descriptor-referenced source/test assets are copied without old work/output history."
+      "name": "tlul_socket_m1",
+      "family": "OpenTitan TL-UL",
+      "role": "fourth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_socket_m1.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_socket_m1_coverage_regions.json",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_socket_m1_repeated_steps.json",
+        "config/scaling_gates/tlul_socket_m1_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_socket_m1_coverage_output_depth.json"
+      ],
+      "source_gate_path": "config/scaling_gates/tlul_socket_m1_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_socket_m1.sv",
+      "reason": "Fourth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed."
+    },
+    {
+      "name": "tlul_socket_1n",
+      "family": "OpenTitan TL-UL",
+      "role": "fifth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_socket_1n.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_socket_1n_coverage_regions.json",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_socket_1n_repeated_steps.json",
+        "config/scaling_gates/tlul_socket_1n_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_socket_1n_coverage_output_depth.json"
+      ],
+      "source_gate_path": "config/scaling_gates/tlul_socket_1n_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_socket_1n.sv",
+      "reason": "Fifth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed."
+    },
+    {
+      "name": "tlul_adapter_host",
+      "family": "OpenTitan TL-UL",
+      "role": "sixth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_adapter_host.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_host_coverage_regions.json",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_adapter_host_repeated_steps.json",
+        "config/scaling_gates/tlul_adapter_host_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_adapter_host_coverage_output_depth.json"
+      ],
+      "source_gate_path": "config/scaling_gates/tlul_adapter_host_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_adapter_host.sv",
+      "reason": "Sixth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed."
+    },
+    {
+      "name": "tlul_adapter_reg",
+      "family": "OpenTitan TL-UL",
+      "role": "seventh_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_adapter_reg.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_reg_coverage_regions.json",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_adapter_reg_repeated_steps.json",
+        "config/scaling_gates/tlul_adapter_reg_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_adapter_reg_coverage_output_depth.json"
+      ],
+      "source_gate_path": "config/scaling_gates/tlul_adapter_reg_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_adapter_reg.sv",
+      "reason": "Seventh active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed."
+    },
+    {
+      "name": "tlul_adapter_sram",
+      "family": "OpenTitan TL-UL",
+      "role": "eighth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_adapter_sram.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_sram_coverage_regions.json",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_adapter_sram_repeated_steps.json",
+        "config/scaling_gates/tlul_adapter_sram_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_adapter_sram_coverage_output_depth.json"
+      ],
+      "source_gate_path": "config/scaling_gates/tlul_adapter_sram_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_adapter_sram.sv",
+      "reason": "Eighth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed."
+    },
+    {
+      "name": "tlul_lc_gate",
+      "family": "OpenTitan TL-UL",
+      "role": "ninth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_lc_gate.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_lc_gate_coverage_regions.json",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_lc_gate_repeated_steps.json",
+        "config/scaling_gates/tlul_lc_gate_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_lc_gate_coverage_output_depth.json"
+      ],
+      "source_gate_path": "config/scaling_gates/tlul_lc_gate_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_lc_gate.sv",
+      "reason": "Ninth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed."
+    },
+    {
+      "name": "tlul_err_resp",
+      "family": "OpenTitan TL-UL",
+      "role": "tenth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_err_resp.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_err_resp_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_err_resp_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_err_resp.sv",
+      "reason": "Tenth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_err_resp_repeated_steps.json",
+        "config/scaling_gates/tlul_err_resp_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_err_resp_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "tlul_err",
+      "family": "OpenTitan TL-UL",
+      "role": "eleventh_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_err.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_err_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_err_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_err.sv",
+      "reason": "Eleventh active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_err_repeated_steps.json",
+        "config/scaling_gates/tlul_err_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_err_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "tlul_cmd_intg_chk",
+      "family": "OpenTitan TL-UL",
+      "role": "twelfth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_cmd_intg_chk.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_cmd_intg_chk_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_cmd_intg_chk_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_cmd_intg_chk.sv",
+      "reason": "Twelfth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_cmd_intg_chk_repeated_steps.json",
+        "config/scaling_gates/tlul_cmd_intg_chk_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_cmd_intg_chk_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "tlul_cmd_intg_gen",
+      "family": "OpenTitan TL-UL",
+      "role": "thirteenth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_cmd_intg_gen.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_cmd_intg_gen_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_cmd_intg_gen_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_cmd_intg_gen.sv",
+      "reason": "Thirteenth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_cmd_intg_gen_repeated_steps.json",
+        "config/scaling_gates/tlul_cmd_intg_gen_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_cmd_intg_gen_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "tlul_rsp_intg_gen",
+      "family": "OpenTitan TL-UL",
+      "role": "fourteenth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_rsp_intg_gen.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_rsp_intg_gen_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_rsp_intg_gen_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_rsp_intg_gen.sv",
+      "reason": "Fourteenth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_rsp_intg_gen_repeated_steps.json",
+        "config/scaling_gates/tlul_rsp_intg_gen_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_rsp_intg_gen_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "tlul_rsp_intg_chk",
+      "family": "OpenTitan TL-UL",
+      "role": "fifteenth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_rsp_intg_chk.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_rsp_intg_chk_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_rsp_intg_chk_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_rsp_intg_chk.sv",
+      "reason": "Fifteenth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_rsp_intg_chk_repeated_steps.json",
+        "config/scaling_gates/tlul_rsp_intg_chk_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_rsp_intg_chk_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "tlul_data_integ_enc",
+      "family": "OpenTitan TL-UL",
+      "role": "sixteenth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_data_integ_enc.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_data_integ_enc_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_data_integ_enc_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_data_integ_enc.sv",
+      "reason": "Sixteenth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_data_integ_enc_repeated_steps.json",
+        "config/scaling_gates/tlul_data_integ_enc_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_data_integ_enc_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "tlul_data_integ_dec",
+      "family": "OpenTitan TL-UL",
+      "role": "seventeenth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_data_integ_dec.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_data_integ_dec_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_data_integ_dec_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_data_integ_dec.sv",
+      "reason": "Seventeenth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_data_integ_dec_repeated_steps.json",
+        "config/scaling_gates/tlul_data_integ_dec_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_data_integ_dec_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "tlul_sram_byte",
+      "family": "OpenTitan TL-UL",
+      "role": "eighteenth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_sram_byte.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_sram_byte_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_sram_byte_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_sram_byte.sv",
+      "reason": "Eighteenth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_sram_byte_repeated_steps.json",
+        "config/scaling_gates/tlul_sram_byte_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_sram_byte_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "tlul_adapter_dmi",
+      "family": "OpenTitan TL-UL",
+      "role": "nineteenth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_adapter_dmi.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_dmi_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_adapter_dmi_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_adapter_dmi.sv",
+      "reason": "Nineteenth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_adapter_dmi_repeated_steps.json",
+        "config/scaling_gates/tlul_adapter_dmi_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_adapter_dmi_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "tlul_adapter_reg_racl",
+      "family": "OpenTitan TL-UL",
+      "role": "twentieth_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_adapter_reg_racl.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_reg_racl_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_adapter_reg_racl_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_adapter_reg_racl.sv",
+      "reason": "Twentieth active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_adapter_reg_racl_repeated_steps.json",
+        "config/scaling_gates/tlul_adapter_reg_racl_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_adapter_reg_racl_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "tlul_adapter_sram_racl",
+      "family": "OpenTitan TL-UL",
+      "role": "twenty_first_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_adapter_sram_racl.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_adapter_sram_racl_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_adapter_sram_racl_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_adapter_sram_racl.sv",
+      "reason": "Twenty-first active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_adapter_sram_racl_repeated_steps.json",
+        "config/scaling_gates/tlul_adapter_sram_racl_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_adapter_sram_racl_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "tlul_fifo_async",
+      "family": "OpenTitan TL-UL",
+      "role": "twenty_second_active_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/tlul_fifo_async.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/tlul_fifo_async_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/tlul_fifo_async_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/tlul_fifo_async.sv",
+      "reason": "Twenty-second active TL-UL seed promoted after one-state and candidate depth coverage-output equivalence passed; first multi-clock async FIFO boundary in the active scope.",
+      "coverage_output_gate_path": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/tlul_fifo_async_repeated_steps.json",
+        "config/scaling_gates/tlul_fifo_async_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/tlul_fifo_async_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_fifo_async_simple",
+      "family": "OpenTitan primitive",
+      "role": "first_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_fifo_async_simple.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_fifo_async_simple_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_fifo_async_simple_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_fifo_async_simple.sv",
+      "reason": "First active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; keeps non-TL-UL scope narrow at prim_fifo_async_simple.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_fifo_async_simple_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_fifo_async_simple_repeated_steps.json",
+        "config/scaling_gates/prim_fifo_async_simple_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_fifo_async_simple_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_sync_reqack_data",
+      "family": "OpenTitan primitive",
+      "role": "second_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_sync_reqack_data.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sync_reqack_data_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_sync_reqack_data_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_sync_reqack_data.sv",
+      "reason": "Second active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; extends the narrow req/ack primitive boundary with associated data.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_sync_reqack_data_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_sync_reqack_data_repeated_steps.json",
+        "config/scaling_gates/prim_sync_reqack_data_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_sync_reqack_data_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_pulse_sync",
+      "family": "OpenTitan primitive",
+      "role": "third_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_pulse_sync.json",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_pulse_sync_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_pulse_sync_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_pulse_sync.sv",
+      "reason": "Third active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; adds a small pulse CDC primitive beyond the accepted req/ack paths.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_pulse_sync_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_pulse_sync_repeated_steps.json",
+        "config/scaling_gates/prim_pulse_sync_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_pulse_sync_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_edge_detector",
+      "family": "OpenTitan primitive",
+      "role": "fourth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_edge_detector.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_edge_detector_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_edge_detector_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_edge_detector_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_edge_detector.sv",
+      "host_probe_target": "prim_edge_detector_host_probe",
+      "reason": "Fourth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; adds small edge-to-pulse behavior while reusing the accepted prim_flop_2sync path.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_edge_detector_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_edge_detector_repeated_steps.json",
+        "config/scaling_gates/prim_edge_detector_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_edge_detector_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_rst_sync",
+      "family": "OpenTitan primitive",
+      "role": "fifth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_rst_sync.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_rst_sync_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_rst_sync_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_rst_sync_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_rst_sync.sv",
+      "host_probe_target": "prim_rst_sync_host_probe",
+      "reason": "Fifth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; adds reset synchronizer behavior while reusing prim_flop_2sync.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_rst_sync_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_rst_sync_repeated_steps.json",
+        "config/scaling_gates/prim_rst_sync_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_rst_sync_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_flop_en",
+      "family": "OpenTitan primitive",
+      "role": "sixth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_flop_en.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_flop_en_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_flop_en_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_flop_en_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_flop_en.sv",
+      "host_probe_target": "prim_flop_en_host_probe",
+      "reason": "Sixth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; adds enable-gated flop state while keeping the primitive boundary narrow.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_flop_en_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_flop_en_repeated_steps.json",
+        "config/scaling_gates/prim_flop_en_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_flop_en_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_flop",
+      "family": "OpenTitan primitive",
+      "role": "seventh_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_flop.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_flop_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_flop_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_flop_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_flop.sv",
+      "host_probe_target": "prim_flop_host_probe",
+      "reason": "Seventh active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; adds resettable flop state after prim_flop_en while keeping the primitive boundary narrow.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_flop_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_flop_repeated_steps.json",
+        "config/scaling_gates/prim_flop_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_flop_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_flop_2sync",
+      "family": "OpenTitan primitive",
+      "role": "eighth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_flop_2sync.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_flop_2sync_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_flop_2sync_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_flop_2sync_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_flop_2sync.sv",
+      "host_probe_target": "prim_flop_2sync_host_probe",
+      "reason": "Eighth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; adds two-stage synchronizer behavior after prim_flop while keeping EnablePrimCdcRand disabled and the primitive boundary narrow.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_flop_2sync_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_flop_2sync_repeated_steps.json",
+        "config/scaling_gates/prim_flop_2sync_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_flop_2sync_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_mubi4_dec",
+      "family": "OpenTitan primitive",
+      "role": "ninth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_mubi4_dec.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_mubi4_dec_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_mubi4_dec_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_mubi4_dec_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi4_dec.sv",
+      "host_probe_target": "prim_mubi4_dec_host_probe",
+      "reason": "Ninth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; adds narrow combinational MuBi4 decode behavior while keeping mubi sync-family behavior outside the active claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_mubi4_dec_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_mubi4_dec_repeated_steps.json",
+        "config/scaling_gates/prim_mubi4_dec_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_mubi4_dec_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_mubi4_sync",
+      "family": "OpenTitan primitive",
+      "role": "tenth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_mubi4_sync.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_mubi4_sync_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_mubi4_sync_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_mubi4_sync_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi4_sync.sv",
+      "host_probe_target": "prim_mubi4_sync_host_probe",
+      "reason": "Tenth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; adds a narrow generated MuBi4 sync wrapper with StabilityCheck disabled while keeping broad mubi package support and full CDC correctness outside the active claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_mubi4_sync_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_mubi4_sync_repeated_steps.json",
+        "config/scaling_gates/prim_mubi4_sync_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_mubi4_sync_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_mubi4_sender",
+      "family": "OpenTitan primitive",
+      "role": "eleventh_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_mubi4_sender.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_mubi4_sender_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_mubi4_sender_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_mubi4_sender_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi4_sender.sv",
+      "host_probe_target": "prim_mubi4_sender_host_probe",
+      "reason": "Eleventh active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; adds a narrow generated MuBi4 sender wrapper with AsyncOn enabled and EnSecBuf disabled while keeping wider mubi sender/sync wrappers, security anchor buffer behavior, and full CDC correctness outside the active claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_mubi4_sender_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_mubi4_sender_repeated_steps.json",
+        "config/scaling_gates/prim_mubi4_sender_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_mubi4_sender_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_mubi8_sender",
+      "family": "OpenTitan primitive",
+      "role": "twelfth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_mubi8_sender.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_mubi8_sender_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_mubi8_sender_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_mubi8_sender_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi8_sender.sv",
+      "host_probe_target": "prim_mubi8_sender_host_probe",
+      "reason": "Twelfth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; adds the next generated MuBi sender width with AsyncOn enabled and EnSecBuf disabled while keeping mubi sync wrappers, security anchor buffer behavior, no-flop behavior, and full CDC correctness outside the active claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_mubi8_sender_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_mubi8_sender_repeated_steps.json",
+        "config/scaling_gates/prim_mubi8_sender_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_mubi8_sender_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_mubi8_sync",
+      "family": "OpenTitan primitive",
+      "role": "thirteenth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_mubi8_sync.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_mubi8_sync_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_mubi8_sync_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_mubi8_sync_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi8_sync.sv",
+      "host_probe_target": "prim_mubi8_sync_host_probe",
+      "reason": "Thirteenth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; extends the already proven MuBi4 sync shape to MuBi8 with StabilityCheck disabled while keeping MuBi32 sync, generic multibit sync, full CDC correctness, stability-check behavior, and security anchor buffer behavior outside the active claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_mubi8_sync_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_mubi8_sync_repeated_steps.json",
+        "config/scaling_gates/prim_mubi8_sync_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_mubi8_sync_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_mubi32_sync",
+      "family": "OpenTitan primitive",
+      "role": "fourteenth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_mubi32_sync.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_mubi32_sync_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_mubi32_sync_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_mubi32_sync_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_mubi32_sync.sv",
+      "host_probe_target": "prim_mubi32_sync_host_probe",
+      "reason": "Fourteenth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; extends the proven MuBi sync wrapper shape to generated MuBi32 width with StabilityCheck disabled while keeping generic prim_multibit_sync, stability-check behavior, full CDC correctness, and security anchor buffer behavior outside the active claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_mubi32_sync_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_mubi32_sync_repeated_steps.json",
+        "config/scaling_gates/prim_mubi32_sync_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_mubi32_sync_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_multibit_sync",
+      "family": "OpenTitan primitive",
+      "role": "fifteenth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_multibit_sync.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_multibit_sync_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_multibit_sync_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_multibit_sync_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_multibit_sync.sv",
+      "host_probe_target": "prim_multibit_sync_host_probe",
+      "reason": "Fifteenth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; exercises generic prim_multibit_sync with Width=8, NumChecks=2, and ResetValue=8'h3c while keeping all widths, all NumChecks values, MuBi wrapper StabilityCheck behavior, life-cycle typed sync, full CDC correctness, raw full-state equality, and zero-initialized GPU correctness outside the active claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_multibit_sync_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_multibit_sync_repeated_steps.json",
+        "config/scaling_gates/prim_multibit_sync_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_multibit_sync_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_lc_sync",
+      "family": "OpenTitan primitive",
+      "role": "sixteenth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_lc_sync.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_lc_sync_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_lc_sync_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_lc_sync_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_lc_sync.sv",
+      "host_probe_target": "prim_lc_sync_host_probe",
+      "reason": "Sixteenth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; exercises prim_lc_sync with NumCopies=2, AsyncOn=1, and ResetValueIsOn=0 while keeping all life-cycle encodings, AsyncOn=0, ResetValueIsOn=1, all NumCopies values, prim_lc_sender, prim_sec_anchor_flop, full CDC correctness, raw full-state equality, and zero-initialized GPU correctness outside the active claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_lc_sync_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_lc_sync_repeated_steps.json",
+        "config/scaling_gates/prim_lc_sync_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_lc_sync_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_lc_sender",
+      "family": "OpenTitan primitive",
+      "role": "seventeenth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_lc_sender.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_lc_sender_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_lc_sender_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_lc_sender_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_lc_sender.sv",
+      "host_probe_target": "prim_lc_sender_host_probe",
+      "reason": "Seventeenth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; exercises prim_lc_sender with AsyncOn=1 and ResetValueIsOn=0 through prim_sec_anchor_flop while keeping AsyncOn=0, ResetValueIsOn=1, all life-cycle encodings, full CDC correctness, raw full-state equality, zero-initialized GPU correctness, and full primitive-family support outside the active claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_lc_sender_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_lc_sender_repeated_steps.json",
+        "config/scaling_gates/prim_lc_sender_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_lc_sender_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_lc_or_hardened",
+      "family": "OpenTitan primitive",
+      "role": "eighteenth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_lc_or_hardened.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_lc_or_hardened_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_lc_or_hardened_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_lc_or_hardened_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_lc_or_hardened.sv",
+      "host_probe_target": "prim_lc_or_hardened_host_probe",
+      "reason": "Eighteenth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; exercises hardened life-cycle OR with ActVal=lc_ctrl_pkg::On and the prim_lc_sync AsyncOn=0 child path while keeping alternate ActVal behavior, all life-cycle encodings, full CDC correctness, raw full-state equality, zero-initialized GPU correctness, clock-gating behavior, and full primitive-family support outside the active claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_lc_or_hardened_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_lc_or_hardened_repeated_steps.json",
+        "config/scaling_gates/prim_lc_or_hardened_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_lc_or_hardened_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_sync_reqack",
+      "family": "OpenTitan primitive",
+      "role": "nineteenth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_sync_reqack.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_sync_reqack_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sync_reqack_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_sync_reqack_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_sync_reqack.sv",
+      "host_probe_target": "prim_sync_reqack_host_probe",
+      "reason": "Nineteenth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets the prim_sync_reqack return-to-zero handshake branch with EnRzHs=1 while keeping reset assertion checks, arbitrary clock ratios, full CDC correctness, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_sync_reqack_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_sync_reqack_repeated_steps.json",
+        "config/scaling_gates/prim_sync_reqack_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_sync_reqack_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_arbiter_fixed",
+      "family": "OpenTitan primitive",
+      "role": "twentieth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_arbiter_fixed.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_arbiter_fixed_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_arbiter_fixed_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_arbiter_fixed_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_arbiter_fixed.sv",
+      "host_probe_target": "prim_arbiter_fixed_host_probe",
+      "reason": "Twentieth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets a fixed-priority ready/valid arbiter with N=4, DW=16, and EnDataPort=1 while keeping other arbiter families, all parameterizations, fairness properties, clock-gating correctness, alert/esc differential signaling, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_arbiter_fixed_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_arbiter_fixed_repeated_steps.json",
+        "config/scaling_gates/prim_arbiter_fixed_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_arbiter_fixed_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_clock_gating",
+      "family": "OpenTitan primitive",
+      "role": "twenty_first_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_clock_gating.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_clock_gating_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_clock_gating_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_clock_gating_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_clock_gating.sv",
+      "host_probe_target": "prim_clock_gating_host_probe",
+      "reason": "Twenty-first active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets the generic prim_clock_gating latch-enable path with prim_pkg::ImplGeneric while keeping vendor-specific clock-gating implementations, glitch-free clock-gating proof, arbitrary clocking correctness, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_clock_gating_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_clock_gating_repeated_steps.json",
+        "config/scaling_gates/prim_clock_gating_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_clock_gating_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_onehot_check",
+      "family": "OpenTitan primitive",
+      "role": "twenty_second_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_onehot_check.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_onehot_check_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_onehot_check_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_onehot_check_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_onehot_check.sv",
+      "host_probe_target": "prim_onehot_check_host_probe",
+      "reason": "Twenty-second active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets prim_onehot_check with AddrWidth=3, OneHotWidth=8, AddrCheck=1, EnableCheck=1, StrictCheck=1, and EnableAlertTriggerSVA=0 while keeping all widths, disabled check modes, alert-trigger SVA integration, full security countermeasure proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_onehot_check_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_onehot_check_repeated_steps.json",
+        "config/scaling_gates/prim_onehot_check_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_onehot_check_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_filter",
+      "family": "OpenTitan primitive",
+      "role": "twenty_third_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_filter.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_filter_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_filter_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_filter_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_filter.sv",
+      "host_probe_target": "prim_filter_host_probe",
+      "reason": "Twenty-third active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets the synchronous prim_filter path with AsyncOn=0 and Cycles=4 while keeping AsyncOn=1 synchronizer behavior, all cycle counts, metastability/CDC correctness, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_filter_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_filter_repeated_steps.json",
+        "config/scaling_gates/prim_filter_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_filter_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_filter_ctr",
+      "family": "OpenTitan primitive",
+      "role": "twenty_fourth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_filter_ctr.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_filter_ctr_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_filter_ctr_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_filter_ctr_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_filter_ctr.sv",
+      "host_probe_target": "prim_filter_ctr_host_probe",
+      "reason": "Twenty-fourth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets the synchronous prim_filter_ctr counter-threshold filter path with AsyncOn=0 and CntWidth=3 while keeping AsyncOn=1 synchronizer behavior, all counter widths and threshold parameterizations, metastability/CDC correctness, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_filter_ctr_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_filter_ctr_repeated_steps.json",
+        "config/scaling_gates/prim_filter_ctr_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_filter_ctr_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_onehot_enc",
+      "family": "OpenTitan primitive",
+      "role": "twenty_fifth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_onehot_enc.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_onehot_enc_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_onehot_enc_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_onehot_enc_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_onehot_enc.sv",
+      "host_probe_target": "prim_onehot_enc_host_probe",
+      "reason": "Twenty-fifth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets the direct OneHotWidth=8 integer-to-onehot encoder path while keeping all widths, downstream onehot mux/assertion policy, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_onehot_enc_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_onehot_enc_repeated_steps.json",
+        "config/scaling_gates/prim_onehot_enc_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_onehot_enc_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_onehot_mux",
+      "family": "OpenTitan primitive",
+      "role": "twenty_sixth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_onehot_mux.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_onehot_mux_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_onehot_mux_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_onehot_mux_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_onehot_mux.sv",
+      "host_probe_target": "prim_onehot_mux_host_probe",
+      "reason": "Twenty-sixth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets a narrow Width=8, Inputs=4 onehot mux path while keeping all Width/Inputs parameterizations, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_onehot_mux_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_onehot_mux_repeated_steps.json",
+        "config/scaling_gates/prim_onehot_mux_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_onehot_mux_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_and2",
+      "family": "OpenTitan primitive",
+      "role": "twenty_seventh_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_and2.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_and2_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_and2_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_and2_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_and2.sv",
+      "host_probe_target": "prim_and2_host_probe",
+      "reason": "Twenty-seventh candidate OpenTitan primitive seed selected after the twenty-sixth boundary review; targets a narrow Width=8 generic two-input AND wrapper while keeping vendor implementations, all Width parameterizations, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_and2_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_and2_repeated_steps.json",
+        "config/scaling_gates/prim_and2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_and2_coverage_output_depth.json"
+      ],
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_and2_repeated_steps.json",
+        "config/scaling_gates/prim_and2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_and2_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xor2",
+      "family": "OpenTitan primitive",
+      "role": "twenty_eighth_active_primitive_seed",
+      "status": "active",
+      "launch_template_path": "config/slice_launch_templates/prim_xor2.json",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xor2_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xor2_coverage_regions.json",
+      "source_gate_path": "config/scaling_gates/prim_xor2_source_gate.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xor2.sv",
+      "host_probe_target": "prim_xor2_host_probe",
+      "reason": "Twenty-eighth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets a narrow Width=8 generic two-input XOR wrapper while keeping vendor implementations, all Width parameterizations, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xor2_source_gate.json",
+      "depth_candidate_gates": [
+        "config/scaling_gates/prim_xor2_repeated_steps.json",
+        "config/scaling_gates/prim_xor2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xor2_coverage_output_depth.json"
+      ],
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xor2_repeated_steps.json",
+        "config/scaling_gates/prim_xor2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xor2_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xnor2",
+      "family": "OpenTitan primitive",
+      "role": "twenty_ninth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_xnor2_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xnor2.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xnor2.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xnor2_coverage_regions.json",
+      "host_probe_target": "prim_xnor2_host_probe",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xnor2_repeated_steps.json",
+        "config/scaling_gates/prim_xnor2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xnor2_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_buf",
+      "family": "OpenTitan primitive",
+      "role": "thirtieth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_buf_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_buf.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_buf.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_buf_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_buf_coverage_regions.json",
+      "host_probe_target": "prim_buf_host_probe",
+      "reason": "Thirtieth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets a narrow Width=8 generic single-input buffer wrapper while keeping vendor implementations, all Width parameterizations, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_buf_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_buf_repeated_steps.json",
+        "config/scaling_gates/prim_buf_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_buf_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_blanker",
+      "family": "OpenTitan primitive",
+      "role": "thirty_first_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_blanker_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_blanker.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_blanker.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_blanker_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_blanker_coverage_regions.json",
+      "host_probe_target": "prim_blanker_host_probe",
+      "reason": "Thirty-first active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets a narrow Width=8 blanking wrapper around prim_and2 while keeping all Width parameterizations, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_blanker_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_blanker_repeated_steps.json",
+        "config/scaling_gates/prim_blanker_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_blanker_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_msb_extend",
+      "family": "OpenTitan primitive",
+      "role": "thirty_second_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_msb_extend_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_msb_extend.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_msb_extend.sv",
+      "host_probe_target": "prim_msb_extend_host_probe",
+      "reason": "Thirty-second active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets InWidth=8 to OutWidth=16 sign extension while keeping feedthrough mode, all width parameterizations, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_msb_extend_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_msb_extend_coverage_regions.json",
+      "coverage_output_gate_path": "config/scaling_gates/prim_msb_extend_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_msb_extend_repeated_steps.json",
+        "config/scaling_gates/prim_msb_extend_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_msb_extend_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_slicer",
+      "family": "OpenTitan primitive",
+      "role": "thirty_third_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_slicer_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_slicer.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_slicer.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_slicer_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_slicer_coverage_regions.json",
+      "host_probe_target": "prim_slicer_host_probe",
+      "reason": "Thirty-third active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets InW=16, OutW=8, IndexW=1 dynamic part-select while keeping fractional zero-fill behavior, all width/index parameterizations, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_slicer_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_slicer_repeated_steps.json",
+        "config/scaling_gates/prim_slicer_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_slicer_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_packer",
+      "family": "OpenTitan primitive",
+      "role": "thirty_fourth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_packer_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_packer.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_packer.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_packer_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_packer_coverage_regions.json",
+      "host_probe_target": "prim_packer_host_probe",
+      "reason": "Thirty-fourth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets InW=8, OutW=16, HintByteData=0, EnProtection=0 packing/flush behavior while keeping protection, byte-hint, FIFO, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_packer_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_packer_repeated_steps.json",
+        "config/scaling_gates/prim_packer_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_packer_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_packer_fifo",
+      "family": "OpenTitan primitive",
+      "role": "thirty_fifth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_packer_fifo_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_packer_fifo.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_packer_fifo.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_packer_fifo_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_packer_fifo_coverage_regions.json",
+      "host_probe_target": "prim_packer_fifo_host_probe",
+      "reason": "Thirty-fifth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; targets InW=8, OutW=16, ClearOnRead=1 pack-mode FIFO timing while keeping unpack/equal-width modes, ClearOnRead=0, all ratios, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_packer_fifo_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_packer_fifo_repeated_steps.json",
+        "config/scaling_gates/prim_packer_fifo_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_packer_fifo_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_count",
+      "family": "OpenTitan primitive",
+      "role": "thirty_sixth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_count_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_count.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_count.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_count_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_count_coverage_regions.json",
+      "host_probe_target": "prim_count_host_probe",
+      "reason": "Thirty-sixth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to Width=4, ResetValue=0, all four public actions, and EnableAlertTriggerSVA=0 while keeping broader parameterizations, alert-trigger SVA, FPV force behavior, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_count_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_count_repeated_steps.json",
+        "config/scaling_gates/prim_count_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_count_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_39_32_enc",
+      "family": "OpenTitan primitive",
+      "role": "thirty_seventh_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_39_32_enc_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_39_32_enc.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_39_32_enc.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_39_32_enc_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_39_32_enc_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_39_32_enc_host_probe",
+      "reason": "Thirty-seventh active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to the fixed 32-to-39 inverse SECDED encoder while keeping decoder behavior, correction/syndrome classification, other generated widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_39_32_enc_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_39_32_enc_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_39_32_enc_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_39_32_enc_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_64_57_enc",
+      "family": "OpenTitan primitive",
+      "role": "thirty_eighth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_64_57_enc_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_64_57_enc.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_64_57_enc.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_64_57_enc_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_64_57_enc_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_64_57_enc_host_probe",
+      "reason": "Thirty-eighth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to the fixed 57-to-64 inverse SECDED encoder while keeping decoder behavior, correction/syndrome classification, other generated widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_64_57_enc_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_64_57_enc_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_64_57_enc_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_64_57_enc_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_hamming_22_16_enc",
+      "family": "OpenTitan primitive",
+      "role": "thirty_ninth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_secded_hamming_22_16_enc_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_hamming_22_16_enc.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_22_16_enc.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_22_16_enc_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_hamming_22_16_enc_coverage_regions.json",
+      "host_probe_target": "prim_secded_hamming_22_16_enc_host_probe",
+      "reason": "Thirty-ninth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to the fixed 16-to-22 hamming SECDED encoder while decoder behavior, correction/syndrome classification, inverse variants, other SECDED widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_hamming_22_16_enc_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_hamming_22_16_enc_repeated_steps.json",
+        "config/scaling_gates/prim_secded_hamming_22_16_enc_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_hamming_22_16_enc_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_hamming_22_16_enc",
+      "family": "OpenTitan primitive",
+      "role": "fortieth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_hamming_22_16_enc_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_hamming_22_16_enc.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_22_16_enc.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_22_16_enc_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_hamming_22_16_enc_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_hamming_22_16_enc_host_probe",
+      "reason": "Fortieth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to the fixed 16-to-22 inverse-hamming SECDED encoder while decoder behavior, correction/syndrome classification, other SECDED widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_hamming_22_16_enc_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_hamming_22_16_enc_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_hamming_22_16_enc_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_hamming_22_16_enc_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_hamming_39_32_enc",
+      "family": "OpenTitan primitive",
+      "role": "forty_first_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_hamming_39_32_enc.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_39_32_enc.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_39_32_enc_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_hamming_39_32_enc_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_hamming_39_32_enc_host_probe",
+      "reason": "Forty-first active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to the fixed 32-to-39 inverse-hamming SECDED encoder while decoder behavior, correction/syndrome classification, other SECDED widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_hamming_39_32_enc_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_hamming_72_64_enc",
+      "family": "OpenTitan primitive",
+      "role": "forty_second_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_secded_hamming_72_64_enc_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_hamming_72_64_enc.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_72_64_enc.sv",
+      "host_probe_target": "prim_secded_hamming_72_64_enc_host_probe",
+      "reason": "Forty-second active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to the fixed 64-to-72 hamming SECDED encoder while decoder behavior, correction/syndrome classification, inverse variants, other SECDED widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_72_64_enc_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_hamming_72_64_enc_coverage_regions.json",
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_hamming_72_64_enc_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_hamming_72_64_enc_repeated_steps.json",
+        "config/scaling_gates/prim_secded_hamming_72_64_enc_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_hamming_72_64_enc_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_hamming_76_68_enc",
+      "family": "OpenTitan primitive",
+      "role": "forty_third_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_secded_hamming_76_68_enc_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_hamming_76_68_enc.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_76_68_enc.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_76_68_enc_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_hamming_76_68_enc_coverage_regions.json",
+      "host_probe_target": "prim_secded_hamming_76_68_enc_host_probe",
+      "reason": "Forty-third active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to the fixed 68-to-76 hamming SECDED encoder while decoder behavior, correction/syndrome classification, inverse variants, other SECDED widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_hamming_76_68_enc_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_hamming_76_68_enc_repeated_steps.json",
+        "config/scaling_gates/prim_secded_hamming_76_68_enc_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_hamming_76_68_enc_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_72_64_enc",
+      "family": "OpenTitan primitive",
+      "role": "forty_fourth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_72_64_enc_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_72_64_enc.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_72_64_enc.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_72_64_enc_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_72_64_enc_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_72_64_enc_host_probe",
+      "reason": "Forty-fourth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to the fixed 64-to-72 inverse SECDED encoder while decoder behavior, correction/syndrome classification, other SECDED widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_72_64_enc_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_72_64_enc_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_72_64_enc_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_72_64_enc_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_22_16_enc",
+      "family": "OpenTitan primitive",
+      "role": "forty_fifth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_22_16_enc_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_22_16_enc.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_22_16_enc.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_22_16_enc_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_22_16_enc_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_22_16_enc_host_probe",
+      "reason": "Forty-fifth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to the fixed 16-to-22 inverse SECDED encoder while decoder behavior, correction/syndrome classification, other SECDED widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_22_16_enc_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_22_16_enc_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_22_16_enc_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_22_16_enc_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_28_22_enc",
+      "family": "OpenTitan primitive",
+      "role": "forty_sixth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_28_22_enc_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_28_22_enc.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_28_22_enc.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_28_22_enc_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_28_22_enc_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_28_22_enc_host_probe",
+      "reason": "Forty-sixth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to the fixed 22-to-28 inverse SECDED encoder while decoder behavior, correction/syndrome classification, other SECDED widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_28_22_enc_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_28_22_enc_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_28_22_enc_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_28_22_enc_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_max_tree",
+      "family": "OpenTitan primitive",
+      "role": "forty_seventh_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_max_tree_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_max_tree.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_max_tree.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_max_tree_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_max_tree_coverage_regions.json",
+      "host_probe_target": "prim_max_tree_host_probe",
+      "reason": "Forty-seventh active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed NumSrc=4, Width=4 max-tree behavior while other parameterizations, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_max_tree_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_max_tree_repeated_steps.json",
+        "config/scaling_gates/prim_max_tree_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_max_tree_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_sum_tree",
+      "family": "OpenTitan primitive",
+      "role": "forty_eighth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_sum_tree_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_sum_tree.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_sum_tree.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_sum_tree_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sum_tree_coverage_regions.json",
+      "host_probe_target": "prim_sum_tree_host_probe",
+      "reason": "Forty-eighth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed NumSrc=4, Width=4 sum-tree behavior while other parameterizations, overflow behavior beyond modulo Width arithmetic, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_sum_tree_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_sum_tree_repeated_steps.json",
+        "config/scaling_gates/prim_sum_tree_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_sum_tree_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_fifo_sync",
+      "family": "OpenTitan primitive",
+      "role": "forty_ninth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_fifo_sync_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_fifo_sync.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_fifo_sync.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_fifo_sync_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_fifo_sync_coverage_regions.json",
+      "host_probe_target": "prim_fifo_sync_host_probe",
+      "reason": "Forty-ninth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=8, Depth=4, Pass=1, OutputZeroIfEmpty=1, Secure=0 synchronous FIFO behavior while passthrough, singleton, secure pointer checking, other parameterizations, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader FIFO-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_fifo_sync_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_fifo_sync_repeated_steps.json",
+        "config/scaling_gates/prim_fifo_sync_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_fifo_sync_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_sec_anchor_buf",
+      "family": "OpenTitan primitive",
+      "role": "fiftieth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_sec_anchor_buf_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_sec_anchor_buf.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_sec_anchor_buf.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_sec_anchor_buf_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sec_anchor_buf_coverage_regions.json",
+      "host_probe_target": "prim_sec_anchor_buf_host_probe",
+      "reason": "Fiftieth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=8 secure-anchor buffer wrapper behavior through already active prim_buf while all widths, security hardening proof, prim_sec_anchor_flop behavior, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_sec_anchor_buf_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_sec_anchor_buf_repeated_steps.json",
+        "config/scaling_gates/prim_sec_anchor_buf_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_sec_anchor_buf_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_sec_anchor_flop",
+      "family": "OpenTitan primitive",
+      "role": "fifty_first_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_sec_anchor_flop_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_sec_anchor_flop.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_sec_anchor_flop.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_sec_anchor_flop_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sec_anchor_flop_coverage_regions.json",
+      "host_probe_target": "prim_sec_anchor_flop_host_probe",
+      "reason": "Fifty-first active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=8 and ResetValue=8'h3c secure-anchor flop wrapper behavior through already active prim_flop while all widths, reset values, security hardening proof, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_sec_anchor_flop_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_sec_anchor_flop_repeated_steps.json",
+        "config/scaling_gates/prim_sec_anchor_flop_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_sec_anchor_flop_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_clock_buf",
+      "family": "OpenTitan primitive",
+      "role": "fifty_second_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_clock_buf_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_clock_buf.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_clock_buf.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_clock_buf_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_clock_buf_coverage_regions.json",
+      "host_probe_target": "prim_clock_buf_host_probe",
+      "reason": "Fifty-second active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to generic prim_clock_buf buffer behavior while vendor-specific clock buffers, clock-tree correctness, glitch-free clocking proof, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_clock_buf_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_clock_buf_repeated_steps.json",
+        "config/scaling_gates/prim_clock_buf_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_clock_buf_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_clock_inv",
+      "family": "OpenTitan primitive",
+      "role": "fifty_third_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_clock_inv_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_clock_inv.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_clock_inv.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_clock_inv_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_clock_inv_coverage_regions.json",
+      "host_probe_target": "prim_clock_inv_host_probe",
+      "reason": "Fifty-third active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to generic no-scan prim_clock_inv inverter behavior while scan-mode muxing, vendor-specific clock inverters, clock-tree correctness, glitch-free clocking proof, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_clock_inv_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_clock_inv_repeated_steps.json",
+        "config/scaling_gates/prim_clock_inv_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_clock_inv_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_clock_mux2",
+      "family": "OpenTitan primitive",
+      "role": "fifty_fourth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_clock_mux2_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_clock_mux2.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_clock_mux2.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_clock_mux2_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_clock_mux2_coverage_regions.json",
+      "host_probe_target": "prim_clock_mux2_host_probe",
+      "reason": "Fifty-fourth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to generic two-input prim_clock_mux2 behavior while vendor-specific clock muxes, clock-tree correctness, glitch-free clocking proof, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_clock_mux2_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_clock_mux2_repeated_steps.json",
+        "config/scaling_gates/prim_clock_mux2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_clock_mux2_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_clock_div",
+      "family": "OpenTitan primitive",
+      "role": "fifty_fifth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_clock_div_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_clock_div.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_clock_div.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_clock_div_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_clock_div_coverage_regions.json",
+      "host_probe_target": "prim_clock_div_host_probe",
+      "reason": "Fifty-fifth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to generic prim_clock_div Divisor=2 ResetValue=0 behavior while other divisors, broad step-down behavior, vendor-specific clock dividers, clock-tree correctness, glitch-free clocking proof, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_clock_div_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_clock_div_repeated_steps.json",
+        "config/scaling_gates/prim_clock_div_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_clock_div_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_clock_gating_sync",
+      "family": "OpenTitan primitive",
+      "role": "fifty_sixth_active_primitive_seed",
+      "status": "active",
+      "source_gate_path": "config/scaling_gates/prim_clock_gating_sync_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_clock_gating_sync.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_clock_gating_sync.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_clock_gating_sync_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_clock_gating_sync_coverage_regions.json",
+      "host_probe_target": "prim_clock_gating_sync_host_probe",
+      "reason": "Fifty-sixth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to the synchronizer-plus-clock-gating wrapper while CDC proof, metastability behavior, vendor-specific clock gating, clock-tree correctness, glitch-free clocking proof, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_clock_gating_sync_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_clock_gating_sync_repeated_steps.json",
+        "config/scaling_gates/prim_clock_gating_sync_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_clock_gating_sync_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_subreg_ext",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "fifty_seventh_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_subreg_ext_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_subreg_ext.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_subreg_ext.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_subreg_ext_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_subreg_ext_coverage_regions.json",
+      "host_probe_target": "prim_subreg_ext_host_probe",
+      "planned_parameters": {
+        "DW": 8
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_subreg_ext_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_subreg_ext_repeated_steps.json",
+        "config/scaling_gates/prim_subreg_ext_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_subreg_ext_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_subreg",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "fifty_eighth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_subreg_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_subreg.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_subreg.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_subreg_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_subreg_coverage_regions.json",
+      "host_probe_target": "prim_subreg_host_probe",
+      "planned_parameters": {
+        "DW": 8,
+        "SwAccess": "SwAccessRW",
+        "RESVAL": "8h00",
+        "Mubi": false
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_subreg_source_gate.json",
+      "reason": "Fifty-eighth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed DW=8 SwAccessRW RESVAL=0 Mubi=0 register-slice behavior while other software access modes, Mubi arbitration, shadow-register behavior, hardware update priority beyond the fixed RW wrapper, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader CSR/register or OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_subreg_repeated_steps.json",
+        "config/scaling_gates/prim_subreg_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_subreg_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_subreg_arb",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "fifty_ninth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_subreg_arb_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_subreg_arb.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_subreg_arb.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_subreg_arb_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_subreg_arb_coverage_regions.json",
+      "host_probe_target": "prim_subreg_arb_host_probe",
+      "planned_parameters": {
+        "DW": 8,
+        "SwAccess": "SwAccessRW",
+        "Mubi": false
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_subreg_arb_source_gate.json",
+      "reason": "Fifty-ninth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed DW=8 SwAccessRW Mubi=0 write-enable/write-data arbitration while other software access modes, Mubi arbitration, stateful register behavior beyond the active prim_subreg wrapper, shadow-register behavior, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader CSR/register or OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_subreg_arb_repeated_steps.json",
+        "config/scaling_gates/prim_subreg_arb_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_subreg_arb_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_reg_we_check",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "sixtieth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_reg_we_check_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_reg_we_check.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_reg_we_check.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_reg_we_check_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_reg_we_check_coverage_regions.json",
+      "host_probe_target": "prim_reg_we_check_host_probe",
+      "planned_parameters": {
+        "OneHotWidth": 4,
+        "EnableCheck": 1,
+        "AddrCheck": 0,
+        "StrictCheck": 0
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_reg_we_check_source_gate.json"
+    },
+    {
+      "name": "prim_diff_decode",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "sixty_first_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_diff_decode_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_diff_decode.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_diff_decode.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_diff_decode_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_diff_decode_coverage_regions.json",
+      "host_probe_target": "prim_diff_decode_host_probe",
+      "planned_parameters": {
+        "AsyncOn": 0,
+        "Width": 1,
+        "path": "synchronous_diff_pair_decode"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_diff_decode_source_gate.json"
+    },
+    {
+      "name": "prim_intr_hw",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "sixty_second_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_intr_hw_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_intr_hw.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_intr_hw.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_intr_hw_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_intr_hw_coverage_regions.json",
+      "host_probe_target": "prim_intr_hw_host_probe",
+      "planned_parameters": {
+        "Width": 1,
+        "IntrT": "Event",
+        "FlopOutput": 1,
+        "path": "single_event_interrupt_state"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_intr_hw_source_gate.json"
+    },
+    {
+      "name": "prim_fifo_sync_cnt",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "sixty_third_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_fifo_sync_cnt_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_fifo_sync_cnt.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_fifo_sync_cnt.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_fifo_sync_cnt_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_fifo_sync_cnt_coverage_regions.json",
+      "host_probe_target": "prim_fifo_sync_cnt_host_probe",
+      "planned_parameters": {
+        "Depth": 4,
+        "Secure": 0,
+        "path": "normal_wrap_pointer_counter"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_fifo_sync_cnt_source_gate.json",
+      "reason": "Sixty-third active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to Depth=4 Secure=0 normal wrap-pointer/depth counter behavior while Secure=1 hardened counters, other FIFO depths, full FIFO data path behavior, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_fifo_sync_cnt_repeated_steps.json",
+        "config/scaling_gates/prim_fifo_sync_cnt_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_fifo_sync_cnt_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_hamming_22_16_dec",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "sixty_fourth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_secded_hamming_22_16_dec_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_hamming_22_16_dec.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_22_16_dec.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_22_16_dec_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_hamming_22_16_dec_coverage_regions.json",
+      "host_probe_target": "prim_secded_hamming_22_16_dec_host_probe",
+      "planned_parameters": {
+        "DataWidth": 16,
+        "CodeWidth": 22,
+        "path": "fixed_22_16_hamming_secded_decode"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_hamming_22_16_dec_source_gate.json",
+      "reason": "Sixty-fourth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed 22-to-16 hamming SECDED decoder behavior while exhaustive correction/syndrome classification, other decoder widths, inverse variants, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_hamming_22_16_dec_repeated_steps.json",
+        "config/scaling_gates/prim_secded_hamming_22_16_dec_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_hamming_22_16_dec_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_22_16_dec",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "sixty_fifth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_22_16_dec_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_22_16_dec.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_22_16_dec.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_22_16_dec_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_22_16_dec_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_22_16_dec_host_probe",
+      "planned_parameters": {
+        "DataWidth": 16,
+        "CodeWidth": 22,
+        "path": "fixed_22_16_inverse_secded_decode"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_22_16_dec_source_gate.json",
+      "reason": "Sixty-fifth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed 22-to-16 inverse SECDED decoder behavior while exhaustive correction/syndrome classification, hamming variants, other decoder widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_22_16_dec_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_22_16_dec_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_22_16_dec_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_hamming_22_16_dec",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "sixty_sixth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_hamming_22_16_dec_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_hamming_22_16_dec.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_22_16_dec.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_22_16_dec_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_hamming_22_16_dec_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_hamming_22_16_dec_host_probe",
+      "planned_parameters": {
+        "DataWidth": 16,
+        "CodeWidth": 22,
+        "path": "fixed_22_16_inverse_hamming_secded_decode"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_hamming_22_16_dec_source_gate.json",
+      "reason": "Sixty-sixth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed 22-to-16 inverse hamming SECDED decoder behavior while exhaustive correction/syndrome classification, non-hamming variants, other decoder widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_hamming_22_16_dec_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_hamming_22_16_dec_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_hamming_22_16_dec_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_28_22_dec",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "sixty_seventh_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_28_22_dec_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_28_22_dec.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_28_22_dec.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_28_22_dec_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_28_22_dec_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_28_22_dec_host_probe",
+      "planned_parameters": {
+        "DataWidth": 22,
+        "CodeWidth": 28,
+        "path": "fixed_28_22_inverse_secded_decode"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_28_22_dec_source_gate.json",
+      "reason": "Sixty-seventh active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed 28-to-22 inverse SECDED decoder behavior while exhaustive correction/syndrome classification, hamming variants, other decoder widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_28_22_dec_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_28_22_dec_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_28_22_dec_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_39_32_dec",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "sixty_eighth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_39_32_dec_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_39_32_dec.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_39_32_dec.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_39_32_dec_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_39_32_dec_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_39_32_dec_host_probe",
+      "planned_parameters": {
+        "DataWidth": 32,
+        "CodeWidth": 39,
+        "path": "fixed_39_32_inverse_secded_decode"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_39_32_dec_source_gate.json",
+      "reason": "Sixty-eighth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed 39-to-32 inverse SECDED decoder behavior while exhaustive correction/syndrome classification, hamming variants, other decoder widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_39_32_dec_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_39_32_dec_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_39_32_dec_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_hamming_39_32_dec",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "sixty_ninth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_hamming_39_32_dec_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_hamming_39_32_dec.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_39_32_dec.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_hamming_39_32_dec_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_hamming_39_32_dec_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_hamming_39_32_dec_host_probe",
+      "planned_parameters": {
+        "DataWidth": 32,
+        "CodeWidth": 39,
+        "path": "fixed_39_32_inverse_hamming_secded_decode"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_hamming_39_32_dec_source_gate.json",
+      "reason": "Sixty-ninth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed 39-to-32 inverse hamming SECDED decoder behavior while exhaustive correction/syndrome classification, non-hamming variants, other decoder widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_hamming_39_32_dec_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_hamming_39_32_dec_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_hamming_39_32_dec_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_hamming_76_68_dec",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "seventieth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_secded_hamming_76_68_dec_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_hamming_76_68_dec.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_76_68_dec.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_hamming_76_68_dec_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_hamming_76_68_dec_coverage_regions.json",
+      "host_probe_target": "prim_secded_hamming_76_68_dec_host_probe",
+      "planned_parameters": {
+        "DataWidth": 68,
+        "CodeWidth": 76,
+        "path": "fixed_76_68_hamming_secded_decode"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_hamming_76_68_dec_source_gate.json",
+      "reason": "Seventieth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed 76-to-68 hamming SECDED decoder behavior while exhaustive correction/syndrome classification, inverse variants, other decoder widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_hamming_76_68_dec_repeated_steps.json",
+        "config/scaling_gates/prim_secded_hamming_76_68_dec_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_hamming_76_68_dec_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_64_57_dec",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "seventy_first_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_64_57_dec_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_64_57_dec.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_64_57_dec.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_64_57_dec_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_64_57_dec_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_64_57_dec_host_probe",
+      "planned_parameters": {
+        "DataWidth": 57,
+        "CodeWidth": 64,
+        "path": "fixed_64_57_inverse_secded_decode"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_64_57_dec_source_gate.json",
+      "reason": "Seventy-first active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed 64-to-57 inverse SECDED decoder behavior while exhaustive correction/syndrome classification, hamming variants, other decoder widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_64_57_dec_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_64_57_dec_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_64_57_dec_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_secded_inv_72_64_dec",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "seventy_second_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_secded_inv_72_64_dec_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_secded_inv_72_64_dec.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_72_64_dec.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_secded_inv_72_64_dec_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_secded_inv_72_64_dec_coverage_regions.json",
+      "host_probe_target": "prim_secded_inv_72_64_dec_host_probe",
+      "planned_parameters": {
+        "DataWidth": 64,
+        "CodeWidth": 72,
+        "path": "fixed_72_64_inverse_secded_decode"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_secded_inv_72_64_dec_source_gate.json",
+      "reason": "Seventy-second active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed 72-to-64 inverse SECDED decoder behavior while exhaustive correction/syndrome classification, hamming variants, other decoder widths, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_secded_inv_72_64_dec_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_72_64_dec_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_secded_inv_72_64_dec_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_sparse_fsm_flop",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "seventy_third_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_sparse_fsm_flop_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_sparse_fsm_flop.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_sparse_fsm_flop.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_sparse_fsm_flop_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_sparse_fsm_flop_coverage_regions.json",
+      "host_probe_target": "prim_sparse_fsm_flop_host_probe",
+      "planned_parameters": {
+        "Width": 8,
+        "ResetValue": "8'h3c",
+        "EnableAlertTriggerSVA": 0
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_sparse_fsm_flop_source_gate.json",
+      "reason": "Seventy-third active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=8 sparse FSM flop reset/pass-through behavior with assertion trigger proof disabled while sparse encoding proof, alert-trigger SVA integration, undefined-state checks, custom force behavior, all parameterizations, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_sparse_fsm_flop_repeated_steps.json",
+        "config/scaling_gates/prim_sparse_fsm_flop_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_sparse_fsm_flop_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_clock_timeout",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "seventy_fourth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_clock_timeout_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_clock_timeout.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_clock_timeout.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_clock_timeout_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_clock_timeout_coverage_regions.json",
+      "host_probe_target": "prim_clock_timeout_host_probe",
+      "planned_parameters": {
+        "TimeOutCnt": 4,
+        "CntWidth": "prim_util_pkg::vbits(TimeOutCnt+1)",
+        "clocking": "generated clk_i plus generated clk_chk_i"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_clock_timeout_source_gate.json",
+      "reason": "Seventy-fourth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed TimeOutCnt=4 timeout counter/ack behavior while arbitrary clock ratios, CDC correctness, metastability behavior, reset assertion proof, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_clock_timeout_repeated_steps.json",
+        "config/scaling_gates/prim_clock_timeout_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_clock_timeout_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_pad_attr",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "seventy_fifth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_pad_attr_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_pad_attr.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_pad_attr.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_pad_attr_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_pad_attr_coverage_regions.json",
+      "host_probe_target": "prim_pad_attr_host_probe",
+      "planned_parameters": {
+        "PadType": "BidirStd",
+        "Impl": "ImplGeneric"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_pad_attr_source_gate.json",
+      "reason": "Seventy-fifth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to generic BidirStd pad attribute WARL output while vendor implementations, electrical behavior, all PadType values, assertion-policy proof, raw full-state equality, zero-initialized GPU correctness, and broader OpenTitan primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_pad_attr_repeated_steps.json",
+        "config/scaling_gates/prim_pad_attr_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_pad_attr_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xoshiro256pp",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "seventy_sixth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xoshiro256pp_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xoshiro256pp.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xoshiro256pp.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xoshiro256pp_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xoshiro256pp_coverage_regions.json",
+      "host_probe_target": "prim_xoshiro256pp_host_probe",
+      "planned_parameters": {
+        "OutputDw": 64,
+        "DefaultSeed": "256'h1"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_xoshiro256pp_source_gate.json",
+      "reason": "Seventy-sixth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed OutputDw=64 nonzero-seed PRNG coverage-output behavior while randomness quality, full XoShiRo proof, arbitrary parameterizations, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xoshiro256pp_repeated_steps.json",
+        "config/scaling_gates/prim_xoshiro256pp_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xoshiro256pp_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_rom",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "seventy_seventh_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_rom_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_rom.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_rom.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_rom_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_rom_coverage_regions.json",
+      "host_probe_target": "prim_rom_host_probe",
+      "planned_parameters": {
+        "Width": 32,
+        "Depth": 16,
+        "MemInitFile": "",
+        "Impl": "ImplGeneric",
+        "verilator_define": "SYNTHESIS"
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_rom_source_gate.json",
+      "reason": "Seventy-seventh active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=32 Depth=16 generic ROM behavior with -DSYNTHESIS excluding DPI memload while VMEM loading, vendor ROMs, arbitrary dimensions, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_rom_repeated_steps.json",
+        "config/scaling_gates/prim_rom_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_rom_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_and2",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "seventy_eighth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_and2_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_and2.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_and2.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_and2_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_and2_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_and2_host_probe",
+      "planned_parameters": {
+        "Width": 8
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_and2_source_gate.json",
+      "reason": "Seventy-eighth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=8 Xilinx wrapper AND coverage-output behavior while Vivado DONT_TOUCH semantics, FPGA mapping, arbitrary widths, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_and2_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_and2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_and2_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_buf",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "seventy_ninth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_buf_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_buf.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_buf.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_buf_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_buf_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_buf_host_probe",
+      "planned_parameters": {
+        "Width": 8
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_buf_source_gate.json",
+      "reason": "Seventy-ninth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=8 Xilinx wrapper buffer coverage-output behavior while Vivado DONT_TOUCH semantics, FPGA mapping, arbitrary widths, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_buf_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_buf_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_buf_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_xor2",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "eightieth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_xor2_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_xor2.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_xor2.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_xor2_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_xor2_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_xor2_host_probe",
+      "planned_parameters": {
+        "Width": 8
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_xor2_source_gate.json",
+      "reason": "Eightieth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=8 Xilinx wrapper XOR coverage-output behavior while Vivado DONT_TOUCH semantics, FPGA mapping, arbitrary widths, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_xor2_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_xor2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_xor2_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_xnor2",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "eighty_first_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_xnor2_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_xnor2.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_xnor2.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_xnor2_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_xnor2_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_xnor2_host_probe",
+      "planned_parameters": {
+        "Width": 8
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_xnor2_source_gate.json",
+      "reason": "Eighty-first active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=8 Xilinx wrapper XNOR coverage-output behavior while Vivado DONT_TOUCH semantics, FPGA mapping, arbitrary widths, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_xnor2_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_xnor2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_xnor2_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_clock_buf",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "eighty_second_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_clock_buf_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_clock_buf.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_clock_buf.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_clock_buf_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_clock_buf_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_clock_buf_host_probe",
+      "planned_parameters": {
+        "NoFpgaBuf": true,
+        "RegionSel": false
+      },
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_clock_buf_source_gate.json",
+      "reason": "Eighty-second active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to NoFpgaBuf=1 Xilinx clock buffer assign-path coverage-output behavior while BUFG/BUFR FPGA paths, clock-tree correctness, glitch-free clocking proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_clock_buf_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_clock_buf_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_clock_buf_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_clock_mux2",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "eighty_third_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_clock_mux2_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_clock_mux2.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_clock_mux2.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_clock_mux2_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_clock_mux2_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_clock_mux2_host_probe",
+      "planned_parameters": {
+        "NoFpgaBufG": true
+      },
+      "reason": "Eighty-third active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to Xilinx clock mux NoFpgaBufG=1 assign-path behavior while BUFGMUX FPGA path, clock-tree correctness, glitch-free clocking proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_clock_mux2_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_clock_mux2_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_clock_mux2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_clock_mux2_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_clock_gating",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "eighty_fourth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_clock_gating_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_clock_gating.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_clock_gating.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_clock_gating_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_clock_gating_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_clock_gating_host_probe",
+      "planned_parameters": {
+        "NoFpgaGate": true,
+        "FpgaBufGlobal": true
+      },
+      "reason": "Eighty-fourth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to Xilinx clock gating NoFpgaGate=1 assign-path behavior while BUFGCE/BUFHCE FPGA paths, enable-latch semantics, glitch-free clock-gating proof, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_clock_gating_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_clock_gating_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_clock_gating_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_clock_gating_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_ultrascale_clock_inv",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "eighty_fifth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_clock_inv_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_clock_inv.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_inv.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_inv_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_clock_inv_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_clock_inv_host_probe",
+      "planned_parameters": {
+        "HasScanMode": true,
+        "NoFpgaBufG": true,
+        "scanmode_i": false
+      },
+      "reason": "Eighty-fifth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to Ultrascale Xilinx clock inverter HasScanMode=1 scanmode_i=0 NoFpgaBufG=1 assign-path behavior while BUFGCTRL/BUFGCE FPGA paths, scanmode bypass behavior, clock-tree correctness, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_clock_inv_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_ultrascale_clock_inv_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_clock_inv_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_clock_inv_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_ultrascale_and2",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "eighty_sixth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_and2_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_and2.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_and2.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_and2_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_and2_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_and2_host_probe",
+      "planned_parameters": {
+        "Width": 8
+      },
+      "reason": "Eighty-sixth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=8 Ultrascale Xilinx wrapper AND behavior while Vivado DONT_TOUCH semantics, Ultrascale FPGA implementation mapping, arbitrary widths, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_and2_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_ultrascale_and2_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_and2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_and2_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_ultrascale_buf",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "eighty_seventh_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_buf_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_buf.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_buf.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_buf_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_buf_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_buf_host_probe",
+      "planned_parameters": {
+        "Width": 8
+      },
+      "reason": "Eighty-seventh active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=8 Ultrascale Xilinx wrapper buffer behavior while Vivado DONT_TOUCH semantics, Ultrascale FPGA implementation mapping, arbitrary widths, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_buf_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_ultrascale_buf_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_buf_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_buf_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_ultrascale_xor2",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "eighty_eighth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_xor2_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_xor2.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_xor2.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_xor2_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_xor2_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_xor2_host_probe",
+      "planned_parameters": {
+        "Width": 8
+      },
+      "reason": "Eighty-eighth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=8 Ultrascale Xilinx wrapper XOR behavior while Vivado DONT_TOUCH semantics, Ultrascale FPGA implementation mapping, arbitrary widths, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_xor2_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_ultrascale_xor2_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_xor2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_xor2_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_ultrascale_xnor2",
+      "status": "active",
+      "family": "OpenTitan primitive",
+      "role": "eighty_ninth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_xnor2_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_xnor2.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_xnor2.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_xnor2_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_xnor2_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_xnor2_host_probe",
+      "planned_parameters": {
+        "Width": 8
+      },
+      "reason": "Eighty-ninth active OpenTitan primitive seed promoted after first-pass and candidate depth coverage-output equivalence passed; scoped to fixed Width=8 Ultrascale Xilinx wrapper XNOR behavior while Vivado DONT_TOUCH semantics, Ultrascale FPGA implementation mapping, arbitrary widths, raw full-state equality, zero-initialized GPU correctness, and broader primitive-family support remain outside the claim.",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_xnor2_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_ultrascale_xnor2_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_xnor2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_xnor2_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_ultrascale_clock_buf",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "ninetieth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_clock_buf_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_clock_buf.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_buf.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_buf_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_clock_buf_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_clock_buf_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_clock_buf_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_ultrascale_clock_buf_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_clock_buf_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_clock_buf_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_ultrascale_clock_mux2",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "ninety_first_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_clock_mux2_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_clock_mux2.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_mux2.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_mux2_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_clock_mux2_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_clock_mux2_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_clock_mux2_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_ultrascale_clock_mux2_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_clock_mux2_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_clock_mux2_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_ultrascale_clock_gating",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "ninety_second_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_clock_gating_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_clock_gating.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_gating.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_gating_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_clock_gating_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_clock_gating_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_clock_gating_source_gate.json",
+      "depth_gate_paths": [
+        "config/scaling_gates/prim_xilinx_ultrascale_clock_gating_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_clock_gating_cpu_exact_loop_repeated_steps.json",
+        "config/scaling_gates/prim_xilinx_ultrascale_clock_gating_coverage_output_depth.json"
+      ]
+    },
+    {
+      "name": "prim_xilinx_ultrascale_flop",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "ninety_third_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_flop_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_flop.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_flop.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_flop_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_flop_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_flop_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_flop_source_gate.json"
+    },
+    {
+      "name": "prim_xilinx_ultrascale_flop_en",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "ninety_fourth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_flop_en_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_flop_en.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_flop_en.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_flop_en_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_flop_en_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_flop_en_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_flop_en_source_gate.json"
+    },
+    {
+      "name": "prim_xilinx_ultrascale_pad_attr",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "ninety_fifth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_pad_attr_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_pad_attr.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_pad_attr.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_pad_attr_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_pad_attr_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_pad_attr_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_pad_attr_source_gate.json"
+    },
+    {
+      "name": "prim_xilinx_ultrascale_clock_div",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "ninety_sixth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_clock_div_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_clock_div.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_div.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_clock_div_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_clock_div_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_clock_div_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_clock_div_source_gate.json"
+    },
+    {
+      "name": "prim_xilinx_ultrascale_ram_1p",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "ninety_seventh_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_ram_1p_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ultrascale_ram_1p.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_ram_1p.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ultrascale_ram_1p_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ultrascale_ram_1p_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ultrascale_ram_1p_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ultrascale_ram_1p_source_gate.json"
+    },
+    {
+      "name": "prim_xilinx_ram_1p",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "ninety_eighth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_ram_1p_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_ram_1p.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_ram_1p.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_ram_1p_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_ram_1p_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_ram_1p_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_ram_1p_coverage_output_depth.json",
+      "promotion_report": "reports/prim_xilinx_ram_1p_coverage_output_depth.json"
+    },
+    {
+      "name": "prim_xilinx_pad_attr",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "ninety_ninth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_pad_attr_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_pad_attr.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_pad_attr.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_pad_attr_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_pad_attr_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_pad_attr_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_pad_attr_coverage_output_depth.json",
+      "promotion_report": "reports/prim_xilinx_pad_attr_coverage_output_depth.json"
+    },
+    {
+      "name": "prim_xilinx_flop",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "one_hundredth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_flop_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_flop.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_flop.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_flop_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_flop_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_flop_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_flop_coverage_output_depth.json",
+      "promotion_report": "reports/prim_xilinx_flop_coverage_output_depth.json"
+    },
+    {
+      "name": "prim_xilinx_flop_en",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "one_hundred_first_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_xilinx_flop_en_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_xilinx_flop_en.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_xilinx_flop_en.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_xilinx_flop_en_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_xilinx_flop_en_coverage_regions.json",
+      "host_probe_target": "prim_xilinx_flop_en_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_xilinx_flop_en_coverage_output_depth.json",
+      "promotion_report": "reports/prim_xilinx_flop_en_coverage_output_depth.json"
+    },
+    {
+      "name": "prim_generic_flop_en",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "one_hundred_second_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_generic_flop_en_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_generic_flop_en.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop_en.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_generic_flop_en_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_generic_flop_en_coverage_regions.json",
+      "host_probe_target": "prim_generic_flop_en_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_generic_flop_en_coverage_output_depth.json",
+      "promotion_report": "reports/prim_generic_flop_en_coverage_output_depth.json"
+    },
+    {
+      "name": "prim_generic_flop",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "one_hundred_third_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_generic_flop_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_generic_flop.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_flop.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_generic_flop_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_generic_flop_coverage_regions.json",
+      "host_probe_target": "prim_generic_flop_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_generic_flop_coverage_output_depth.json",
+      "promotion_report": "reports/prim_generic_flop_coverage_output_depth.json"
+    },
+    {
+      "name": "prim_generic_buf",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "one_hundred_fourth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_generic_buf_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_generic_buf.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_buf.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_generic_buf_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_generic_buf_coverage_regions.json",
+      "host_probe_target": "prim_generic_buf_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_generic_buf_coverage_output_depth.json",
+      "promotion_report": "reports/prim_generic_buf_coverage_output_depth.json"
+    },
+    {
+      "name": "prim_generic_and2",
+      "family": "OpenTitan primitive",
+      "status": "active",
+      "role": "one_hundred_fifth_active_primitive_seed",
+      "source_gate_path": "config/scaling_gates/prim_generic_and2_source_gate.json",
+      "launch_template_path": "config/slice_launch_templates/prim_generic_and2.json",
+      "upstream_module_path": "third_party/rtlmeter/designs/OpenTitan/src/prim_generic_and2.sv",
+      "coverage_tb_path": "overlays/rtlmeter/designs/OpenTitan/src/prim_generic_and2_gpu_cov_tb.sv",
+      "coverage_manifest_path": "overlays/rtlmeter/designs/OpenTitan/tests/prim_generic_and2_coverage_regions.json",
+      "host_probe_target": "prim_generic_and2_host_probe",
+      "coverage_output_gate_path": "config/scaling_gates/prim_generic_and2_coverage_output_depth.json",
+      "promotion_report": "reports/prim_generic_and2_coverage_output_depth.json"
     }
-  ]
+  ],
+  "candidate_targets": [],
+  "archived_targets_manifest": "config/archived_targets.json"
 }

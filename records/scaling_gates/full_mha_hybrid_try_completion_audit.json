@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "gate": "full_mha_hybrid_try_completion_audit",
+  "objective": "Full MHAをhybridでトライする",
+  "status": "passed_full_mha_hybrid_try_with_current_template_and_coverage_output_equivalence",
+  "current_priority": "hold_for_review_after_full_mha_hybrid_try_completion_audit",
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "Use the Full MHA RTL/harness target, not only dotp or softmax sub-blocks.",
+      "evidence": [
+        "config/slice_launch_templates/pulp_ita_mha.json",
+        "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+        "third_party/ITA/src/ita.sv",
+        "third_party/ITA/src/ita_softmax_top.sv",
+        "third_party/ITA/src/ita_dotp.sv"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "The Full MHA template is runnable through the Verilator-like hybrid flow.",
+      "evidence": [
+        "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1 --dry-run",
+        "dry-run uses python3 src/tools/build_host_probe.py instead of Makefile-only host-probe glue"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "Host-probe build works for the Full MHA obj_dir.",
+      "evidence": [
+        "python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_mha.json",
+        "build exited with code 0",
+        "artifacts/pulp_ita_mha_obj_dir/tlul_slice_host_probe"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "Hybrid execution was actually attempted for Full MHA.",
+      "evidence": [
+        "python3 src/tools/run_vl_hybrid.py --mdir artifacts/pulp_ita_mha_obj_dir --nstates 1 --steps 1 --init-state artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_cpu_repeat_1x1.bin --sanitize-host-only-internals --dump-state artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_gpu_from_cpu_init_1x1.bin",
+        "reports/pulp_ita_mha_hybrid_1x1.txt",
+        "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_gpu_from_cpu_init_1x1.bin"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "CPU vs hybrid comparison uses coverage-output equivalence and passes.",
+      "evidence": [
+        "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+        "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+        "coverage_output_policy.passed=true",
+        "selected_acceptance_policy.name=coverage_output_equivalence",
+        "mismatch_count=0 for coverage-output words"
+      ],
+      "covered": true
+    },
+    {
+      "requirement": "The result is scoped honestly and does not claim raw full-state equality or production MHA performance.",
+      "evidence": [
+        "config/slice_launch_templates/pulp_ita_mha.json non_claims",
+        "config/scaling_gates/neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json acceptance_policy.speedup_claim_allowed_by_gate_alone=false",
+        "compare reports show raw match=false but coverage-output equivalence passed"
+      ],
+      "covered": true
+    }
+  ],
+  "verified_commands": [
+    {
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1 --dry-run",
+      "result": "pass"
+    },
+    {
+      "command": "python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_mha.json",
+      "result": "pass"
+    },
+    {
+      "command": "artifacts/pulp_ita_mha_obj_dir/tlul_slice_host_probe --repeat-states 1 --repeat-eval-steps 1 ... --repeat-state-out artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_cpu_repeat_1x1.bin",
+      "result": "pass"
+    },
+    {
+      "command": "python3 src/tools/run_vl_hybrid.py --mdir artifacts/pulp_ita_mha_obj_dir --nstates 1 --steps 1 ... --dump-state artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_gpu_from_cpu_init_1x1.bin",
+      "result": "pass"
+    },
+    {
+      "command": "python3 src/tools/compare_vl_hybrid_modes.py artifacts/pulp_ita_mha_obj_dir --compare-dumps ... --acceptance-policy coverage_output_equivalence --coverage-output-target pulp_ita_mha",
+      "result": "pass",
+      "observed": "coverage_output_policy.passed=true, mismatch_count=0"
+    }
+  ],
+  "non_claims": [
+    "not raw full-state equality",
+    "not production MHA throughput",
+    "not model-level Transformer inference",
+    "not a broad modern-NN speedup claim",
+    "32x1 and 1x32 evidence is re-compared from existing state dumps; the fresh hybrid execution in this audit is 1x1"
+  ],
+  "next_task": "review_full_mha_hybrid_try_or_select_next_mha_scaleup"
+}
