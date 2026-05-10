@@ -107,10 +107,10 @@ Next workstream review gate:
 ITA dependency clean-checkout boundary gate:
 
 - `config/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json`
-- status: dependency boundary defined before import or measurement
-- current observation: `.gitmodules` only contains `third_party/rtlmeter`; local untracked `third_party/ITA` and `third_party/common_cells` must not be treated as canonical source
-- required before ITA measurement: make `third_party/ITA` and `third_party/common_cells` canonical dependencies, validate required source paths in a clean-checkout contract, keep repo-specific harnesses under `overlays/ITA`, and select exactly one first ITA seed
-- non-claim: this is not an ITA import implementation, ITA build/run/compare result, or approval to recursively import all Bender dependencies
+- status: `third_party/ITA` and `third_party/common_cells` are canonical gitlink submodules in `.gitmodules`
+- pinned commits: ITA `ba96519becce195d64e85eb9a5302e8a1d5487e7`, common_cells `c27bce39ebb2e6bae52f60960814a2afca7bd4cb`
+- required before ITA measurement: validate required source paths in a clean-checkout contract, keep repo-specific harnesses under `overlays/ITA`, and select exactly one first ITA seed
+- non-claim: this is not an ITA build/run/compare result or approval to recursively import all Bender dependencies
 
 Config minimization audit:
 
@@ -260,26 +260,29 @@ Tracked evidence:
 
 Recommended next gate:
 
-`implement_canonical_ita_common_cells_dependency_boundary`
+`select_one_first_ita_seed_after_dependency_boundary`
 
 Acceptance criteria:
 
-- implement the selected canonical dependency boundary for `third_party/ITA` and `third_party/common_cells`
-- add a clean-checkout-oriented contract test for the required dependency paths
-- keep local untracked dependency directories from becoming implicit source of truth
+- choose exactly one first ITA seed, either `ita_dotp` or `ita_softmax_top`
+- keep the first ITA measurement gate separate from the dependency boundary
+- validate required source paths through the canonical submodules
 - keep recursive Bender dependencies out unless a narrow requirement is recorded
-- keep ITA build/run/compare work in a later gate
+- keep full MHA, KV-cache, LLM SoC, and MobileViT out of the first ITA seed gate
 
 Working tree review boundary:
 
-`next_task: implement_canonical_ita_common_cells_dependency_boundary`
+`next_task: select_one_first_ita_seed_after_dependency_boundary`
 
-Review only the canonical dependency-boundary implementation for ITA/common_cells. Do not mix in ITA measurement, runtime changes, or generated outputs.
+Review only the first ITA seed selection. Do not mix in ITA measurement, runtime changes, or generated outputs.
 
 Review/stage boundary:
 
 - `docs/roadmap.md`
 - `docs/status.md`
+- `.gitmodules`
+- `third_party/ITA`
+- `third_party/common_cells`
 - `records/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json`
 - `records/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json`
 - `records/scaling_gates/candidate_template_clean_checkout_selection_gate.json`
@@ -310,7 +313,7 @@ Boundary acceptance:
 - minimal build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
 - shape expansion gate records `8x1`, `32x1`, and `8x4` coverage-output pass with mismatch count `0`
 - next workstream review selects `ita_dependency_clean_checkout_boundary`
-- ITA dependency boundary gate records that `.gitmodules` currently contains only `third_party/rtlmeter`
+- ITA dependency boundary gate records canonical `.gitmodules` entries and gitlinks for `third_party/ITA` and `third_party/common_cells`
 - the NVDLA `cmac_core_mac` template references only present source files
 - the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
 - `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command

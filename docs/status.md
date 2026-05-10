@@ -18,7 +18,7 @@ NVDLA shape expansion state: `config/scaling_gates/nvdla_cmac_core_mac_template_
 
 Next workstream review state: `config/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json` selects `ita_dependency_clean_checkout_boundary` next. The weaker point is that this is larger than continuing to the NVDLA `a2cacc` secondary candidate, but it addresses the actual blocker before ITA, attention, softmax, MHA, or KV-cache RTL work: making `third_party/ITA` and `third_party/common_cells` canonical and reproducible in clean checkout. This review does not add a new active seed measurement.
 
-ITA dependency boundary state: `config/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json` defines the boundary before import or measurement. Current `.gitmodules` only records `third_party/rtlmeter`, so local untracked `third_party/ITA` or `third_party/common_cells` directories are not source of truth. The next implementation task is to make ITA and common_cells canonical dependencies, then pick exactly one first ITA seed in a later measurement gate.
+ITA dependency boundary state: `config/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json` now makes `third_party/ITA` and `third_party/common_cells` canonical gitlink submodules in `.gitmodules`, pinned to the previously recorded commits. This is still not an ITA build/run/compare result; the next task is to pick exactly one first ITA seed, such as `ita_dotp` or `ita_softmax_top`, in a later measurement gate.
 
 ## Goal
 

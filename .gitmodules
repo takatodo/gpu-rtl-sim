@@ -1,3 +1,9 @@
 [submodule "third_party/rtlmeter"]
 	path = third_party/rtlmeter
 	url = https://github.com/verilator/rtlmeter.git
+[submodule "third_party/ITA"]
+	path = third_party/ITA
+	url = https://github.com/pulp-platform/ITA.git
+[submodule "third_party/common_cells"]
+	path = third_party/common_cells
+	url = https://github.com/pulp-platform/common_cells.git

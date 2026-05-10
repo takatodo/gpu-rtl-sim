@@ -841,16 +841,19 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         )
         gitmodules = (REPO_ROOT / ".gitmodules").read_text(encoding="utf-8")
 
-        self.assertEqual(gate["status"], "defined_dependency_boundary_before_import_or_measurement")
+        self.assertEqual(gate["status"], "implemented_canonical_dependency_boundary_before_measurement")
         self.assertEqual(
             gate["source_review_gate"],
             "config/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json",
         )
-        self.assertEqual(gate["current_clean_checkout_observation"]["gitmodules_contains_only"], ["third_party/rtlmeter"])
-        self.assertFalse(gate["current_clean_checkout_observation"]["third_party_ita_is_currently_canonical"])
-        self.assertFalse(gate["current_clean_checkout_observation"]["third_party_common_cells_is_currently_canonical"])
+        self.assertEqual(
+            gate["current_clean_checkout_observation"]["gitmodules_contains"],
+            ["third_party/rtlmeter", "third_party/ITA", "third_party/common_cells"],
+        )
+        self.assertTrue(gate["current_clean_checkout_observation"]["third_party_ita_is_currently_canonical"])
+        self.assertTrue(gate["current_clean_checkout_observation"]["third_party_common_cells_is_currently_canonical"])
         self.assertIn(
-            "Do not treat local untracked third_party/ITA or third_party/common_cells contents as source of truth.",
+            "canonical only through their .gitmodules entries and gitlink commits",
             gate["current_clean_checkout_observation"]["policy"],
         )
         required = {
@@ -866,22 +869,35 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             gate["selected_boundary"]["first_allowed_seed_after_boundary"],
             "one of ita_dotp or ita_softmax_top, not both in the same measurement gate",
         )
-        self.assertTrue(gate["acceptance_policy"]["define_only"])
-        self.assertFalse(gate["acceptance_policy"]["dependency_import_performed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["define_only"])
+        self.assertTrue(gate["acceptance_policy"]["dependency_import_performed_by_this_gate"])
         self.assertFalse(gate["acceptance_policy"]["ita_measurement_allowed_by_this_gate"])
         self.assertFalse(gate["acceptance_policy"]["speedup_claim_allowed_by_gate_alone"])
-        self.assertEqual(gate["next_task"], "implement_canonical_ita_common_cells_dependency_boundary")
-        self.assertIn("not an ITA import implementation", gate["non_claims"])
+        self.assertEqual(gate["implementation_result"]["status"], "canonical_gitlinks_added")
+        gitlinks = {entry["path"]: entry for entry in gate["implementation_result"]["gitlinks"]}
+        self.assertEqual(gitlinks["third_party/ITA"]["mode"], "160000")
+        self.assertEqual(gitlinks["third_party/ITA"]["commit"], "ba96519becce195d64e85eb9a5302e8a1d5487e7")
+        self.assertEqual(gitlinks["third_party/common_cells"]["mode"], "160000")
+        self.assertEqual(gitlinks["third_party/common_cells"]["commit"], "c27bce39ebb2e6bae52f60960814a2afca7bd4cb")
+        self.assertFalse(gate["implementation_result"]["measurement_performed"])
+        self.assertFalse(gate["implementation_result"]["runtime_or_pass_changes"])
+        self.assertEqual(gate["next_task"], "select_one_first_ita_seed_after_dependency_boundary")
         self.assertIn("not approval to recursively import all Bender dependencies", gate["non_claims"])
         self.assertIn("third_party/rtlmeter", gitmodules)
-        self.assertNotIn("third_party/ITA", gitmodules)
-        self.assertNotIn("third_party/common_cells", gitmodules)
+        self.assertIn("third_party/ITA", gitmodules)
+        self.assertIn("third_party/common_cells", gitmodules)
+        ls_files = subprocess.check_output(
+            ["git", "ls-files", "-s", "third_party/ITA", "third_party/common_cells"],
+            cwd=REPO_ROOT,
+            text=True,
+        )
+        self.assertIn("160000 ba96519becce195d64e85eb9a5302e8a1d5487e7", ls_files)
+        self.assertIn("160000 c27bce39ebb2e6bae52f60960814a2afca7bd4cb", ls_files)
 
         for token in (
             "ita_dependency_clean_checkout_boundary_gate.json",
-            "dependency boundary defined before import or measurement",
-            "`.gitmodules` only contains `third_party/rtlmeter`",
-            "next_task: implement_canonical_ita_common_cells_dependency_boundary",
+            "`third_party/ITA` and `third_party/common_cells` are canonical gitlink submodules",
+            "next_task: select_one_first_ita_seed_after_dependency_boundary",
         ):
             self.assertIn(token, combined_docs)
 
@@ -1477,11 +1493,14 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "nvdla_cmac_core_mac_template_shape_expansion_gate.json",
             "nvdla_shape_expansion_next_workstream_review_gate.json",
             "ita_dependency_clean_checkout_boundary_gate.json",
-            "next_task: implement_canonical_ita_common_cells_dependency_boundary",
-            "Review only the canonical dependency-boundary implementation for ITA/common_cells",
+            "next_task: select_one_first_ita_seed_after_dependency_boundary",
+            "Review only the first ITA seed selection",
             "Review/stage boundary:",
             "docs/roadmap.md",
             "docs/status.md",
+            ".gitmodules",
+            "third_party/ITA",
+            "third_party/common_cells",
             "records/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json",
             "records/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json",
             "records/scaling_gates/candidate_template_clean_checkout_selection_gate.json",
@@ -1505,7 +1524,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "candidate selection gate identifies `NVDLA.nvdla_cmac_core_mac` as primary",
             "minimal build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`",
             "next workstream review selects `ita_dependency_clean_checkout_boundary`",
-            "ITA dependency boundary gate records that `.gitmodules` currently contains only `third_party/rtlmeter`",
+            "ITA dependency boundary gate records canonical `.gitmodules` entries and gitlinks for `third_party/ITA` and `third_party/common_cells`",
             "the NVDLA `cmac_core_mac` template references only present source files",
             "the template carries `build.host_probe_builder: src/tools/build_host_probe.py`",
             "`run_hybrid_template.py` passes template `verilator_defines` into the Verilator command",

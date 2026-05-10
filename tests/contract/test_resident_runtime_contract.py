@@ -205,14 +205,18 @@ class ReducedActiveSurfaceContractTest(unittest.TestCase):
         self.assertEqual(untracked, [])
         self.assertEqual(absolute_paths, [])
 
-    def test_rtlmeter_is_the_only_third_party_submodule_boundary(self) -> None:
+    def test_canonical_third_party_submodule_boundaries_are_explicit(self) -> None:
         gitmodules = GITMODULES.read_text(encoding="utf-8")
 
         self.assertIn('[submodule "third_party/rtlmeter"]', gitmodules)
         self.assertIn("path = third_party/rtlmeter", gitmodules)
         self.assertIn("url = https://github.com/verilator/rtlmeter.git", gitmodules)
-        self.assertNotIn("third_party/ITA", gitmodules)
-        self.assertNotIn("third_party/common_cells", gitmodules)
+        self.assertIn('[submodule "third_party/ITA"]', gitmodules)
+        self.assertIn("path = third_party/ITA", gitmodules)
+        self.assertIn("url = https://github.com/pulp-platform/ITA.git", gitmodules)
+        self.assertIn('[submodule "third_party/common_cells"]', gitmodules)
+        self.assertIn("path = third_party/common_cells", gitmodules)
+        self.assertIn("url = https://github.com/pulp-platform/common_cells.git", gitmodules)
         self.assertNotIn("third_party/ibex", gitmodules)
 
     def test_generated_output_dirs_are_not_source_of_truth(self) -> None:
