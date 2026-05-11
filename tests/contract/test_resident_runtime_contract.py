@@ -66,11 +66,11 @@ class ReducedActiveSurfaceContractTest(unittest.TestCase):
         self.assertEqual(selection["top_level_goal"], "modern_llm_serving_rtl_hybrid_conditions")
         self.assertEqual(
             selection["current_priority"],
-            "review_paged_attention_kv_cache_timing_summary",
+            "define_public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json",
+            "config/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["persistent_resident_state_abi_repeat_median_gate"],
@@ -107,6 +107,10 @@ class ReducedActiveSurfaceContractTest(unittest.TestCase):
         self.assertEqual(
             selection["completed_goal_evidence"]["paged_attention_kv_cache_timing_summary_gate"],
             "config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json",
+        )
+        self.assertEqual(
+            selection["completed_goal_evidence"]["paged_attention_kv_cache_timing_summary_review_gate"],
+            "config/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json",
         )
         self.assertEqual(selection["candidate_targets"], [])
         self.assertEqual(selection["active_scope"]["candidate_targets"], [])

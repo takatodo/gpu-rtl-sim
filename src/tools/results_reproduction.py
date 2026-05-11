@@ -53,6 +53,7 @@ PUBLIC_PACK_ARCHIVE_PATHS = (
     "records/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json",
     "records/scaling_gates/paged_attention_kv_cache_scale_up_measurement_review_gate.json",
     "records/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json",
     "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
     "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
     "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
