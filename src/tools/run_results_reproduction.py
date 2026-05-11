@@ -9,6 +9,7 @@ from results_reproduction import (
     parse_resident_batch_states,
     run_median_measurements,
     run_mobile_vit_imagenet_128_reproduction,
+    run_paged_attention_kv_cache_repeat_median,
     run_public_pack_archive_plan,
     run_persistent_resident_state_abi_probe,
     run_persistent_resident_state_abi_repeat_median,
@@ -31,6 +32,15 @@ def main(argv: list[str] | None = None) -> int:
         type=int,
         metavar="N",
         help="Repeat the representative timing workloads N times and write reports/*median*.json.",
+    )
+    parser.add_argument(
+        "--paged-kv-repeat-median",
+        type=int,
+        metavar="N",
+        help=(
+            "Repeat the reviewed paged-attention/KV-cache four-shape workload set N times "
+            "and write reports/paged_attention_kv_cache_repeat_median_summary.json."
+        ),
     )
     parser.add_argument(
         "--resident-batch-sweep",
@@ -132,6 +142,11 @@ def main(argv: list[str] | None = None) -> int:
             run_resident_batch_sweep(
                 repeat_count=args.resident_batch_sweep_repeat,
                 batch_states=states,
+                dry_run=args.dry_run,
+            )
+        elif args.paged_kv_repeat_median is not None:
+            run_paged_attention_kv_cache_repeat_median(
+                repeat_count=args.paged_kv_repeat_median,
                 dry_run=args.dry_run,
             )
         elif args.repeat_median is not None:

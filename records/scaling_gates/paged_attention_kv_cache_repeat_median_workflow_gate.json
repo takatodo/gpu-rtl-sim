@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "gate": "paged_attention_kv_cache_repeat_median_workflow_gate",
+  "objective": "Add a public repeat-median dry-run workflow for the reviewed paged-attention/KV-cache four-shape set.",
+  "status": "added_paged_attention_kv_cache_repeat_median_workflow",
+  "source_boundary_gate": "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
+  "public_cli": "src/tools/run_results_reproduction.py",
+  "shared_module": "src/tools/results_reproduction.py",
+  "current_priority": "run_paged_attention_kv_cache_repeat_median_timing_gate",
+  "public_interface": {
+    "dry_run_command": "python3 src/tools/run_results_reproduction.py --paged-kv-repeat-median 3 --dry-run",
+    "command": "python3 src/tools/run_results_reproduction.py --paged-kv-repeat-median 3",
+    "repeat_count": 3,
+    "summary_report": "reports/paged_attention_kv_cache_repeat_median_summary.json"
+  },
+  "workflow_scope": {
+    "shape_count": 4,
+    "correctness_policy": "coverage_output_equivalence",
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "runtime_or_abi_change_allowed": false,
+    "new_workload_allowed": false,
+    "required_workloads": [
+      {
+        "name": "pulp_paged_kv_cache_large_256x1",
+        "target": "pulp_paged_kv_cache_large",
+        "shape": "256x1",
+        "source_gate": "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+        "median_report": "reports/paged_kv_repeat_pulp_paged_kv_cache_large_256x1_median.json"
+      },
+      {
+        "name": "pulp_paged_kv_cache_large_1x64",
+        "target": "pulp_paged_kv_cache_large",
+        "shape": "1x64",
+        "source_gate": "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+        "median_report": "reports/paged_kv_repeat_pulp_paged_kv_cache_large_1x64_median.json"
+      },
+      {
+        "name": "pulp_paged_attention_kv_score_64x1",
+        "target": "pulp_paged_attention_kv_score",
+        "shape": "64x1",
+        "source_gate": "config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+        "median_report": "reports/paged_kv_repeat_pulp_paged_attention_kv_score_64x1_median.json"
+      },
+      {
+        "name": "pulp_paged_attention_kv_score_1x64",
+        "target": "pulp_paged_attention_kv_score",
+        "shape": "1x64",
+        "source_gate": "config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+        "median_report": "reports/paged_kv_repeat_pulp_paged_attention_kv_score_1x64_median.json"
+      }
+    ],
+    "sample_report_naming": "reports/paged_kv_repeat_{target}_{shape}_median_sample_{sample}_{cpu,hybrid,compare,compare_stdout}.*"
+  },
+  "dry_run_result": {
+    "status": "passed",
+    "command": "python3 src/tools/run_results_reproduction.py --paged-kv-repeat-median 3 --dry-run",
+    "all_four_shapes_present": true,
+    "sample_count_per_shape": 3,
+    "local_absolute_paths_in_stdout": false,
+    "writes_generated_evidence": false
+  },
+  "acceptance_policy": {
+    "workflow_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_measurement": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "public_cli_has_contract_test": true,
+    "docs_mention_required": true,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_paged_attention_kv_cache_repeat_median_timing_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not repeat-median timing yet",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not production paged attention",
+    "not production KV-cache memory hierarchy",
+    "not model-level Transformer inference",
+    "not quantized KV-cache behavior",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

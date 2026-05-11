@@ -160,6 +160,7 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             "records/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_timing_summary_gate.json",
             "records/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
             "records/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
+            "records/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json",
             "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",
@@ -200,6 +201,35 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("dry-run only", result.stderr)
+
+    def test_paged_kv_repeat_median_dry_run_expands_four_shape_samples(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                "src/tools/run_results_reproduction.py",
+                "--paged-kv-repeat-median",
+                "3",
+                "--dry-run",
+            ],
+            cwd=REPO_ROOT,
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+
+        stdout = result.stdout
+        for token in (
+            "paged_kv_repeat_pulp_paged_kv_cache_large_256x1_median_sample_3_compare.json",
+            "paged_kv_repeat_pulp_paged_kv_cache_large_1x64_median_sample_3_compare.json",
+            "paged_kv_repeat_pulp_paged_attention_kv_score_64x1_median_sample_3_compare.json",
+            "paged_kv_repeat_pulp_paged_attention_kv_score_1x64_median_sample_3_compare.json",
+            "--coverage-output-gate config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+            "--coverage-output-gate config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+            "reports/paged_attention_kv_cache_repeat_median_summary.json",
+        ):
+            self.assertIn(token, stdout)
+        for marker in ("/home/", "/tmp/", "/Users/", "/var/", "/mnt/", "/workspace/", "/root/"):
+            self.assertNotIn(marker, stdout)
 
     def test_run_hybrid_benchmark_dry_run_dispatches_template_targets(self) -> None:
         result = subprocess.run(

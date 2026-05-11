@@ -52,11 +52,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`add_paged_attention_kv_cache_repeat_median_workflow`
+`run_paged_attention_kv_cache_repeat_median_timing_gate`
 
 Current gate:
 
-`config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json`
+`config/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json`
 
 ## Current State
 
@@ -105,6 +105,8 @@ Public benchmark pack externalization completion after paged-attention/KV-cache 
 Next measurement after paged-attention/KV-cache timing refresh: `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json` selects `paged_attention_kv_cache_repeat_median_timing` next. The reason is that correctness and single-run timing are now reviewed and public-packaged for the four existing paged-attention/KV-cache shapes, while the weakest remaining evidence gap is timing stability. The first required gate is `define_paged_attention_kv_cache_repeat_median_timing_gate`; it should reuse the existing four-shape set, preserve `coverage_output_equivalence`, and avoid runtime/ABI changes, new workloads, unreviewed candidate overlays, and production serving claims.
 
 Paged-attention/KV-cache repeat-median timing boundary: `config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json` defines the repeat-median measurement boundary for the same four reviewed shapes and requires repeat count `3`, coverage-output equivalence, and median CPU, hybrid wall, and GPU-kernel timing fields. The gate also records a workflow gap: the existing `python3 src/tools/run_results_reproduction.py --repeat-median 3` representative flow includes only `pulp_paged_attention_kv_score 64x1` from this set, so the next task is `add_paged_attention_kv_cache_repeat_median_workflow`. This is definition-only and does not run a new measurement or change runtime, ABI, workloads, or overlays.
+
+Paged-attention/KV-cache repeat-median workflow: `config/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json` adds the public dry-run command `python3 src/tools/run_results_reproduction.py --paged-kv-repeat-median 3 --dry-run`. It expands all four reviewed shapes with three uniquely named samples per shape, preserves `coverage_output_equivalence`, and does not write generated evidence in dry-run mode. The next task is `run_paged_attention_kv_cache_repeat_median_timing_gate`.
 
 Reproduction state: `src/tools/run_results_reproduction.py --dry-run` now prints the representative MHA, resident decode, resident batch-decode, and paged-attention KV-score command sequence from one public entrypoint.
 

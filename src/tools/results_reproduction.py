@@ -28,6 +28,11 @@ class MedianWorkload:
     source_gate: str
     coverage_target: str
     resident: bool = False
+    report_tag: str | None = None
+
+
+def _median_workload_stem(workload: MedianWorkload) -> str:
+    return workload.report_tag or workload.name
 
 
 DEFAULT_RESIDENT_SWEEP_STATES = (1, 8, 16, 32)
@@ -58,6 +63,7 @@ PUBLIC_PACK_ARCHIVE_PATHS = (
     "records/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_timing_summary_gate.json",
     "records/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
     "records/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json",
     "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
     "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
     "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
@@ -363,6 +369,51 @@ def median_workloads() -> list[MedianWorkload]:
     ]
 
 
+def paged_attention_kv_cache_repeat_median_workloads() -> list[MedianWorkload]:
+    return [
+        MedianWorkload(
+            name="pulp_paged_kv_cache_large_256x1",
+            target_name="pulp_paged_kv_cache_large",
+            obj_dir=REPO_ROOT / "artifacts" / "pulp_paged_kv_cache_large_obj_dir",
+            nstates=256,
+            steps=1,
+            source_gate="config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+            coverage_target="pulp_paged_kv_cache_large",
+            report_tag="paged_kv_repeat_pulp_paged_kv_cache_large_256x1",
+        ),
+        MedianWorkload(
+            name="pulp_paged_kv_cache_large_1x64",
+            target_name="pulp_paged_kv_cache_large",
+            obj_dir=REPO_ROOT / "artifacts" / "pulp_paged_kv_cache_large_obj_dir",
+            nstates=1,
+            steps=64,
+            source_gate="config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+            coverage_target="pulp_paged_kv_cache_large",
+            report_tag="paged_kv_repeat_pulp_paged_kv_cache_large_1x64",
+        ),
+        MedianWorkload(
+            name="pulp_paged_attention_kv_score_64x1",
+            target_name="pulp_paged_attention_kv_score",
+            obj_dir=REPO_ROOT / "artifacts" / "pulp_paged_attention_kv_score_obj_dir",
+            nstates=64,
+            steps=1,
+            source_gate="config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+            coverage_target="pulp_paged_attention_kv_score",
+            report_tag="paged_kv_repeat_pulp_paged_attention_kv_score_64x1",
+        ),
+        MedianWorkload(
+            name="pulp_paged_attention_kv_score_1x64",
+            target_name="pulp_paged_attention_kv_score",
+            obj_dir=REPO_ROOT / "artifacts" / "pulp_paged_attention_kv_score_obj_dir",
+            nstates=1,
+            steps=64,
+            source_gate="config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+            coverage_target="pulp_paged_attention_kv_score",
+            report_tag="paged_kv_repeat_pulp_paged_attention_kv_score_1x64",
+        ),
+    ]
+
+
 def _cpu_repeat_command(
     workload: MedianWorkload,
     *,
@@ -486,13 +537,16 @@ def _summarize_numbers(values: list[float]) -> dict[str, object]:
 
 
 def _median_report_path(workload: MedianWorkload) -> Path:
-    return _report(f"{workload.name}_median.json")
+    return _report(f"{_median_workload_stem(workload)}_median.json")
 
 
 def _sample_paths(workload: MedianWorkload, sample_index: int) -> dict[str, Path]:
     shape = f"{workload.nstates}x{workload.steps}"
     suffix = "_resident" if workload.resident else ""
-    stem = f"{workload.target_name}_{shape}{suffix}_median_sample_{sample_index}"
+    if workload.report_tag is None:
+        stem = f"{workload.target_name}_{shape}{suffix}_median_sample_{sample_index}"
+    else:
+        stem = f"{workload.report_tag}_median_sample_{sample_index}"
     return {
         "cpu_state": workload.obj_dir / f"{stem}_cpu.bin",
         "gpu_state": workload.obj_dir / f"{stem}_gpu.bin",
@@ -504,9 +558,10 @@ def _sample_paths(workload: MedianWorkload, sample_index: int) -> dict[str, Path
 
 
 def _init_state_paths(workload: MedianWorkload, *, tag: str) -> dict[str, Path]:
+    stem = workload.report_tag or workload.target_name
     return {
-        "state": workload.obj_dir / f"{workload.target_name}_cpu_repeat_1x1.bin",
-        "report": _report(f"{workload.target_name}_{tag}_init_1x1_cpu.json"),
+        "state": workload.obj_dir / f"{stem}_cpu_repeat_1x1.bin",
+        "report": _report(f"{stem}_{tag}_init_1x1_cpu.json"),
     }
 
 
@@ -558,11 +613,16 @@ def _run_workload_sample(
     return sample
 
 
-def run_median_measurements(*, repeat_count: int, dry_run: bool) -> list[dict[str, object]]:
-    if repeat_count <= 0:
-        raise ValueError("--repeat-median must be positive")
+def _run_median_workload_set(
+    *,
+    repeat_count: int,
+    dry_run: bool,
+    workloads: list[MedianWorkload],
+    aggregate_status: str,
+    aggregate_report: str,
+) -> list[dict[str, object]]:
     summaries: list[dict[str, object]] = []
-    for workload in median_workloads():
+    for workload in workloads:
         cpu_init_state = _run_init_state(workload, tag="median", dry_run=dry_run)
         samples = []
         for sample_index in range(1, repeat_count + 1):
@@ -611,19 +671,45 @@ def run_median_measurements(*, repeat_count: int, dry_run: bool) -> list[dict[st
         path = _median_report_path(workload)
         path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
         summaries.append({**summary, "report": _display_path(path)})
-    if not dry_run:
+    if dry_run:
+        print(f"+ write {_display_path(_report(aggregate_report))}")
+    else:
         aggregate = {
             "schema_version": 1,
-            "status": "measured_representative_repeat_median",
+            "status": aggregate_status,
             "repeat_count": repeat_count,
             "reports": [entry["report"] for entry in summaries],
             "workloads": summaries,
         }
-        _report("results_reproduction_median_summary.json").write_text(
+        _report(aggregate_report).write_text(
             json.dumps(aggregate, indent=2) + "\n",
             encoding="utf-8",
         )
     return summaries
+
+
+def run_median_measurements(*, repeat_count: int, dry_run: bool) -> list[dict[str, object]]:
+    if repeat_count <= 0:
+        raise ValueError("--repeat-median must be positive")
+    return _run_median_workload_set(
+        repeat_count=repeat_count,
+        dry_run=dry_run,
+        workloads=median_workloads(),
+        aggregate_status="measured_representative_repeat_median",
+        aggregate_report="results_reproduction_median_summary.json",
+    )
+
+
+def run_paged_attention_kv_cache_repeat_median(*, repeat_count: int, dry_run: bool) -> list[dict[str, object]]:
+    if repeat_count <= 0:
+        raise ValueError("--paged-kv-repeat-median must be positive")
+    return _run_median_workload_set(
+        repeat_count=repeat_count,
+        dry_run=dry_run,
+        workloads=paged_attention_kv_cache_repeat_median_workloads(),
+        aggregate_status="measured_paged_attention_kv_cache_repeat_median",
+        aggregate_report="paged_attention_kv_cache_repeat_median_summary.json",
+    )
 
 
 def resident_batch_sweep_workloads(batch_states: list[int]) -> list[MedianWorkload]:
