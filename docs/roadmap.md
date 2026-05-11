@@ -10,11 +10,11 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 Current priority:
 
-`review_config_generation_validation_breadth_dry_run_gate`
+`define_config_generation_validation_breadth_execution_gate`
 
 Current gate:
 
-`config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json`
+`config/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json`
 
 ## Plan
 
@@ -350,7 +350,7 @@ Tracked evidence:
 
 Recommended next gate:
 
-`review_config_generation_validation_breadth_dry_run_gate`
+`define_config_generation_validation_breadth_execution_gate`
 
 Acceptance criteria:
 
@@ -376,6 +376,7 @@ Acceptance criteria:
 - review `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json`
 - review `config/scaling_gates/config_generation_validation_breadth_gate.json`
 - review `config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json`
+- review `config/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json`
 - preserve the measured repeat-median result for the existing `16x64` four-phase path
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
@@ -396,14 +397,15 @@ Acceptance criteria:
 - define tracked target breadth for generated config and generic host-probe metadata validation
 - dry-run the tracked config-generation breadth set before measured execution
 - review that the six tracked dry-run command plans use generic host-probe metadata without Makefile host-probe targets
+- define the build/run/compare execution boundary before claiming breadth execution evidence
 - avoid importing unreviewed candidate overlays, MobileViT, Ibex, or quantized KV-cache files
 - keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the externalization pack
 
 Working tree review boundary:
 
-`next_task: review_config_generation_validation_breadth_dry_run_gate`
+`next_task: define_config_generation_validation_breadth_execution_gate`
 
-Review the config-generation validation breadth dry-run gate after the tracked command-plan pass. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, quantized KV-cache, unrelated workload execution outputs, or production serving claims.
+Define the config-generation validation breadth execution gate after the tracked dry-run command-plan review. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, quantized KV-cache, unrelated workload execution outputs, or production serving claims.
 
 Review/stage boundary:
 

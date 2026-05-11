@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "gate": "config_generation_validation_breadth_dry_run_review_gate",
+  "status": "reviewed_config_generation_validation_breadth_dry_run_accepts_command_plan_boundary",
+  "objective": "Review the six-template config-generation validation dry-run result and select the next boundary without claiming fresh build/run/compare evidence.",
+  "source_dry_run_gate": "config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json",
+  "source_definition_gate": "config/scaling_gates/config_generation_validation_breadth_gate.json",
+  "current_priority": "define_config_generation_validation_breadth_execution_gate",
+  "review_decision": {
+    "dry_run_boundary_accepted": true,
+    "selected_next_task": "define_config_generation_validation_breadth_execution_gate",
+    "reason": "All six tracked command plans exited zero, used src/tools/build_host_probe.py, avoided Makefile host-probe targets, and preserved coverage_output_equivalence compare plans. The remaining gap is that dry-run output is command-plan evidence only, so a separate execution gate must define any real build/run/compare scope before measuring."
+  },
+  "reviewed_result": {
+    "command_count": 6,
+    "all_commands_exited_zero": true,
+    "all_emit_generic_host_probe_builder": true,
+    "makefile_host_probe_target_observed": false,
+    "all_emit_coverage_output_compare_policy": true,
+    "all_outputs_are_command_plans_only": true,
+    "accepted_targets": [
+      "NVDLA.nvdla_cmac_core_mac",
+      "PULP_ITA.pulp_ita_dotp",
+      "PULP_ITA.pulp_ita_softmax_top",
+      "PULP_ITA.pulp_ita_mha",
+      "PULP_ITA.pulp_paged_attention_kv_score",
+      "PULP_ITA.pulp_paged_kv_cache_large"
+    ]
+  },
+  "weak_points": [
+    "dry-run does not prove Verilator build success",
+    "dry-run does not prove generic host-probe compile success",
+    "dry-run does not produce CPU-vs-hybrid compare reports",
+    "dry-run does not prove coverage_output_equivalence for the six-template breadth set",
+    "this does not validate every historical template"
+  ],
+  "required_next_gate": {
+    "name": "define_config_generation_validation_breadth_execution_gate",
+    "must_pin": [
+      "whether all six dry-run targets are executed or a smaller first execution subset is selected",
+      "build/run/compare commands",
+      "coverage_output_equivalence gates and targets",
+      "expected generated reports under reports/",
+      "runtime and ABI non-change policy",
+      "generated reports and artifacts remain non-canonical"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "dry_run_command_plan_accepted": true,
+    "fresh_build_run_compare_claim_allowed": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_config_generation_validation_breadth_execution_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not fresh build/run/compare execution",
+    "not coverage-output equivalence evidence for the six-template breadth set",
+    "not a runtime or ABI change",
+    "not a new workload promotion",
+    "not universal validation for every historical template",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

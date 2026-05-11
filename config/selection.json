@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "top_level_goal": "modern_llm_serving_rtl_hybrid_conditions",
-  "current_priority": "review_config_generation_validation_breadth_dry_run_gate",
-  "current_priority_source_artifact": "config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json",
+  "current_priority": "define_config_generation_validation_breadth_execution_gate",
+  "current_priority_source_artifact": "config/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json",
   "active_scope": {
     "active_target_count": 127,
     "active_tlul_target_count": 22,
@@ -277,6 +277,7 @@
     "next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate": "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json",
     "config_generation_validation_breadth_gate": "config/scaling_gates/config_generation_validation_breadth_gate.json",
     "config_generation_validation_breadth_dry_run_gate": "config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json",
+    "config_generation_validation_breadth_dry_run_review_gate": "config/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json",
     "paged_attention_kv_cache_repeat_median_summary": "reports/paged_attention_kv_cache_repeat_median_summary.json",
     "goal_review_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_larger_paged_kv_goal_review_gate.json",
     "dependency_audit": "config/scaling_gates/neural_network_rtl_full_ita_mha_dependency_audit_gate.json",

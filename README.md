@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`review_config_generation_validation_breadth_dry_run_gate`
+`define_config_generation_validation_breadth_execution_gate`
 
 Current gate:
 
-`config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json`
+`config/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -291,7 +291,8 @@ The paged-attention/KV-cache repeat-median public-pack boundary is complete. The
 - next measurement selected after repeat-median refresh: `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json` selects `config_generation_validation_breadth`
 - config-generation validation breadth defined: `config/scaling_gates/config_generation_validation_breadth_gate.json` fixes the tracked template set for generic host-probe metadata validation
 - config-generation validation breadth dry-run passed: `config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json` records six tracked `1x1 --dry-run` command plans using `src/tools/build_host_probe.py`
-- next task: `review_config_generation_validation_breadth_dry_run_gate`
+- config-generation validation breadth dry-run reviewed: `config/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json` accepts command-plan evidence and keeps build/run/compare claims out of scope
+- next task: `define_config_generation_validation_breadth_execution_gate`
 - previous paged-attention/KV-cache dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`
 - do not import unreviewed candidate overlays or change runtime/ABI behavior for this selection boundary
 - keep the long-term goal: make hybrid execution close to Verilator usage while preserving reproducible correctness and speed evidence for LLM-serving-like RTL workloads
