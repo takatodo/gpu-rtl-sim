@@ -10,11 +10,11 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 Current priority:
 
-`public_benchmark_pack_externalization_ready`
+`select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`
 
 Current gate:
 
-`config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json`
+`config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json`
 
 ## Plan
 
@@ -350,7 +350,7 @@ Tracked evidence:
 
 Recommended next gate:
 
-`public_benchmark_pack_externalization_ready`
+`select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`
 
 Acceptance criteria:
 
@@ -372,7 +372,7 @@ Acceptance criteria:
 - review `config/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json`
 - review `config/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json`
 - review `config/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json`
-- review `config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json`
+- review `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json`
 - preserve the measured repeat-median result for the existing `16x64` four-phase path
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
@@ -395,7 +395,7 @@ Acceptance criteria:
 
 Working tree review boundary:
 
-`next_task: public_benchmark_pack_externalization_ready`
+`next_task: select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`
 
 Review the public benchmark pack externalization boundary after the reviewed paged-attention/KV-cache repeat-median refresh. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, quantized KV-cache, unrelated workload execution outputs, or production serving claims.
 

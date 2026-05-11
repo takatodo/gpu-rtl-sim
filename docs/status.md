@@ -52,11 +52,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`public_benchmark_pack_externalization_ready`
+`select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`
 
 Current gate:
 
-`config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json`
+`config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json`
 
 ## Current State
 
@@ -74,7 +74,7 @@ Long-goal audit state: `config/scaling_gates/modern_llm_serving_rtl_hybrid_condi
 
 Public results state: `config/scaling_gates/public_results_packaging_gate.json` now refreshes `docs/results.md` after the persistent resident ABI measurement, MobileViT limit-128 evidence, and wrapper summary schema publication. The public benchmark pack presents the conclusion, reproduction commands, result tables, wrapper summary reports, source evidence, and non-claims for external readers.
 
-Public results MHA refresh state: `config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json` defines the source-of-truth refresh after the fresh `pulp_ita_mha` generic-host-probe chain. `docs/results.md` now includes the `1x1`, `32x1`, and `1x32` compare reports, single-run timing table, and gate chain references while keeping reports/artifacts generated-only. This is not a new workload measurement, not repeat-median evidence, and not a production LLM-serving throughput claim; the next_task returns to `public_benchmark_pack_externalization_ready`.
+Public results MHA refresh state: `config/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json` defines the source-of-truth refresh after the fresh `pulp_ita_mha` generic-host-probe chain. `docs/results.md` now includes the `1x1`, `32x1`, and `1x32` compare reports, single-run timing table, and gate chain references while keeping reports/artifacts generated-only. This is not a new workload measurement, not repeat-median evidence, and not a production LLM-serving throughput claim; the next_task returns to `select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`.
 
 Public benchmark pack externalization readiness state: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for handing the refreshed pack to an external reader. The status is `ready_for_external_review`; this is a packaging/readiness audit only, not a new measurement result or stronger performance claim.
 
@@ -114,6 +114,8 @@ Paged-attention/KV-cache repeat-median review: `config/scaling_gates/paged_atten
 
 Paged-attention/KV-cache repeat-median public results refresh: `config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json` defines the source-of-truth refresh after the reviewed repeat-median result. It keeps `docs/results.md`, README, status, roadmap, and selection aligned around `reports/paged_attention_kv_cache_repeat_median_summary.json` as generated evidence only. This is documentation refresh only: no new measurement, no runtime or ABI change, no new workload, no raw full-state equality claim, and no production LLM-serving throughput claim. The next task returns to `public_benchmark_pack_externalization_ready`.
 
+Public benchmark pack externalization completion after paged-attention/KV-cache repeat-median refresh: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json` closes the publication boundary after the repeat-median refresh. It is completion-only packaging work: no new measurement, no runtime/ABI change, and no stronger production-serving claim. The next task is `select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`.
+
 Reproduction state: `src/tools/run_results_reproduction.py --dry-run` now prints the representative MHA, resident decode, resident batch-decode, and paged-attention KV-score command sequence from one public entrypoint.
 
 Repeat-median reproduction state: `src/tools/run_results_reproduction.py --repeat-median 3` measured `64x1`, `1x64`, `1x64` resident, `32x64` resident, and paged-attention KV-score `64x1`. The aggregate report is `reports/results_reproduction_median_summary.json`; all five median workloads pass coverage-output equivalence with mismatch count `0`.
@@ -138,7 +140,7 @@ Persistent resident device handle storage gate: `config/scaling_gates/persistent
 
 Persistent resident storage review: `config/scaling_gates/persistent_resident_device_handle_storage_review_gate.json` records the scoped condition goal as satisfied and holds for review. Optional followups are cross-process persistent CUDA state, paged-attention/KV-cache scale-up, repeat-median timing for persistent resident ABI, and public results packaging refresh.
 
-Public benchmark pack externalization state: `config/scaling_gates/public_results_packaging_gate.json` previously pointed the work at `public_benchmark_pack_externalization_ready`: keeping the public pack understandable to external readers by spelling out how to read the evidence, what generated reports mean, what prerequisites each path has, and which non-claims bound the result. The paged-attention/KV-cache publication refresh is now closed by `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_timing_summary_gate.json`, and the current gate is `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json`. `docs/results.md` also carries the MobileViT `limit 128` ImageNet evidence as CPU-kick accuracy plus hybrid RTL control-boundary coverage-output equivalence, with explicit non-claims for RTL logits and full 50k ImageNet. The one-command entrypoint for that evidence is `python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128`.
+Public benchmark pack externalization state: `config/scaling_gates/public_results_packaging_gate.json` previously pointed the work at `select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`: keeping the public pack understandable to external readers by spelling out how to read the evidence, what generated reports mean, what prerequisites each path has, and which non-claims bound the result. The paged-attention/KV-cache publication refresh is now closed by `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_timing_summary_gate.json`, and the current gate is `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json`. `docs/results.md` also carries the MobileViT `limit 128` ImageNet evidence as CPU-kick accuracy plus hybrid RTL control-boundary coverage-output equivalence, with explicit non-claims for RTL logits and full 50k ImageNet. The one-command entrypoint for that evidence is `python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128`.
 
 Public reproduction smoke state: `docs/results.md` now records the first dry-run command set for external readers. This smoke validates public CLI parsing and command expansion only; it is not correctness or timing evidence.
 

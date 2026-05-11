@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "top_level_goal": "modern_llm_serving_rtl_hybrid_conditions",
-  "current_priority": "public_benchmark_pack_externalization_ready",
-  "current_priority_source_artifact": "config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json",
+  "current_priority": "select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh",
+  "current_priority_source_artifact": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json",
   "active_scope": {
     "active_target_count": 127,
     "active_tlul_target_count": 22,
@@ -273,6 +273,7 @@
     "paged_attention_kv_cache_repeat_median_measurement_gate": "config/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json",
     "paged_attention_kv_cache_repeat_median_review_gate": "config/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json",
     "public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate": "config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json",
+    "public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json",
     "paged_attention_kv_cache_repeat_median_summary": "reports/paged_attention_kv_cache_repeat_median_summary.json",
     "goal_review_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_larger_paged_kv_goal_review_gate.json",
     "dependency_audit": "config/scaling_gates/neural_network_rtl_full_ita_mha_dependency_audit_gate.json",

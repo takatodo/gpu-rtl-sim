@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "gate": "public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate",
+  "status": "complete_public_benchmark_pack_externalization_after_paged_attention_kv_cache_repeat_median",
+  "objective": "Close the public benchmark pack externalization boundary after the paged-attention/KV-cache repeat-median refresh and move to the next measurement selection.",
+  "completed_priority": "public_benchmark_pack_externalization_ready",
+  "source_refresh_gate": "config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json",
+  "source_review_gate": "config/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json",
+  "source_measurement_gate": "config/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json",
+  "results_doc": "docs/results.md",
+  "decision": {
+    "externalization_boundary_complete": true,
+    "reason": "The source-of-truth docs, public manifest, archive dry-run, repeat-median refresh gate, scoped repeat-count 3 non-claims, and contract tests are aligned for external review after the paged-attention/KV-cache repeat-median result."
+  },
+  "release_check_evidence": {
+    "source_of_truth_alignment": true,
+    "reader_guide_and_boundaries": true,
+    "local_path_hygiene_policy": true,
+    "public_smoke_commands_defined": true,
+    "archive_dry_run_includes_paged_attention_kv_cache_repeat_median_refresh": true,
+    "contract_tests_define_public_pack_boundary": true,
+    "correctness_policy": "coverage_output_equivalence",
+    "repeat_count": 3,
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "generated_reports_are_evidence_only": true,
+    "latest_generated_evidence": "reports/paged_attention_kv_cache_repeat_median_summary.json"
+  },
+  "required_review_surfaces": [
+    "README.md",
+    "config/selection.json",
+    "docs/status.md",
+    "docs/roadmap.md",
+    "docs/results.md",
+    "records/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json",
+    "records/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json",
+    "src/tools/results_reproduction.py",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+    "tests/contract/test_hybrid_verilator_like_cli.py",
+    "tests/contract/test_resident_runtime_contract.py"
+  ],
+  "acceptance_policy": {
+    "completion_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "externalized_pack_can_include_generated_report_snapshots": true,
+    "existing_evidence_is_fresh_execution": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh",
+  "candidate_next_measurement_options": [
+    "config_generation_validation_breadth",
+    "paged_attention_kv_cache_scale_up_continuation",
+    "resident_execution_optimization",
+    "quantized_kv_cache_boundary",
+    "full_ita_mha_additional_shapes"
+  ],
+  "non_claims": [
+    "not a new measurement result",
+    "not a new workload",
+    "not a runtime or ABI change",
+    "not production LLM serving throughput",
+    "not model-level Transformer inference",
+    "not production paged attention",
+    "not production KV-cache memory hierarchy",
+    "not quantized KV-cache behavior",
+    "not raw full-state equality",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
