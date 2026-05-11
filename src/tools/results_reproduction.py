@@ -72,6 +72,7 @@ PUBLIC_PACK_ARCHIVE_PATHS = (
     "records/scaling_gates/config_generation_validation_breadth_gate.json",
     "records/scaling_gates/config_generation_validation_breadth_dry_run_gate.json",
     "records/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json",
+    "records/scaling_gates/config_generation_validation_breadth_execution_gate.json",
     "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
     "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
     "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",

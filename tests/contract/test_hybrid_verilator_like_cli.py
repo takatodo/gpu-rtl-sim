@@ -194,6 +194,7 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             "records/scaling_gates/config_generation_validation_breadth_gate.json",
             "records/scaling_gates/config_generation_validation_breadth_dry_run_gate.json",
             "records/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json",
+            "records/scaling_gates/config_generation_validation_breadth_execution_gate.json",
             "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",

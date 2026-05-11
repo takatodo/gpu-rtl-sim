@@ -52,11 +52,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`define_config_generation_validation_breadth_execution_gate`
+`run_config_generation_validation_breadth_execution_gate`
 
 Current gate:
 
-`config/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json`
+`config/scaling_gates/config_generation_validation_breadth_execution_gate.json`
 
 ## Current State
 
@@ -123,6 +123,8 @@ Config-generation validation breadth state: `config/scaling_gates/config_generat
 Config-generation validation breadth dry-run state: `config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json` records that the six tracked `1x1 --dry-run` command plans exited with code `0`, emitted `src/tools/build_host_probe.py`, and preserved `coverage_output_equivalence` compare plans without Makefile host-probe targets. This is dry-run-only command-plan evidence, not a fresh build/run/compare measurement. The next task is `review_config_generation_validation_breadth_dry_run_gate`.
 
 Config-generation validation breadth dry-run review: `config/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json` accepts the six-template dry-run command-plan boundary and explicitly records the remaining gap: no fresh Verilator build, generic host-probe compile, hybrid run, or CPU-vs-hybrid compare evidence has been produced by this gate. The next task is `define_config_generation_validation_breadth_execution_gate`.
+
+Config-generation validation breadth execution boundary: `config/scaling_gates/config_generation_validation_breadth_execution_gate.json` defines the next real execution set as all six tracked `1x1` build/run/compare commands from the dry-run plan. This is definition-only: it does not claim fresh build success, CPU-vs-hybrid equivalence, timing, runtime/ABI changes, or workload promotion. The next task is `run_config_generation_validation_breadth_execution_gate`.
 
 Reproduction state: `src/tools/run_results_reproduction.py --dry-run` now prints the representative MHA, resident decode, resident batch-decode, and paged-attention KV-score command sequence from one public entrypoint.
 

@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "gate": "config_generation_validation_breadth_execution_gate",
+  "status": "defined_config_generation_validation_breadth_execution",
+  "objective": "Define the real build/run/compare execution boundary for the six tracked config-generation validation templates after the dry-run command-plan review.",
+  "source_definition_gate": "config/scaling_gates/config_generation_validation_breadth_gate.json",
+  "source_dry_run_gate": "config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json",
+  "source_review_gate": "config/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json",
+  "current_priority": "run_config_generation_validation_breadth_execution_gate",
+  "execution_scope": {
+    "name": "six_tracked_templates_1x1_build_run_compare",
+    "decision": "execute_all_six_tracked_dry_run_templates",
+    "reason": "The goal is validation breadth for generated config and generic host-probe metadata, so reducing the first real execution to a subset would leave the dry-run review's main weakness unresolved.",
+    "shape": "1x1",
+    "targets": [
+      {
+        "target": "NVDLA.nvdla_cmac_core_mac",
+        "template": "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 1x1",
+        "expected_compare_report": "reports/nvdla_cmac_core_mac_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+      },
+      {
+        "target": "PULP_ITA.pulp_ita_dotp",
+        "template": "config/slice_launch_templates/pulp_ita_dotp.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x1",
+        "expected_compare_report": "reports/pulp_ita_dotp_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+      },
+      {
+        "target": "PULP_ITA.pulp_ita_softmax_top",
+        "template": "config/slice_launch_templates/pulp_ita_softmax_top.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_softmax_top.json --shape 1x1",
+        "expected_compare_report": "reports/pulp_ita_softmax_top_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+      },
+      {
+        "target": "PULP_ITA.pulp_ita_mha",
+        "template": "config/slice_launch_templates/pulp_ita_mha.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1",
+        "expected_compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+      },
+      {
+        "target": "PULP_ITA.pulp_paged_attention_kv_score",
+        "template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_attention_kv_score.json --shape 1x1",
+        "expected_compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+      },
+      {
+        "target": "PULP_ITA.pulp_paged_kv_cache_large",
+        "template": "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x1",
+        "expected_compare_report": "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+      }
+    ]
+  },
+  "execution_requirements": [
+    "each command must complete Verilator build",
+    "each command must build the generic host probe through src/tools/build_host_probe.py",
+    "each command must build the GPU cubin",
+    "each command must run CPU and hybrid paths",
+    "each command must write the expected compare report under reports/",
+    "each compare report must pass coverage_output_equivalence with mismatch count 0",
+    "raw full-state equality is not required",
+    "generated reports and artifacts remain non-canonical"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "execute_all_six_tracked_templates_next": true,
+    "generic_host_probe_builder_required": true,
+    "makefile_host_probe_target_allowed": false,
+    "coverage_output_equivalence_required_for_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_config_generation_validation_breadth_execution_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not fresh build/run/compare execution",
+    "not coverage-output equivalence evidence for the six-template breadth set",
+    "not a runtime or ABI change",
+    "not a new workload promotion",
+    "not universal validation for every historical template",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
