@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate",
+  "status": "selected_paged_attention_kv_cache_repeat_median_timing_next",
+  "objective": "Select the next measurement goal after the paged-attention/KV-cache correctness and single-run timing evidence was refreshed into the public benchmark pack.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_timing_summary_gate.json",
+  "source_refresh_gate": "config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate.json",
+  "source_timing_summary_gate": "config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json",
+  "source_timing_review_gate": "config/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json",
+  "source_results_doc": "docs/results.md",
+  "long_term_goal": "Keep hybrid execution close to Verilator usage while making LLM-serving-like RTL workload correctness, speed trends, reproduction commands, and non-claims easy to regenerate and review.",
+  "options_reviewed": [
+    {
+      "option": "paged_attention_kv_cache_repeat_median_timing",
+      "decision": "select_next",
+      "reason": "The paged-attention/KV-cache scale-up measurement now has correctness and single-run timing in the public pack. The weakest remaining evidence gap is timing stability: the current ratios are useful directional observations, but they are not repeat-median evidence.",
+      "weakness": "This still measures the existing RTL harnesses and does not add production paged attention, production KV-cache memory hierarchy, or model-level Transformer inference."
+    },
+    {
+      "option": "resident_execution_optimization",
+      "decision": "defer",
+      "reason": "Runtime optimization is valuable, but changing launch or resident behavior before stabilizing the paged-attention/KV-cache timing evidence would mix measurement confidence with implementation changes.",
+      "weakness": "Deferring keeps the known single-state repeated-launch weakness unresolved for now."
+    },
+    {
+      "option": "paged_attention_kv_cache_scale_up_continuation",
+      "decision": "defer",
+      "reason": "The current four-shape scale-up boundary already passed correctness and has single-run timing. Adding more shapes before repeat-median timing would broaden scope before closing confidence on the existing set.",
+      "weakness": "Leaves larger page counts, slot counts, and batch sizes outside the immediate next gate."
+    },
+    {
+      "option": "quantized_kv_cache_boundary",
+      "decision": "defer",
+      "reason": "Quantized KV-cache is a relevant modern-serving extension, but it should follow stable repeat-median timing for the unquantized paged-attention/KV-cache baseline.",
+      "weakness": "Quantized serving memory behavior remains outside the active measurement."
+    },
+    {
+      "option": "full_ita_mha_additional_shapes",
+      "decision": "defer",
+      "reason": "Full ITA/MHA already has fresh generic-host-probe and historical resident/repeat evidence. More MHA shapes would add breadth but would not close the newest paged-attention/KV-cache timing confidence gap.",
+      "weakness": "May leave some attention-compute shape coverage unexpanded while focusing on serving-state harnesses."
+    }
+  ],
+  "selected_next_goal": {
+    "name": "paged_attention_kv_cache_repeat_median_timing",
+    "first_gate": "define_paged_attention_kv_cache_repeat_median_timing_gate",
+    "first_gate_objective": "Define a repeat-median timing measurement boundary for the existing reviewed paged-attention/KV-cache four-shape set without changing runtime, ABI, workload, or correctness policy.",
+    "scope": [
+      "reuse the four reviewed shapes from config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json",
+      "preserve coverage_output_equivalence as the correctness policy",
+      "record repeat count and median CPU, hybrid wall, and GPU-kernel timing fields",
+      "keep generated reports and artifacts non-canonical",
+      "do not import unreviewed candidate overlays",
+      "do not claim production paged attention, production KV-cache hierarchy, model-level Transformer inference, or production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_measurement": true,
+    "repeat_median_required_for_next_measurement_gate": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "contract_tests_required_for_next_public_workflow": true
+  },
+  "next_task": "define_paged_attention_kv_cache_repeat_median_timing_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not repeat-median timing yet",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not production paged attention",
+    "not production KV-cache memory hierarchy",
+    "not model-level Transformer inference",
+    "not quantized KV-cache behavior",
+    "not production LLM serving throughput",
+    "not broad speedup for arbitrary RTL",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

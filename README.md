@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`public_benchmark_pack_externalization_ready`
+`define_paged_attention_kv_cache_repeat_median_timing_gate`
 
 Current gate:
 
-`config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate.json`
+`config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -259,7 +259,8 @@ Do not put canonical decisions in generated outputs. If a generated result matte
 
 The public benchmark pack externalization boundary is complete. The selected next measurement goal is `paged_attention_kv_cache_scale_up`:
 
-- use `config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate.json` as the current gate
+- use `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json` as the current gate
+- use `config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate.json` as the source refresh gate
 - use `config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json` as the source selection gate
 - use `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` as the externalization readiness audit
 - use `config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json` as the source completion gate
@@ -278,7 +279,9 @@ The public benchmark pack externalization boundary is complete. The selected nex
 - timing summary defined: `config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json` records single-run CPU, hybrid wall, and GPU-kernel timing for the same four shapes without changing runtime, ABI, or workload scope
 - timing summary reviewed: `config/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json` selects a public-results packaging refresh next, while preserving the single-run and non-production boundaries
 - public results refresh defined: `config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate.json` keeps the reviewed four-shape correctness and single-run timing evidence in the public pack without adding a measurement, workload, runtime change, repeat-median claim, or production serving claim
-- next task: `public_benchmark_pack_externalization_ready`
+- public benchmark pack externalization completed after timing refresh: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_timing_summary_gate.json` closes the publication boundary before selecting another measurement
+- next measurement selected: `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json` selects repeat-median timing for the existing four-shape paged-attention/KV-cache set, because the remaining evidence gap is timing stability rather than another single-run shape expansion
+- next task: `define_paged_attention_kv_cache_repeat_median_timing_gate`
 - first dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`
 - do not import unreviewed candidate overlays or change runtime/ABI behavior for this measurement boundary
 - keep the long-term goal: make hybrid execution close to Verilator usage while preserving reproducible correctness and speed evidence for LLM-serving-like RTL workloads
