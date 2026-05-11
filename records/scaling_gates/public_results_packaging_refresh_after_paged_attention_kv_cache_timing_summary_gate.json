@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate",
+  "objective": "Refresh the public results packaging after the paged-attention/KV-cache correctness and single-run timing summary were reviewed.",
+  "status": "defined_public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary",
+  "source_review_gate": "config/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json",
+  "source_timing_summary_gate": "config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json",
+  "source_measurement_gate": "config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json",
+  "selected_workstream": "public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary",
+  "results_doc": "docs/results.md",
+  "paged_attention_kv_cache_timing_evidence": {
+    "correctness_policy": "coverage_output_equivalence",
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "repeat_count": 1,
+    "single_run_timing_only": true,
+    "timing_summary_gate": "config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json",
+    "review_gate": "config/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json",
+    "state_parallel_wall_ratio_range": [
+      82.78691476590637,
+      473.32385466034754
+    ],
+    "single_state_repeated_wall_ratio_range": [
+      1.5377136864184584,
+      1.9177279202279203
+    ],
+    "timing_reports": [
+      {
+        "target": "pulp_paged_kv_cache_large",
+        "shape": "256x1",
+        "interpretation": "state-parallel paged KV-cache access",
+        "cpu_elapsed_ms": 599.228,
+        "hybrid_wall_ms": 1.266,
+        "hybrid_gpu_kernel_total_ms": 1.23392,
+        "cpu_to_hybrid_wall_ratio": 473.32385466034754,
+        "compare_report": "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json"
+      },
+      {
+        "target": "pulp_paged_kv_cache_large",
+        "shape": "1x64",
+        "interpretation": "single-state repeated-step paged KV-cache access",
+        "cpu_elapsed_ms": 2.93242,
+        "hybrid_wall_ms": 1.907,
+        "hybrid_gpu_kernel_total_ms": 1.878016,
+        "cpu_to_hybrid_wall_ratio": 1.5377136864184584,
+        "compare_report": "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json"
+      },
+      {
+        "target": "pulp_paged_attention_kv_score",
+        "shape": "64x1",
+        "interpretation": "state-parallel attention-score proxy over paged KV-cache slots",
+        "cpu_elapsed_ms": 137.923,
+        "hybrid_wall_ms": 1.666,
+        "hybrid_gpu_kernel_total_ms": 1.635328,
+        "cpu_to_hybrid_wall_ratio": 82.78691476590637,
+        "compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json"
+      },
+      {
+        "target": "pulp_paged_attention_kv_score",
+        "shape": "1x64",
+        "interpretation": "single-state repeated-step attention-score proxy over paged KV-cache slots",
+        "cpu_elapsed_ms": 2.69249,
+        "hybrid_wall_ms": 1.404,
+        "hybrid_gpu_kernel_total_ms": 1.30048,
+        "cpu_to_hybrid_wall_ratio": 1.9177279202279203,
+        "compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json"
+      }
+    ]
+  },
+  "refresh_scope": [
+    "keep docs/results.md aligned with the reviewed four-shape paged-attention/KV-cache timing summary",
+    "keep correctness and timing separated: compare reports prove coverage-output equivalence, while the timing summary is single-run generated evidence",
+    "keep README.md, docs/status.md, docs/roadmap.md, and config/selection.json aligned",
+    "reference reports and gates as generated evidence only",
+    "do not add a new measurement",
+    "do not change runtime or ABI behavior",
+    "do not import unreviewed candidate overlays or new workloads"
+  ],
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "Paged-attention/KV-cache timing table appears in public results",
+      "artifact": "docs/results.md",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Timing summary and review gates are included in source evidence",
+      "artifact": "docs/results.md",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Correctness remains coverage-output equivalence",
+      "artifact": "paged_attention_kv_cache_timing_evidence.correctness_policy",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Single-run, non-production, and non-repeat-median boundaries remain explicit",
+      "artifact": "non_claims",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Generated reports remain non-canonical",
+      "artifact": "acceptance_policy.reports_and_artifacts_are_source_of_truth",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Contract tests cover the packaging refresh",
+      "artifact": "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+      "status": "satisfied"
+    }
+  ],
+  "acceptance_policy": {
+    "documentation_refresh_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "single_run_timing_only": true,
+    "repeat_median_claim_allowed_by_gate_alone": false,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "contract_tests_required": true
+  },
+  "review_boundary": [
+    "docs/results.md",
+    "docs/roadmap.md",
+    "docs/status.md",
+    "README.md",
+    "config/selection.json",
+    "records/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+    "tests/contract/test_resident_runtime_contract.py"
+  ],
+  "next_task": "public_benchmark_pack_externalization_ready",
+  "non_claims": [
+    "not a new measurement result",
+    "not repeat-median timing",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not production LLM serving throughput",
+    "not model-level Transformer inference",
+    "not production paged attention",
+    "not production KV-cache memory hierarchy",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

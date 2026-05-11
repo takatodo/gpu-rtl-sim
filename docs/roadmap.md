@@ -10,11 +10,11 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 Current priority:
 
-`define_public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate`
+`public_benchmark_pack_externalization_ready`
 
 Current gate:
 
-`config/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json`
+`config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate.json`
 
 ## Plan
 
@@ -350,7 +350,7 @@ Tracked evidence:
 
 Recommended next gate:
 
-`define_public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate`
+`public_benchmark_pack_externalization_ready`
 
 Acceptance criteria:
 
@@ -365,6 +365,7 @@ Acceptance criteria:
 - review `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_review_gate.json`
 - review `config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json`
 - review `config/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json`
+- review `config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate.json`
 - preserve the measured repeat-median result for the existing `16x64` four-phase path
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
@@ -377,15 +378,15 @@ Acceptance criteria:
 - review `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json`
 - keep the measurement set on tracked `pulp_paged_kv_cache_large` and `pulp_paged_attention_kv_score` templates
 - preserve the single-run timing summary for the same four measured shapes before making broader speedup claims
-- define a publication-only refresh gate for the reviewed paged-attention/KV-cache correctness and timing evidence
+- keep the publication-only refresh gate for the reviewed paged-attention/KV-cache correctness and timing evidence aligned with the public pack
 - avoid importing unreviewed candidate overlays, MobileViT, Ibex, or quantized KV-cache files
 - keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the externalization pack
 
 Working tree review boundary:
 
-`next_task: define_public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate`
+`next_task: public_benchmark_pack_externalization_ready`
 
-Define only the public results packaging refresh after the reviewed paged-attention/KV-cache timing summary. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, or new workload execution outputs.
+Review the public benchmark pack externalization boundary after the reviewed paged-attention/KV-cache timing summary refresh. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, or new workload execution outputs.
 
 Review/stage boundary:
 
