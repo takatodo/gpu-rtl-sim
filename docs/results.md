@@ -93,7 +93,7 @@ Before publishing or handing off the benchmark pack, verify:
 
 | Check | How to verify | Required result |
 | --- | --- | --- |
-| Source-of-truth alignment | Inspect `README.md`, `config/selection.json`, `docs/status.md`, and `docs/roadmap.md`. | All point at `run_paged_attention_kv_cache_scale_up_measurement` and `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`. |
+| Source-of-truth alignment | Inspect `README.md`, `config/selection.json`, `docs/status.md`, and `docs/roadmap.md`. | All point at `review_paged_attention_kv_cache_scale_up_measurement` and `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`. |
 | Reader guide and boundaries | Inspect `docs/results.md`. | It includes `How To Read This Pack`, `External pack boundary`, `Prerequisites by path`, `Public pack manifest`, and `Public reproduction smoke`. |
 | Local path hygiene | Search public docs, gates, and wrapper summaries for local absolute paths. | No machine-local absolute path prefixes are exposed. |
 | Smoke commands | Run the public reproduction smoke commands above. | All commands exit successfully and do not write benchmark evidence. |
@@ -132,7 +132,10 @@ Representative compare evidence:
 | Full ITA/MHA resident | `1x64` | `reports/pulp_ita_mha_cpu_vs_hybrid_1x64_resident_coverage_output_compare.json` | pass, mismatch `0` |
 | Full ITA/MHA resident batch | `32x64` | `reports/pulp_ita_mha_cpu_vs_hybrid_32x64_resident_coverage_output_compare.json` | pass, mismatch `0` |
 | Full ITA/MHA persistent resident ABI | `16x64..16x256` | `reports/persistent_resident_state_abi_probe_summary.json` | pass, mismatch `0` |
+| Paged KV-cache large | `256x1` | `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json` | pass, mismatch `0` |
+| Paged KV-cache large | `1x64` | `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json` | pass, mismatch `0` |
 | Paged-attention KV score | `64x1` | `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json` | pass, mismatch `0` |
+| Paged-attention KV score | `1x64` | `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json` | pass, mismatch `0` |
 | MobileViT CPU-kick RTL proxy | `cfg_batch_length=128` | `reports/mobile_vit_cpu_kick_rtl_proxy_imagenet_batch1_128_cpu_vs_hybrid_1x1_coverage_output_compare.json` | pass, mismatch `0` |
 
 ## Performance Summary
@@ -351,6 +354,10 @@ Result summaries:
 - `reports/pulp_ita_mha_resident_decode_batch_parallel_summary.json`
 - `reports/pulp_paged_kv_cache_large_first_hybrid_benchmark_summary.json`
 - `reports/pulp_paged_attention_kv_score_first_hybrid_benchmark_summary.json`
+- `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json`
+- `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json`
+- `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json`
+- `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json`
 - `reports/results_reproduction_median_summary.json`
 - `reports/persistent_resident_state_abi_probe_summary.json`
 - `reports/persistent_resident_state_abi_repeat_median_summary.json`

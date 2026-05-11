@@ -163,6 +163,10 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
             "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
             "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+            "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json",
+            "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+            "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+            "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json",
             "reports/persistent_resident_state_abi_repeat_median_summary.json",
             "reports/hybrid_benchmark_mobile_vit_template_limit128.json",
         ):

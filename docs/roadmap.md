@@ -10,7 +10,7 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 Current priority:
 
-`run_paged_attention_kv_cache_scale_up_measurement`
+`review_paged_attention_kv_cache_scale_up_measurement`
 
 Current gate:
 
@@ -350,7 +350,7 @@ Tracked evidence:
 
 Recommended next gate:
 
-`run_paged_attention_kv_cache_scale_up_measurement`
+`review_paged_attention_kv_cache_scale_up_measurement`
 
 Acceptance criteria:
 
@@ -366,16 +366,21 @@ Acceptance criteria:
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
 - preserve the passed paged-attention/KV-cache scale-up dry-run record
-- run the paged-attention/KV-cache scale-up measurement commands
+- preserve the passed paged-attention/KV-cache scale-up measurement record
+- verify the four generated compare reports passed `coverage_output_equivalence` with mismatch count `0`
+- review `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json`
+- review `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json`
+- review `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json`
+- review `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json`
 - keep the measurement set on tracked `pulp_paged_kv_cache_large` and `pulp_paged_attention_kv_score` templates
 - avoid importing unreviewed candidate overlays, MobileViT, Ibex, or quantized KV-cache files
 - keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the externalization pack
 
 Working tree review boundary:
 
-`next_task: run_paged_attention_kv_cache_scale_up_measurement`
+`next_task: review_paged_attention_kv_cache_scale_up_measurement`
 
-Review only the defined paged-attention/KV-cache scale-up measurement boundary and its dry-run plan. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, or measurement execution outputs.
+Review only the defined paged-attention/KV-cache scale-up measurement result and its generated compare evidence. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, or new measurement execution outputs.
 
 Review/stage boundary:
 

@@ -12,7 +12,7 @@ Large goal:
 
 Current priority:
 
-`run_paged_attention_kv_cache_scale_up_measurement`
+`review_paged_attention_kv_cache_scale_up_measurement`
 
 Current gate:
 
@@ -272,7 +272,9 @@ The public benchmark pack externalization boundary is complete. The selected nex
 - run `python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3` to regenerate the report; the current median hybrid wall is `4.965 ms`, median GPU kernel total is `4.934624 ms`, and all samples pass coverage-output equivalence with mismatch count `0`
 - current selected goal is complete: the public benchmark pack externalization boundary is closed without changing runtime or ABI behavior
 - dry-run completed: all four paged-attention/KV-cache scale-up dry-run commands exited with code `0`
-- next task: run the paged-attention/KV-cache scale-up measurement set from `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`
+- measurement completed: all four paged-attention/KV-cache scale-up measurement commands exited with code `0` and passed `coverage_output_equivalence` with mismatch count `0`
+- generated compare evidence: `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json`, `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json`, `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json`, and `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json`
+- next task: review the paged-attention/KV-cache scale-up measurement result from `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`
 - first dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`
 - do not import unreviewed candidate overlays or change runtime/ABI behavior for this measurement boundary
 - keep the long-term goal: make hybrid execution close to Verilator usage while preserving reproducible correctness and speed evidence for LLM-serving-like RTL workloads
