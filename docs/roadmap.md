@@ -10,11 +10,11 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 Current priority:
 
-`review_paged_attention_kv_cache_repeat_median_timing`
+`define_public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median`
 
 Current gate:
 
-`config/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json`
+`config/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json`
 
 ## Plan
 
@@ -350,7 +350,7 @@ Tracked evidence:
 
 Recommended next gate:
 
-`review_paged_attention_kv_cache_repeat_median_timing`
+`define_public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median`
 
 Acceptance criteria:
 
@@ -371,6 +371,7 @@ Acceptance criteria:
 - review `config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json`
 - review `config/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json`
 - review `config/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json`
+- review `config/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json`
 - preserve the measured repeat-median result for the existing `16x64` four-phase path
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
@@ -387,15 +388,15 @@ Acceptance criteria:
 - define a repeat-median timing gate for the existing four-shape paged-attention/KV-cache set before adding new shapes or runtime optimizations
 - add a public repeat-median workflow for those four shapes because the existing representative `--repeat-median` flow does not cover the full paged-attention/KV-cache set
 - preserve the generated `reports/paged_attention_kv_cache_repeat_median_summary.json` as evidence only, not source of truth
-- review the paged-attention/KV-cache repeat-median measurement before packaging or selecting another measurement
+- package the reviewed paged-attention/KV-cache repeat-median result before selecting another measurement
 - avoid importing unreviewed candidate overlays, MobileViT, Ibex, or quantized KV-cache files
 - keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the externalization pack
 
 Working tree review boundary:
 
-`next_task: review_paged_attention_kv_cache_repeat_median_timing`
+`next_task: define_public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median`
 
-Review only the repeat-median timing measurement for the reviewed paged-attention/KV-cache four-shape set. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, quantized KV-cache, unrelated workload execution outputs, or production serving claims.
+Define the public-results packaging refresh for the reviewed paged-attention/KV-cache repeat-median four-shape set. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, quantized KV-cache, unrelated workload execution outputs, or production serving claims.
 
 Review/stage boundary:
 

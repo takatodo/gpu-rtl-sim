@@ -162,6 +162,7 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             "records/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
             "records/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json",
             "records/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json",
+            "records/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json",
             "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",

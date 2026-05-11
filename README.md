@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`review_paged_attention_kv_cache_repeat_median_timing`
+`define_public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median`
 
 Current gate:
 
-`config/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json`
+`config/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -284,7 +284,8 @@ The public benchmark pack externalization boundary is complete. The selected nex
 - repeat-median timing boundary defined: `config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json` fixes the existing four-shape set and records that the existing `--repeat-median` workflow does not cover all four required paged-attention/KV-cache shapes
 - repeat-median workflow added: `config/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json` adds `python3 src/tools/run_results_reproduction.py --paged-kv-repeat-median 3 --dry-run` for all four reviewed paged-attention/KV-cache shapes
 - repeat-median measurement recorded: `config/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json` records `reports/paged_attention_kv_cache_repeat_median_summary.json`; all four shapes pass `coverage_output_equivalence` with mismatch count `0`
-- next task: `review_paged_attention_kv_cache_repeat_median_timing`
+- repeat-median review completed: `config/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json` accepts the scoped repeat-count `3` measurement for the public pack and keeps production serving, raw full-state equality, runtime/ABI, and new-workload claims out of scope
+- next task: `define_public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median`
 - first dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`
 - do not import unreviewed candidate overlays or change runtime/ABI behavior for this measurement boundary
 - keep the long-term goal: make hybrid execution close to Verilator usage while preserving reproducible correctness and speed evidence for LLM-serving-like RTL workloads
