@@ -52,11 +52,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`define_paged_attention_kv_cache_timing_summary_gate`
+`review_paged_attention_kv_cache_timing_summary`
 
 Current gate:
 
-`config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_review_gate.json`
+`config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json`
 
 ## Current State
 
@@ -94,6 +94,8 @@ Paged-attention/KV-cache scale-up measurement result: `config/scaling_gates/page
 
 Paged-attention/KV-cache scale-up measurement review: `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_review_gate.json` closes the correctness review and selects `define_paged_attention_kv_cache_timing_summary_gate` next. The reason is that coverage-output equivalence is complete for the four planned shapes, while compare reports alone do not provide timing fields or justify a speedup claim. The next gate should summarize or regenerate timing for the same tracked measurement set without importing untracked candidate overlays, changing runtime/ABI behavior, or broadening production LLM-serving claims.
 
+Paged-attention/KV-cache timing summary: `config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json` records single-run timing for the same four reviewed shapes. `pulp_paged_kv_cache_large 256x1` records CPU `599.228 ms`, hybrid wall `1.266 ms`, and CPU/hybrid wall ratio `473.32385466034754`; `pulp_paged_kv_cache_large 1x64` records CPU `2.93242 ms`, hybrid wall `1.907 ms`, and ratio `1.5377136864184584`; `pulp_paged_attention_kv_score 64x1` records CPU `137.923 ms`, hybrid wall `1.666 ms`, and ratio `82.78691476590637`; `pulp_paged_attention_kv_score 1x64` records CPU `2.69249 ms`, hybrid wall `1.404 ms`, and ratio `1.9177279202279203`. This preserves the trend that state-parallel shapes are much more favorable than single-state repeated-step shapes, but it is single-run generated evidence only, not repeat-median or production LLM-serving throughput. The next_task is `review_paged_attention_kv_cache_timing_summary`.
+
 Reproduction state: `src/tools/run_results_reproduction.py --dry-run` now prints the representative MHA, resident decode, resident batch-decode, and paged-attention KV-score command sequence from one public entrypoint.
 
 Repeat-median reproduction state: `src/tools/run_results_reproduction.py --repeat-median 3` measured `64x1`, `1x64`, `1x64` resident, `32x64` resident, and paged-attention KV-score `64x1`. The aggregate report is `reports/results_reproduction_median_summary.json`; all five median workloads pass coverage-output equivalence with mismatch count `0`.
@@ -118,7 +120,7 @@ Persistent resident device handle storage gate: `config/scaling_gates/persistent
 
 Persistent resident storage review: `config/scaling_gates/persistent_resident_device_handle_storage_review_gate.json` records the scoped condition goal as satisfied and holds for review. Optional followups are cross-process persistent CUDA state, paged-attention/KV-cache scale-up, repeat-median timing for persistent resident ABI, and public results packaging refresh.
 
-Public benchmark pack externalization state: `config/scaling_gates/public_results_packaging_gate.json` previously pointed the work at `public_benchmark_pack_externalization_ready`: keeping the public pack understandable to external readers by spelling out how to read the evidence, what generated reports mean, what prerequisites each path has, and which non-claims bound the result. The current gate is now `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_review_gate.json`, which selects the timing-summary follow-up after the paged-attention/KV-cache correctness measurement review. `docs/results.md` also carries the MobileViT `limit 128` ImageNet evidence as CPU-kick accuracy plus hybrid RTL control-boundary coverage-output equivalence, with explicit non-claims for RTL logits and full 50k ImageNet. The one-command entrypoint for that evidence is `python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128`.
+Public benchmark pack externalization state: `config/scaling_gates/public_results_packaging_gate.json` previously pointed the work at `public_benchmark_pack_externalization_ready`: keeping the public pack understandable to external readers by spelling out how to read the evidence, what generated reports mean, what prerequisites each path has, and which non-claims bound the result. The current gate is now `config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json`, which records the single-run timing summary after the paged-attention/KV-cache correctness measurement review. `docs/results.md` also carries the MobileViT `limit 128` ImageNet evidence as CPU-kick accuracy plus hybrid RTL control-boundary coverage-output equivalence, with explicit non-claims for RTL logits and full 50k ImageNet. The one-command entrypoint for that evidence is `python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128`.
 
 Public reproduction smoke state: `docs/results.md` now records the first dry-run command set for external readers. This smoke validates public CLI parsing and command expansion only; it is not correctness or timing evidence.
 
