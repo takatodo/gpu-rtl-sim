@@ -93,7 +93,7 @@ Before publishing or handing off the benchmark pack, verify:
 
 | Check | How to verify | Required result |
 | --- | --- | --- |
-| Source-of-truth alignment | Inspect `README.md`, `config/selection.json`, `docs/status.md`, and `docs/roadmap.md`. | All point at `run_paged_attention_kv_cache_scale_up_measurement_dry_run` and `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`. |
+| Source-of-truth alignment | Inspect `README.md`, `config/selection.json`, `docs/status.md`, and `docs/roadmap.md`. | All point at `run_paged_attention_kv_cache_scale_up_measurement` and `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`. |
 | Reader guide and boundaries | Inspect `docs/results.md`. | It includes `How To Read This Pack`, `External pack boundary`, `Prerequisites by path`, `Public pack manifest`, and `Public reproduction smoke`. |
 | Local path hygiene | Search public docs, gates, and wrapper summaries for local absolute paths. | No machine-local absolute path prefixes are exposed. |
 | Smoke commands | Run the public reproduction smoke commands above. | All commands exit successfully and do not write benchmark evidence. |

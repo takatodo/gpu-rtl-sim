@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "gate": "paged_attention_kv_cache_scale_up_measurement_gate",
-  "status": "defined_measurement_boundary",
+  "status": "dry_run_passed_measurement_boundary_ready_for_execution",
   "objective": "Define the next paged-attention/KV-cache scale-up measurement boundary using existing tracked harnesses before running new measurement evidence.",
   "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json",
   "source_results_doc": "docs/results.md",
   "selected_workstream": "paged_attention_kv_cache_scale_up",
-  "current_priority": "run_paged_attention_kv_cache_scale_up_measurement_dry_run",
+  "current_priority": "run_paged_attention_kv_cache_scale_up_measurement",
   "tracked_inputs": {
     "paged_kv_cache_large_gate": "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
     "paged_attention_kv_score_gate": "config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
@@ -71,6 +71,49 @@
     "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
     "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json"
   ],
+  "dry_run_result": {
+    "status": "passed",
+    "command_count": 4,
+    "all_commands_exited_zero": true,
+    "created_measurement_reports": false,
+    "created_artifacts": false,
+    "no_local_absolute_paths_in_stdout": true,
+    "tracked_surface_only": true,
+    "checked_commands": [
+      {
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run",
+        "exit_code": 0
+      }
+    ],
+    "observed_expanded_paths": [
+      "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+      "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+      "overlays/ITA/src/pulp_paged_kv_cache_large_gpu_cov_tb.sv",
+      "overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv",
+      "records/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+      "records/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json"
+    ]
+  },
+  "measurement_readiness": {
+    "tracked_templates_confirmed": true,
+    "tracked_overlays_confirmed": true,
+    "tracked_coverage_manifests_confirmed": true,
+    "untracked_candidate_overlays_used": false,
+    "coverage_output_equivalence_required_for_measurement": true,
+    "expected_reports_are_planned_until_non_dry_measurement": true
+  },
   "acceptance_policy": {
     "measurement_boundary_only": true,
     "new_measurement_allowed_by_this_gate": false,
@@ -104,5 +147,5 @@
     "not raw full-state equality",
     "reports and artifacts are generated evidence, not source of truth"
   ],
-  "next_task": "run_paged_attention_kv_cache_scale_up_measurement_dry_run"
+  "next_task": "run_paged_attention_kv_cache_scale_up_measurement"
 }

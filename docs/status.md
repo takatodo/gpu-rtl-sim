@@ -52,7 +52,7 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`run_paged_attention_kv_cache_scale_up_measurement_dry_run`
+`run_paged_attention_kv_cache_scale_up_measurement`
 
 Current gate:
 
@@ -90,7 +90,7 @@ Public benchmark pack externalization completion state: `config/scaling_gates/pu
 
 Next measurement after public benchmark pack externalization: `config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json` selects `paged_attention_kv_cache_scale_up`. The first required gate is `define_paged_attention_kv_cache_scale_up_measurement_gate`, which should start from tracked paged-attention KV-score and paged KV-cache evidence, preserve `coverage_output_equivalence`, and avoid importing unreviewed candidate overlays or changing runtime/ABI behavior.
 
-Paged-attention/KV-cache scale-up measurement boundary: `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json` defines the next dry-run set without running new measurement evidence. The measurement set is limited to tracked `pulp_paged_kv_cache_large` and `pulp_paged_attention_kv_score` templates at `256x1`, `1x64`, `64x1`, and `1x64`. It requires coverage-output equivalence for later measurement, keeps reports/artifacts generated-only, and forbids runtime/ABI changes, new workload import, and untracked candidate overlays. The next_task is `run_paged_attention_kv_cache_scale_up_measurement_dry_run`.
+Paged-attention/KV-cache scale-up measurement boundary: `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json` defines the measurement set and records that all four dry-run commands exited with code `0` without creating measurement reports or artifacts. The measurement set is limited to tracked `pulp_paged_kv_cache_large` and `pulp_paged_attention_kv_score` templates at `256x1`, `1x64`, `64x1`, and `1x64`. It requires coverage-output equivalence for the measurement, keeps reports/artifacts generated-only, and forbids runtime/ABI changes, new workload import, and untracked candidate overlays. The next_task is `run_paged_attention_kv_cache_scale_up_measurement`.
 
 Reproduction state: `src/tools/run_results_reproduction.py --dry-run` now prints the representative MHA, resident decode, resident batch-decode, and paged-attention KV-score command sequence from one public entrypoint.
 

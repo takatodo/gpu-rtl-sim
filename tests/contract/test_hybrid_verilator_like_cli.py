@@ -10,6 +10,56 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 class HybridVerilatorLikeCliTest(unittest.TestCase):
+    def test_paged_attention_kv_cache_scale_up_measurement_dry_run_commands_pass(self) -> None:
+        dry_run_commands = [
+            [
+                sys.executable,
+                "src/tools/run_hybrid_template.py",
+                "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+                "--shape",
+                "256x1",
+                "--dry-run",
+            ],
+            [
+                sys.executable,
+                "src/tools/run_hybrid_template.py",
+                "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+                "--shape",
+                "1x64",
+                "--dry-run",
+            ],
+            [
+                sys.executable,
+                "src/tools/run_hybrid_benchmark.py",
+                "paged_attention_kv_score",
+                "--shape",
+                "64x1",
+                "--dry-run",
+            ],
+            [
+                sys.executable,
+                "src/tools/run_hybrid_benchmark.py",
+                "paged_attention_kv_score",
+                "--shape",
+                "1x64",
+                "--dry-run",
+            ],
+        ]
+
+        for command in dry_run_commands:
+            with self.subTest(command=" ".join(command)):
+                result = subprocess.run(
+                    command,
+                    cwd=REPO_ROOT,
+                    check=True,
+                    text=True,
+                    capture_output=True,
+                )
+                self.assertNotEqual(result.stdout.strip(), "")
+                self.assertNotIn("error:", result.stderr.lower())
+                for marker in ("/home/", "/tmp/", "/Users/", "/var/", "/mnt/", "/workspace/", "/root/"):
+                    self.assertNotIn(marker, result.stdout)
+
     def test_public_pack_reproduction_smoke_dry_run_commands_pass(self) -> None:
         smoke_commands = [
             [

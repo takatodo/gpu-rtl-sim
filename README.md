@@ -12,7 +12,7 @@ Large goal:
 
 Current priority:
 
-`run_paged_attention_kv_cache_scale_up_measurement_dry_run`
+`run_paged_attention_kv_cache_scale_up_measurement`
 
 Current gate:
 
@@ -271,7 +271,8 @@ The public benchmark pack externalization boundary is complete. The selected nex
 - run `python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3 --dry-run` to inspect the persistent resident repeat-median flow
 - run `python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3` to regenerate the report; the current median hybrid wall is `4.965 ms`, median GPU kernel total is `4.934624 ms`, and all samples pass coverage-output equivalence with mismatch count `0`
 - current selected goal is complete: the public benchmark pack externalization boundary is closed without changing runtime or ABI behavior
-- next task: run the paged-attention/KV-cache scale-up dry-run set from `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`
+- dry-run completed: all four paged-attention/KV-cache scale-up dry-run commands exited with code `0`
+- next task: run the paged-attention/KV-cache scale-up measurement set from `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`
 - first dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`
 - do not import unreviewed candidate overlays or change runtime/ABI behavior for this measurement boundary
 - keep the long-term goal: make hybrid execution close to Verilator usage while preserving reproducible correctness and speed evidence for LLM-serving-like RTL workloads

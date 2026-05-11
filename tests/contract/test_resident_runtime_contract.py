@@ -66,7 +66,7 @@ class ReducedActiveSurfaceContractTest(unittest.TestCase):
         self.assertEqual(selection["top_level_goal"], "modern_llm_serving_rtl_hybrid_conditions")
         self.assertEqual(
             selection["current_priority"],
-            "run_paged_attention_kv_cache_scale_up_measurement_dry_run",
+            "run_paged_attention_kv_cache_scale_up_measurement",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
