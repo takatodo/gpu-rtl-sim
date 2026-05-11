@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "gate": "paged_attention_kv_cache_repeat_median_measurement_gate",
+  "objective": "Measure repeat-median timing for the reviewed paged-attention/KV-cache four-shape set without changing runtime ABI or adding new workloads.",
+  "status": "measured_paged_attention_kv_cache_repeat_median",
+  "source_boundary_gate": "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
+  "source_workflow_gate": "config/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json",
+  "command": "python3 src/tools/run_results_reproduction.py --paged-kv-repeat-median 3",
+  "dry_run_command": "python3 src/tools/run_results_reproduction.py --paged-kv-repeat-median 3 --dry-run",
+  "summary_report": "reports/paged_attention_kv_cache_repeat_median_summary.json",
+  "repeat_count": 3,
+  "current_priority": "review_paged_attention_kv_cache_repeat_median_timing",
+  "measurement_scope": {
+    "shape_count": 4,
+    "correctness_policy": "coverage_output_equivalence",
+    "raw_full_state_equality_required": false,
+    "runtime_or_abi_change_allowed": false,
+    "new_workload_allowed": false,
+    "untracked_candidate_overlay_allowed": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "measured_result": {
+    "summary_report": "reports/paged_attention_kv_cache_repeat_median_summary.json",
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "reports": [
+      "reports/paged_kv_repeat_pulp_paged_kv_cache_large_256x1_median.json",
+      "reports/paged_kv_repeat_pulp_paged_kv_cache_large_1x64_median.json",
+      "reports/paged_kv_repeat_pulp_paged_attention_kv_score_64x1_median.json",
+      "reports/paged_kv_repeat_pulp_paged_attention_kv_score_1x64_median.json"
+    ],
+    "workloads": [
+      {
+        "name": "pulp_paged_kv_cache_large_256x1",
+        "target": "pulp_paged_kv_cache_large",
+        "shape": "256x1",
+        "nstates": 256,
+        "steps": 1,
+        "interpretation": "state_parallel_kv_cache",
+        "cpu_elapsed_ms_median": 613.931,
+        "hybrid_wall_ms_median": 1.259,
+        "hybrid_gpu_kernel_total_ms_median": 1.22368,
+        "cpu_to_hybrid_wall_ratio_median": 487.6338363780779,
+        "cpu_to_hybrid_kernel_ratio_median": 501.70878007322176,
+        "cpu_ms_per_state_step_median": 2.39816796875,
+        "hybrid_wall_ms_per_state_step_median": 0.00491796875,
+        "hybrid_kernel_ms_per_state_step_median": 0.00478,
+        "coverage_output_mismatch_count": 0
+      },
+      {
+        "name": "pulp_paged_kv_cache_large_1x64",
+        "target": "pulp_paged_kv_cache_large",
+        "shape": "1x64",
+        "nstates": 1,
+        "steps": 64,
+        "interpretation": "single_state_repeated_kv_cache",
+        "cpu_elapsed_ms_median": 3.60037,
+        "hybrid_wall_ms_median": 1.823,
+        "hybrid_gpu_kernel_total_ms_median": 1.789952,
+        "cpu_to_hybrid_wall_ratio_median": 1.9749698299506309,
+        "cpu_to_hybrid_kernel_ratio_median": 2.0114338261584668,
+        "cpu_ms_per_state_step_median": 0.05625578125,
+        "hybrid_wall_ms_per_state_step_median": 0.028484375,
+        "hybrid_kernel_ms_per_state_step_median": 0.027968,
+        "coverage_output_mismatch_count": 0
+      },
+      {
+        "name": "pulp_paged_attention_kv_score_64x1",
+        "target": "pulp_paged_attention_kv_score",
+        "shape": "64x1",
+        "nstates": 64,
+        "steps": 1,
+        "interpretation": "state_parallel_attention_score",
+        "cpu_elapsed_ms_median": 145.936,
+        "hybrid_wall_ms_median": 1.068,
+        "hybrid_gpu_kernel_total_ms_median": 1.038336,
+        "cpu_to_hybrid_wall_ratio_median": 136.6441947565543,
+        "cpu_to_hybrid_kernel_ratio_median": 140.5479536489152,
+        "cpu_ms_per_state_step_median": 2.28025,
+        "hybrid_wall_ms_per_state_step_median": 0.0166875,
+        "hybrid_kernel_ms_per_state_step_median": 0.016224,
+        "coverage_output_mismatch_count": 0
+      },
+      {
+        "name": "pulp_paged_attention_kv_score_1x64",
+        "target": "pulp_paged_attention_kv_score",
+        "shape": "1x64",
+        "nstates": 1,
+        "steps": 64,
+        "interpretation": "single_state_repeated_attention_score",
+        "cpu_elapsed_ms_median": 3.16693,
+        "hybrid_wall_ms_median": 1.601,
+        "hybrid_gpu_kernel_total_ms_median": 1.5616,
+        "cpu_to_hybrid_wall_ratio_median": 1.978094940662086,
+        "cpu_to_hybrid_kernel_ratio_median": 2.0280033299180324,
+        "cpu_ms_per_state_step_median": 0.04948328125,
+        "hybrid_wall_ms_per_state_step_median": 0.025015625,
+        "hybrid_kernel_ms_per_state_step_median": 0.0244,
+        "coverage_output_mismatch_count": 0
+      }
+    ],
+    "summary": {
+      "state_parallel_wall_ratio_range_median": [
+        136.6441947565543,
+        487.6338363780779
+      ],
+      "single_state_repeated_wall_ratio_range_median": [
+        1.9749698299506309,
+        1.978094940662086
+      ],
+      "interpretation": "The repeat-median result preserves the earlier trend: state-parallel shapes remain much more favorable than single-state repeated-step shapes."
+    }
+  },
+  "acceptance_policy": {
+    "coverage_output_equivalence_required": true,
+    "all_samples_must_pass_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "review_gate_required": true
+  },
+  "next_task": "review_paged_attention_kv_cache_repeat_median_timing",
+  "non_claims": [
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not production paged attention",
+    "not production KV-cache memory hierarchy",
+    "not model-level Transformer inference",
+    "not quantized KV-cache behavior",
+    "not production LLM serving throughput",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "top_level_goal": "modern_llm_serving_rtl_hybrid_conditions",
-  "current_priority": "run_paged_attention_kv_cache_repeat_median_timing_gate",
-  "current_priority_source_artifact": "config/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json",
+  "current_priority": "review_paged_attention_kv_cache_repeat_median_timing",
+  "current_priority_source_artifact": "config/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json",
   "active_scope": {
     "active_target_count": 127,
     "active_tlul_target_count": 22,
@@ -270,6 +270,8 @@
     "next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate": "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
     "paged_attention_kv_cache_repeat_median_timing_gate": "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
     "paged_attention_kv_cache_repeat_median_workflow_gate": "config/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json",
+    "paged_attention_kv_cache_repeat_median_measurement_gate": "config/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json",
+    "paged_attention_kv_cache_repeat_median_summary": "reports/paged_attention_kv_cache_repeat_median_summary.json",
     "goal_review_gate": "config/scaling_gates/neural_network_rtl_full_ita_mha_larger_paged_kv_goal_review_gate.json",
     "dependency_audit": "config/scaling_gates/neural_network_rtl_full_ita_mha_dependency_audit_gate.json",
     "generic_hybrid_benchmark_cli_gate": "config/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
