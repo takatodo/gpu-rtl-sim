@@ -123,6 +123,31 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
                 for marker in ("/home/", "/tmp/", "/Users/", "/var/", "/mnt/", "/workspace/", "/root/"):
                     self.assertNotIn(marker, result.stdout)
 
+    def test_config_generation_validation_breadth_dry_run_commands_pass(self) -> None:
+        dry_run_commands = [
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 1x1 --dry-run",
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x1 --dry-run",
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_softmax_top.json --shape 1x1 --dry-run",
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1 --dry-run",
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_attention_kv_score.json --shape 1x1 --dry-run",
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x1 --dry-run",
+        ]
+
+        for command in dry_run_commands:
+            with self.subTest(command=command):
+                result = subprocess.run(
+                    [sys.executable, *command.split()[1:]],
+                    cwd=REPO_ROOT,
+                    check=True,
+                    text=True,
+                    capture_output=True,
+                )
+                self.assertIn("python3 src/tools/build_host_probe.py", result.stdout)
+                self.assertIn("--acceptance-policy coverage_output_equivalence", result.stdout)
+                self.assertNotIn("make -C src/hybrid", result.stdout)
+                for marker in ("/home/", "/tmp/", "/Users/", "/var/", "/mnt/", "/workspace/", "/root/"):
+                    self.assertNotIn(marker, result.stdout)
+
     def test_public_pack_archive_dry_run_prints_include_exclude_plan(self) -> None:
         result = subprocess.run(
             [
@@ -167,6 +192,7 @@ class HybridVerilatorLikeCliTest(unittest.TestCase):
             "records/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json",
             "records/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json",
             "records/scaling_gates/config_generation_validation_breadth_gate.json",
+            "records/scaling_gates/config_generation_validation_breadth_dry_run_gate.json",
             "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
             "records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",

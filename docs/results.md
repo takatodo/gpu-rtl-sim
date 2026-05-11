@@ -93,7 +93,7 @@ Before publishing or handing off the benchmark pack, verify:
 
 | Check | How to verify | Required result |
 | --- | --- | --- |
-| Source-of-truth alignment | Inspect `README.md`, `config/selection.json`, `docs/status.md`, and `docs/roadmap.md`. | All point at `run_config_generation_validation_breadth_dry_run_gate` and `config/scaling_gates/config_generation_validation_breadth_gate.json`. |
+| Source-of-truth alignment | Inspect `README.md`, `config/selection.json`, `docs/status.md`, and `docs/roadmap.md`. | All point at `review_config_generation_validation_breadth_dry_run_gate` and `config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json`. |
 | Reader guide and boundaries | Inspect `docs/results.md`. | It includes `How To Read This Pack`, `External pack boundary`, `Prerequisites by path`, `Public pack manifest`, and `Public reproduction smoke`. |
 | Local path hygiene | Search public docs, gates, and wrapper summaries for local absolute paths. | No machine-local absolute path prefixes are exposed. |
 | Smoke commands | Run the public reproduction smoke commands above. | All commands exit successfully and do not write benchmark evidence. |
@@ -169,6 +169,8 @@ Review gate: `config/scaling_gates/paged_attention_kv_cache_repeat_median_review
 Next-selection gate: `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json` selects `config_generation_validation_breadth` after the repeat-median public pack is closed. This is selection-only and does not add a measurement, runtime/ABI change, workload promotion, or production serving claim.
 
 Config-generation validation breadth gate: `config/scaling_gates/config_generation_validation_breadth_gate.json` defines the tracked template set for generated config and generic host-probe metadata validation: NVDLA `cmac_core_mac`, ITA `dotp`, ITA `softmax_top`, ITA `mha`, paged-attention KV-score, and larger paged KV-cache. This is definition-only; MobileViT, Ibex, quantized KV-cache, and untracked candidate overlays are deferred.
+
+Config-generation validation breadth dry-run gate: `config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json` records the six tracked `1x1 --dry-run` command plans. All exited with code `0`, emitted `src/tools/build_host_probe.py`, and preserved `coverage_output_equivalence` compare plans. This remains command-plan evidence only, not fresh build/run/compare measurement evidence.
 
 Repeat-median timing highlights, generated with `python3 src/tools/run_results_reproduction.py --repeat-median 3`:
 
@@ -389,6 +391,7 @@ Canonical state and completion audit:
 - `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json`
 - `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json`
 - `config/scaling_gates/config_generation_validation_breadth_gate.json`
+- `config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json`
 - `config/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`
 - `config/scaling_gates/pulp_ita_mha_shape_expansion_gate.json`
 - `config/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json`

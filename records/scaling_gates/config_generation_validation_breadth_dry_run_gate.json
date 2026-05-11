@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "gate": "config_generation_validation_breadth_dry_run_gate",
+  "status": "passed_config_generation_validation_breadth_dry_run",
+  "objective": "Run the tracked config-generation validation breadth dry-run set and confirm the Verilator-like hybrid command plans use generic host-probe metadata without measuring or changing runtime behavior.",
+  "source_definition_gate": "config/scaling_gates/config_generation_validation_breadth_gate.json",
+  "current_priority": "review_config_generation_validation_breadth_dry_run_gate",
+  "dry_run_result": {
+    "all_commands_exited_zero": true,
+    "command_count": 6,
+    "all_emit_generic_host_probe_builder": true,
+    "makefile_host_probe_target_observed": false,
+    "all_emit_coverage_output_compare_policy": true,
+    "all_outputs_are_command_plans_only": true
+  },
+  "commands": [
+    {
+      "target": "NVDLA.nvdla_cmac_core_mac",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 1x1 --dry-run",
+      "exit_code": 0,
+      "observed_host_probe_builder": "python3 src/tools/build_host_probe.py config/slice_launch_templates/nvdla_cmac_core_mac.json",
+      "observed_compare_policy": "coverage_output_equivalence",
+      "json_out": "reports/nvdla_cmac_core_mac_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+    },
+    {
+      "target": "PULP_ITA.pulp_ita_dotp",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x1 --dry-run",
+      "exit_code": 0,
+      "observed_host_probe_builder": "python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_dotp.json",
+      "observed_compare_policy": "coverage_output_equivalence",
+      "json_out": "reports/pulp_ita_dotp_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+    },
+    {
+      "target": "PULP_ITA.pulp_ita_softmax_top",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_softmax_top.json --shape 1x1 --dry-run",
+      "exit_code": 0,
+      "observed_host_probe_builder": "python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_softmax_top.json",
+      "observed_compare_policy": "coverage_output_equivalence",
+      "json_out": "reports/pulp_ita_softmax_top_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+    },
+    {
+      "target": "PULP_ITA.pulp_ita_mha",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1 --dry-run",
+      "exit_code": 0,
+      "observed_host_probe_builder": "python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_mha.json",
+      "observed_compare_policy": "coverage_output_equivalence",
+      "json_out": "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+    },
+    {
+      "target": "PULP_ITA.pulp_paged_attention_kv_score",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_attention_kv_score.json --shape 1x1 --dry-run",
+      "exit_code": 0,
+      "observed_host_probe_builder": "python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+      "observed_compare_policy": "coverage_output_equivalence",
+      "json_out": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+    },
+    {
+      "target": "PULP_ITA.pulp_paged_kv_cache_large",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x1 --dry-run",
+      "exit_code": 0,
+      "observed_host_probe_builder": "python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+      "observed_compare_policy": "coverage_output_equivalence",
+      "json_out": "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+    }
+  ],
+  "acceptance_policy": {
+    "dry_run_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "generic_host_probe_builder_required": true,
+    "makefile_host_probe_target_allowed": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_config_generation_validation_breadth_dry_run_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not fresh build/run/compare execution",
+    "not a runtime or ABI change",
+    "not a new workload promotion",
+    "not universal validation for every historical template",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
