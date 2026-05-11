@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`define_paged_attention_kv_cache_scale_up_measurement_gate`
+`run_paged_attention_kv_cache_scale_up_measurement_dry_run`
 
 Current gate:
 
-`config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json`
+`config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -187,6 +187,7 @@ Current goal evidence includes:
 - `public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json`
 - `public_benchmark_pack_externalization_completion_gate.json`
 - `next_measurement_selection_after_public_benchmark_pack_externalization_gate.json`
+- `paged_attention_kv_cache_scale_up_measurement_gate.json`
 - `pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`
 - `pulp_ita_mha_shape_expansion_gate.json`
 - `pulp_ita_mha_shape_expansion_review_gate.json`
@@ -258,7 +259,8 @@ Do not put canonical decisions in generated outputs. If a generated result matte
 
 The public benchmark pack externalization boundary is complete. The selected next measurement goal is `paged_attention_kv_cache_scale_up`:
 
-- use `config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json` as the current gate
+- use `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json` as the current gate
+- use `config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json` as the source selection gate
 - use `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` as the externalization readiness audit
 - use `config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json` as the source completion gate
 - use `config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json` as the current next-goal selection gate after the repeat-median result
@@ -269,7 +271,9 @@ The public benchmark pack externalization boundary is complete. The selected nex
 - run `python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3 --dry-run` to inspect the persistent resident repeat-median flow
 - run `python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3` to regenerate the report; the current median hybrid wall is `4.965 ms`, median GPU kernel total is `4.934624 ms`, and all samples pass coverage-output equivalence with mismatch count `0`
 - current selected goal is complete: the public benchmark pack externalization boundary is closed without changing runtime or ABI behavior
-- next task: define `paged_attention_kv_cache_scale_up_measurement_gate` without importing unreviewed candidate overlays or changing runtime/ABI behavior
+- next task: run the paged-attention/KV-cache scale-up dry-run set from `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`
+- first dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`
+- do not import unreviewed candidate overlays or change runtime/ABI behavior for this measurement boundary
 - keep the long-term goal: make hybrid execution close to Verilator usage while preserving reproducible correctness and speed evidence for LLM-serving-like RTL workloads
 - keep config current-state-only and historical evidence in gates; regenerate reports/artifacts only when needed
 - keep public CLIs thin and tested

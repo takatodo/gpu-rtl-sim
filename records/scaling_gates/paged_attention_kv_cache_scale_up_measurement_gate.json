@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "gate": "paged_attention_kv_cache_scale_up_measurement_gate",
+  "status": "defined_measurement_boundary",
+  "objective": "Define the next paged-attention/KV-cache scale-up measurement boundary using existing tracked harnesses before running new measurement evidence.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json",
+  "source_results_doc": "docs/results.md",
+  "selected_workstream": "paged_attention_kv_cache_scale_up",
+  "current_priority": "run_paged_attention_kv_cache_scale_up_measurement_dry_run",
+  "tracked_inputs": {
+    "paged_kv_cache_large_gate": "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+    "paged_attention_kv_score_gate": "config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+    "paged_kv_cache_large_template": "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+    "paged_attention_kv_score_template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+    "paged_kv_cache_large_overlay": "overlays/ITA/src/pulp_paged_kv_cache_large_gpu_cov_tb.sv",
+    "paged_attention_kv_score_overlay": "overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv",
+    "paged_kv_cache_large_coverage_manifest": "overlays/ITA/tests/pulp_paged_kv_cache_large_coverage_regions.json",
+    "paged_attention_kv_score_coverage_manifest": "overlays/ITA/tests/pulp_paged_attention_kv_score_coverage_regions.json"
+  },
+  "existing_evidence": {
+    "paged_kv_cache_large_summary": "reports/pulp_paged_kv_cache_large_first_hybrid_benchmark_summary.json",
+    "paged_attention_kv_score_summary": "reports/pulp_paged_attention_kv_score_first_hybrid_benchmark_summary.json",
+    "paged_attention_kv_score_repeat_median": "reports/pulp_paged_attention_kv_score_64x1_median.json",
+    "public_results_doc": "docs/results.md"
+  },
+  "measurement_set": [
+    {
+      "name": "paged_kv_cache_large_state_parallel_scale",
+      "target": "pulp_paged_kv_cache_large",
+      "template": "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+      "shape": "256x1",
+      "purpose": "Confirm the tracked larger KV-cache harness still represents the state-parallel fast class at the largest already proven planned shape."
+    },
+    {
+      "name": "paged_kv_cache_large_single_state_repeated",
+      "target": "pulp_paged_kv_cache_large",
+      "template": "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+      "shape": "1x64",
+      "purpose": "Keep the weak repeated single-state class visible for the larger KV-cache harness."
+    },
+    {
+      "name": "paged_attention_kv_score_state_parallel",
+      "target": "pulp_paged_attention_kv_score",
+      "template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+      "shape": "64x1",
+      "purpose": "Measure the tracked paged-attention KV-score proxy in the state-parallel class."
+    },
+    {
+      "name": "paged_attention_kv_score_single_state_repeated",
+      "target": "pulp_paged_attention_kv_score",
+      "template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+      "shape": "1x64",
+      "purpose": "Measure the tracked paged-attention KV-score proxy in the repeated single-state class."
+    }
+  ],
+  "dry_run_commands": [
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run",
+    "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run",
+    "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run"
+  ],
+  "measurement_commands": [
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64",
+    "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1",
+    "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64"
+  ],
+  "expected_reports": [
+    "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json",
+    "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+    "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+    "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json"
+  ],
+  "acceptance_policy": {
+    "measurement_boundary_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_measurement": true,
+    "all_compare_reports_must_pass_coverage_output_equivalence": true,
+    "max_mismatch_count_required": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "contract_tests_required": true
+  },
+  "review_before_measurement": [
+    "Confirm all referenced templates, overlays, and coverage manifests are tracked files.",
+    "Run every dry-run command before running measurement commands.",
+    "Do not stage untracked candidate overlays, MobileViT, Ibex, or quantized KV-cache files as part of this gate.",
+    "Keep generated reports under reports/ and artifacts under artifacts/."
+  ],
+  "non_claims": [
+    "not a new measurement result",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not production paged attention",
+    "not production KV-cache memory hierarchy",
+    "not model-level Transformer inference",
+    "not quantized model accuracy",
+    "not production LLM serving throughput",
+    "not broad speedup for arbitrary RTL",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ],
+  "next_task": "run_paged_attention_kv_cache_scale_up_measurement_dry_run"
+}

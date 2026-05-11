@@ -10,11 +10,11 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 Current priority:
 
-`define_paged_attention_kv_cache_scale_up_measurement_gate`
+`run_paged_attention_kv_cache_scale_up_measurement_dry_run`
 
 Current gate:
 
-`config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json`
+`config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`
 
 ## Plan
 
@@ -68,7 +68,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-`Define the paged-attention/KV-cache scale-up measurement boundary selected after public benchmark pack externalization.`
+`Run the paged-attention/KV-cache scale-up measurement dry-run set after defining the measurement boundary.`
 
 Candidate-template selection gate:
 
@@ -350,7 +350,7 @@ Tracked evidence:
 
 Recommended next gate:
 
-`define_paged_attention_kv_cache_scale_up_measurement_gate`
+`run_paged_attention_kv_cache_scale_up_measurement_dry_run`
 
 Acceptance criteria:
 
@@ -361,17 +361,20 @@ Acceptance criteria:
 - review `config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json`
 - review `config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json`
 - review `config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json`
+- review `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`
 - preserve the measured repeat-median result for the existing `16x64` four-phase path
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
-- select paged-attention/KV-cache scale-up as the next measurement without importing unreviewed candidate overlays yet
+- run the paged-attention/KV-cache scale-up dry-run commands before any measurement execution
+- keep the measurement set on tracked `pulp_paged_kv_cache_large` and `pulp_paged_attention_kv_score` templates
+- avoid importing unreviewed candidate overlays, MobileViT, Ibex, or quantized KV-cache files
 - keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the externalization pack
 
 Working tree review boundary:
 
-`next_task: define_paged_attention_kv_cache_scale_up_measurement_gate`
+`next_task: run_paged_attention_kv_cache_scale_up_measurement_dry_run`
 
-Review only the next-measurement selection boundary after public-pack externalization. Do not mix in runtime, MobileViT, untracked candidate overlays, or new workload measurement edits.
+Review only the defined paged-attention/KV-cache scale-up measurement boundary and its dry-run plan. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, or measurement execution outputs.
 
 Review/stage boundary:
 
