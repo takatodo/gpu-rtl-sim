@@ -141,6 +141,12 @@ NEXT_MEASUREMENT_AFTER_PAGED_ATTENTION_KV_TIMING_REFRESH_GATE = (
     / "scaling_gates"
     / "next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json"
 )
+PAGED_ATTENTION_KV_CACHE_REPEAT_MEDIAN_TIMING_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "paged_attention_kv_cache_repeat_median_timing_gate.json"
+)
 ONE_COMMAND_REPRODUCTION_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "one_command_reproduction_flow_gate.json"
 )
@@ -482,11 +488,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertEqual(selection["top_level_goal"], "modern_llm_serving_rtl_hybrid_conditions")
         self.assertEqual(
             selection["current_priority"],
-            "define_paged_attention_kv_cache_repeat_median_timing_gate",
+            "add_paged_attention_kv_cache_repeat_median_workflow",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
         )
 
     def test_gate_records_both_requested_followups_and_selected_first_workstream(self) -> None:
@@ -2903,7 +2909,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
 
         self.assertEqual(
             selection["current_priority"],
-            "define_paged_attention_kv_cache_repeat_median_timing_gate",
+            "add_paged_attention_kv_cache_repeat_median_workflow",
         )
         self.assertEqual(gate["current_priority"], "public_benchmark_pack_externalization_ready")
         self.assertEqual(gate["next_task"], "public_benchmark_pack_externalization_ready")
@@ -2962,7 +2968,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "pulp_ita_mha_shape_expansion_gate.json",
             "pulp_ita_mha_shape_expansion_review_gate.json",
             "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
-            "next_task: define_paged_attention_kv_cache_repeat_median_timing_gate",
+            "next_task: add_paged_attention_kv_cache_repeat_median_workflow",
             "review `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`",
             "Review/stage boundary:",
             "docs/roadmap.md",
@@ -3202,11 +3208,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
 
         self.assertEqual(
             selection["current_priority"],
-            "define_paged_attention_kv_cache_repeat_median_timing_gate",
+            "add_paged_attention_kv_cache_repeat_median_workflow",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["public_benchmark_pack_externalization_completion_gate"],
@@ -3243,7 +3249,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "paged-attention/KV-cache scale-up",
             "public benchmark pack externalization boundary",
             "The next_task is `select_next_measurement_after_public_benchmark_pack_externalization`",
-            "All point at `define_paged_attention_kv_cache_repeat_median_timing_gate`",
+            "All point at `add_paged_attention_kv_cache_repeat_median_workflow`",
         ):
             self.assertIn(token, combined)
 
@@ -3295,11 +3301,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
 
         self.assertEqual(
             selection["current_priority"],
-            "define_paged_attention_kv_cache_repeat_median_timing_gate",
+            "add_paged_attention_kv_cache_repeat_median_workflow",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
         )
 
         for token in (
@@ -3452,11 +3458,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
 
         self.assertEqual(
             selection["current_priority"],
-            "define_paged_attention_kv_cache_repeat_median_timing_gate",
+            "add_paged_attention_kv_cache_repeat_median_workflow",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["paged_attention_kv_cache_scale_up_measurement_gate"],
@@ -3556,10 +3562,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertTrue(policy["contract_tests_required"])
         self.assertEqual(gate["next_task"], "define_paged_attention_kv_cache_timing_summary_gate")
 
-        self.assertEqual(selection["current_priority"], "define_paged_attention_kv_cache_repeat_median_timing_gate")
+        self.assertEqual(selection["current_priority"], "add_paged_attention_kv_cache_repeat_median_workflow")
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["paged_attention_kv_cache_scale_up_measurement_review_gate"],
@@ -3573,7 +3579,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "paged_attention_kv_cache_scale_up_measurement_review_gate.json",
             "define_public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate",
             "timing summary gate",
-            "All point at `define_paged_attention_kv_cache_repeat_median_timing_gate`",
+            "All point at `add_paged_attention_kv_cache_repeat_median_workflow`",
             "config/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json",
         ):
             self.assertIn(token, combined)
@@ -3665,10 +3671,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertTrue(policy["contract_tests_required"])
         self.assertEqual(gate["next_task"], "review_paged_attention_kv_cache_timing_summary")
 
-        self.assertEqual(selection["current_priority"], "define_paged_attention_kv_cache_repeat_median_timing_gate")
+        self.assertEqual(selection["current_priority"], "add_paged_attention_kv_cache_repeat_median_workflow")
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["paged_attention_kv_cache_timing_summary_gate"],
@@ -3763,11 +3769,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
 
         self.assertEqual(
             selection["current_priority"],
-            "define_paged_attention_kv_cache_repeat_median_timing_gate",
+            "add_paged_attention_kv_cache_repeat_median_workflow",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["paged_attention_kv_cache_timing_summary_review_gate"],
@@ -3780,7 +3786,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "paged_attention_kv_cache_timing_summary_review_gate.json",
             "define_public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate",
             "publication-only packaging",
-            "All point at `define_paged_attention_kv_cache_repeat_median_timing_gate`",
+            "All point at `add_paged_attention_kv_cache_repeat_median_workflow`",
             "config/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json",
         ):
             self.assertIn(token, combined)
@@ -3854,10 +3860,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertTrue(policy["contract_tests_required"])
         self.assertEqual(gate["next_task"], "public_benchmark_pack_externalization_ready")
 
-        self.assertEqual(selection["current_priority"], "define_paged_attention_kv_cache_repeat_median_timing_gate")
+        self.assertEqual(selection["current_priority"], "add_paged_attention_kv_cache_repeat_median_workflow")
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate"],
@@ -3870,7 +3876,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         for token in (
             "public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate.json",
             "define_paged_attention_kv_cache_repeat_median_timing_gate",
-            "All point at `define_paged_attention_kv_cache_repeat_median_timing_gate`",
+            "All point at `add_paged_attention_kv_cache_repeat_median_workflow`",
             "473.32385466034754x",
             "82.78691476590637x",
             "not repeat-median timing",
@@ -3926,10 +3932,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertIn("not repeat-median timing", gate["non_claims"])
         self.assertIn("reports and artifacts are generated evidence, not source of truth", gate["non_claims"])
 
-        self.assertEqual(selection["current_priority"], "define_paged_attention_kv_cache_repeat_median_timing_gate")
+        self.assertEqual(selection["current_priority"], "add_paged_attention_kv_cache_repeat_median_workflow")
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_timing_summary_gate"],
@@ -3940,7 +3946,7 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_timing_summary_gate.json",
             "select_next_measurement_after_paged_attention_kv_cache_timing_summary_public_pack_refresh",
             "define_paged_attention_kv_cache_repeat_median_timing_gate",
-            "All point at `define_paged_attention_kv_cache_repeat_median_timing_gate`",
+            "All point at `add_paged_attention_kv_cache_repeat_median_workflow`",
         ):
             self.assertIn(token, combined)
 
@@ -3999,10 +4005,10 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
         self.assertTrue(policy["contract_tests_required_for_next_public_workflow"])
         self.assertEqual(gate["next_task"], "define_paged_attention_kv_cache_repeat_median_timing_gate")
 
-        self.assertEqual(selection["current_priority"], "define_paged_attention_kv_cache_repeat_median_timing_gate")
+        self.assertEqual(selection["current_priority"], "add_paged_attention_kv_cache_repeat_median_workflow")
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate"],
@@ -4016,8 +4022,117 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
             "define_paged_attention_kv_cache_repeat_median_timing_gate",
             "paged_attention_kv_cache_repeat_median_timing",
-            "All point at `define_paged_attention_kv_cache_repeat_median_timing_gate`",
-            "next_task: define_paged_attention_kv_cache_repeat_median_timing_gate",
+            "All point at `add_paged_attention_kv_cache_repeat_median_workflow`",
+            "next_task: add_paged_attention_kv_cache_repeat_median_workflow",
+        ):
+            self.assertIn(token, combined)
+
+    def test_paged_attention_kv_cache_repeat_median_timing_gate_is_defined(self) -> None:
+        gate = json.loads(PAGED_ATTENTION_KV_CACHE_REPEAT_MEDIAN_TIMING_GATE.read_text(encoding="utf-8"))
+        selection = json.loads(SELECTION.read_text(encoding="utf-8"))
+        combined = "\n".join(
+            [
+                README.read_text(encoding="utf-8"),
+                STATUS.read_text(encoding="utf-8"),
+                ROADMAP.read_text(encoding="utf-8"),
+                RESULTS.read_text(encoding="utf-8"),
+            ]
+        )
+
+        self.assertEqual(gate["gate"], "paged_attention_kv_cache_repeat_median_timing_gate")
+        self.assertEqual(gate["status"], "defined_repeat_median_timing_boundary_pending_workflow")
+        self.assertEqual(
+            gate["source_selection_gate"],
+            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+        )
+        self.assertEqual(
+            gate["source_single_run_timing_summary_gate"],
+            "config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json",
+        )
+        self.assertEqual(gate["selected_workstream"], "paged_attention_kv_cache_repeat_median_timing")
+        self.assertEqual(gate["current_priority"], "add_paged_attention_kv_cache_repeat_median_workflow")
+
+        boundary = gate["measurement_boundary"]
+        self.assertEqual(boundary["repeat_count"], 3)
+        self.assertEqual(boundary["correctness_policy"], "coverage_output_equivalence")
+        self.assertEqual(boundary["max_coverage_output_mismatch_count"], 0)
+        self.assertFalse(boundary["raw_full_state_equality_required"])
+        self.assertFalse(boundary["runtime_or_abi_change_allowed"])
+        self.assertFalse(boundary["new_workload_allowed"])
+        self.assertFalse(boundary["untracked_candidate_overlay_allowed"])
+        self.assertFalse(boundary["reports_and_artifacts_are_source_of_truth"])
+        self.assertEqual(
+            [entry["shape"] for entry in boundary["required_shapes"]],
+            ["256x1", "1x64", "64x1", "1x64"],
+        )
+        self.assertEqual(
+            [entry["target"] for entry in boundary["required_shapes"]],
+            [
+                "pulp_paged_kv_cache_large",
+                "pulp_paged_kv_cache_large",
+                "pulp_paged_attention_kv_score",
+                "pulp_paged_attention_kv_score",
+            ],
+        )
+        for entry in boundary["required_shapes"]:
+            self.assertTrue(entry["template"].startswith("config/slice_launch_templates/"))
+            self.assertTrue(entry["single_run_compare_report"].startswith("reports/"))
+            self.assertFalse(Path(entry["single_run_compare_report"]).is_absolute())
+        for metric in (
+            "cpu_elapsed_ms",
+            "hybrid_wall_ms",
+            "hybrid_gpu_kernel_total_ms",
+            "cpu_to_hybrid_wall_ratio",
+            "hybrid_wall_ms_per_state_step",
+        ):
+            self.assertIn(metric, boundary["required_median_fields"])
+
+        gap = gate["workflow_gap"]
+        self.assertFalse(gap["existing_repeat_median_cli_covers_required_four_shape_set"])
+        self.assertIn("does not cover", gap["reason"])
+        self.assertIn("src/tools/results_reproduction.py", gap["required_next_workflow"])
+        self.assertEqual(
+            gate["planned_public_interface"]["proposed_dry_run_command"],
+            "python3 src/tools/run_results_reproduction.py --paged-kv-repeat-median 3 --dry-run",
+        )
+        self.assertEqual(
+            gate["planned_public_interface"]["planned_summary_report"],
+            "reports/paged_attention_kv_cache_repeat_median_summary.json",
+        )
+
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["definition_only"])
+        self.assertFalse(policy["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(policy["runtime_or_abi_change_allowed_by_this_gate"])
+        self.assertFalse(policy["new_workload_allowed_by_this_gate"])
+        self.assertFalse(policy["untracked_candidate_overlay_allowed_by_this_gate"])
+        self.assertTrue(policy["coverage_output_equivalence_required_for_later_measurement"])
+        self.assertEqual(policy["repeat_count_required_for_later_measurement"], 3)
+        self.assertEqual(policy["required_shape_count"], 4)
+        self.assertFalse(policy["raw_full_state_equality_required"])
+        self.assertFalse(policy["reports_and_artifacts_are_source_of_truth"])
+        self.assertTrue(policy["public_workflow_change_requires_contract_test"])
+        self.assertTrue(policy["docs_mention_required_for_public_workflow"])
+        self.assertFalse(policy["production_llm_serving_claim_allowed_by_gate_alone"])
+        self.assertEqual(gate["next_task"], "add_paged_attention_kv_cache_repeat_median_workflow")
+
+        self.assertEqual(selection["current_priority"], "add_paged_attention_kv_cache_repeat_median_workflow")
+        self.assertEqual(
+            selection["current_priority_source_artifact"],
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
+        )
+        self.assertEqual(
+            selection["completed_goal_evidence"]["paged_attention_kv_cache_repeat_median_timing_gate"],
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
+        )
+        self.assertIn("not repeat-median timing yet", gate["non_claims"])
+        self.assertIn("reports and artifacts are generated evidence, not source of truth", gate["non_claims"])
+
+        for token in (
+            "paged_attention_kv_cache_repeat_median_timing_gate.json",
+            "add_paged_attention_kv_cache_repeat_median_workflow",
+            "--paged-kv-repeat-median 3 --dry-run",
+            "All point at `add_paged_attention_kv_cache_repeat_median_workflow`",
         ):
             self.assertIn(token, combined)
 
@@ -4228,11 +4343,11 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
 
         self.assertEqual(
             selection["current_priority"],
-            "define_paged_attention_kv_cache_repeat_median_timing_gate",
+            "add_paged_attention_kv_cache_repeat_median_workflow",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+            "config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["public_results_packaging_refresh_after_persistent_resident_repeat_median_gate"],
@@ -4246,8 +4361,8 @@ class FullItaMhaAndLargerPagedKvNextGateTest(unittest.TestCase):
             "paged_attention_kv_cache_scale_up_measurement_gate.json",
             "reports/persistent_resident_state_abi_repeat_median_summary.json",
             "Persistent resident ABI repeat-median",
-            "All point at `define_paged_attention_kv_cache_repeat_median_timing_gate`",
-            "next_task: define_paged_attention_kv_cache_repeat_median_timing_gate",
+            "All point at `add_paged_attention_kv_cache_repeat_median_workflow`",
+            "next_task: add_paged_attention_kv_cache_repeat_median_workflow",
         ):
             self.assertIn(token, combined_docs)
 

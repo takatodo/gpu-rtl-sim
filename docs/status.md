@@ -52,11 +52,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`define_paged_attention_kv_cache_repeat_median_timing_gate`
+`add_paged_attention_kv_cache_repeat_median_workflow`
 
 Current gate:
 
-`config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json`
+`config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json`
 
 ## Current State
 
@@ -103,6 +103,8 @@ Paged-attention/KV-cache public results refresh: `config/scaling_gates/public_re
 Public benchmark pack externalization completion after paged-attention/KV-cache timing refresh: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_timing_summary_gate.json` closes the publication boundary after the paged-attention/KV-cache timing summary refresh. It is completion-only packaging work: no new measurement, no runtime/ABI change, and no stronger production-serving claim. The next_task is `select_next_measurement_after_paged_attention_kv_cache_timing_summary_public_pack_refresh`.
 
 Next measurement after paged-attention/KV-cache timing refresh: `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json` selects `paged_attention_kv_cache_repeat_median_timing` next. The reason is that correctness and single-run timing are now reviewed and public-packaged for the four existing paged-attention/KV-cache shapes, while the weakest remaining evidence gap is timing stability. The first required gate is `define_paged_attention_kv_cache_repeat_median_timing_gate`; it should reuse the existing four-shape set, preserve `coverage_output_equivalence`, and avoid runtime/ABI changes, new workloads, unreviewed candidate overlays, and production serving claims.
+
+Paged-attention/KV-cache repeat-median timing boundary: `config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json` defines the repeat-median measurement boundary for the same four reviewed shapes and requires repeat count `3`, coverage-output equivalence, and median CPU, hybrid wall, and GPU-kernel timing fields. The gate also records a workflow gap: the existing `python3 src/tools/run_results_reproduction.py --repeat-median 3` representative flow includes only `pulp_paged_attention_kv_score 64x1` from this set, so the next task is `add_paged_attention_kv_cache_repeat_median_workflow`. This is definition-only and does not run a new measurement or change runtime, ABI, workloads, or overlays.
 
 Reproduction state: `src/tools/run_results_reproduction.py --dry-run` now prints the representative MHA, resident decode, resident batch-decode, and paged-attention KV-score command sequence from one public entrypoint.
 

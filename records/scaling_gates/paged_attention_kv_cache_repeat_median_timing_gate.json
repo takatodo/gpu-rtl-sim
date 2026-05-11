@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "gate": "paged_attention_kv_cache_repeat_median_timing_gate",
+  "objective": "Define the repeat-median timing boundary for the existing reviewed paged-attention/KV-cache four-shape set before running new measurements.",
+  "status": "defined_repeat_median_timing_boundary_pending_workflow",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+  "source_single_run_timing_summary_gate": "config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json",
+  "source_measurement_gate": "config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json",
+  "selected_workstream": "paged_attention_kv_cache_repeat_median_timing",
+  "current_priority": "add_paged_attention_kv_cache_repeat_median_workflow",
+  "measurement_boundary": {
+    "repeat_count": 3,
+    "correctness_policy": "coverage_output_equivalence",
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "runtime_or_abi_change_allowed": false,
+    "new_workload_allowed": false,
+    "untracked_candidate_overlay_allowed": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "required_shapes": [
+      {
+        "name": "paged_kv_cache_large_state_parallel_scale",
+        "target": "pulp_paged_kv_cache_large",
+        "template": "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+        "shape": "256x1",
+        "nstates": 256,
+        "steps": 1,
+        "single_run_compare_report": "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json",
+        "single_run_cpu_to_hybrid_wall_ratio": 473.32385466034754
+      },
+      {
+        "name": "paged_kv_cache_large_single_state_repeated",
+        "target": "pulp_paged_kv_cache_large",
+        "template": "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+        "shape": "1x64",
+        "nstates": 1,
+        "steps": 64,
+        "single_run_compare_report": "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+        "single_run_cpu_to_hybrid_wall_ratio": 1.5377136864184584
+      },
+      {
+        "name": "paged_attention_kv_score_state_parallel",
+        "target": "pulp_paged_attention_kv_score",
+        "template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+        "shape": "64x1",
+        "nstates": 64,
+        "steps": 1,
+        "single_run_compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+        "single_run_cpu_to_hybrid_wall_ratio": 82.78691476590637
+      },
+      {
+        "name": "paged_attention_kv_score_single_state_repeated",
+        "target": "pulp_paged_attention_kv_score",
+        "template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+        "shape": "1x64",
+        "nstates": 1,
+        "steps": 64,
+        "single_run_compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+        "single_run_cpu_to_hybrid_wall_ratio": 1.9177279202279203
+      }
+    ],
+    "required_median_fields": [
+      "cpu_elapsed_ms",
+      "hybrid_wall_ms",
+      "hybrid_gpu_kernel_total_ms",
+      "cpu_to_hybrid_wall_ratio",
+      "cpu_to_hybrid_kernel_ratio",
+      "hybrid_wall_ms_per_state_step",
+      "hybrid_kernel_ms_per_state_step"
+    ]
+  },
+  "workflow_gap": {
+    "existing_repeat_median_cli": "python3 src/tools/run_results_reproduction.py --repeat-median 3",
+    "existing_repeat_median_cli_covers_required_four_shape_set": false,
+    "reason": "The existing representative repeat-median flow includes pulp_paged_attention_kv_score 64x1, but it does not cover pulp_paged_kv_cache_large 256x1, pulp_paged_kv_cache_large 1x64, or pulp_paged_attention_kv_score 1x64.",
+    "required_next_workflow": "Add a public repeat-median workflow for the four reviewed paged-attention/KV-cache shapes, keeping reusable logic in src/tools/results_reproduction.py and the CLI layer thin."
+  },
+  "planned_public_interface": {
+    "cli": "src/tools/run_results_reproduction.py",
+    "proposed_dry_run_command": "python3 src/tools/run_results_reproduction.py --paged-kv-repeat-median 3 --dry-run",
+    "proposed_command": "python3 src/tools/run_results_reproduction.py --paged-kv-repeat-median 3",
+    "planned_summary_report": "reports/paged_attention_kv_cache_repeat_median_summary.json"
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_measurement": true,
+    "repeat_count_required_for_later_measurement": 3,
+    "required_shape_count": 4,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "public_workflow_change_requires_contract_test": true,
+    "docs_mention_required_for_public_workflow": true,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "add_paged_attention_kv_cache_repeat_median_workflow",
+  "non_claims": [
+    "not a new measurement result",
+    "not repeat-median timing yet",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not production paged attention",
+    "not production KV-cache memory hierarchy",
+    "not model-level Transformer inference",
+    "not quantized KV-cache behavior",
+    "not production LLM serving throughput",
+    "not broad speedup for arbitrary RTL",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
