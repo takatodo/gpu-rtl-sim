@@ -52,11 +52,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`review_paged_attention_kv_cache_scale_up_measurement`
+`define_paged_attention_kv_cache_timing_summary_gate`
 
 Current gate:
 
-`config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`
+`config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_review_gate.json`
 
 ## Current State
 
@@ -90,7 +90,9 @@ Public benchmark pack externalization completion state: `config/scaling_gates/pu
 
 Next measurement after public benchmark pack externalization: `config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json` selects `paged_attention_kv_cache_scale_up`. The first required gate is `define_paged_attention_kv_cache_scale_up_measurement_gate`, which should start from tracked paged-attention KV-score and paged KV-cache evidence, preserve `coverage_output_equivalence`, and avoid importing unreviewed candidate overlays or changing runtime/ABI behavior.
 
-Paged-attention/KV-cache scale-up measurement result: `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json` records that all four planned measurement commands exited with code `0` and passed `coverage_output_equivalence` with mismatch count `0`. The measured set is limited to tracked `pulp_paged_kv_cache_large` and `pulp_paged_attention_kv_score` templates at `256x1`, `1x64`, `64x1`, and `1x64`; the generated compare reports are `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json`, `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json`, `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json`, and `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json`. This is correctness evidence only: raw full-state equality is not required or claimed, reports/artifacts remain generated evidence rather than source of truth, and timing/speedup claims require a separate review gate. The next_task is `review_paged_attention_kv_cache_scale_up_measurement`.
+Paged-attention/KV-cache scale-up measurement result: `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json` records that all four planned measurement commands exited with code `0` and passed `coverage_output_equivalence` with mismatch count `0`. The measured set is limited to tracked `pulp_paged_kv_cache_large` and `pulp_paged_attention_kv_score` templates at `256x1`, `1x64`, `64x1`, and `1x64`; the generated compare reports are `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json`, `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json`, `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json`, and `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json`. This is correctness evidence only: raw full-state equality is not required or claimed, reports/artifacts remain generated evidence rather than source of truth, and timing/speedup claims require a separate timing summary gate.
+
+Paged-attention/KV-cache scale-up measurement review: `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_review_gate.json` closes the correctness review and selects `define_paged_attention_kv_cache_timing_summary_gate` next. The reason is that coverage-output equivalence is complete for the four planned shapes, while compare reports alone do not provide timing fields or justify a speedup claim. The next gate should summarize or regenerate timing for the same tracked measurement set without importing untracked candidate overlays, changing runtime/ABI behavior, or broadening production LLM-serving claims.
 
 Reproduction state: `src/tools/run_results_reproduction.py --dry-run` now prints the representative MHA, resident decode, resident batch-decode, and paged-attention KV-score command sequence from one public entrypoint.
 
@@ -116,7 +118,7 @@ Persistent resident device handle storage gate: `config/scaling_gates/persistent
 
 Persistent resident storage review: `config/scaling_gates/persistent_resident_device_handle_storage_review_gate.json` records the scoped condition goal as satisfied and holds for review. Optional followups are cross-process persistent CUDA state, paged-attention/KV-cache scale-up, repeat-median timing for persistent resident ABI, and public results packaging refresh.
 
-Public benchmark pack externalization state: `config/scaling_gates/public_results_packaging_gate.json` previously pointed the work at `public_benchmark_pack_externalization_ready`: keeping the public pack understandable to external readers by spelling out how to read the evidence, what generated reports mean, what prerequisites each path has, and which non-claims bound the result. The current gate is now `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`, which records the paged-attention/KV-cache scale-up measurement result after selecting it as the next measurement. `docs/results.md` also carries the MobileViT `limit 128` ImageNet evidence as CPU-kick accuracy plus hybrid RTL control-boundary coverage-output equivalence, with explicit non-claims for RTL logits and full 50k ImageNet. The one-command entrypoint for that evidence is `python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128`.
+Public benchmark pack externalization state: `config/scaling_gates/public_results_packaging_gate.json` previously pointed the work at `public_benchmark_pack_externalization_ready`: keeping the public pack understandable to external readers by spelling out how to read the evidence, what generated reports mean, what prerequisites each path has, and which non-claims bound the result. The current gate is now `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_review_gate.json`, which selects the timing-summary follow-up after the paged-attention/KV-cache correctness measurement review. `docs/results.md` also carries the MobileViT `limit 128` ImageNet evidence as CPU-kick accuracy plus hybrid RTL control-boundary coverage-output equivalence, with explicit non-claims for RTL logits and full 50k ImageNet. The one-command entrypoint for that evidence is `python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128`.
 
 Public reproduction smoke state: `docs/results.md` now records the first dry-run command set for external readers. This smoke validates public CLI parsing and command expansion only; it is not correctness or timing evidence.
 

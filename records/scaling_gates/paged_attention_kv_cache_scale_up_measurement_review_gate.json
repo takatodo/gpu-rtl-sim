@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "gate": "paged_attention_kv_cache_scale_up_measurement_review_gate",
+  "objective": "Review the completed paged-attention/KV-cache scale-up measurement and select the next narrow step toward correctness plus timing evidence.",
+  "status": "reviewed_select_timing_summary_gate_next",
+  "source_measurement_gate": "config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json",
+  "reviewed_workstream": "paged_attention_kv_cache_scale_up",
+  "reviewed_result": {
+    "planned_command_count": 4,
+    "all_planned_commands_exited_zero": true,
+    "all_compare_reports_passed_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "coverage_success_fields": [
+      "selected_acceptance_policy.name",
+      "selected_acceptance_policy.passed",
+      "coverage_output_policy.passed",
+      "coverage_output_policy.mismatch_count"
+    ],
+    "raw_full_state_equality_required": false,
+    "raw_full_state_all_matched": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "reviewed_reports": [
+    {
+      "target": "pulp_paged_kv_cache_large",
+      "shape": "256x1",
+      "compare_report": "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "compared_state_pair_count": 256,
+      "compared_word_count": 7424,
+      "compared_byte_count": 29696,
+      "raw_full_state_match": false,
+      "raw_full_state_mismatch_count": 10170
+    },
+    {
+      "target": "pulp_paged_kv_cache_large",
+      "shape": "1x64",
+      "compare_report": "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "compared_state_pair_count": 1,
+      "compared_word_count": 29,
+      "compared_byte_count": 116,
+      "raw_full_state_match": false,
+      "raw_full_state_mismatch_count": 37
+    },
+    {
+      "target": "pulp_paged_attention_kv_score",
+      "shape": "64x1",
+      "compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "compared_state_pair_count": 64,
+      "compared_word_count": 1856,
+      "compared_byte_count": 7424,
+      "raw_full_state_match": false,
+      "raw_full_state_mismatch_count": 2903
+    },
+    {
+      "target": "pulp_paged_attention_kv_score",
+      "shape": "1x64",
+      "compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "compared_state_pair_count": 1,
+      "compared_word_count": 29,
+      "compared_byte_count": 116,
+      "raw_full_state_match": false,
+      "raw_full_state_mismatch_count": 37
+    }
+  ],
+  "options_reviewed": [
+    {
+      "option": "public_results_packaging_refresh",
+      "decision": "defer",
+      "reason": "docs/results.md already references the four correctness compare reports, so a publish-only refresh is less useful than closing the missing timing interpretation first.",
+      "weakness": "Would keep the active priority on packaging while the current evidence still lacks a timing summary for this measurement set."
+    },
+    {
+      "option": "paged_attention_kv_cache_timing_summary",
+      "decision": "select_next",
+      "reason": "The correctness result is complete, but the long-term goal also requires identifying fast and weak execution conditions. A timing summary gate can extract or regenerate timing evidence without changing runtime, ABI, or workload scope because compare reports alone do not contain timing fields.",
+      "weakness": "Timing evidence must be scoped carefully because compare reports alone do not contain timing fields and generated reports are not source of truth."
+    },
+    {
+      "option": "resident_execution_optimization",
+      "decision": "defer",
+      "reason": "Resident optimization remains relevant, but it would shift from this workload review into runtime behavior before the paged-attention/KV-cache measurement timing is summarized.",
+      "weakness": "Would blur workload characterization with runtime optimization."
+    },
+    {
+      "option": "new_paged_attention_or_quantized_kv_workload",
+      "decision": "defer",
+      "reason": "Untracked candidate overlays and quantized KV-cache files should not enter this review boundary.",
+      "weakness": "Would expand active surface before the tracked measurement result is fully interpreted."
+    }
+  ],
+  "selected_next_workstream": {
+    "name": "paged_attention_kv_cache_timing_summary",
+    "required_next_gate": "paged_attention_kv_cache_timing_summary_gate",
+    "next_task": "define_paged_attention_kv_cache_timing_summary_gate",
+    "scope": [
+      "summarize timing for the four already measured paged-attention/KV-cache shapes",
+      "preserve coverage_output_equivalence as the correctness policy",
+      "do not introduce new overlays, runtime changes, or ABI changes",
+      "keep reports and artifacts generated-only",
+      "avoid production LLM-serving or broad RTL speedup claims"
+    ],
+    "new_measurement_allowed_by_review_gate": false
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "timing_summary_gate_selected": true,
+    "contract_tests_required": true
+  },
+  "review_boundary": [
+    "records/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_scale_up_measurement_review_gate.json",
+    "docs/status.md",
+    "docs/roadmap.md",
+    "docs/results.md",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+  ],
+  "non_claims": [
+    "not a new measurement result",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not production paged attention",
+    "not production KV-cache memory hierarchy",
+    "not model-level Transformer inference",
+    "not production LLM serving throughput",
+    "not broad speedup for arbitrary RTL",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ],
+  "next_task": "define_paged_attention_kv_cache_timing_summary_gate"
+}
