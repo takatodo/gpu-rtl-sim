@@ -52,11 +52,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`define_public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median`
+`public_benchmark_pack_externalization_ready`
 
 Current gate:
 
-`config/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json`
+`config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json`
 
 ## Current State
 
@@ -111,6 +111,8 @@ Paged-attention/KV-cache repeat-median workflow: `config/scaling_gates/paged_att
 Paged-attention/KV-cache repeat-median measurement: `config/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json` records `python3 src/tools/run_results_reproduction.py --paged-kv-repeat-median 3`. The generated summary is `reports/paged_attention_kv_cache_repeat_median_summary.json`; all four workloads pass coverage-output equivalence with mismatch count `0`. Median results are: `pulp_paged_kv_cache_large 256x1` CPU `613.931 ms`, hybrid wall `1.259 ms`, ratio `487.6338363780779x`; `pulp_paged_kv_cache_large 1x64` CPU `3.60037 ms`, hybrid wall `1.823 ms`, ratio `1.9749698299506309x`; `pulp_paged_attention_kv_score 64x1` CPU `145.936 ms`, hybrid wall `1.068 ms`, ratio `136.6441947565543x`; `pulp_paged_attention_kv_score 1x64` CPU `3.16693 ms`, hybrid wall `1.601 ms`, ratio `1.978094940662086x`. The gate forbids runtime/ABI changes, new workload claims, and treating reports/artifacts as source of truth. The next task is `review_paged_attention_kv_cache_repeat_median_timing`.
 
 Paged-attention/KV-cache repeat-median review: `config/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json` accepts the scoped repeat-count `3` result for public-pack use. The reviewed trend is unchanged: state-parallel shapes have median CPU/hybrid wall ratios from `136.6441947565543x` to `487.6338363780779x`, while single-state repeated-step shapes remain around `1.9749698299506309x` to `1.978094940662086x`. The weak points are explicit: repeat-count `3` is not paper-grade statistics, these are scoped RTL harnesses rather than production paged attention or full LLM serving, and generated reports remain evidence rather than source of truth. The next task is `define_public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median`.
+
+Paged-attention/KV-cache repeat-median public results refresh: `config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json` defines the source-of-truth refresh after the reviewed repeat-median result. It keeps `docs/results.md`, README, status, roadmap, and selection aligned around `reports/paged_attention_kv_cache_repeat_median_summary.json` as generated evidence only. This is documentation refresh only: no new measurement, no runtime or ABI change, no new workload, no raw full-state equality claim, and no production LLM-serving throughput claim. The next task returns to `public_benchmark_pack_externalization_ready`.
 
 Reproduction state: `src/tools/run_results_reproduction.py --dry-run` now prints the representative MHA, resident decode, resident batch-decode, and paged-attention KV-score command sequence from one public entrypoint.
 
