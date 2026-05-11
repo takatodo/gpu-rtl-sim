@@ -68,6 +68,7 @@ PUBLIC_PACK_ARCHIVE_PATHS = (
     "records/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json",
     "records/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json",
     "records/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json",
+    "records/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json",
     "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
     "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
     "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",

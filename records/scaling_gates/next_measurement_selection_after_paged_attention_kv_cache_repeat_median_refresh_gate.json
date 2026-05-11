@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate",
+  "status": "selected_config_generation_validation_breadth_next",
+  "objective": "Select the next measurement or improvement goal after closing the paged-attention/KV-cache repeat-median public benchmark pack boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json",
+  "current_priority": "define_config_generation_validation_breadth_gate",
+  "decision": {
+    "selected_next_workstream": "config_generation_validation_breadth",
+    "selected_first_gate": "define_config_generation_validation_breadth_gate",
+    "reason": "The repeat-median public pack is closed, while the roadmap's weakest point is still validation breadth for generated config and generic host-probe metadata. This improves the Verilator-like hybrid flow without importing untracked candidate overlays or broadening workload claims."
+  },
+  "candidate_review": [
+    {
+      "name": "config_generation_validation_breadth",
+      "decision": "selected",
+      "reason": "It directly attacks the remaining usability blocker: proving generated clock/reset/template metadata and generic host-probe build behavior across more tracked target shapes."
+    },
+    {
+      "name": "paged_attention_kv_cache_scale_up_continuation",
+      "decision": "deferred",
+      "reason": "The current four-shape paged-attention/KV-cache set already has correctness, timing, repeat-median review, and public-pack closure; larger shapes should wait until the generated-config path is less target-specific."
+    },
+    {
+      "name": "resident_execution_optimization",
+      "decision": "deferred",
+      "reason": "Resident optimization is valuable, but tuning launch/runtime behavior before broadening config-generation validation would hide the remaining operator-simplicity blocker."
+    },
+    {
+      "name": "quantized_kv_cache_boundary",
+      "decision": "deferred",
+      "reason": "Quantized KV-cache candidates are outside the current tracked review boundary and should not be promoted through this selection-only gate."
+    },
+    {
+      "name": "full_ita_mha_additional_shapes",
+      "decision": "deferred",
+      "reason": "Additional MHA shapes broaden measurement coverage, but they do not first resolve the generic generated-config/host-probe validation gap."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_config_generation_validation_breadth_gate",
+    "must_pin": [
+      "tracked target list for validation breadth",
+      "generated template metadata fields under review",
+      "generic host-probe clock/reset metadata checks",
+      "dry-run commands before measured execution",
+      "coverage_output_equivalence policy for any later CPU-vs-hybrid execution",
+      "reports and artifacts remain generated evidence only"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_config_generation_validation_breadth_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a new runtime or ABI change",
+    "not a new workload promotion",
+    "not quantized KV-cache behavior",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "not approval to import untracked candidate overlays",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

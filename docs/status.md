@@ -52,11 +52,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`
+`define_config_generation_validation_breadth_gate`
 
 Current gate:
 
-`config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json`
+`config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json`
 
 ## Current State
 
@@ -115,6 +115,8 @@ Paged-attention/KV-cache repeat-median review: `config/scaling_gates/paged_atten
 Paged-attention/KV-cache repeat-median public results refresh: `config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json` defines the source-of-truth refresh after the reviewed repeat-median result. It keeps `docs/results.md`, README, status, roadmap, and selection aligned around `reports/paged_attention_kv_cache_repeat_median_summary.json` as generated evidence only. This is documentation refresh only: no new measurement, no runtime or ABI change, no new workload, no raw full-state equality claim, and no production LLM-serving throughput claim. The next task returns to `public_benchmark_pack_externalization_ready`.
 
 Public benchmark pack externalization completion after paged-attention/KV-cache repeat-median refresh: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json` closes the publication boundary after the repeat-median refresh. It is completion-only packaging work: no new measurement, no runtime/ABI change, and no stronger production-serving claim. The next task is `select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`.
+
+Next measurement after paged-attention/KV-cache repeat-median public-pack refresh: `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json` selects `config_generation_validation_breadth`. The reason is that repeat-median evidence is already closed into the public pack, while the remaining weakest point is validation breadth for generated config and generic host-probe metadata. The next task is `define_config_generation_validation_breadth_gate`; this is selection-only, not a new measurement, runtime/ABI change, workload promotion, or production LLM-serving claim.
 
 Reproduction state: `src/tools/run_results_reproduction.py --dry-run` now prints the representative MHA, resident decode, resident batch-decode, and paged-attention KV-score command sequence from one public entrypoint.
 

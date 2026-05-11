@@ -66,11 +66,11 @@ class ReducedActiveSurfaceContractTest(unittest.TestCase):
         self.assertEqual(selection["top_level_goal"], "modern_llm_serving_rtl_hybrid_conditions")
         self.assertEqual(
             selection["current_priority"],
-            "select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh",
+            "define_config_generation_validation_breadth_gate",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json",
+            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["persistent_resident_state_abi_repeat_median_gate"],
@@ -147,6 +147,10 @@ class ReducedActiveSurfaceContractTest(unittest.TestCase):
         self.assertEqual(
             selection["completed_goal_evidence"]["public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate"],
             "config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json",
+        )
+        self.assertEqual(
+            selection["completed_goal_evidence"]["next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate"],
+            "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json",
         )
         self.assertEqual(
             selection["completed_goal_evidence"]["paged_attention_kv_cache_repeat_median_summary"],

@@ -6,15 +6,15 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is benchmark-pack maintenance after adding persistent resident ABI evidence.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is validating the generated-config path that makes hybrid execution feel close to a normal Verilator flow.
 
 Current priority:
 
-`select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`
+`define_config_generation_validation_breadth_gate`
 
 Current gate:
 
-`config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json`
+`config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json`
 
 ## Plan
 
@@ -68,7 +68,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-`Run the paged-attention/KV-cache scale-up measurement set after the dry-run boundary passed.`
+`Define and run config-generation validation breadth for the Verilator-like hybrid flow.`
 
 Candidate-template selection gate:
 
@@ -350,7 +350,7 @@ Tracked evidence:
 
 Recommended next gate:
 
-`select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`
+`define_config_generation_validation_breadth_gate`
 
 Acceptance criteria:
 
@@ -373,6 +373,7 @@ Acceptance criteria:
 - review `config/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json`
 - review `config/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json`
 - review `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json`
+- review `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json`
 - preserve the measured repeat-median result for the existing `16x64` four-phase path
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
@@ -390,14 +391,15 @@ Acceptance criteria:
 - add a public repeat-median workflow for those four shapes because the existing representative `--repeat-median` flow does not cover the full paged-attention/KV-cache set
 - preserve the generated `reports/paged_attention_kv_cache_repeat_median_summary.json` as evidence only, not source of truth
 - keep the reviewed paged-attention/KV-cache repeat-median result packaged before selecting another measurement
+- define tracked target breadth for generated config and generic host-probe metadata validation
 - avoid importing unreviewed candidate overlays, MobileViT, Ibex, or quantized KV-cache files
 - keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the externalization pack
 
 Working tree review boundary:
 
-`next_task: select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`
+`next_task: define_config_generation_validation_breadth_gate`
 
-Review the public benchmark pack externalization boundary after the reviewed paged-attention/KV-cache repeat-median refresh. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, quantized KV-cache, unrelated workload execution outputs, or production serving claims.
+Define the config-generation validation breadth gate after the reviewed paged-attention/KV-cache repeat-median refresh. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, quantized KV-cache, unrelated workload execution outputs, or production serving claims.
 
 Review/stage boundary:
 
