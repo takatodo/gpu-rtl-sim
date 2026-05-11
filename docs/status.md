@@ -52,11 +52,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`define_config_generation_validation_breadth_gate`
+`run_config_generation_validation_breadth_dry_run_gate`
 
 Current gate:
 
-`config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json`
+`config/scaling_gates/config_generation_validation_breadth_gate.json`
 
 ## Current State
 
@@ -117,6 +117,8 @@ Paged-attention/KV-cache repeat-median public results refresh: `config/scaling_g
 Public benchmark pack externalization completion after paged-attention/KV-cache repeat-median refresh: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json` closes the publication boundary after the repeat-median refresh. It is completion-only packaging work: no new measurement, no runtime/ABI change, and no stronger production-serving claim. The next task is `select_next_measurement_after_paged_attention_kv_cache_repeat_median_public_pack_refresh`.
 
 Next measurement after paged-attention/KV-cache repeat-median public-pack refresh: `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json` selects `config_generation_validation_breadth`. The reason is that repeat-median evidence is already closed into the public pack, while the remaining weakest point is validation breadth for generated config and generic host-probe metadata. The next task is `define_config_generation_validation_breadth_gate`; this is selection-only, not a new measurement, runtime/ABI change, workload promotion, or production LLM-serving claim.
+
+Config-generation validation breadth state: `config/scaling_gates/config_generation_validation_breadth_gate.json` defines the tracked target set for validating generated config and generic host-probe metadata breadth. The selected templates are `nvdla_cmac_core_mac`, `pulp_ita_dotp`, `pulp_ita_softmax_top`, `pulp_ita_mha`, `pulp_paged_attention_kv_score`, and `pulp_paged_kv_cache_large`; MobileViT, Ibex, quantized KV-cache, and untracked candidate overlays remain deferred. This is definition-only and does not run a new measurement or change runtime/ABI behavior. The next task is `run_config_generation_validation_breadth_dry_run_gate`.
 
 Reproduction state: `src/tools/run_results_reproduction.py --dry-run` now prints the representative MHA, resident decode, resident batch-decode, and paged-attention KV-score command sequence from one public entrypoint.
 

@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "gate": "config_generation_validation_breadth_gate",
+  "status": "defined_config_generation_validation_breadth",
+  "objective": "Define the tracked target breadth for validating generated config and generic host-probe metadata before treating the Verilator-like hybrid flow as broadly usable.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json",
+  "current_priority": "run_config_generation_validation_breadth_dry_run_gate",
+  "selected_scope": {
+    "name": "tracked_generic_host_probe_template_breadth",
+    "reason": "These tracked templates cover NVDLA, ITA dotp, ITA softmax/reduction, full ITA/MHA, paged-attention score, and paged KV-cache harnesses without importing untracked candidate overlays.",
+    "templates": [
+      {
+        "target": "NVDLA.nvdla_cmac_core_mac",
+        "template": "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+        "top_module": "nvdla_cmac_core_mac_gpu_cov_tb",
+        "host_probe_target": "nvdla_cmac_core_mac_flat_host_probe",
+        "source_gate": "config/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
+        "reason": "CNN-era tracked template with non-default clock/reset polarity and NVDLA Verilator defines."
+      },
+      {
+        "target": "PULP_ITA.pulp_ita_dotp",
+        "template": "config/slice_launch_templates/pulp_ita_dotp.json",
+        "top_module": "pulp_ita_dotp_gpu_cov_tb",
+        "host_probe_target": "pulp_ita_dotp_host_probe",
+        "source_gate": "config/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
+        "reason": "Smallest tracked ITA attention-score datapath."
+      },
+      {
+        "target": "PULP_ITA.pulp_ita_softmax_top",
+        "template": "config/slice_launch_templates/pulp_ita_softmax_top.json",
+        "top_module": "pulp_ita_softmax_top_gpu_cov_tb",
+        "host_probe_target": "pulp_ita_softmax_top_host_probe",
+        "source_gate": "config/scaling_gates/pulp_ita_softmax_top_dependency_template_boundary_gate.json",
+        "reason": "Tracked ITA softmax/reduction boundary with common_cells dependencies."
+      },
+      {
+        "target": "PULP_ITA.pulp_ita_mha",
+        "template": "config/slice_launch_templates/pulp_ita_mha.json",
+        "top_module": "pulp_ita_mha_gpu_cov_tb",
+        "host_probe_target": "pulp_ita_mha_host_probe",
+        "source_gate": "config/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
+        "reason": "Tracked full ITA/MHA boundary."
+      },
+      {
+        "target": "PULP_ITA.pulp_paged_attention_kv_score",
+        "template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+        "top_module": "pulp_paged_attention_kv_score_gpu_cov_tb",
+        "host_probe_target": "pulp_paged_attention_kv_score_host_probe",
+        "source_gate": "config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+        "reason": "Tracked paged-attention score serving-state harness."
+      },
+      {
+        "target": "PULP_ITA.pulp_paged_kv_cache_large",
+        "template": "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+        "top_module": "pulp_paged_kv_cache_large_gpu_cov_tb",
+        "host_probe_target": "pulp_paged_kv_cache_large_host_probe",
+        "source_gate": "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+        "reason": "Tracked larger paged KV-cache serving-state harness."
+      }
+    ]
+  },
+  "metadata_fields_under_review": [
+    "schema_version",
+    "target",
+    "source_gate",
+    "top_module",
+    "build.mdir",
+    "build.work_dir",
+    "build.host_probe_target",
+    "build.host_probe_builder",
+    "build.host_probe.output",
+    "build.host_probe.clock_field",
+    "build.host_probe.clock_report_name",
+    "build.host_probe.reset_field",
+    "build.host_probe.reset_report_name",
+    "build.host_probe.reset_asserted_value",
+    "build.host_probe.reset_deasserted_value",
+    "build.host_probe.host_clock_control",
+    "build.host_probe.host_reset_control",
+    "build.host_probe.probe_syms_state",
+    "build.verilator_mode",
+    "source_files",
+    "verilator_args",
+    "planned_overlay.coverage_tb_path",
+    "planned_overlay.coverage_manifest_path",
+    "planned_overlay.launch_template_path",
+    "planned_overlay.host_probe_target",
+    "planned_overlay.host_probe_builder"
+  ],
+  "required_static_checks": [
+    "all selected templates are tracked by git",
+    "all selected templates use src/tools/build_host_probe.py",
+    "all selected templates declare host_probe clock and reset metadata",
+    "all selected templates keep generated outputs under artifacts/ or work/",
+    "all selected planned overlays and coverage manifests are tracked by git",
+    "untracked candidate templates are not part of this gate"
+  ],
+  "dry_run_commands": [
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_softmax_top.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_attention_kv_score.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x1 --dry-run"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "generic_host_probe_builder_required": true,
+    "dry_run_required_before_measured_execution": true,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "deferred_scopes": [
+    {
+      "name": "mobile_vit_cpu_kick",
+      "reason": "MobileViT remains CPU-kick plus RTL control-boundary evidence, not the generic RTL config breadth path."
+    },
+    {
+      "name": "ibex_llm_soc_kick",
+      "reason": "Ibex files are outside the tracked review boundary in this working tree."
+    },
+    {
+      "name": "quantized_kv_cache",
+      "reason": "Quantized KV-cache candidate files are untracked and not promoted by this gate."
+    },
+    {
+      "name": "new_paged_kv_candidate_overlays",
+      "reason": "New candidate overlays should be selected by a later workload-promotion gate."
+    }
+  ],
+  "next_task": "run_config_generation_validation_breadth_dry_run_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a runtime or ABI change",
+    "not a new workload promotion",
+    "not universal validation for every historical template",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

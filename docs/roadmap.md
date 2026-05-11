@@ -10,11 +10,11 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 Current priority:
 
-`define_config_generation_validation_breadth_gate`
+`run_config_generation_validation_breadth_dry_run_gate`
 
 Current gate:
 
-`config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json`
+`config/scaling_gates/config_generation_validation_breadth_gate.json`
 
 ## Plan
 
@@ -350,7 +350,7 @@ Tracked evidence:
 
 Recommended next gate:
 
-`define_config_generation_validation_breadth_gate`
+`run_config_generation_validation_breadth_dry_run_gate`
 
 Acceptance criteria:
 
@@ -374,6 +374,7 @@ Acceptance criteria:
 - review `config/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json`
 - review `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json`
 - review `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json`
+- review `config/scaling_gates/config_generation_validation_breadth_gate.json`
 - preserve the measured repeat-median result for the existing `16x64` four-phase path
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
@@ -392,14 +393,15 @@ Acceptance criteria:
 - preserve the generated `reports/paged_attention_kv_cache_repeat_median_summary.json` as evidence only, not source of truth
 - keep the reviewed paged-attention/KV-cache repeat-median result packaged before selecting another measurement
 - define tracked target breadth for generated config and generic host-probe metadata validation
+- dry-run the tracked config-generation breadth set before measured execution
 - avoid importing unreviewed candidate overlays, MobileViT, Ibex, or quantized KV-cache files
 - keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the externalization pack
 
 Working tree review boundary:
 
-`next_task: define_config_generation_validation_breadth_gate`
+`next_task: run_config_generation_validation_breadth_dry_run_gate`
 
-Define the config-generation validation breadth gate after the reviewed paged-attention/KV-cache repeat-median refresh. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, quantized KV-cache, unrelated workload execution outputs, or production serving claims.
+Run the config-generation validation breadth dry-run gate after defining the tracked target set. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, quantized KV-cache, unrelated workload execution outputs, or production serving claims.
 
 Review/stage boundary:
 
