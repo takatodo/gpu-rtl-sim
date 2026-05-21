@@ -68,7 +68,7 @@ def benchmark_summary(
             mode=mode,
             phases=phases,
         ),
-        "sidecar_stage_plan": _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode),
+        "sidecar_stage_plan": _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases),
         "evidence": _evidence_summary(
             target=target,
             shape=shape,
@@ -143,7 +143,7 @@ def preflight_report(
             mode=mode,
             phases=phases,
         ),
-        "sidecar_stage_plan": _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode),
+        "sidecar_stage_plan": _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases),
         "execution_mode": "preflight",
         "non_claims": [
             "preflight does not execute benchmark commands",
@@ -208,7 +208,7 @@ def operator_plan_report(
     mode: str = MODE_TEMPLATE,
     phases: int = 4,
 ) -> dict[str, object]:
-    plan = _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode)
+    plan = _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
     readiness = plan.get("verilator_option_readiness")
     ready = isinstance(readiness, dict) and readiness.get("status") == STATUS_READY_FOR_VERILATOR_OPTION_SHIM
     if not ready:
@@ -237,7 +237,7 @@ def operator_plan_json_report(
     mode: str = MODE_TEMPLATE,
     phases: int = 4,
 ) -> tuple[int, dict[str, object]]:
-    plan = _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode)
+    plan = _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
     readiness = plan.get("verilator_option_readiness")
     ready = isinstance(readiness, dict) and readiness.get("status") == STATUS_READY_FOR_VERILATOR_OPTION_SHIM
     if ready:

@@ -207,6 +207,8 @@ Readiness status strings are shared across discovery and JSON entrypoints: `read
 
 Dataset-backed targets stay not-ready for the direct Verilator option until they have a direct RTL sidecar handoff. `mobile_vit --limit 128` still exposes non-executing `host_preprocess` and `rtl_sidecar_proxy_eval` stages so automation can inspect the host preprocessing boundary and the current RTL proxy eval command without treating either as shim readiness.
 
+Resident modes also stay not-ready for the direct Verilator option. Their not-ready plan exposes a `resident_state_reuse_workflow` or `persistent_resident_state_abi_workflow` fallback command so low-efficiency `1xN` shapes can move to the supported resident workflow without implying Verilator owns that flow yet.
+
 `src/tools/verilator_sidecar_shim.py` emits the future option handoff as JSON without executing commands. It exits `0` when ready for the shim, `2` when the target or mode is not ready for the shim, and `1` for input/planning errors with JSON on stderr.
 
 To inspect the exact command for one planned stage without running it:

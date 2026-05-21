@@ -4,7 +4,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from hybrid_benchmark_catalog import BENCHMARKS, KIND_MOBILE_VIT_IMAGENET, KIND_SLICE_TEMPLATE, MODE_TEMPLATE
+from hybrid_benchmark_catalog import (
+    BENCHMARKS,
+    KIND_MOBILE_VIT_IMAGENET,
+    KIND_SLICE_TEMPLATE,
+    MODE_PERSISTENT_RESIDENT_STATE_ABI,
+    MODE_RESIDENT_STATE_REUSE,
+    MODE_TEMPLATE,
+)
 from hybrid_benchmark_efficiency import format_efficiency_estimate
 from hybrid_benchmark_paths import sanitize_local_absolute_paths
 from hybrid_benchmark_specs import (
@@ -18,7 +25,7 @@ from hybrid_benchmark_specs import (
 )
 from hybrid_template_commands import command_plan
 from hybrid_template_runner import load_template_plan
-from hybrid_template_types import HybridTemplatePlan
+from hybrid_template_types import HybridTemplatePlan, parse_shape
 from mobile_vit_hybrid_imagenet_defaults import DEFAULT_TEMPLATE as MOBILE_VIT_TEMPLATE
 from results_reproduction_mobile_vit import (
     MOBILE_VIT_ACCURACY_REPORT_128,
@@ -201,6 +208,50 @@ def _mobile_vit_stage_details(stage: str) -> dict[str, object]:
     return {}
 
 
+def _resident_stage_name(mode: str) -> str:
+    if mode == MODE_RESIDENT_STATE_REUSE:
+        return "resident_state_reuse_workflow"
+    if mode == MODE_PERSISTENT_RESIDENT_STATE_ABI:
+        return "persistent_resident_state_abi_workflow"
+    raise ValueError(f"unsupported resident mode: {mode}")
+
+
+def _resident_workflow_command(*, mode: str, shape: str, phases: int) -> list[str]:
+    if mode == MODE_RESIDENT_STATE_REUSE:
+        return [
+            "python3",
+            "src/tools/run_results_reproduction.py",
+            "--resident-state-reuse",
+            shape,
+            "--resident-state-reuse-phases",
+            str(phases),
+        ]
+    if mode == MODE_PERSISTENT_RESIDENT_STATE_ABI:
+        return [
+            "python3",
+            "src/tools/run_results_reproduction.py",
+            "--persistent-resident-state-abi",
+            shape,
+            "--persistent-resident-state-abi-phases",
+            str(phases),
+        ]
+    raise ValueError(f"unsupported resident mode: {mode}")
+
+
+def _resident_stage_details(*, mode: str, shape: str, phases: int) -> dict[str, object]:
+    nstates, steps = parse_shape(shape)
+    return {
+        "workflow": mode,
+        "shape": shape,
+        "nstates": nstates,
+        "steps": steps,
+        "phases": phases,
+        "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
+        "fallback_command": _format_command(_resident_workflow_command(mode=mode, shape=shape, phases=phases)),
+        "reason": "resident workflow reduces repeated host launch orchestration for low-efficiency single-state shapes",
+    }
+
+
 def select_sidecar_stage(plan: dict[str, object], stage_name: str | None) -> dict[str, object] | None:
     if stage_name is None:
         return None
@@ -322,6 +373,7 @@ def sidecar_stage_plan(
     target: str,
     shape: str | None,
     limit: int | None = None,
+    phases: int = 4,
     mode: str,
 ) -> dict[str, object]:
     spec = BENCHMARKS[target]
@@ -393,6 +445,37 @@ def sidecar_stage_plan(
                 "status": STATUS_UNSUPPORTED_FOR_STAGE_PLAN,
                 "reason": "dataset-backed targets need host preprocessing separated before a Verilator-sidecar stage plan",
                 "stages": [],
+            }
+        )
+        return report
+    if mode in (MODE_RESIDENT_STATE_REUSE, MODE_PERSISTENT_RESIDENT_STATE_ABI):
+        if shape is None:
+            raise ValueError(f"{target} requires --shape")
+        stage_name = _resident_stage_name(mode)
+        command = _resident_workflow_command(mode=mode, shape=shape, phases=phases)
+        report.update(
+            {
+                "status": STATUS_PLANNED_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+                "reason": (
+                    "resident modes are higher-level workflows; the supported fallback is exposed, "
+                    "but a direct Verilator resident sidecar handoff is not ready"
+                ),
+                "stages": [
+                    {
+                        "stage": stage_name,
+                        "command": _format_command(command),
+                        "details": _resident_stage_details(mode=mode, shape=shape, phases=phases),
+                    }
+                ],
+                "verilator_option_readiness": {
+                    "status": STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+                    "missing": ["direct_verilator_resident_sidecar_handoff"],
+                    "fallback_command": _format_command(command),
+                    "non_claims": [
+                        "not-ready status is not correctness or timing evidence",
+                        "resident workflow fallback is not a direct Verilator option implementation",
+                    ],
+                },
             }
         )
         return report

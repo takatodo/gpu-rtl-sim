@@ -104,7 +104,7 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
         sim_accel_states=args.sim_accel_states,
         sim_accel_steps=args.sim_accel_steps,
     )
-    plan = sidecar_stage_plan(target=args.target, shape=shape, limit=args.limit, mode=args.mode)
+    plan = sidecar_stage_plan(target=args.target, shape=shape, limit=args.limit, mode=args.mode, phases=args.phases)
     readiness = plan.get("verilator_option_readiness")
     ready = isinstance(readiness, dict) and readiness.get("status") == STATUS_READY_FOR_VERILATOR_OPTION_SHIM
     status = STATUS_READY_FOR_VERILATOR_OPTION_SHIM if ready else STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM

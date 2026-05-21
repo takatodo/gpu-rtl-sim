@@ -169,6 +169,8 @@ This is still a non-executing operator plan. It carries the synthesized command,
 
 Readiness status strings are shared across discovery and JSON entrypoints: `ready_for_template_shape`, `ready_for_verilator_option_shim`, and `not_ready_for_verilator_option_shim`.
 
+Resident modes are not direct Verilator option handoffs yet. Their not-ready stage plan exposes a `resident_state_reuse_workflow` or `persistent_resident_state_abi_workflow` fallback command, preserving the efficiency guidance for low-parallelism `1xN` shapes while keeping shim readiness separate from higher-level orchestration.
+
 ## Non-Claims
 
 - This is not a new correctness policy.
