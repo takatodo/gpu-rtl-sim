@@ -130,6 +130,10 @@ def target_list_report() -> dict[str, object]:
                     "--sim-accel-shape <NxS>",
                     "--shape <NxS>",
                 ],
+                "operator_plan_command_template": (
+                    f"python3 src/tools/run_hybrid_benchmark.py {name} "
+                    "--sim-accel sidecar-gpu --sim-accel-shape <NxS> --print-operator-plan"
+                ),
                 "ready_modes": [MODE_TEMPLATE],
                 "ready_stage_names": [
                     "verilator_build",

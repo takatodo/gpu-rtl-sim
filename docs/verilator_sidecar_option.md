@@ -69,7 +69,7 @@ python3 src/tools/run_hybrid_benchmark.py <target> \
 
 `src/tools/verilator_sidecar_options.py` is the current shared mapping authority for `--sim-accel-states`, `--sim-accel-steps`, and compact `--sim-accel-shape`. It rejects mixed shape spellings so the eventual Verilator implementation does not inherit ambiguous behavior.
 
-`run_hybrid_benchmark.py --list-targets` exposes the same spellings under `sidecar_gpu.shape_spellings` for ready slice-template targets. The older `sidecar_gpu.requires` field remains the minimum expanded option pair for compatibility, while `shape_spellings` is the operator-facing discovery list.
+`run_hybrid_benchmark.py --list-targets` exposes the same spellings under `sidecar_gpu.shape_spellings` for ready slice-template targets. The older `sidecar_gpu.requires` field remains the minimum expanded option pair for compatibility, while `shape_spellings` is the operator-facing discovery list. `sidecar_gpu.operator_plan_command_template` gives the next target-first, non-executing preview command.
 
 `--preflight` on the wrapper emits `sidecar_stage_plan` for template targets. This is the current implementation boundary for moving into Verilator: the stages are `verilator_build`, `host_probe_build`, `cpu_init_state`, `cpu_reference_output`, `gpu_artifact_build`, `hybrid_sidecar_run`, and `coverage_output_compare`. The printable command is kept for operators, while structured `details` keep the Verilator build inputs (`mdir`, `top_module`, source files, defines, and Verilator args), sidecar launch shape, state files, and compare policy machine-readable. The final stage must continue to use `coverage_output_equivalence`.
 

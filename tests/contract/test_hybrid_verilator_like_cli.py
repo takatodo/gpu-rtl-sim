@@ -65,6 +65,13 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
                 "--shape <NxS>",
             ],
         )
+        self.assertEqual(
+            sidecar["operator_plan_command_template"],
+            (
+                "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha "
+                "--sim-accel sidecar-gpu --sim-accel-shape <NxS> --print-operator-plan"
+            ),
+        )
         self.assertEqual(sidecar["ready_modes"], ["template"])
         self.assertIn("hybrid_sidecar_run", sidecar["ready_stage_names"])
         self.assertEqual(
