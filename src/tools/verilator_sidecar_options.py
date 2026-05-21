@@ -17,6 +17,15 @@ class SidecarShape:
         return f"{self.nstates}x{self.steps}"
 
 
+@dataclass(frozen=True)
+class BenchmarkSidecarOptions:
+    shape: str | None
+    sidecar_gpu: bool
+    estimate_efficiency: bool
+    estimate_efficiency_json: bool
+    explicit_sidecar_gpu: bool
+
+
 def parse_positive_count(raw: str, *, option_name: str) -> int:
     try:
         value = int(raw, 10)
@@ -77,3 +86,37 @@ def validate_sim_accel_mode(sim_accel: str | None) -> None:
         return
     if sim_accel != "sidecar-gpu":
         raise ValueError("--sim-accel currently supports only sidecar-gpu")
+
+
+def normalize_benchmark_sidecar_options(
+    *,
+    shape: str | None,
+    sim_accel: str | None,
+    sim_accel_shape: str | None,
+    sim_accel_states: str | int | None,
+    sim_accel_steps: str | int | None,
+    sim_accel_estimate_efficiency: bool,
+    sidecar_gpu: bool,
+    estimate_efficiency: bool,
+    estimate_efficiency_json: bool,
+    preflight: bool = False,
+) -> BenchmarkSidecarOptions:
+    validate_sim_accel_mode(sim_accel)
+    normalized_shape = resolve_sidecar_shape(
+        shape=shape,
+        sim_accel_shape=sim_accel_shape,
+        sim_accel_states=sim_accel_states,
+        sim_accel_steps=sim_accel_steps,
+    )
+    explicit_sidecar_gpu = sidecar_gpu
+    normalized_sidecar_gpu = sidecar_gpu or (sim_accel == "sidecar-gpu" and not preflight)
+    normalized_estimate_efficiency = estimate_efficiency or sim_accel_estimate_efficiency
+    if normalized_sidecar_gpu and not estimate_efficiency_json:
+        normalized_estimate_efficiency = True
+    return BenchmarkSidecarOptions(
+        shape=normalized_shape,
+        sidecar_gpu=normalized_sidecar_gpu,
+        estimate_efficiency=normalized_estimate_efficiency,
+        estimate_efficiency_json=estimate_efficiency_json,
+        explicit_sidecar_gpu=explicit_sidecar_gpu,
+    )

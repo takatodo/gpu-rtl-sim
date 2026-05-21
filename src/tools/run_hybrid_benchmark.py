@@ -13,7 +13,7 @@ from hybrid_benchmark import (
     run_benchmark,
     write_summary,
 )
-from verilator_sidecar_options import resolve_sidecar_shape, validate_sim_accel_mode
+from verilator_sidecar_options import normalize_benchmark_sidecar_options
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -115,21 +115,22 @@ def run_with_args(args: argparse.Namespace) -> None:
         return
     if args.target is None:
         raise ValueError("target is required unless --list-targets is used")
-    validate_sim_accel_mode(args.sim_accel)
-    explicit_sidecar_gpu = args.sidecar_gpu
-    sim_accel_sidecar_gpu = args.sim_accel == "sidecar-gpu"
-    args.shape = resolve_sidecar_shape(
+    sidecar_options = normalize_benchmark_sidecar_options(
         shape=args.shape,
+        sim_accel=args.sim_accel,
         sim_accel_shape=args.sim_accel_shape,
         sim_accel_states=args.sim_accel_states,
         sim_accel_steps=args.sim_accel_steps,
+        sim_accel_estimate_efficiency=args.sim_accel_estimate_efficiency,
+        sidecar_gpu=args.sidecar_gpu,
+        estimate_efficiency=args.estimate_efficiency,
+        estimate_efficiency_json=args.estimate_efficiency_json,
+        preflight=args.preflight,
     )
-    if sim_accel_sidecar_gpu and not args.preflight:
-        args.sidecar_gpu = True
-    if args.sim_accel_estimate_efficiency:
-        args.estimate_efficiency = True
-    if args.sidecar_gpu and not args.estimate_efficiency_json:
-        args.estimate_efficiency = True
+    args.shape = sidecar_options.shape
+    args.sidecar_gpu = sidecar_options.sidecar_gpu
+    args.estimate_efficiency = sidecar_options.estimate_efficiency
+    args.estimate_efficiency_json = sidecar_options.estimate_efficiency_json
     if args.print_operator_plan:
         if args.preflight or args.dry_run or args.summary_from_existing or args.summary_out is not None:
             raise ValueError("--print-operator-plan cannot be combined with execution, preflight, or summary options")
@@ -138,7 +139,7 @@ def run_with_args(args: argparse.Namespace) -> None:
     if args.preflight:
         if args.summary_from_existing:
             raise ValueError("--summary-from-existing cannot be combined with --preflight")
-        if explicit_sidecar_gpu or args.estimate_efficiency or args.estimate_efficiency_json:
+        if sidecar_options.explicit_sidecar_gpu or args.estimate_efficiency or args.estimate_efficiency_json:
             raise ValueError("--estimate-efficiency cannot be combined with --preflight")
         print_preflight(target=args.target, shape=args.shape, limit=args.limit, mode=args.mode, phases=args.phases)
         return

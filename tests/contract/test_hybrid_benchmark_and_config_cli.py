@@ -179,6 +179,49 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("# efficiency_estimate", stdout)
         self.assertIn("speedup_class: high", stdout)
 
+    def test_benchmark_sidecar_option_normalization_keeps_cli_entrypoint_thin(self) -> None:
+        self.add_tools_to_path()
+        from verilator_sidecar_options import normalize_benchmark_sidecar_options
+
+        options = normalize_benchmark_sidecar_options(
+            shape=None,
+            sim_accel="sidecar-gpu",
+            sim_accel_shape=None,
+            sim_accel_states="64",
+            sim_accel_steps="1",
+            sim_accel_estimate_efficiency=False,
+            sidecar_gpu=False,
+            estimate_efficiency=False,
+            estimate_efficiency_json=False,
+        )
+
+        self.assertEqual(options.shape, "64x1")
+        self.assertTrue(options.sidecar_gpu)
+        self.assertTrue(options.estimate_efficiency)
+        self.assertFalse(options.estimate_efficiency_json)
+        self.assertFalse(options.explicit_sidecar_gpu)
+
+    def test_benchmark_sidecar_option_normalization_preserves_preflight_probe(self) -> None:
+        self.add_tools_to_path()
+        from verilator_sidecar_options import normalize_benchmark_sidecar_options
+
+        options = normalize_benchmark_sidecar_options(
+            shape=None,
+            sim_accel="sidecar-gpu",
+            sim_accel_shape=None,
+            sim_accel_states="64",
+            sim_accel_steps="1",
+            sim_accel_estimate_efficiency=False,
+            sidecar_gpu=False,
+            estimate_efficiency=False,
+            estimate_efficiency_json=False,
+            preflight=True,
+        )
+
+        self.assertEqual(options.shape, "64x1")
+        self.assertFalse(options.sidecar_gpu)
+        self.assertFalse(options.estimate_efficiency)
+
     def test_run_hybrid_benchmark_preflight_accepts_verilator_style_sidecar_shape(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",
