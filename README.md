@@ -196,6 +196,8 @@ The wrapper also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-a
 
 `--operator-plan-json` prints the same wrapper operator plan as machine-readable JSON without executing commands. It exits `0` with a `planned` report when ready, and exits `2` with a `not_ready_for_verilator_option_shim` JSON report when the target cannot synthesize the direct-option preview. Its `schema_role` is `target_first_operator_plan`; use `verilator_sidecar_shim.py` when automation needs the fuller readiness or stage-detail boundary.
 
+Readiness status strings are shared across discovery and JSON entrypoints: `ready_for_template_shape`, `ready_for_verilator_option_shim`, and `not_ready_for_verilator_option_shim`.
+
 `--preflight` includes a `sidecar_stage_plan` for template targets. It names the direct-Verilator migration stages, including `gpu_artifact_build`, `hybrid_sidecar_run`, and the final `coverage_output_compare` using `coverage_output_equivalence`. Each stage also carries structured `details` so `mdir`, `top_module`, source files, state files, shape, and compare policy are available without scraping command strings.
 
 `sidecar_stage_plan.verilator_option_readiness` reports whether the wrapper has the minimum structured inputs for a future Verilator option shim. `ready_for_verilator_option_shim` is a planning/readiness claim only; it is not execution evidence and does not mean Verilator itself already implements `--sim-accel`.

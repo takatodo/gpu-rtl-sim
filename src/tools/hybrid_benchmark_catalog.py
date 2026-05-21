@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from hybrid_benchmark_specs import (
     BENCHMARKS,
+    CORRECTNESS_POLICY_COVERAGE_OUTPUT,
     KIND_MOBILE_VIT_IMAGENET,
     KIND_SLICE_TEMPLATE,
     MODE_PERSISTENT_RESIDENT_STATE_ABI,
     MODE_RESIDENT_STATE_REUSE,
     MODE_TEMPLATE,
+    SIDECAR_ACCEL,
+    STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+    STATUS_READY_FOR_TEMPLATE_SHAPE,
     BenchmarkSpec,
 )
 from hybrid_benchmark_paths import (
@@ -117,11 +121,11 @@ def target_list_report() -> dict[str, object]:
         if spec.kind == KIND_SLICE_TEMPLATE:
             entry["template"] = spec.template
             entry["sidecar_gpu"] = {
-                "sim_accel": "sidecar-gpu",
-                "option_shim_status": "ready_for_template_shape",
+                "sim_accel": SIDECAR_ACCEL,
+                "option_shim_status": STATUS_READY_FOR_TEMPLATE_SHAPE,
                 "requires": ["--sim-accel-states", "--sim-accel-steps"],
                 "ready_modes": [MODE_TEMPLATE],
-                "correctness_policy": "coverage_output_equivalence",
+                "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
                 "non_claims": [
                     "readiness is a discovery hint, not execution evidence",
                     "readiness does not mean Verilator itself implements --sim-accel",
@@ -129,10 +133,10 @@ def target_list_report() -> dict[str, object]:
             }
         else:
             entry["sidecar_gpu"] = {
-                "sim_accel": "sidecar-gpu",
-                "option_shim_status": "not_ready_for_verilator_option_shim",
+                "sim_accel": SIDECAR_ACCEL,
+                "option_shim_status": STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
                 "reason": "dataset-backed targets need host preprocessing separated before a Verilator-sidecar stage plan",
-                "correctness_policy": "coverage_output_equivalence",
+                "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
                 "non_claims": [
                     "not-ready status is not a correctness or timing result",
                     "coverage-output equivalence remains separate from performance estimates",

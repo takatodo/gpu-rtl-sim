@@ -12,6 +12,15 @@ MODE_TEMPLATE = "template"
 MODE_RESIDENT_STATE_REUSE = "resident-state-reuse"
 MODE_PERSISTENT_RESIDENT_STATE_ABI = "persistent-resident-state-abi"
 
+SIDECAR_ACCEL = "sidecar-gpu"
+CORRECTNESS_POLICY_COVERAGE_OUTPUT = "coverage_output_equivalence"
+STATUS_READY_FOR_VERILATOR_OPTION_SHIM = "ready_for_verilator_option_shim"
+STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM = "not_ready_for_verilator_option_shim"
+STATUS_READY_FOR_TEMPLATE_SHAPE = "ready_for_template_shape"
+STATUS_MISSING_REQUIRED_INPUTS = "missing_required_inputs"
+STATUS_UNSUPPORTED_FOR_STAGE_PLAN = "unsupported_for_stage_plan"
+SCHEMA_ROLE_TARGET_FIRST_OPERATOR_PLAN = "target_first_operator_plan"
+
 
 @dataclass(frozen=True)
 class BenchmarkSpec:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from hybrid_benchmark_specs import SIDECAR_ACCEL
 from hybrid_template_types import parse_shape
 
 
@@ -84,8 +85,8 @@ def resolve_sidecar_shape(
 def validate_sim_accel_mode(sim_accel: str | None) -> None:
     if sim_accel is None:
         return
-    if sim_accel != "sidecar-gpu":
-        raise ValueError("--sim-accel currently supports only sidecar-gpu")
+    if sim_accel != SIDECAR_ACCEL:
+        raise ValueError(f"--sim-accel currently supports only {SIDECAR_ACCEL}")
 
 
 def normalize_benchmark_sidecar_options(
@@ -109,7 +110,7 @@ def normalize_benchmark_sidecar_options(
         sim_accel_steps=sim_accel_steps,
     )
     explicit_sidecar_gpu = sidecar_gpu
-    normalized_sidecar_gpu = sidecar_gpu or (sim_accel == "sidecar-gpu" and not preflight)
+    normalized_sidecar_gpu = sidecar_gpu or (sim_accel == SIDECAR_ACCEL and not preflight)
     normalized_estimate_efficiency = estimate_efficiency or sim_accel_estimate_efficiency
     if normalized_sidecar_gpu and not estimate_efficiency_json:
         normalized_estimate_efficiency = True

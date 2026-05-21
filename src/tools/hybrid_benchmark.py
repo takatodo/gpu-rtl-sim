@@ -13,6 +13,12 @@ from hybrid_benchmark_catalog import (
     repo_path as _repo_path,
     target_list_report,
 )
+from hybrid_benchmark_specs import (
+    CORRECTNESS_POLICY_COVERAGE_OUTPUT,
+    SCHEMA_ROLE_TARGET_FIRST_OPERATOR_PLAN,
+    STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+    STATUS_READY_FOR_VERILATOR_OPTION_SHIM,
+)
 from hybrid_benchmark_evidence import (
     evidence_summary as _evidence_summary,
     expected_reports as _expected_reports,
@@ -202,7 +208,7 @@ def operator_plan_report(
 ) -> dict[str, object]:
     plan = _sidecar_stage_plan(target=target, shape=shape, mode=mode)
     readiness = plan.get("verilator_option_readiness")
-    ready = isinstance(readiness, dict) and readiness.get("status") == "ready_for_verilator_option_shim"
+    ready = isinstance(readiness, dict) and readiness.get("status") == STATUS_READY_FOR_VERILATOR_OPTION_SHIM
     if not ready:
         raise ValueError(f"{target} is not ready for the Verilator sidecar option shim")
     estimate = _efficiency_estimate(
@@ -230,10 +236,10 @@ def operator_plan_json_report(
 ) -> tuple[int, dict[str, object]]:
     plan = _sidecar_stage_plan(target=target, shape=shape, mode=mode)
     readiness = plan.get("verilator_option_readiness")
-    ready = isinstance(readiness, dict) and readiness.get("status") == "ready_for_verilator_option_shim"
+    ready = isinstance(readiness, dict) and readiness.get("status") == STATUS_READY_FOR_VERILATOR_OPTION_SHIM
     if ready:
         report = operator_plan_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
-        report["schema_role"] = "target_first_operator_plan"
+        report["schema_role"] = SCHEMA_ROLE_TARGET_FIRST_OPERATOR_PLAN
         report["tool"] = "src/tools/run_hybrid_benchmark.py"
         report["use_when"] = [
             "automation starts from run_hybrid_benchmark.py --list-targets",
@@ -248,9 +254,9 @@ def operator_plan_json_report(
         return 0, report
     return 2, {
         "schema_version": 1,
-        "schema_role": "target_first_operator_plan",
+        "schema_role": SCHEMA_ROLE_TARGET_FIRST_OPERATOR_PLAN,
         "tool": "src/tools/run_hybrid_benchmark.py",
-        "status": "not_ready_for_verilator_option_shim",
+        "status": STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
         "target": target,
         "shape": shape,
         "limit": limit,

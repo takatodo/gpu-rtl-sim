@@ -15,6 +15,11 @@ from hybrid_benchmark_sidecar_plan import (
     sidecar_stage_plan,
     synthesized_verilator_command_argv,
 )
+from hybrid_benchmark_specs import (
+    SIDECAR_ACCEL,
+    STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+    STATUS_READY_FOR_VERILATOR_OPTION_SHIM,
+)
 from verilator_sidecar_options import resolve_sidecar_shape, validate_sim_accel_mode
 
 
@@ -99,8 +104,8 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
     )
     plan = sidecar_stage_plan(target=args.target, shape=shape, mode=args.mode)
     readiness = plan.get("verilator_option_readiness")
-    ready = isinstance(readiness, dict) and readiness.get("status") == "ready_for_verilator_option_shim"
-    status = "ready_for_verilator_option_shim" if ready else "not_ready_for_verilator_option_shim"
+    ready = isinstance(readiness, dict) and readiness.get("status") == STATUS_READY_FOR_VERILATOR_OPTION_SHIM
+    status = STATUS_READY_FOR_VERILATOR_OPTION_SHIM if ready else STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM
     selected_stage = select_sidecar_stage(plan, args.stage) if ready else None
     emit_verilator_command = bool(args.emit_verilator_command or args.print_verilator_command or args.print_operator_plan)
     report = {
@@ -112,7 +117,7 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
         "limit": args.limit,
         "mode": args.mode,
         "phases": args.phases,
-        "sim_accel": args.sim_accel,
+        "sim_accel": args.sim_accel or SIDECAR_ACCEL,
         "selected_stage": selected_stage,
         "command_emitted": bool(args.emit_command),
         "verilator_command_requested": emit_verilator_command,

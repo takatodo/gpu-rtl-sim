@@ -322,6 +322,67 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(payload["shim_boundary"]["tool"], "src/tools/verilator_sidecar_shim.py")
         self.assertIn("operator plan JSON does not execute commands", payload["non_claims"])
 
+    def test_sidecar_readiness_vocabulary_matches_across_entrypoints(self) -> None:
+        self.add_tools_to_path()
+        from hybrid_benchmark_specs import (
+            STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+            STATUS_READY_FOR_TEMPLATE_SHAPE,
+            STATUS_READY_FOR_VERILATOR_OPTION_SHIM,
+        )
+
+        list_result = self.run_python_tool("src/tools/run_hybrid_benchmark.py", "--list-targets")
+        listed_targets = {target["name"]: target for target in json.loads(list_result.stdout)["targets"]}
+        self.assertEqual(
+            listed_targets["paged_attention_kv_score"]["sidecar_gpu"]["option_shim_status"],
+            STATUS_READY_FOR_TEMPLATE_SHAPE,
+        )
+        self.assertEqual(
+            listed_targets["mobile_vit"]["sidecar_gpu"]["option_shim_status"],
+            STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+        )
+
+        wrapper_ready = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--operator-plan-json",
+        )
+        self.assertEqual(json.loads(wrapper_ready.stdout)["status"], "planned")
+
+        shim_ready = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "paged_attention_kv_score",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+        )
+        self.assertEqual(json.loads(shim_ready.stdout)["status"], STATUS_READY_FOR_VERILATOR_OPTION_SHIM)
+
+        wrapper_not_ready = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "mobile_vit",
+            "--limit",
+            "128",
+            "--operator-plan-json",
+            check=False,
+        )
+        self.assertEqual(json.loads(wrapper_not_ready.stdout)["status"], STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM)
+
+        shim_not_ready = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "mobile_vit",
+            "--limit",
+            "128",
+            check=False,
+        )
+        self.assertEqual(json.loads(shim_not_ready.stdout)["status"], STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM)
+
     def test_run_hybrid_benchmark_operator_plan_json_is_exclusive(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",

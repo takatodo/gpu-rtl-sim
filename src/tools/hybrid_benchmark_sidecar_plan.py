@@ -6,6 +6,13 @@ from pathlib import Path
 
 from hybrid_benchmark_catalog import BENCHMARKS, KIND_SLICE_TEMPLATE, MODE_TEMPLATE
 from hybrid_benchmark_paths import sanitize_local_absolute_paths
+from hybrid_benchmark_specs import (
+    CORRECTNESS_POLICY_COVERAGE_OUTPUT,
+    SIDECAR_ACCEL,
+    STATUS_MISSING_REQUIRED_INPUTS,
+    STATUS_READY_FOR_VERILATOR_OPTION_SHIM,
+    STATUS_UNSUPPORTED_FOR_STAGE_PLAN,
+)
 from hybrid_template_commands import command_plan
 from hybrid_template_runner import load_template_plan
 from hybrid_template_types import HybridTemplatePlan
@@ -89,7 +96,7 @@ def _stage_details(plan: HybridTemplatePlan, stage: str) -> dict[str, object]:
             "candidate_dump": _display_path(plan.gpu_candidate_state),
             "reference_label": f"cpu_repeat_{shape}",
             "candidate_label": f"hybrid_from_cpu_init_{shape}",
-            "acceptance_policy": "coverage_output_equivalence",
+            "acceptance_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
             "json_out": _display_path(plan.compare_report),
             "coverage_output_target": plan.target_name,
         }
@@ -120,13 +127,13 @@ def _verilator_option_readiness(stages: list[dict[str, object]]) -> dict[str, ob
         "hybrid_run_has_state_io": _has_detail(by_stage, "hybrid_sidecar_run", "init_state")
         and _has_detail(by_stage, "hybrid_sidecar_run", "dump_state"),
         "compare_uses_coverage_output_equivalence": _details(by_stage, "coverage_output_compare").get("acceptance_policy")
-        == "coverage_output_equivalence",
+        == CORRECTNESS_POLICY_COVERAGE_OUTPUT,
         "compare_has_reference_and_candidate": _has_detail(by_stage, "coverage_output_compare", "reference_dump")
         and _has_detail(by_stage, "coverage_output_compare", "candidate_dump"),
     }
     missing = [name for name, passed in checks.items() if not passed]
     return {
-        "status": "ready_for_verilator_option_shim" if not missing else "missing_required_inputs",
+        "status": STATUS_READY_FOR_VERILATOR_OPTION_SHIM if not missing else STATUS_MISSING_REQUIRED_INPUTS,
         "required_inputs": checks,
         "missing": missing,
         "non_claims": [
@@ -187,7 +194,7 @@ def synthesized_verilator_command_argv(plan: dict[str, object]) -> list[str]:
         "--top-module",
         str(build_details["top_module"]),
         "--sim-accel",
-        "sidecar-gpu",
+        SIDECAR_ACCEL,
         "--sim-accel-states",
         str(run_details["nstates"]),
         "--sim-accel-steps",
@@ -207,7 +214,7 @@ def sidecar_operator_plan(
         "command_argv": command_argv,
         "command": command,
         "efficiency_estimate": efficiency_estimate,
-        "correctness_policy": "coverage_output_equivalence",
+        "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
         "non_claims": [
             "operator plan does not execute commands",
             "operator plan is not correctness or timing evidence",
@@ -228,8 +235,8 @@ def sidecar_stage_plan(
         "target": target,
         "shape": shape,
         "mode": mode,
-        "sim_accel": "sidecar-gpu",
-        "correctness_policy": "coverage_output_equivalence",
+        "sim_accel": SIDECAR_ACCEL,
+        "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
         "non_claims": [
             "stage plan does not execute commands",
             "coverage-output equivalence is not raw full-state equality",
@@ -239,7 +246,7 @@ def sidecar_stage_plan(
     if spec.kind != KIND_SLICE_TEMPLATE:
         report.update(
             {
-                "status": "unsupported_for_stage_plan",
+                "status": STATUS_UNSUPPORTED_FOR_STAGE_PLAN,
                 "reason": "dataset-backed targets need host preprocessing separated before a Verilator-sidecar stage plan",
                 "stages": [],
             }
@@ -248,7 +255,7 @@ def sidecar_stage_plan(
     if mode != MODE_TEMPLATE:
         report.update(
             {
-                "status": "unsupported_for_stage_plan",
+                "status": STATUS_UNSUPPORTED_FOR_STAGE_PLAN,
                 "reason": "resident modes are higher-level benchmark workflows, not the template sidecar build/run/compare plan",
                 "stages": [],
             }

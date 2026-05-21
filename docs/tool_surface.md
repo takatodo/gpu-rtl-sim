@@ -57,6 +57,8 @@ The same operator view is also available from the primary wrapper as `python3 sr
 
 For wrapper-first automation, use the same command with `--operator-plan-json` instead of `--print-operator-plan`. It emits the synthesized command, efficiency estimate, `correctness_policy`, and non-claims as JSON when ready; not-ready targets return JSON with exit code `2` instead of a plain text error. The wrapper JSON declares `schema_role: target_first_operator_plan`; the shim remains the fuller readiness/stage-detail boundary.
 
+The readiness vocabulary is shared across `--list-targets`, wrapper operator-plan JSON, and shim JSON: template-shape discovery uses `ready_for_template_shape`, executable shim readiness uses `ready_for_verilator_option_shim`, and not-ready paths use `not_ready_for_verilator_option_shim`.
+
 When a command can be synthesized, the JSON output also includes `operator_plan`, grouping `command_argv`, shell-quoted `command`, `efficiency_estimate`, and `correctness_policy: coverage_output_equivalence`.
 
 These are still public enough to appear in generated command plans, but they are not the first place an operator should start:
