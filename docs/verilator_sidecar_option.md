@@ -6,7 +6,7 @@ The long-term usability target is a direct Verilator option, not a project-speci
 
 Canonical option prefix: `verilator --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`.
 
-Use `python3 src/tools/run_hybrid_benchmark.py --list-targets` to inspect which targets currently expose a `sidecar_gpu` option-shim discovery block. Slice-template targets are marked `ready_for_template_shape`; dataset-backed targets remain not-ready until host preprocessing is separated from the RTL sidecar stage plan.
+Use `python3 src/tools/run_hybrid_benchmark.py --list-targets` to inspect which targets currently expose a `sidecar_gpu` option-shim discovery block. Slice-template targets are marked `ready_for_template_shape`; dataset-backed targets remain not-ready for the direct Verilator option, but `mobile_vit --limit 128` now exposes non-executing `host_preprocess` and `rtl_sidecar_proxy_eval` stages so the host/RTL boundary is visible.
 
 ```bash
 verilator --cc --timing \
@@ -174,4 +174,4 @@ Readiness status strings are shared across discovery and JSON entrypoints: `read
 - This is not a new correctness policy.
 - This is not raw full-state equality.
 - This is not a broad speedup claim for arbitrary RTL.
-- Dataset-backed flows still need host preprocessing separated from RTL sidecar timing.
+- Dataset-backed flows still need a direct RTL sidecar handoff before they are ready for the Verilator option shim.

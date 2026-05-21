@@ -4,19 +4,30 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from hybrid_benchmark_catalog import BENCHMARKS, KIND_SLICE_TEMPLATE, MODE_TEMPLATE
+from hybrid_benchmark_catalog import BENCHMARKS, KIND_MOBILE_VIT_IMAGENET, KIND_SLICE_TEMPLATE, MODE_TEMPLATE
 from hybrid_benchmark_efficiency import format_efficiency_estimate
 from hybrid_benchmark_paths import sanitize_local_absolute_paths
 from hybrid_benchmark_specs import (
     CORRECTNESS_POLICY_COVERAGE_OUTPUT,
     SIDECAR_ACCEL,
     STATUS_MISSING_REQUIRED_INPUTS,
+    STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+    STATUS_PLANNED_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
     STATUS_READY_FOR_VERILATOR_OPTION_SHIM,
     STATUS_UNSUPPORTED_FOR_STAGE_PLAN,
 )
 from hybrid_template_commands import command_plan
 from hybrid_template_runner import load_template_plan
 from hybrid_template_types import HybridTemplatePlan
+from mobile_vit_hybrid_imagenet_defaults import DEFAULT_TEMPLATE as MOBILE_VIT_TEMPLATE
+from results_reproduction_mobile_vit import (
+    MOBILE_VIT_ACCURACY_REPORT_128,
+    MOBILE_VIT_CPU_KICK_PREDICTIONS_128,
+    MOBILE_VIT_HF_IMAGENET_128_DIR,
+    MOBILE_VIT_MANIFEST_128,
+    MOBILE_VIT_SUMMARY_REPORT_128,
+    mobile_vit_imagenet_128_plan,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -29,6 +40,11 @@ TEMPLATE_STAGE_NAMES = (
     "gpu_artifact_build",
     "hybrid_sidecar_run",
     "coverage_output_compare",
+)
+
+MOBILE_VIT_STAGE_NAMES = (
+    "host_preprocess",
+    "rtl_sidecar_proxy_eval",
 )
 
 
@@ -159,6 +175,32 @@ def _has_detail(by_stage: dict[str, dict[str, object]], stage: str, key: str) ->
     return value is not None
 
 
+def _mobile_vit_stage_details(stage: str) -> dict[str, object]:
+    if stage == "host_preprocess":
+        return {
+            "tool": "src/tools/mobile_vit_imagenet_manifest.py",
+            "limit": 128,
+            "manifest": MOBILE_VIT_MANIFEST_128,
+            "hf_output_dir": MOBILE_VIT_HF_IMAGENET_128_DIR,
+            "dataset_scope": "scoped_subset:imagenet_local_cache_128",
+        }
+    if stage == "rtl_sidecar_proxy_eval":
+        return {
+            "tool": "src/tools/mobile_vit_hybrid_imagenet_eval.py",
+            "manifest": MOBILE_VIT_MANIFEST_128,
+            "cpu_kick_predictions": MOBILE_VIT_CPU_KICK_PREDICTIONS_128,
+            "accuracy_report": MOBILE_VIT_ACCURACY_REPORT_128,
+            "summary": MOBILE_VIT_SUMMARY_REPORT_128,
+            "hybrid_template": str(MOBILE_VIT_TEMPLATE),
+            "rtl_proxy_target": "mobile_vit_cpu_kick_rtl_proxy",
+            "cpu_kick_batch_size": 16,
+            "hybrid_batch_size": 128,
+            "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
+            "coverage_output_equivalence_scope": "CPU-visible LOAD_MODEL/LOAD_IMAGE/KICK_INFER/POLL_DONE boundary",
+        }
+    return {}
+
+
 def select_sidecar_stage(plan: dict[str, object], stage_name: str | None) -> dict[str, object] | None:
     if stage_name is None:
         return None
@@ -279,6 +321,7 @@ def sidecar_stage_plan(
     *,
     target: str,
     shape: str | None,
+    limit: int | None = None,
     mode: str,
 ) -> dict[str, object]:
     spec = BENCHMARKS[target]
@@ -295,6 +338,55 @@ def sidecar_stage_plan(
             "efficiency estimate remains separate from correctness",
         ],
     }
+    if spec.kind == KIND_MOBILE_VIT_IMAGENET:
+        if mode != MODE_TEMPLATE:
+            report.update(
+                {
+                    "status": STATUS_UNSUPPORTED_FOR_STAGE_PLAN,
+                    "reason": "mobile_vit only exposes the template dataset-backed sidecar boundary",
+                    "stages": [],
+                }
+            )
+            return report
+        if limit != 128:
+            report.update(
+                {
+                    "status": STATUS_UNSUPPORTED_FOR_STAGE_PLAN,
+                    "reason": "mobile_vit sidecar stage plan currently requires --limit 128",
+                    "stages": [],
+                }
+            )
+            return report
+        commands = mobile_vit_imagenet_128_plan()
+        stages = [
+            {
+                "stage": name,
+                "command": _format_command(command.argv),
+                "details": _mobile_vit_stage_details(name),
+            }
+            for name, command in zip(MOBILE_VIT_STAGE_NAMES, commands, strict=True)
+        ]
+        report.update(
+            {
+                "status": STATUS_PLANNED_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+                "reason": (
+                    "host preprocessing is separated, but this dataset-backed target still needs "
+                    "a direct RTL sidecar handoff before the Verilator option shim can be ready"
+                ),
+                "limit": limit,
+                "stages": stages,
+                "verilator_option_readiness": {
+                    "status": STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+                    "missing": ["direct_verilator_rtl_sidecar_handoff"],
+                    "fallback_command": "python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run",
+                    "non_claims": [
+                        "not-ready status is not correctness or timing evidence",
+                        "dataset host preprocessing remains separate from RTL sidecar timing",
+                    ],
+                },
+            }
+        )
+        return report
     if spec.kind != KIND_SLICE_TEMPLATE:
         report.update(
             {

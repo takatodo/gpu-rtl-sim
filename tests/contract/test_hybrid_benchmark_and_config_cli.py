@@ -385,8 +385,17 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(payload["exit_code"], 2)
         self.assertEqual(payload["target"], "mobile_vit")
         self.assertEqual(payload["limit"], 128)
-        self.assertEqual(payload["sidecar_stage_plan"]["status"], "unsupported_for_stage_plan")
-        self.assertIn("host preprocessing", payload["sidecar_stage_plan"]["reason"])
+        sidecar_plan = payload["sidecar_stage_plan"]
+        self.assertEqual(sidecar_plan["status"], "planned_not_ready_for_verilator_option_shim")
+        self.assertIn("host preprocessing is separated", sidecar_plan["reason"])
+        self.assertEqual([stage["stage"] for stage in sidecar_plan["stages"]], ["host_preprocess", "rtl_sidecar_proxy_eval"])
+        self.assertIn("mobile_vit_imagenet_manifest.py", sidecar_plan["stages"][0]["command"])
+        self.assertIn("mobile_vit_hybrid_imagenet_eval.py", sidecar_plan["stages"][1]["command"])
+        self.assertEqual(sidecar_plan["stages"][1]["details"]["correctness_policy"], "coverage_output_equivalence")
+        readiness = sidecar_plan["verilator_option_readiness"]
+        self.assertEqual(readiness["status"], "not_ready_for_verilator_option_shim")
+        self.assertEqual(readiness["missing"], ["direct_verilator_rtl_sidecar_handoff"])
+        self.assertIn("mobile_vit --limit 128 --dry-run", readiness["fallback_command"])
         self.assertIn("stable not-ready JSON", payload["use_when"][1])
         self.assertEqual(payload["shim_boundary"]["tool"], "src/tools/verilator_sidecar_shim.py")
         self.assertIn("operator plan JSON does not execute commands", payload["non_claims"])
@@ -581,8 +590,36 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         payload = json.loads(result.stdout)
         self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")
         self.assertEqual(payload["exit_code"], 2)
-        self.assertEqual(payload["sidecar_stage_plan"]["status"], "unsupported_for_stage_plan")
-        self.assertIn("host preprocessing", payload["sidecar_stage_plan"]["reason"])
+        self.assertEqual(payload["sidecar_stage_plan"]["status"], "planned_not_ready_for_verilator_option_shim")
+        self.assertIn("host preprocessing is separated", payload["sidecar_stage_plan"]["reason"])
+        self.assertEqual(
+            [stage["stage"] for stage in payload["sidecar_stage_plan"]["stages"]],
+            ["host_preprocess", "rtl_sidecar_proxy_eval"],
+        )
+
+    def test_verilator_sidecar_shim_can_emit_mobile_vit_not_ready_stage_command(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "mobile_vit",
+            "--limit",
+            "128",
+            "--stage",
+            "host_preprocess",
+            "--emit-command",
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assert_no_local_absolute_paths(result.stdout)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")
+        self.assertTrue(payload["command_emitted"])
+        self.assertEqual(payload["emitted_stage"], "host_preprocess")
+        self.assertIn("mobile_vit_imagenet_manifest.py", payload["emitted_command"])
+        self.assertEqual(payload["selected_stage"]["details"]["manifest"], "artifacts/mobile_vit/apple_mobilevit_small/imagenet_manifest_128.json")
+        readiness = payload["sidecar_stage_plan"]["verilator_option_readiness"]
+        self.assertEqual(readiness["missing"], ["direct_verilator_rtl_sidecar_handoff"])
 
     def test_verilator_sidecar_shim_can_select_stage_and_emit_command_without_execution(self) -> None:
         result = self.run_python_tool(

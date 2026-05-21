@@ -19,6 +19,7 @@ STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM = "not_ready_for_verilator_option_shi
 STATUS_READY_FOR_TEMPLATE_SHAPE = "ready_for_template_shape"
 STATUS_MISSING_REQUIRED_INPUTS = "missing_required_inputs"
 STATUS_UNSUPPORTED_FOR_STAGE_PLAN = "unsupported_for_stage_plan"
+STATUS_PLANNED_NOT_READY_FOR_VERILATOR_OPTION_SHIM = "planned_not_ready_for_verilator_option_shim"
 SCHEMA_ROLE_TARGET_FIRST_OPERATOR_PLAN = "target_first_operator_plan"
 
 

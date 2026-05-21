@@ -135,7 +135,7 @@ def target_list_report() -> dict[str, object]:
             entry["sidecar_gpu"] = {
                 "sim_accel": SIDECAR_ACCEL,
                 "option_shim_status": STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
-                "reason": "dataset-backed targets need host preprocessing separated before a Verilator-sidecar stage plan",
+                "reason": "dataset-backed targets expose host preprocessing as a stage but are not ready for a direct Verilator option",
                 "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
                 "non_claims": [
                     "not-ready status is not a correctness or timing result",

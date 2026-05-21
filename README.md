@@ -205,6 +205,8 @@ Readiness status strings are shared across discovery and JSON entrypoints: `read
 
 `sidecar_stage_plan.verilator_option_readiness` reports whether the wrapper has the minimum structured inputs for a future Verilator option shim. `ready_for_verilator_option_shim` is a planning/readiness claim only; it is not execution evidence and does not mean Verilator itself already implements `--sim-accel`.
 
+Dataset-backed targets stay not-ready for the direct Verilator option until they have a direct RTL sidecar handoff. `mobile_vit --limit 128` still exposes non-executing `host_preprocess` and `rtl_sidecar_proxy_eval` stages so automation can inspect the host preprocessing boundary and the current RTL proxy eval command without treating either as shim readiness.
+
 `src/tools/verilator_sidecar_shim.py` emits the future option handoff as JSON without executing commands. It exits `0` when ready for the shim, `2` when the target or mode is not ready for the shim, and `1` for input/planning errors with JSON on stderr.
 
 To inspect the exact command for one planned stage without running it:
