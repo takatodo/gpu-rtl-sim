@@ -168,6 +168,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --estimate-efficiency
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --estimate-efficiency-json
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --sidecar-gpu
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py pulp_paged_kv_cache_large --shape 256x1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run
 python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode resident-state-reuse --dry-run
@@ -185,6 +186,8 @@ Use `--list-targets` to inspect supported target names, aliases, required `--sha
 `run_hybrid_benchmark.py --estimate-efficiency` is the operator-facing form: it prints the target, shape or limit, speedup class, reason, next action, and non-claims after the command plan. `--estimate-efficiency-json` keeps the same estimate machine-readable. `--preflight` already emits JSON and cannot be combined with the extra efficiency output flags.
 
 `--sidecar-gpu` is a short Verilator-like alias for the existing hybrid sidecar GPU benchmark flow. It does not change the CPU/GPU comparison policy; it adds the human-readable efficiency estimate so the operator can see the command plan, speedup class, and equivalence non-claims in one terminal view.
+
+The wrapper also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` and compact `--sim-accel-shape <NxS>` as tested compatibility spellings for the planned Verilator option. These names map to the same internal `NxS` shape and reject mixed shape spellings.
 
 The target end state is a direct Verilator option, documented in `docs/verilator_sidecar_option.md`. The wrapper spelling above is the current compatibility surface while that option is not implemented in Verilator itself.
 

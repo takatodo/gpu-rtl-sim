@@ -86,12 +86,50 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertIn("docs/verilator_sidecar_option.md", results)
         self.assertIn("docs/verilator_sidecar_option.md", tool_surface)
         self.assertIn("docs/verilator_sidecar_option.md", PUBLIC_PACK_SOURCE_PATHS)
+        self.assertIn("src/tools/verilator_sidecar_options.py", PUBLIC_PACK_SOURCE_PATHS)
         self.assertIn("verilator --sim-accel sidecar-gpu", option_doc)
         self.assertIn("--sim-accel-states", option_doc)
         self.assertIn("--sim-accel-steps", option_doc)
         self.assertIn("compact compatibility spelling", option_doc)
         self.assertIn("coverage_output_equivalence", option_doc)
         self.assertIn("coverage_output_equivalence", tool_surface)
+
+    def test_verilator_sidecar_option_mapping_is_shared_and_strict(self) -> None:
+        self.add_tools_to_path()
+        from verilator_sidecar_options import resolve_sidecar_shape
+
+        self.assertEqual(
+            resolve_sidecar_shape(
+                shape=None,
+                sim_accel_shape=None,
+                sim_accel_states="64",
+                sim_accel_steps="1",
+            ),
+            "64x1",
+        )
+        self.assertEqual(
+            resolve_sidecar_shape(
+                shape=None,
+                sim_accel_shape="1x64",
+                sim_accel_states=None,
+                sim_accel_steps=None,
+            ),
+            "1x64",
+        )
+        with self.assertRaisesRegex(ValueError, "provided together"):
+            resolve_sidecar_shape(
+                shape=None,
+                sim_accel_shape=None,
+                sim_accel_states="64",
+                sim_accel_steps=None,
+            )
+        with self.assertRaisesRegex(ValueError, "only one shape spelling"):
+            resolve_sidecar_shape(
+                shape="64x1",
+                sim_accel_shape=None,
+                sim_accel_states="64",
+                sim_accel_steps="1",
+            )
 
     def test_hybrid_benchmark_requires_target_without_list_targets(self) -> None:
         result = self.run_python_tool("src/tools/run_hybrid_benchmark.py", "--dry-run", check=False)

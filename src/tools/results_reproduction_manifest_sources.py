@@ -79,6 +79,7 @@ PUBLIC_PACK_SOURCE_PATHS = (
     "src/tools/hybrid_benchmark_catalog.py",
     "src/tools/hybrid_benchmark_paths.py",
     "src/tools/hybrid_benchmark_efficiency.py",
+    "src/tools/verilator_sidecar_options.py",
     "src/tools/hybrid_benchmark_evidence.py", "src/tools/hybrid_benchmark_expected_reports.py",
     "src/tools/hybrid_benchmark_specs.py",
     "src/tools/hybrid_benchmark_execution.py",

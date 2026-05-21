@@ -22,6 +22,18 @@ python3 src/tools/run_hybrid_benchmark.py <target> --shape <NxS> --sidecar-gpu
 
 `--sidecar-gpu` uses the same benchmark plan as the target wrapper and adds the short efficiency estimate. It is a migration surface toward the direct Verilator option, and it does not replace the documented CPU/GPU compare policy.
 
+The wrapper also accepts the planned Verilator shape spelling so the option semantics have one tested mapping before they move into Verilator itself:
+
+```bash
+python3 src/tools/run_hybrid_benchmark.py <target> \
+  --sim-accel sidecar-gpu \
+  --sim-accel-states <N> \
+  --sim-accel-steps <S> \
+  --dry-run
+```
+
+`--sim-accel-shape <NxS>` remains a compact compatibility spelling. The implementation for these mappings lives in `src/tools/verilator_sidecar_options.py`; keep that module shared rather than duplicating shape parsing in each entrypoint.
+
 These are still public enough to appear in generated command plans, but they are not the first place an operator should start:
 
 | Tool | Role |

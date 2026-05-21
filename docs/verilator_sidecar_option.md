@@ -55,6 +55,18 @@ python3 src/tools/run_hybrid_benchmark.py <target> --shape <NxS> --sidecar-gpu
 
 This wrapper intentionally remains a migration surface. It should expose the same concepts as the target Verilator option while keeping reusable behavior in importable modules.
 
+The wrapper accepts the planned option names as a stricter compatibility check:
+
+```bash
+python3 src/tools/run_hybrid_benchmark.py <target> \
+  --sim-accel sidecar-gpu \
+  --sim-accel-states 64 \
+  --sim-accel-steps 1 \
+  --dry-run
+```
+
+`src/tools/verilator_sidecar_options.py` is the current shared mapping authority for `--sim-accel-states`, `--sim-accel-steps`, and compact `--sim-accel-shape`. It rejects mixed shape spellings so the eventual Verilator implementation does not inherit ambiguous behavior.
+
 ## Non-Claims
 
 - This is not a new correctness policy.

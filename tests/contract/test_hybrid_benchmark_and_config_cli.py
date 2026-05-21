@@ -120,6 +120,57 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("next_action:", stdout)
         self.assertIn("coverage-output equivalence remains separate from performance", stdout)
 
+    def test_run_hybrid_benchmark_accepts_verilator_style_sidecar_shape(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--dry-run",
+        )
+
+        stdout = result.stdout
+        self.assertIn("run_hybrid_template.py", stdout)
+        self.assertIn("--shape 64x1", stdout)
+        self.assertIn("# efficiency_estimate", stdout)
+        self.assertIn("speedup_class: high", stdout)
+
+    def test_run_hybrid_benchmark_accepts_verilator_style_efficiency_alias(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel-shape",
+            "1x64",
+            "--sim-accel-estimate-efficiency",
+            "--dry-run",
+        )
+
+        stdout = result.stdout
+        self.assertIn("--shape 1x64", stdout)
+        self.assertIn("# efficiency_estimate", stdout)
+        self.assertIn("speedup_class: low", stdout)
+
+    def test_run_hybrid_benchmark_rejects_conflicting_shape_spellings(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--shape",
+            "64x1",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--dry-run",
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("use only one shape spelling", result.stderr)
+
     def test_run_hybrid_benchmark_dry_run_can_print_efficiency_estimate_json(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",

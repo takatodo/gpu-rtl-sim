@@ -336,6 +336,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --estimate-efficiency
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --estimate-efficiency-json
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --sidecar-gpu
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py pulp_paged_kv_cache_large --shape 256x1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run
 python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode resident-state-reuse --dry-run
@@ -354,7 +355,7 @@ Use `--estimate-efficiency` on `run_hybrid_benchmark.py` for a short terminal-or
 
 Use `--sidecar-gpu` as the shortest operator-facing spelling for the existing hybrid sidecar GPU flow plus the human-readable efficiency estimate. It is an alias for usability, not a new correctness policy or a stronger speedup claim.
 
-The intended long-term spelling is a direct Verilator option. `docs/verilator_sidecar_option.md` records the target `verilator --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` interface and the non-claims that must survive that migration.
+The wrapper now also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` and compact `--sim-accel-shape <NxS>` as tested compatibility spellings. The intended long-term spelling is a direct Verilator option. `docs/verilator_sidecar_option.md` records the target `verilator --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` interface and the non-claims that must survive that migration.
 
 `--summary-out` writes a generated unified wrapper summary under `reports/` by default. The schema records target, shape or limit, mode, command list, expected reports, and collected evidence when commands actually execute; dry-run summaries explicitly remain non-evidence.
 

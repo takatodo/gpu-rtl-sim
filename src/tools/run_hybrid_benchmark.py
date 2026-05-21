@@ -12,6 +12,7 @@ from hybrid_benchmark import (
     run_benchmark,
     write_summary,
 )
+from verilator_sidecar_options import resolve_sidecar_shape, validate_sim_accel_mode
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -20,6 +21,28 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("target", nargs="?", help="Benchmark target, e.g. pulp_ita_mha, paged_attention_kv_score, mobile_vit.")
     parser.add_argument("--shape", help="Shape for RTL slice-template targets, e.g. 64x1 or 1x64.")
+    parser.add_argument(
+        "--sim-accel",
+        choices=("sidecar-gpu",),
+        help="Verilator-compatible accelerator spelling. Currently supports sidecar-gpu.",
+    )
+    parser.add_argument(
+        "--sim-accel-states",
+        help="Verilator-compatible independent state count. Use with --sim-accel-steps.",
+    )
+    parser.add_argument(
+        "--sim-accel-steps",
+        help="Verilator-compatible eval steps per state. Use with --sim-accel-states.",
+    )
+    parser.add_argument(
+        "--sim-accel-shape",
+        help="Compact compatibility spelling for --sim-accel-states N --sim-accel-steps S, e.g. 64x1.",
+    )
+    parser.add_argument(
+        "--sim-accel-estimate-efficiency",
+        action="store_true",
+        help="Verilator-compatible alias for --estimate-efficiency.",
+    )
     parser.add_argument("--limit", type=int, help="Input limit for dataset-backed targets, e.g. mobile_vit --limit 128.")
     parser.add_argument(
         "--mode",
@@ -86,6 +109,17 @@ def run_with_args(args: argparse.Namespace) -> None:
         return
     if args.target is None:
         raise ValueError("target is required unless --list-targets is used")
+    validate_sim_accel_mode(args.sim_accel)
+    args.shape = resolve_sidecar_shape(
+        shape=args.shape,
+        sim_accel_shape=args.sim_accel_shape,
+        sim_accel_states=args.sim_accel_states,
+        sim_accel_steps=args.sim_accel_steps,
+    )
+    if args.sim_accel == "sidecar-gpu":
+        args.sidecar_gpu = True
+    if args.sim_accel_estimate_efficiency:
+        args.estimate_efficiency = True
     if args.sidecar_gpu and not args.estimate_efficiency_json:
         args.estimate_efficiency = True
     if args.preflight:
