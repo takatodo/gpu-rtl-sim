@@ -357,6 +357,8 @@ Use `--sidecar-gpu` as the shortest operator-facing spelling for the existing hy
 
 The wrapper now also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` and compact `--sim-accel-shape <NxS>` as tested compatibility spellings. The intended long-term spelling is a direct Verilator option. `docs/verilator_sidecar_option.md` records the target `verilator --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` interface and the non-claims that must survive that migration.
 
+Template-target `--preflight` output now includes `sidecar_stage_plan`, a stage-level view of the intended direct-Verilator boundary: Verilator build, host probe build, CPU reference output, GPU artifact build, hybrid sidecar run, and `coverage_output_equivalence` compare. This is still non-executed planning evidence.
+
 `--summary-out` writes a generated unified wrapper summary under `reports/` by default. The schema records target, shape or limit, mode, command list, expected reports, and collected evidence when commands actually execute; dry-run summaries explicitly remain non-evidence.
 
 `--summary-from-existing` writes the same wrapper schema from already generated reports without rerunning benchmark commands. It is useful for publishing the current benchmark pack, but it is not fresh execution evidence by itself.

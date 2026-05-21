@@ -20,6 +20,7 @@ from hybrid_benchmark_efficiency import (
     efficiency_estimate as _efficiency_estimate,
     format_efficiency_estimate as _format_efficiency_estimate,
 )
+from hybrid_benchmark_sidecar_plan import sidecar_stage_plan as _sidecar_stage_plan
 from hybrid_benchmark_execution import run_benchmark_commands
 from results_reproduction import (
     format_command,
@@ -54,6 +55,7 @@ def benchmark_summary(
             mode=mode,
             phases=phases,
         ),
+        "sidecar_stage_plan": _sidecar_stage_plan(target=target, shape=shape, mode=mode),
         "evidence": _evidence_summary(
             target=target,
             shape=shape,
@@ -128,6 +130,7 @@ def preflight_report(
             mode=mode,
             phases=phases,
         ),
+        "sidecar_stage_plan": _sidecar_stage_plan(target=target, shape=shape, mode=mode),
         "execution_mode": "preflight",
         "non_claims": [
             "preflight does not execute benchmark commands",

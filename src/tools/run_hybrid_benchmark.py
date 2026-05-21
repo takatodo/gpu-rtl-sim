@@ -110,13 +110,15 @@ def run_with_args(args: argparse.Namespace) -> None:
     if args.target is None:
         raise ValueError("target is required unless --list-targets is used")
     validate_sim_accel_mode(args.sim_accel)
+    explicit_sidecar_gpu = args.sidecar_gpu
+    sim_accel_sidecar_gpu = args.sim_accel == "sidecar-gpu"
     args.shape = resolve_sidecar_shape(
         shape=args.shape,
         sim_accel_shape=args.sim_accel_shape,
         sim_accel_states=args.sim_accel_states,
         sim_accel_steps=args.sim_accel_steps,
     )
-    if args.sim_accel == "sidecar-gpu":
+    if sim_accel_sidecar_gpu and not args.preflight:
         args.sidecar_gpu = True
     if args.sim_accel_estimate_efficiency:
         args.estimate_efficiency = True
@@ -125,7 +127,7 @@ def run_with_args(args: argparse.Namespace) -> None:
     if args.preflight:
         if args.summary_from_existing:
             raise ValueError("--summary-from-existing cannot be combined with --preflight")
-        if args.sidecar_gpu or args.estimate_efficiency or args.estimate_efficiency_json:
+        if explicit_sidecar_gpu or args.estimate_efficiency or args.estimate_efficiency_json:
             raise ValueError("--estimate-efficiency cannot be combined with --preflight")
         print_preflight(target=args.target, shape=args.shape, limit=args.limit, mode=args.mode, phases=args.phases)
         return

@@ -68,6 +68,24 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(estimate["speedup_class"], "high")
         self.assertIn("state-parallel", estimate["reason"])
         self.assertIn("not a broad speedup claim for arbitrary RTL", estimate["non_claims"])
+        sidecar_plan = report["sidecar_stage_plan"]
+        self.assertEqual(sidecar_plan["status"], "planned")
+        self.assertEqual(sidecar_plan["correctness_policy"], "coverage_output_equivalence")
+        self.assertEqual(
+            [stage["stage"] for stage in sidecar_plan["stages"]],
+            [
+                "verilator_build",
+                "host_probe_build",
+                "cpu_init_state",
+                "cpu_reference_output",
+                "gpu_artifact_build",
+                "hybrid_sidecar_run",
+                "coverage_output_compare",
+            ],
+        )
+        self.assertIn("src/tools/build_vl_gpu.py", sidecar_plan["stages"][4]["command"])
+        self.assertIn("src/tools/run_vl_hybrid.py", sidecar_plan["stages"][5]["command"])
+        self.assertIn("--acceptance-policy coverage_output_equivalence", sidecar_plan["stages"][6]["command"])
 
     def test_run_hybrid_benchmark_preflight_flags_single_state_repeated_step_as_low_efficiency(self) -> None:
         result = self.run_python_tool(
@@ -138,6 +156,25 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("--shape 64x1", stdout)
         self.assertIn("# efficiency_estimate", stdout)
         self.assertIn("speedup_class: high", stdout)
+
+    def test_run_hybrid_benchmark_preflight_accepts_verilator_style_sidecar_shape(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--preflight",
+        )
+
+        report = json.loads(result.stdout)
+        self.assertEqual(report["shape"], "64x1")
+        self.assertEqual(report["sidecar_stage_plan"]["status"], "planned")
+        self.assertEqual(report["sidecar_stage_plan"]["sim_accel"], "sidecar-gpu")
+        self.assertEqual(report["sidecar_stage_plan"]["stages"][0]["stage"], "verilator_build")
 
     def test_run_hybrid_benchmark_accepts_verilator_style_efficiency_alias(self) -> None:
         result = self.run_python_tool(
