@@ -86,6 +86,7 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertIn("docs/verilator_sidecar_option.md", results)
         self.assertIn("docs/verilator_sidecar_option.md", tool_surface)
         self.assertIn("docs/verilator_sidecar_option.md", PUBLIC_PACK_SOURCE_PATHS)
+        self.assertIn("src/tools/verilator_sidecar_shim.py", PUBLIC_PACK_SOURCE_PATHS)
         self.assertIn("src/tools/verilator_sidecar_options.py", PUBLIC_PACK_SOURCE_PATHS)
         self.assertIn("src/tools/hybrid_benchmark_sidecar_plan.py", PUBLIC_PACK_SOURCE_PATHS)
         self.assertIn("verilator --sim-accel sidecar-gpu", option_doc)

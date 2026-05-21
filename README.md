@@ -169,6 +169,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --estimate-efficiency-json
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --sidecar-gpu
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --dry-run
+python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1
 python3 src/tools/run_hybrid_benchmark.py pulp_paged_kv_cache_large --shape 256x1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run
 python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode resident-state-reuse --dry-run
@@ -192,6 +193,8 @@ The wrapper also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-a
 `--preflight` includes a `sidecar_stage_plan` for template targets. It names the direct-Verilator migration stages, including `gpu_artifact_build`, `hybrid_sidecar_run`, and the final `coverage_output_compare` using `coverage_output_equivalence`. Each stage also carries structured `details` so `mdir`, `top_module`, source files, state files, shape, and compare policy are available without scraping command strings.
 
 `sidecar_stage_plan.verilator_option_readiness` reports whether the wrapper has the minimum structured inputs for a future Verilator option shim. `ready_for_verilator_option_shim` is a planning/readiness claim only; it is not execution evidence and does not mean Verilator itself already implements `--sim-accel`.
+
+`src/tools/verilator_sidecar_shim.py` emits the future option handoff as JSON without executing commands. It exits `0` when ready for the shim, `2` when the target or mode is not ready for the shim, and `1` for input/planning errors with JSON on stderr.
 
 The target end state is a direct Verilator option, documented in `docs/verilator_sidecar_option.md`. The wrapper spelling above is the current compatibility surface while that option is not implemented in Verilator itself.
 

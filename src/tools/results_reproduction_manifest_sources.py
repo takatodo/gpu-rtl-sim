@@ -76,6 +76,7 @@ PUBLIC_PACK_SOURCE_PATHS = (
     "src/tools/run_vl_hybrid_persistent_env.py",
     "src/tools/run_vl_hybrid_state_sanitize.py", "src/tools/run_vl_hybrid_state_fields.py",
     "src/tools/run_hybrid_benchmark.py", "src/tools/hybrid_benchmark.py",
+    "src/tools/verilator_sidecar_shim.py",
     "src/tools/hybrid_benchmark_catalog.py",
     "src/tools/hybrid_benchmark_paths.py",
     "src/tools/hybrid_benchmark_efficiency.py",

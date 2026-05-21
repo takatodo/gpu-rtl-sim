@@ -198,6 +198,63 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(report["sidecar_stage_plan"]["sim_accel"], "sidecar-gpu")
         self.assertEqual(report["sidecar_stage_plan"]["stages"][0]["stage"], "verilator_build")
 
+    def test_verilator_sidecar_shim_reports_ready_json_and_exit_zero(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "pulp_ita_mha",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+        )
+
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["tool"], "src/tools/verilator_sidecar_shim.py")
+        self.assertEqual(payload["status"], "ready_for_verilator_option_shim")
+        self.assertEqual(payload["exit_code"], 0)
+        self.assertEqual(payload["shape"], "64x1")
+        self.assertEqual(payload["efficiency_estimate"]["speedup_class"], "high")
+        readiness = payload["sidecar_stage_plan"]["verilator_option_readiness"]
+        self.assertEqual(readiness["status"], "ready_for_verilator_option_shim")
+        self.assertEqual(readiness["missing"], [])
+        self.assertIn("coverage-output equivalence remains separate", payload["non_claims"][2])
+
+    def test_verilator_sidecar_shim_reports_not_ready_exit_two_for_dataset_target(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "mobile_vit",
+            "--limit",
+            "128",
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 2)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")
+        self.assertEqual(payload["exit_code"], 2)
+        self.assertEqual(payload["sidecar_stage_plan"]["status"], "unsupported_for_stage_plan")
+        self.assertIn("host preprocessing", payload["sidecar_stage_plan"]["reason"])
+
+    def test_verilator_sidecar_shim_reports_json_error_exit_one(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "pulp_ita_mha",
+            "--sim-accel-states",
+            "64",
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 1)
+        payload = json.loads(result.stderr)
+        self.assertEqual(payload["status"], "error")
+        self.assertEqual(payload["exit_code"], 1)
+        self.assertIn("--sim-accel-states and --sim-accel-steps", payload["error"])
+
     def test_run_hybrid_benchmark_accepts_verilator_style_efficiency_alias(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",
