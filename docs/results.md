@@ -373,7 +373,7 @@ The shim can now select one planned stage with `--stage <name> --emit-command` a
 
 `--print-verilator-command` is the terminal-only variant: it prints only the shell-quoted command when the shim is ready, while not-ready targets keep the JSON status output and exit code `2`.
 
-`--print-efficiency-estimate` is the terminal-only estimate variant. It prints the speedup class, reason, next action, and non-claims carried by the JSON report without executing commands, and cannot be combined with command-only output.
+`--print-efficiency-estimate` is the terminal-only estimate variant. It prints the speedup class, reason, next action, and non-claims carried by the JSON report without executing commands, and cannot be combined with command-only output. Not-ready targets keep the human estimate but return exit code `2`.
 
 `--print-operator-plan` combines the terminal command preview and terminal efficiency estimate in one non-executing view. Ready targets stay terminal-oriented; not-ready targets return the same JSON status and exit code `2` used by `--operator-plan-json`. The print-only modes remain mutually exclusive so command-only output can stay script-friendly.
 

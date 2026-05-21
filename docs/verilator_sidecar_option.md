@@ -138,7 +138,7 @@ python3 src/tools/verilator_sidecar_shim.py \
   --print-efficiency-estimate
 ```
 
-This prints the same non-executing estimate carried in the JSON report. It is separate from the command-only mode and remains separate from correctness evidence.
+This prints the same non-executing estimate carried in the JSON report. It is separate from the command-only mode and remains separate from correctness evidence. Not-ready targets still print the human estimate, but return exit code `2` so scripts can distinguish an estimate for a not-ready direct-option handoff from a ready operator path.
 
 For a single operator view, use `--print-operator-plan`:
 
