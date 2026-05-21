@@ -163,7 +163,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score \
   --print-operator-plan
 ```
 
-For a command-only target-first preview, replace `--print-operator-plan` with `--print-verilator-command`. For the matching estimate-only target-first preview, use `--print-efficiency-estimate`. Use these wrapper paths when starting from `run_hybrid_benchmark.py --list-targets`; not-ready command and operator-plan previews return JSON with exit code `2`, while ready terminal output stays concise.
+For a command-only target-first preview, replace `--print-operator-plan` with `--print-verilator-command`. For the matching estimate-only target-first preview, use `--print-efficiency-estimate`. Use these wrapper paths when starting from `run_hybrid_benchmark.py --list-targets`; not-ready command and operator-plan previews return JSON with exit code `2`, while ready terminal output stays concise. The command-only preview stays command-only even when the short `--sidecar-gpu` alias is used.
 
 The same wrapper path can emit machine-readable JSON:
 

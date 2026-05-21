@@ -316,6 +316,21 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertEqual(preview["correctness_policy"], "coverage_output_equivalence")
         self.assertNotIn("# efficiency_estimate", result.stdout)
 
+    def test_sidecar_gpu_print_verilator_command_stays_command_only(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--shape",
+            "64x1",
+            "--sidecar-gpu",
+            "--print-verilator-command",
+        )
+
+        self.assertIn("verilator --cc", result.stdout)
+        self.assertIn("--sim-accel sidecar-gpu", result.stdout)
+        self.assertNotIn("# efficiency_estimate", result.stdout)
+        self.assertNotIn("schema_version", result.stdout)
+
     def test_summary_records_sidecar_entrypoint_surface(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             sidecar_summary = Path(tmpdir) / "sidecar.json"

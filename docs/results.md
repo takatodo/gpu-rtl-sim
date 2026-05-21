@@ -371,7 +371,7 @@ The shim can now select one planned stage with `--stage <name> --emit-command` a
 
 `--emit-verilator-command` adds a more direct handoff preview: synthesized `verilator_command_argv` and shell-quoted `verilator_command` fields containing the Verilator build inputs plus `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`. This remains non-executed planning output.
 
-`--print-verilator-command` is the terminal-only variant: it prints only the shell-quoted command when the shim is ready, while not-ready targets keep the JSON status output and exit code `2`.
+`--print-verilator-command` is the terminal-only variant: it prints only the shell-quoted command when the shim is ready, while not-ready targets keep the JSON status output and exit code `2`. This command-only behavior is preserved even when invoked through the short `--sidecar-gpu` alias.
 
 `--print-efficiency-estimate` is the terminal-only estimate variant. It prints the speedup class, reason, next action, and non-claims carried by the JSON report without executing commands, and cannot be combined with command-only output. Not-ready targets keep the human estimate but return exit code `2`.
 
