@@ -452,7 +452,6 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
             "--operator-plan-json",
             check=False,
         )
-
         self.assertEqual(result.returncode, 2)
         self.assertEqual(result.stderr, "")
         payload = json.loads(result.stdout)
@@ -462,6 +461,8 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(payload["exit_code"], 2)
         self.assertEqual(payload["target"], "mobile_vit")
         self.assertEqual(payload["limit"], 128)
+        self.assertEqual(payload["missing"], ["direct_verilator_rtl_sidecar_handoff"])
+        self.assertIn("mobile_vit --limit 128 --dry-run", payload["fallback_command"])
         sidecar_plan = payload["sidecar_stage_plan"]
         self.assertEqual(sidecar_plan["status"], "planned_not_ready_for_verilator_option_shim")
         self.assertIn("host preprocessing is separated", sidecar_plan["reason"])

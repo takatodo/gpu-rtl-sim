@@ -175,7 +175,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score \
   --operator-plan-json
 ```
 
-This is still a non-executing operator plan. It carries the synthesized command, efficiency estimate, handoff contract, `coverage_output_equivalence`, and non-claims without turning the estimate into correctness or timing evidence. The wrapper JSON declares `schema_role: target_first_operator_plan`; use the shim JSON for readiness/stage-detail handoff fields. If the target is not ready for the direct-option preview, the wrapper returns `status: not_ready_for_verilator_option_shim` JSON with exit code `2`.
+This is still a non-executing operator plan. It carries the synthesized command, efficiency estimate, handoff contract, `coverage_output_equivalence`, and non-claims without turning the estimate into correctness or timing evidence. The wrapper JSON declares `schema_role: target_first_operator_plan`; use the shim JSON for readiness/stage-detail handoff fields. If the target is not ready for the direct-option preview, the wrapper returns `status: not_ready_for_verilator_option_shim` JSON with exit code `2`, plus top-level `missing` and `fallback_command` fields for quick automation handling.
 
 Readiness status strings are shared across discovery and JSON entrypoints: `ready_for_template_shape`, `ready_for_verilator_option_shim`, and `not_ready_for_verilator_option_shim`.
 

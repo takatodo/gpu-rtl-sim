@@ -381,6 +381,8 @@ The shim can now select one planned stage with `--stage <name> --emit-command` a
 
 `run_hybrid_benchmark.py --operator-plan-json` provides the same target-first operator plan as JSON. It exits `0` with `status: planned` when ready and exits `2` with `status: not_ready_for_verilator_option_shim` when the target cannot synthesize the direct-option preview. Its `schema_role` is `target_first_operator_plan`, and its `operator_entrypoint` records the wrapper spelling and shape spelling that produced the plan. The shim remains the fuller readiness and stage-detail handoff. It is still non-executing planning output and keeps `correctness_policy: coverage_output_equivalence` separate from the efficiency estimate.
 
+For not-ready targets, `--operator-plan-json` also exposes top-level `missing` and `fallback_command` fields so automation can route the operator without digging into the full `sidecar_stage_plan`.
+
 The readiness vocabulary is intentionally shared across target discovery, wrapper operator-plan JSON, and shim JSON: `ready_for_template_shape`, `ready_for_verilator_option_shim`, and `not_ready_for_verilator_option_shim`.
 
 The JSON output now includes the same idea as structured `operator_plan` when the synthesized command is available. It groups command argv, shell-quoted command, efficiency estimate, and `coverage_output_equivalence` as the correctness policy.

@@ -340,7 +340,7 @@ def operator_plan_json_report(
         }
         report["exit_code"] = 0
         return 0, report
-    return 2, {
+    report = {
         "schema_version": 1,
         "schema_role": SCHEMA_ROLE_TARGET_FIRST_OPERATOR_PLAN,
         "tool": "src/tools/run_hybrid_benchmark.py",
@@ -374,6 +374,11 @@ def operator_plan_json_report(
             "coverage-output equivalence remains separate from performance estimates",
         ],
     }
+    if isinstance(readiness, dict):
+        report["missing"] = readiness.get("missing", [])
+        if "fallback_command" in readiness:
+            report["fallback_command"] = readiness["fallback_command"]
+    return 2, report
 
 
 def print_operator_plan(
