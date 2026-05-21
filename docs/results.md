@@ -373,6 +373,8 @@ The shim can now select one planned stage with `--stage <name> --emit-command` a
 
 `--print-operator-plan` combines the terminal command preview and terminal efficiency estimate in one non-executing view. The print-only modes remain mutually exclusive so command-only output can stay script-friendly.
 
+The JSON output now includes the same idea as structured `operator_plan` when the synthesized command is available. It groups command argv, shell-quoted command, efficiency estimate, and `coverage_output_equivalence` as the correctness policy.
+
 `--summary-out` writes a generated unified wrapper summary under `reports/` by default. The schema records target, shape or limit, mode, command list, expected reports, and collected evidence when commands actually execute; dry-run summaries explicitly remain non-evidence.
 
 `--summary-from-existing` writes the same wrapper schema from already generated reports without rerunning benchmark commands. It is useful for publishing the current benchmark pack, but it is not fresh execution evidence by itself.

@@ -106,6 +106,22 @@ def _synthesized_verilator_command_argv(plan: dict[str, object]) -> list[str]:
     ]
 
 
+def _operator_plan(report: dict[str, object]) -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "status": "planned",
+        "command_argv": report["verilator_command_argv"],
+        "command": report["verilator_command"],
+        "efficiency_estimate": report["efficiency_estimate"],
+        "correctness_policy": "coverage_output_equivalence",
+        "non_claims": [
+            "operator plan does not execute commands",
+            "operator plan is not correctness or timing evidence",
+            "coverage-output equivalence remains separate from performance estimates",
+        ],
+    }
+
+
 def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
     validate_sim_accel_mode(args.sim_accel)
     if args.emit_command and args.stage is None:
@@ -167,6 +183,7 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
         command_argv = _synthesized_verilator_command_argv(plan)
         report["verilator_command_argv"] = command_argv
         report["verilator_command"] = shlex.join(command_argv)
+        report["operator_plan"] = _operator_plan(report)
     return (0 if ready else 2), report
 
 
@@ -199,10 +216,11 @@ def main(argv: list[str] | None = None) -> int:
         print(format_efficiency_estimate(report["efficiency_estimate"]))
         return exit_code
     if args.print_operator_plan and exit_code == 0:
+        operator_plan = report["operator_plan"]
         print("# verilator_sidecar_operator_plan")
         print("command:")
-        print(report["verilator_command"])
-        print(format_efficiency_estimate(report["efficiency_estimate"]))
+        print(operator_plan["command"])
+        print(format_efficiency_estimate(operator_plan["efficiency_estimate"]))
         return 0
     print(json.dumps(report, indent=2))
     return exit_code

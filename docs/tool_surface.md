@@ -51,6 +51,8 @@ For the matching terminal estimate, `--print-efficiency-estimate` prints the hum
 
 For an operator-oriented terminal view, `--print-operator-plan` prints the synthesized command followed by the same efficiency estimate. The three print-only modes are mutually exclusive; use the JSON output for automation that needs both structured command fields and stage details.
 
+When a command can be synthesized, the JSON output also includes `operator_plan`, grouping `command_argv`, shell-quoted `command`, `efficiency_estimate`, and `correctness_policy: coverage_output_equivalence`.
+
 These are still public enough to appear in generated command plans, but they are not the first place an operator should start:
 
 | Tool | Role |

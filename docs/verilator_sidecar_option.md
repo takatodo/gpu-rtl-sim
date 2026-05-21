@@ -100,6 +100,8 @@ python3 src/tools/verilator_sidecar_shim.py \
 
 This adds top-level `verilator_command_argv` and `verilator_command` fields synthesized from the structured `verilator_build` and `hybrid_sidecar_run` stage details. `verilator_command_argv` is the machine-readable form; `verilator_command` is shell-quoted for human inspection. It is a future handoff preview only; it is not executed and is not a claim that Verilator already accepts the option.
 
+When the shim can synthesize the command, the JSON report also includes `operator_plan`. This groups `command_argv`, shell-quoted `command`, `efficiency_estimate`, and `correctness_policy: coverage_output_equivalence` in one machine-readable object for automation that wants the same information as the terminal operator view.
+
 For terminal use, `--print-verilator-command` prints only the shell-quoted command when the shim is ready:
 
 ```bash

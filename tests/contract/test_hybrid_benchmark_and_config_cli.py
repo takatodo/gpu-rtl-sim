@@ -297,6 +297,13 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("-Mdir artifacts/pulp_ita_mha_obj_dir", command)
         self.assertIn("--top-module pulp_ita_mha_gpu_cov_tb", command)
         self.assertIn("overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv", command)
+        operator_plan = payload["operator_plan"]
+        self.assertEqual(operator_plan["status"], "planned")
+        self.assertEqual(operator_plan["command_argv"], argv)
+        self.assertEqual(operator_plan["command"], command)
+        self.assertEqual(operator_plan["efficiency_estimate"]["speedup_class"], "high")
+        self.assertEqual(operator_plan["correctness_policy"], "coverage_output_equivalence")
+        self.assertIn("operator plan does not execute commands", operator_plan["non_claims"])
         self.assertIn("synthesized Verilator commands are printed but not executed", payload["non_claims"])
 
     def test_verilator_sidecar_shim_can_print_future_verilator_command_only(self) -> None:
