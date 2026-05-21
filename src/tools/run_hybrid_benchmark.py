@@ -238,6 +238,7 @@ def run_with_args(args: argparse.Namespace) -> None:
             limit=args.limit,
             mode=args.mode,
             phases=args.phases,
+            operator_entrypoint=operator_entrypoint_for_args(args),
         )
         if exit_code != 0:
             raise SystemExit(exit_code)

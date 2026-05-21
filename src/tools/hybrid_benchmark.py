@@ -319,12 +319,14 @@ def operator_plan_json_report(
     limit: int | None = None,
     mode: str = MODE_TEMPLATE,
     phases: int = 4,
+    operator_entrypoint: dict[str, object] | None = None,
 ) -> tuple[int, dict[str, object]]:
     plan = _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
     readiness = plan.get("verilator_option_readiness")
     ready = isinstance(readiness, dict) and readiness.get("status") == STATUS_READY_FOR_VERILATOR_OPTION_SHIM
     if ready:
         report = operator_plan_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+        report["operator_entrypoint"] = operator_entrypoint
         report["schema_role"] = SCHEMA_ROLE_TARGET_FIRST_OPERATOR_PLAN
         report["tool"] = "src/tools/run_hybrid_benchmark.py"
         report["use_when"] = [
@@ -348,6 +350,7 @@ def operator_plan_json_report(
         "limit": limit,
         "mode": mode,
         "phases": phases,
+        "operator_entrypoint": operator_entrypoint,
         "exit_code": 2,
         "efficiency_estimate": _efficiency_estimate(
             target=target,
@@ -439,8 +442,16 @@ def print_operator_plan_json(
     limit: int | None = None,
     mode: str = MODE_TEMPLATE,
     phases: int = 4,
+    operator_entrypoint: dict[str, object] | None = None,
 ) -> int:
-    exit_code, report = operator_plan_json_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+    exit_code, report = operator_plan_json_report(
+        target=target,
+        shape=shape,
+        limit=limit,
+        mode=mode,
+        phases=phases,
+        operator_entrypoint=operator_entrypoint,
+    )
     print(json.dumps(report, indent=2))
     return exit_code
 

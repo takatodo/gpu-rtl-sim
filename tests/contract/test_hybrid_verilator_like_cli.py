@@ -324,6 +324,25 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertFalse(plain["operator_entrypoint"]["sidecar_gpu_requested"])
         self.assertEqual(sidecar["verilator_option_preview"]["correctness_policy"], "coverage_output_equivalence")
 
+    def test_operator_plan_json_records_sim_accel_entrypoint_surface(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--operator-plan-json",
+        )
+
+        report = json.loads(result.stdout)
+        self.assertEqual(report["operator_entrypoint"]["surface"], "sim_accel_compat")
+        self.assertTrue(report["operator_entrypoint"]["sidecar_gpu_requested"])
+        self.assertEqual(report["operator_entrypoint"]["sim_accel"], "sidecar-gpu")
+        self.assertEqual(report["operator_entrypoint"]["shape"], "64x1")
+
     def test_preflight_still_rejects_explicit_human_estimate_flags(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",
