@@ -41,11 +41,39 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--phases", type=int, default=4, help="Phase count for non-template modes.")
     parser.add_argument("--limit", type=int, help="Dataset limit for dataset-backed targets.")
+    parser.add_argument(
+        "--stage",
+        help=(
+            "Select one sidecar stage by name, for example gpu_artifact_build "
+            "or hybrid_sidecar_run. The shim still does not execute it."
+        ),
+    )
+    parser.add_argument(
+        "--emit-command",
+        action="store_true",
+        help="Include the selected stage command as a top-level field. Requires --stage.",
+    )
     return parser
+
+
+def _select_stage(plan: dict[str, object], stage_name: str | None) -> dict[str, object] | None:
+    if stage_name is None:
+        return None
+    stages = plan.get("stages", [])
+    if not isinstance(stages, list):
+        raise ValueError(f"stage is not available for this plan: {stage_name}")
+    for stage in stages:
+        if isinstance(stage, dict) and stage.get("stage") == stage_name:
+            return stage
+    available = [str(stage.get("stage")) for stage in stages if isinstance(stage, dict)]
+    suffix = f"; available stages: {', '.join(available)}" if available else ""
+    raise ValueError(f"unknown sidecar stage: {stage_name}{suffix}")
 
 
 def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
     validate_sim_accel_mode(args.sim_accel)
+    if args.emit_command and args.stage is None:
+        raise ValueError("--emit-command requires --stage")
     shape = resolve_sidecar_shape(
         shape=args.shape,
         sim_accel_shape=args.sim_accel_shape,
@@ -56,6 +84,7 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
     readiness = plan.get("verilator_option_readiness")
     ready = isinstance(readiness, dict) and readiness.get("status") == "ready_for_verilator_option_shim"
     status = "ready_for_verilator_option_shim" if ready else "not_ready_for_verilator_option_shim"
+    selected_stage = _select_stage(plan, args.stage) if ready else None
     report = {
         "schema_version": 1,
         "tool": TOOL,
@@ -66,6 +95,8 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
         "mode": args.mode,
         "phases": args.phases,
         "sim_accel": args.sim_accel,
+        "selected_stage": selected_stage,
+        "command_emitted": bool(args.emit_command),
         "exit_code": 0 if ready else 2,
         "efficiency_estimate": efficiency_estimate(
             target=args.target,
@@ -79,8 +110,14 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
             "shim emits a non-executing plan only",
             "shim readiness does not mean Verilator itself implements --sim-accel",
             "coverage-output equivalence remains separate from performance estimates",
+            "emitted stage commands are printed but not executed",
         ],
     }
+    if args.emit_command:
+        assert selected_stage is not None
+        report["emitted_command"] = selected_stage["command"]
+        report["emitted_stage"] = selected_stage["stage"]
+        report["selected_stage_command"] = selected_stage["command"]
     return (0 if ready else 2), report
 
 

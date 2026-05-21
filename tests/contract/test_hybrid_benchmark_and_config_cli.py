@@ -239,6 +239,68 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(payload["sidecar_stage_plan"]["status"], "unsupported_for_stage_plan")
         self.assertIn("host preprocessing", payload["sidecar_stage_plan"]["reason"])
 
+    def test_verilator_sidecar_shim_can_select_stage_and_emit_command_without_execution(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "pulp_ita_mha",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--stage",
+            "hybrid_sidecar_run",
+            "--emit-command",
+        )
+
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["status"], "ready_for_verilator_option_shim")
+        self.assertTrue(payload["command_emitted"])
+        self.assertEqual(payload["selected_stage"]["stage"], "hybrid_sidecar_run")
+        self.assertEqual(payload["emitted_stage"], "hybrid_sidecar_run")
+        self.assertIn("src/tools/run_vl_hybrid.py", payload["emitted_command"])
+        self.assertEqual(payload["selected_stage_command"], payload["emitted_command"])
+        self.assertIn("--nstates 64 --steps 1", payload["emitted_command"])
+        self.assertIn("emitted stage commands are printed but not executed", payload["non_claims"])
+
+    def test_verilator_sidecar_shim_rejects_unknown_stage_as_json_error(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "pulp_ita_mha",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--stage",
+            "no_such_stage",
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 1)
+        payload = json.loads(result.stderr)
+        self.assertEqual(payload["status"], "error")
+        self.assertIn("unknown sidecar stage", payload["error"])
+        self.assertIn("hybrid_sidecar_run", payload["error"])
+
+    def test_verilator_sidecar_shim_rejects_emit_command_without_stage(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "pulp_ita_mha",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--emit-command",
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 1)
+        payload = json.loads(result.stderr)
+        self.assertEqual(payload["status"], "error")
+        self.assertIn("--emit-command requires --stage", payload["error"])
+
     def test_verilator_sidecar_shim_reports_json_error_exit_one(self) -> None:
         result = self.run_python_tool(
             "src/tools/verilator_sidecar_shim.py",

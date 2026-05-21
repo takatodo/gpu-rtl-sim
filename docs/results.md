@@ -363,6 +363,8 @@ The stage plan also includes `verilator_option_readiness`. `ready_for_verilator_
 
 `src/tools/verilator_sidecar_shim.py` is the non-executing JSON handoff for automation. It includes `efficiency_estimate` and `sidecar_stage_plan`, exits `0` for ready, `2` for not-ready target/mode, and `1` for input or planning errors with JSON on stderr.
 
+The shim can now select one planned stage with `--stage <name> --emit-command` and expose that command at top level while still not executing it. This is intended for the future Verilator option boundary, where Verilator can consume structured stage intent without scraping the full plan.
+
 `--summary-out` writes a generated unified wrapper summary under `reports/` by default. The schema records target, shape or limit, mode, command list, expected reports, and collected evidence when commands actually execute; dry-run summaries explicitly remain non-evidence.
 
 `--summary-from-existing` writes the same wrapper schema from already generated reports without rerunning benchmark commands. It is useful for publishing the current benchmark pack, but it is not fresh execution evidence by itself.

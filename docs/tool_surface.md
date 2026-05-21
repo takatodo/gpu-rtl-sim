@@ -41,6 +41,8 @@ The stage plan also includes `verilator_option_readiness`. `ready_for_verilator_
 
 For automation, `src/tools/verilator_sidecar_shim.py` emits the same readiness surface as JSON. Exit code `0` means ready for the option shim, `2` means the target or mode is not ready for the shim, and `1` means input or planning error with a JSON error object on stderr.
 
+The shim accepts `--stage <name> --emit-command` to expose one stage command as top-level JSON for automation. This remains non-executing output; unknown stages and `--emit-command` without `--stage` are JSON errors.
+
 These are still public enough to appear in generated command plans, but they are not the first place an operator should start:
 
 | Tool | Role |

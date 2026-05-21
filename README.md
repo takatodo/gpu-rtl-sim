@@ -196,6 +196,14 @@ The wrapper also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-a
 
 `src/tools/verilator_sidecar_shim.py` emits the future option handoff as JSON without executing commands. It exits `0` when ready for the shim, `2` when the target or mode is not ready for the shim, and `1` for input/planning errors with JSON on stderr.
 
+To inspect the exact command for one planned stage without running it:
+
+```bash
+python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --stage hybrid_sidecar_run --emit-command
+```
+
+The emitted command is still planning output; it is not execution evidence.
+
 The target end state is a direct Verilator option, documented in `docs/verilator_sidecar_option.md`. The wrapper spelling above is the current compatibility surface while that option is not implemented in Verilator itself.
 
 `--summary-from-existing` writes a wrapper summary from already generated reports without rerunning benchmark commands.

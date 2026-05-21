@@ -73,6 +73,20 @@ The same preflight block includes `verilator_option_readiness`. `ready_for_veril
 
 `src/tools/verilator_sidecar_shim.py` is the non-executing JSON boundary intended to match the future Verilator option handoff. It returns exit code `0` when `verilator_option_readiness.status` is `ready_for_verilator_option_shim`, exit code `2` when the target or mode is not ready for the shim, and exit code `1` for input/planning errors with a JSON error object on stderr. The shim also includes the same efficiency estimate so performance expectations stay separate from correctness.
 
+The shim can also select one planned stage and emit that stage command without executing it:
+
+```bash
+python3 src/tools/verilator_sidecar_shim.py \
+  --target paged_attention_kv_score \
+  --sim-accel sidecar-gpu \
+  --sim-accel-states 64 \
+  --sim-accel-steps 1 \
+  --stage hybrid_sidecar_run \
+  --emit-command
+```
+
+`--emit-command` requires `--stage`. Unknown stages are JSON errors. Emitted commands are planning output only.
+
 ## Non-Claims
 
 - This is not a new correctness policy.
