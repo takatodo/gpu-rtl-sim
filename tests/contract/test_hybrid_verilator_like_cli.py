@@ -419,6 +419,25 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertIn("mobile_vit_imagenet_manifest.py", stdout)
         self.assertIn("# efficiency_estimate", stdout)
 
+    def test_print_operator_plan_reports_not_ready_as_json(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "mobile_vit",
+            "--limit",
+            "128",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--print-operator-plan",
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 2)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")
+        self.assertEqual(payload["operator_entrypoint"]["surface"], "sim_accel_compat")
+        self.assertEqual(payload["missing"], ["direct_verilator_rtl_sidecar_handoff"])
+        self.assertIn("mobile_vit --limit 128 --dry-run", payload["fallback_command"])
+
     def test_preflight_includes_target_first_verilator_option_preview(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",

@@ -235,6 +235,7 @@ def run_with_args(args: argparse.Namespace) -> None:
             limit=args.limit,
             mode=args.mode,
             phases=args.phases,
+            operator_entrypoint=operator_entrypoint_for_args(args),
         )
         if exit_code != 0:
             raise SystemExit(exit_code)
@@ -274,7 +275,16 @@ def run_with_args(args: argparse.Namespace) -> None:
     if args.print_operator_plan:
         if args.preflight or args.dry_run or args.summary_from_existing or args.summary_out is not None:
             raise ValueError("--print-operator-plan cannot be combined with execution, preflight, or summary options")
-        print_operator_plan(target=args.target, shape=args.shape, limit=args.limit, mode=args.mode, phases=args.phases)
+        exit_code = print_operator_plan(
+            target=args.target,
+            shape=args.shape,
+            limit=args.limit,
+            mode=args.mode,
+            phases=args.phases,
+            operator_entrypoint=operator_entrypoint_for_args(args),
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
         return
     if args.preflight:
         if args.summary_from_existing:

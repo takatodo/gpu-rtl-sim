@@ -388,9 +388,22 @@ def print_operator_plan(
     limit: int | None = None,
     mode: str = MODE_TEMPLATE,
     phases: int = 4,
-) -> None:
+    operator_entrypoint: dict[str, object] | None = None,
+) -> int:
+    exit_code, report = operator_plan_json_report(
+        target=target,
+        shape=shape,
+        limit=limit,
+        mode=mode,
+        phases=phases,
+        operator_entrypoint=operator_entrypoint,
+    )
+    if exit_code != 0:
+        print(json.dumps(report, indent=2))
+        return exit_code
     plan = operator_plan_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
     print(_format_sidecar_operator_plan(plan))
+    return 0
 
 
 def print_verilator_command(
@@ -400,8 +413,16 @@ def print_verilator_command(
     limit: int | None = None,
     mode: str = MODE_TEMPLATE,
     phases: int = 4,
+    operator_entrypoint: dict[str, object] | None = None,
 ) -> int:
-    exit_code, report = operator_plan_json_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+    exit_code, report = operator_plan_json_report(
+        target=target,
+        shape=shape,
+        limit=limit,
+        mode=mode,
+        phases=phases,
+        operator_entrypoint=operator_entrypoint,
+    )
     if exit_code != 0:
         print(json.dumps(report, indent=2))
         return exit_code

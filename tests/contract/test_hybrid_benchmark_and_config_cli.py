@@ -636,10 +636,10 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
             "--print-verilator-command",
             check=False,
         )
-
         self.assertEqual(result.returncode, 2)
         payload = json.loads(result.stdout)
         self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")
+        self.assertEqual(payload["operator_entrypoint"]["surface"], "target_shape")
         stage_names = [stage["stage"] for stage in payload["sidecar_stage_plan"]["stages"]]
         self.assertEqual(stage_names, ["host_preprocess", "rtl_sidecar_proxy_eval"])
 

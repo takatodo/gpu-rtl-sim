@@ -375,7 +375,7 @@ The shim can now select one planned stage with `--stage <name> --emit-command` a
 
 `--print-efficiency-estimate` is the terminal-only estimate variant. It prints the speedup class, reason, next action, and non-claims carried by the JSON report without executing commands, and cannot be combined with command-only output.
 
-`--print-operator-plan` combines the terminal command preview and terminal efficiency estimate in one non-executing view. The print-only modes remain mutually exclusive so command-only output can stay script-friendly.
+`--print-operator-plan` combines the terminal command preview and terminal efficiency estimate in one non-executing view. Ready targets stay terminal-oriented; not-ready targets return the same JSON status and exit code `2` used by `--operator-plan-json`. The print-only modes remain mutually exclusive so command-only output can stay script-friendly.
 
 `run_hybrid_benchmark.py` also exposes `--print-operator-plan` with the same `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` spelling. This is the target-first terminal path from discovery to direct-option preview; the shim JSON remains the automation path for structured stage details and stable not-ready exit codes.
 
