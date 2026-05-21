@@ -65,6 +65,60 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
                     self.assertIn("correctness_policy: coverage_output_equivalence", stdout)
                     self.assertIn("# efficiency_estimate", stdout)
 
+    def test_verilator_sidecar_shim_help_examples_execute(self) -> None:
+        result = self.run_python_tool("src/tools/verilator_sidecar_shim.py", "--help")
+
+        example_commands = [
+            line.strip()
+            for line in result.stdout.splitlines()
+            if line.strip().startswith("python3 src/tools/verilator_sidecar_shim.py ")
+        ]
+        self.assertEqual(
+            example_commands,
+            [
+                (
+                    "python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score "
+                    "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 "
+                    "--print-verilator-command"
+                ),
+                (
+                    "python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score "
+                    "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 "
+                    "--print-operator-plan"
+                ),
+                "python3 src/tools/verilator_sidecar_shim.py --target mobile_vit --limit 128 --stage host_preprocess --emit-command",
+                (
+                    "python3 src/tools/verilator_sidecar_shim.py --target pulp_ita_mha "
+                    "--sim-accel-states 1 --sim-accel-steps 64 --mode resident-state-reuse "
+                    "--stage resident_state_reuse_workflow --emit-command"
+                ),
+            ],
+        )
+        self.assertIn("Not-ready stage examples still emit JSON stage commands and return exit code 2", result.stdout)
+
+        for command in example_commands:
+            with self.subTest(command=command):
+                command_result = self.run_python_tool(*command.split()[1:], check=False)
+                self.assert_no_local_absolute_paths(command_result.stdout)
+
+                if "--print-verilator-command" in command:
+                    self.assertEqual(command_result.returncode, 0)
+                    self.assertIn("verilator --cc", command_result.stdout)
+                    self.assertIn("--sim-accel sidecar-gpu", command_result.stdout)
+                elif "--print-operator-plan" in command:
+                    self.assertEqual(command_result.returncode, 0)
+                    self.assertIn("# verilator_sidecar_operator_plan", command_result.stdout)
+                    self.assertIn("correctness_policy: coverage_output_equivalence", command_result.stdout)
+                else:
+                    self.assertEqual(command_result.returncode, 2)
+                    payload = json.loads(command_result.stdout)
+                    self.assertTrue(payload["command_emitted"])
+                    self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")
+                    if "mobile_vit" in command:
+                        self.assertEqual(payload["emitted_stage"], "host_preprocess")
+                    else:
+                        self.assertEqual(payload["emitted_stage"], "resident_state_reuse_workflow")
+
     def test_run_hybrid_benchmark_dry_run_dispatches_template_targets(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",
@@ -622,38 +676,47 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(readiness["missing"], ["direct_verilator_rtl_sidecar_handoff"])
 
     def test_resident_mode_operator_plan_json_reports_actionable_not_ready_fallback(self) -> None:
-        result = self.run_python_tool(
-            "src/tools/run_hybrid_benchmark.py",
-            "pulp_ita_mha",
-            "--sim-accel",
-            "sidecar-gpu",
-            "--sim-accel-states",
-            "1",
-            "--sim-accel-steps",
-            "64",
-            "--mode",
-            "resident-state-reuse",
-            "--phases",
-            "4",
-            "--operator-plan-json",
-            check=False,
+        cases = (
+            ("resident-state-reuse", "resident_state_reuse_workflow", "--resident-state-reuse"),
+            ("persistent-resident-state-abi", "persistent_resident_state_abi_workflow", "--persistent-resident-state-abi"),
         )
+        for mode, stage_name, command_flag in cases:
+            with self.subTest(mode=mode):
+                result = self.run_python_tool(
+                    "src/tools/run_hybrid_benchmark.py",
+                    "pulp_ita_mha",
+                    "--sim-accel",
+                    "sidecar-gpu",
+                    "--sim-accel-states",
+                    "1",
+                    "--sim-accel-steps",
+                    "64",
+                    "--mode",
+                    mode,
+                    "--phases",
+                    "4",
+                    "--operator-plan-json",
+                    check=False,
+                )
 
-        self.assertEqual(result.returncode, 2)
-        payload = json.loads(result.stdout)
-        self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")
-        self.assertEqual(payload["efficiency_estimate"]["next_action"], "prefer resident execution or batch multiple states before claiming speedup")
-        sidecar_plan = payload["sidecar_stage_plan"]
-        self.assertEqual(sidecar_plan["status"], "planned_not_ready_for_verilator_option_shim")
-        self.assertIn("supported fallback is exposed", sidecar_plan["reason"])
-        self.assertEqual([stage["stage"] for stage in sidecar_plan["stages"]], ["resident_state_reuse_workflow"])
-        stage = sidecar_plan["stages"][0]
-        self.assertIn("--resident-state-reuse 1x64", stage["command"])
-        self.assertEqual(stage["details"]["workflow"], "resident-state-reuse")
-        self.assertEqual(stage["details"]["correctness_policy"], "coverage_output_equivalence")
-        readiness = sidecar_plan["verilator_option_readiness"]
-        self.assertEqual(readiness["missing"], ["direct_verilator_resident_sidecar_handoff"])
-        self.assertIn("--resident-state-reuse-phases 4", readiness["fallback_command"])
+                self.assertEqual(result.returncode, 2)
+                payload = json.loads(result.stdout)
+                self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")
+                self.assertEqual(
+                    payload["efficiency_estimate"]["next_action"],
+                    "prefer resident execution or batch multiple states before claiming speedup",
+                )
+                sidecar_plan = payload["sidecar_stage_plan"]
+                self.assertEqual(sidecar_plan["status"], "planned_not_ready_for_verilator_option_shim")
+                self.assertIn("supported fallback is exposed", sidecar_plan["reason"])
+                self.assertEqual([stage["stage"] for stage in sidecar_plan["stages"]], [stage_name])
+                stage = sidecar_plan["stages"][0]
+                self.assertIn(f"{command_flag} 1x64", stage["command"])
+                self.assertEqual(stage["details"]["workflow"], mode)
+                self.assertEqual(stage["details"]["correctness_policy"], "coverage_output_equivalence")
+                readiness = sidecar_plan["verilator_option_readiness"]
+                self.assertEqual(readiness["missing"], ["direct_verilator_resident_sidecar_handoff"])
+                self.assertIn(f"{command_flag}-phases 4", readiness["fallback_command"])
 
     def test_verilator_sidecar_shim_can_emit_resident_not_ready_fallback_command(self) -> None:
         result = self.run_python_tool(

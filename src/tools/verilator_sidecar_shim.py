@@ -33,7 +33,19 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Emit the non-executing JSON plan a future Verilator --sim-accel "
             "sidecar-gpu implementation would need."
-        )
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""examples:
+  python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command
+  python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-operator-plan
+  python3 src/tools/verilator_sidecar_shim.py --target mobile_vit --limit 128 --stage host_preprocess --emit-command
+  python3 src/tools/verilator_sidecar_shim.py --target pulp_ita_mha --sim-accel-states 1 --sim-accel-steps 64 --mode resident-state-reuse --stage resident_state_reuse_workflow --emit-command
+
+notes:
+  Ready template targets return exit code 0 for command previews.
+  Not-ready stage examples still emit JSON stage commands and return exit code 2.
+  No mode executes benchmark commands from this shim.
+""",
     )
     parser.add_argument("--target", required=True, help="Supported benchmark target name.")
     parser.add_argument("--shape", help="Legacy NxS shape spelling.")
