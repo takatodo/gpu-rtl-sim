@@ -6,6 +6,18 @@ from tests.contract.hybrid_cli_helpers import HybridCliTestCase
 
 
 class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
+    def test_run_hybrid_benchmark_help_shows_verilator_like_entrypoints(self) -> None:
+        result = self.run_python_tool("src/tools/run_hybrid_benchmark.py", "--help")
+
+        stdout = result.stdout
+        self.assertIn("examples:", stdout)
+        self.assertIn("python3 src/tools/run_hybrid_benchmark.py --list-targets", stdout)
+        self.assertIn("--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1", stdout)
+        self.assertIn("--print-operator-plan", stdout)
+        self.assertIn("--operator-plan-json", stdout)
+        self.assertIn("do not execute commands", stdout)
+        self.assertIn("coverage_output_equivalence remains the correctness policy", stdout)
+
     def test_run_hybrid_benchmark_dry_run_dispatches_template_targets(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",

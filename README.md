@@ -163,6 +163,7 @@ Verilator-like benchmark runner:
 
 ```bash
 python3 src/tools/run_hybrid_benchmark.py --list-targets
+python3 src/tools/run_hybrid_benchmark.py --help
 python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --estimate-efficiency
@@ -185,6 +186,8 @@ python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --summary-from-
 ```
 
 Use `--list-targets` to inspect supported target names, aliases, required `--shape` or `--limit` arguments, supported modes, and the current `sidecar_gpu` option-shim discovery status before running a measurement.
+
+Use `--help` for the shortest Verilator-like entrypoint examples: target discovery, terminal operator plan, and JSON operator plan.
 
 `run_hybrid_benchmark.py --estimate-efficiency` is the operator-facing form: it prints the target, shape or limit, speedup class, reason, next action, and non-claims after the command plan. `--estimate-efficiency-json` keeps the same estimate machine-readable. `--preflight` already emits JSON and cannot be combined with the extra efficiency output flags.
 

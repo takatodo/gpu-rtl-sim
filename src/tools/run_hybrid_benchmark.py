@@ -19,7 +19,17 @@ from verilator_sidecar_options import normalize_benchmark_sidecar_options
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Run one supported hybrid RTL benchmark with a Verilator-like target/shape interface."
+        description="Run one supported hybrid RTL benchmark with a Verilator-like target/shape interface.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""examples:
+  python3 src/tools/run_hybrid_benchmark.py --list-targets
+  python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-operator-plan
+  python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --operator-plan-json
+
+notes:
+  --print-operator-plan and --operator-plan-json do not execute commands.
+  coverage_output_equivalence remains the correctness policy; efficiency output is separate.
+""",
     )
     parser.add_argument("target", nargs="?", help="Benchmark target, e.g. pulp_ita_mha, paged_attention_kv_score, mobile_vit.")
     parser.add_argument("--shape", help="Shape for RTL slice-template targets, e.g. 64x1 or 1x64.")
