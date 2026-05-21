@@ -36,6 +36,8 @@ python3 src/tools/run_hybrid_benchmark.py <target> \
 
 `--preflight` includes a `sidecar_stage_plan` for template targets. That stage plan names the intended direct-Verilator execution boundary: `verilator_build`, `host_probe_build`, `cpu_init_state`, `cpu_reference_output`, `gpu_artifact_build`, `hybrid_sidecar_run`, and `coverage_output_compare`. Each stage keeps the printable command plus structured `details`; the `verilator_build` details include `mdir`, `top_module`, source files, defines, and Verilator args, and the compare stage keeps `coverage_output_equivalence` as the policy.
 
+The stage plan also includes `verilator_option_readiness`. `ready_for_verilator_option_shim` means the wrapper plan has the required structured inputs for a future option shim; it is not execution evidence and does not mean Verilator itself already implements `--sim-accel`.
+
 These are still public enough to appear in generated command plans, but they are not the first place an operator should start:
 
 | Tool | Role |

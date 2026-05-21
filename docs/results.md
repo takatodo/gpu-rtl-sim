@@ -359,6 +359,8 @@ The wrapper now also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --s
 
 Template-target `--preflight` output now includes `sidecar_stage_plan`, a stage-level view of the intended direct-Verilator boundary: Verilator build, host probe build, CPU reference output, GPU artifact build, hybrid sidecar run, and `coverage_output_equivalence` compare. Stages include structured `details` for the Verilator build inputs, state files, launch shape, and compare policy. This is still non-executed planning evidence.
 
+The stage plan also includes `verilator_option_readiness`. `ready_for_verilator_option_shim` means the plan has the minimum structured inputs needed for a future shim, but it is not execution evidence and does not claim Verilator itself implements `--sim-accel`.
+
 `--summary-out` writes a generated unified wrapper summary under `reports/` by default. The schema records target, shape or limit, mode, command list, expected reports, and collected evidence when commands actually execute; dry-run summaries explicitly remain non-evidence.
 
 `--summary-from-existing` writes the same wrapper schema from already generated reports without rerunning benchmark commands. It is useful for publishing the current benchmark pack, but it is not fresh execution evidence by itself.

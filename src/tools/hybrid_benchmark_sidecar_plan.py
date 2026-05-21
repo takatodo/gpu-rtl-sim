@@ -108,6 +108,49 @@ def _cfg_details(plan: HybridTemplatePlan) -> dict[str, int]:
     }
 
 
+def _verilator_option_readiness(stages: list[dict[str, object]]) -> dict[str, object]:
+    by_stage = {str(stage["stage"]): stage for stage in stages}
+    checks = {
+        "verilator_build_has_mdir": _has_detail(by_stage, "verilator_build", "mdir"),
+        "verilator_build_has_top_module": _has_detail(by_stage, "verilator_build", "top_module"),
+        "verilator_build_has_source_files": bool(_details(by_stage, "verilator_build").get("source_files")),
+        "gpu_artifact_build_has_mdir": _has_detail(by_stage, "gpu_artifact_build", "mdir"),
+        "hybrid_run_has_shape": _has_detail(by_stage, "hybrid_sidecar_run", "nstates")
+        and _has_detail(by_stage, "hybrid_sidecar_run", "steps"),
+        "hybrid_run_has_state_io": _has_detail(by_stage, "hybrid_sidecar_run", "init_state")
+        and _has_detail(by_stage, "hybrid_sidecar_run", "dump_state"),
+        "compare_uses_coverage_output_equivalence": _details(by_stage, "coverage_output_compare").get("acceptance_policy")
+        == "coverage_output_equivalence",
+        "compare_has_reference_and_candidate": _has_detail(by_stage, "coverage_output_compare", "reference_dump")
+        and _has_detail(by_stage, "coverage_output_compare", "candidate_dump"),
+    }
+    missing = [name for name, passed in checks.items() if not passed]
+    return {
+        "status": "ready_for_verilator_option_shim" if not missing else "missing_required_inputs",
+        "required_inputs": checks,
+        "missing": missing,
+        "non_claims": [
+            "readiness means the wrapper plan has the minimum inputs for an option shim",
+            "readiness does not mean Verilator itself implements --sim-accel",
+            "readiness is not execution, correctness, or timing evidence",
+        ],
+    }
+
+
+def _details(by_stage: dict[str, dict[str, object]], stage: str) -> dict[str, object]:
+    details = by_stage.get(stage, {}).get("details", {})
+    return details if isinstance(details, dict) else {}
+
+
+def _has_detail(by_stage: dict[str, dict[str, object]], stage: str, key: str) -> bool:
+    value = _details(by_stage, stage).get(key)
+    if isinstance(value, str):
+        return value != ""
+    if isinstance(value, list):
+        return len(value) > 0
+    return value is not None
+
+
 def sidecar_stage_plan(
     *,
     target: str,
@@ -164,6 +207,7 @@ def sidecar_stage_plan(
             "status": "planned",
             "template": spec.template,
             "stages": stages,
+            "verilator_option_readiness": _verilator_option_readiness(stages),
         }
     )
     return report

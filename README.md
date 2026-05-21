@@ -191,6 +191,8 @@ The wrapper also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-a
 
 `--preflight` includes a `sidecar_stage_plan` for template targets. It names the direct-Verilator migration stages, including `gpu_artifact_build`, `hybrid_sidecar_run`, and the final `coverage_output_compare` using `coverage_output_equivalence`. Each stage also carries structured `details` so `mdir`, `top_module`, source files, state files, shape, and compare policy are available without scraping command strings.
 
+`sidecar_stage_plan.verilator_option_readiness` reports whether the wrapper has the minimum structured inputs for a future Verilator option shim. `ready_for_verilator_option_shim` is a planning/readiness claim only; it is not execution evidence and does not mean Verilator itself already implements `--sim-accel`.
+
 The target end state is a direct Verilator option, documented in `docs/verilator_sidecar_option.md`. The wrapper spelling above is the current compatibility surface while that option is not implemented in Verilator itself.
 
 `--summary-from-existing` writes a wrapper summary from already generated reports without rerunning benchmark commands.

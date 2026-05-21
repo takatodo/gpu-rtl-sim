@@ -98,6 +98,16 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(compare_details["acceptance_policy"], "coverage_output_equivalence")
         self.assertEqual(compare_details["reference_label"], "cpu_repeat_64x1")
         self.assertEqual(compare_details["candidate_label"], "hybrid_from_cpu_init_64x1")
+        readiness = sidecar_plan["verilator_option_readiness"]
+        self.assertEqual(readiness["status"], "ready_for_verilator_option_shim")
+        self.assertEqual(readiness["missing"], [])
+        self.assertTrue(readiness["required_inputs"]["verilator_build_has_mdir"])
+        self.assertTrue(readiness["required_inputs"]["verilator_build_has_top_module"])
+        self.assertTrue(readiness["required_inputs"]["verilator_build_has_source_files"])
+        self.assertTrue(readiness["required_inputs"]["hybrid_run_has_shape"])
+        self.assertTrue(readiness["required_inputs"]["hybrid_run_has_state_io"])
+        self.assertTrue(readiness["required_inputs"]["compare_uses_coverage_output_equivalence"])
+        self.assertIn("readiness does not mean Verilator itself implements --sim-accel", readiness["non_claims"])
 
     def test_run_hybrid_benchmark_preflight_flags_single_state_repeated_step_as_low_efficiency(self) -> None:
         result = self.run_python_tool(
