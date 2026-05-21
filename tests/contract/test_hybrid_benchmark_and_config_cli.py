@@ -18,6 +18,53 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("do not execute commands", stdout)
         self.assertIn("coverage_output_equivalence remains the correctness policy", stdout)
 
+    def test_run_hybrid_benchmark_help_examples_execute(self) -> None:
+        result = self.run_python_tool("src/tools/run_hybrid_benchmark.py", "--help")
+
+        example_commands = [
+            line.strip()
+            for line in result.stdout.splitlines()
+            if line.strip().startswith("python3 src/tools/run_hybrid_benchmark.py ")
+        ]
+        self.assertEqual(
+            example_commands,
+            [
+                "python3 src/tools/run_hybrid_benchmark.py --list-targets",
+                (
+                    "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score "
+                    "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 "
+                    "--print-operator-plan"
+                ),
+                (
+                    "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score "
+                    "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 "
+                    "--operator-plan-json"
+                ),
+            ],
+        )
+
+        for command in example_commands:
+            with self.subTest(command=command):
+                command_result = self.run_python_tool(*command.split()[1:])
+                self.assert_no_local_absolute_paths(command_result.stdout)
+
+                if "--list-targets" in command:
+                    report = json.loads(command_result.stdout)
+                    self.assertEqual(report["tool"], "src/tools/run_hybrid_benchmark.py")
+                    target_names = {target["name"] for target in report["targets"]}
+                    self.assertIn("paged_attention_kv_score", target_names)
+                elif "--operator-plan-json" in command:
+                    report = json.loads(command_result.stdout)
+                    self.assertEqual(report["schema_role"], "target_first_operator_plan")
+                    self.assertEqual(report["status"], "planned")
+                    self.assertEqual(report["correctness_policy"], "coverage_output_equivalence")
+                    self.assertEqual(report["exit_code"], 0)
+                else:
+                    stdout = command_result.stdout
+                    self.assertIn("# verilator_sidecar_operator_plan", stdout)
+                    self.assertIn("correctness_policy: coverage_output_equivalence", stdout)
+                    self.assertIn("# efficiency_estimate", stdout)
+
     def test_run_hybrid_benchmark_dry_run_dispatches_template_targets(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",
