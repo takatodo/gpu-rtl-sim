@@ -87,6 +87,19 @@ python3 src/tools/verilator_sidecar_shim.py \
 
 `--emit-command` requires `--stage`. Unknown stages are JSON errors. Emitted commands are planning output only.
 
+The recommended direct-option preview is `--emit-verilator-command`:
+
+```bash
+python3 src/tools/verilator_sidecar_shim.py \
+  --target paged_attention_kv_score \
+  --sim-accel sidecar-gpu \
+  --sim-accel-states 64 \
+  --sim-accel-steps 1 \
+  --emit-verilator-command
+```
+
+This adds a top-level `verilator_command` field synthesized from the structured `verilator_build` and `hybrid_sidecar_run` stage details. It is a future handoff preview only; it is not executed and is not a claim that Verilator already accepts the option.
+
 ## Non-Claims
 
 - This is not a new correctness policy.

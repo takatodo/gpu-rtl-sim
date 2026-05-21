@@ -263,6 +263,33 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("--nstates 64 --steps 1", payload["emitted_command"])
         self.assertIn("emitted stage commands are printed but not executed", payload["non_claims"])
 
+    def test_verilator_sidecar_shim_can_emit_future_verilator_command_without_execution(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "pulp_ita_mha",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--emit-verilator-command",
+        )
+
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["status"], "ready_for_verilator_option_shim")
+        self.assertTrue(payload["verilator_command_emitted"])
+        command = payload["verilator_command"]
+        self.assertIn("verilator --cc", command)
+        self.assertIn("--sim-accel sidecar-gpu", command)
+        self.assertIn("--sim-accel-states 64", command)
+        self.assertIn("--sim-accel-steps 1", command)
+        self.assertIn("-Mdir artifacts/pulp_ita_mha_obj_dir", command)
+        self.assertIn("--top-module pulp_ita_mha_gpu_cov_tb", command)
+        self.assertIn("overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv", command)
+        self.assertIn("synthesized Verilator commands are printed but not executed", payload["non_claims"])
+
     def test_verilator_sidecar_shim_rejects_unknown_stage_as_json_error(self) -> None:
         result = self.run_python_tool(
             "src/tools/verilator_sidecar_shim.py",

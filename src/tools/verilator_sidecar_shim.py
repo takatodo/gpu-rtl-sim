@@ -8,7 +8,7 @@ import json
 import sys
 
 from hybrid_benchmark_efficiency import efficiency_estimate
-from hybrid_benchmark_sidecar_plan import sidecar_stage_plan
+from hybrid_benchmark_sidecar_plan import select_sidecar_stage, sidecar_stage_plan
 from verilator_sidecar_options import resolve_sidecar_shape, validate_sim_accel_mode
 
 
@@ -53,21 +53,42 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Include the selected stage command as a top-level field. Requires --stage.",
     )
+    parser.add_argument(
+        "--emit-verilator-command",
+        action="store_true",
+        help="Include the synthesized future Verilator --sim-accel command without executing it.",
+    )
     return parser
 
 
-def _select_stage(plan: dict[str, object], stage_name: str | None) -> dict[str, object] | None:
-    if stage_name is None:
-        return None
-    stages = plan.get("stages", [])
-    if not isinstance(stages, list):
-        raise ValueError(f"stage is not available for this plan: {stage_name}")
-    for stage in stages:
-        if isinstance(stage, dict) and stage.get("stage") == stage_name:
-            return stage
-    available = [str(stage.get("stage")) for stage in stages if isinstance(stage, dict)]
-    suffix = f"; available stages: {', '.join(available)}" if available else ""
-    raise ValueError(f"unknown sidecar stage: {stage_name}{suffix}")
+def _stage_details(stage: dict[str, object] | None) -> dict[str, object]:
+    details = stage.get("details", {}) if isinstance(stage, dict) else {}
+    return details if isinstance(details, dict) else {}
+
+
+def _synthesized_verilator_command(plan: dict[str, object]) -> str:
+    verilator_build = select_sidecar_stage(plan, "verilator_build")
+    hybrid_run = select_sidecar_stage(plan, "hybrid_sidecar_run")
+    build_details = _stage_details(verilator_build)
+    run_details = _stage_details(hybrid_run)
+    command: list[str] = [
+        "verilator",
+        "--cc",
+        "--timing",
+        "-Mdir",
+        str(build_details["mdir"]),
+        *[str(arg) for arg in build_details.get("verilator_args", [])],
+        *[str(path) for path in build_details.get("source_files", [])],
+        "--top-module",
+        str(build_details["top_module"]),
+        "--sim-accel",
+        "sidecar-gpu",
+        "--sim-accel-states",
+        str(run_details["nstates"]),
+        "--sim-accel-steps",
+        str(run_details["steps"]),
+    ]
+    return " ".join(command)
 
 
 def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
@@ -84,7 +105,7 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
     readiness = plan.get("verilator_option_readiness")
     ready = isinstance(readiness, dict) and readiness.get("status") == "ready_for_verilator_option_shim"
     status = "ready_for_verilator_option_shim" if ready else "not_ready_for_verilator_option_shim"
-    selected_stage = _select_stage(plan, args.stage) if ready else None
+    selected_stage = select_sidecar_stage(plan, args.stage) if ready else None
     report = {
         "schema_version": 1,
         "tool": TOOL,
@@ -97,6 +118,7 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
         "sim_accel": args.sim_accel,
         "selected_stage": selected_stage,
         "command_emitted": bool(args.emit_command),
+        "verilator_command_emitted": bool(args.emit_verilator_command),
         "exit_code": 0 if ready else 2,
         "efficiency_estimate": efficiency_estimate(
             target=args.target,
@@ -111,6 +133,7 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
             "shim readiness does not mean Verilator itself implements --sim-accel",
             "coverage-output equivalence remains separate from performance estimates",
             "emitted stage commands are printed but not executed",
+            "synthesized Verilator commands are printed but not executed",
         ],
     }
     if args.emit_command:
@@ -118,6 +141,8 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
         report["emitted_command"] = selected_stage["command"]
         report["emitted_stage"] = selected_stage["stage"]
         report["selected_stage_command"] = selected_stage["command"]
+    if args.emit_verilator_command and ready:
+        report["verilator_command"] = _synthesized_verilator_command(plan)
     return (0 if ready else 2), report
 
 

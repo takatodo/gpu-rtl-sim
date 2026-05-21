@@ -43,6 +43,8 @@ For automation, `src/tools/verilator_sidecar_shim.py` emits the same readiness s
 
 The shim accepts `--stage <name> --emit-command` to expose one stage command as top-level JSON for automation. This remains non-executing output; unknown stages and `--emit-command` without `--stage` are JSON errors.
 
+For the closest preview of the future direct Verilator surface, use `--emit-verilator-command`. It synthesizes a top-level `verilator_command` from structured stage details and appends `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` without running the command.
+
 These are still public enough to appear in generated command plans, but they are not the first place an operator should start:
 
 | Tool | Role |

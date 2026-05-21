@@ -151,6 +151,20 @@ def _has_detail(by_stage: dict[str, dict[str, object]], stage: str, key: str) ->
     return value is not None
 
 
+def select_sidecar_stage(plan: dict[str, object], stage_name: str | None) -> dict[str, object] | None:
+    if stage_name is None:
+        return None
+    stages = plan.get("stages", [])
+    if not isinstance(stages, list):
+        raise ValueError(f"stage is not available for this plan: {stage_name}")
+    for stage in stages:
+        if isinstance(stage, dict) and stage.get("stage") == stage_name:
+            return stage
+    available = [str(stage.get("stage")) for stage in stages if isinstance(stage, dict)]
+    suffix = f"; available stages: {', '.join(available)}" if available else ""
+    raise ValueError(f"unknown sidecar stage: {stage_name}{suffix}")
+
+
 def sidecar_stage_plan(
     *,
     target: str,
