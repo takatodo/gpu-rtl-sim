@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import sys
 
 from hybrid_benchmark_efficiency import efficiency_estimate
@@ -66,12 +67,12 @@ def _stage_details(stage: dict[str, object] | None) -> dict[str, object]:
     return details if isinstance(details, dict) else {}
 
 
-def _synthesized_verilator_command(plan: dict[str, object]) -> str:
+def _synthesized_verilator_command_argv(plan: dict[str, object]) -> list[str]:
     verilator_build = select_sidecar_stage(plan, "verilator_build")
     hybrid_run = select_sidecar_stage(plan, "hybrid_sidecar_run")
     build_details = _stage_details(verilator_build)
     run_details = _stage_details(hybrid_run)
-    command: list[str] = [
+    return [
         "verilator",
         "--cc",
         "--timing",
@@ -88,7 +89,6 @@ def _synthesized_verilator_command(plan: dict[str, object]) -> str:
         "--sim-accel-steps",
         str(run_details["steps"]),
     ]
-    return " ".join(command)
 
 
 def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
@@ -142,7 +142,9 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
         report["emitted_stage"] = selected_stage["stage"]
         report["selected_stage_command"] = selected_stage["command"]
     if args.emit_verilator_command and ready:
-        report["verilator_command"] = _synthesized_verilator_command(plan)
+        command_argv = _synthesized_verilator_command_argv(plan)
+        report["verilator_command_argv"] = command_argv
+        report["verilator_command"] = shlex.join(command_argv)
     return (0 if ready else 2), report
 
 

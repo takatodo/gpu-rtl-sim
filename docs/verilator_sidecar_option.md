@@ -98,7 +98,7 @@ python3 src/tools/verilator_sidecar_shim.py \
   --emit-verilator-command
 ```
 
-This adds a top-level `verilator_command` field synthesized from the structured `verilator_build` and `hybrid_sidecar_run` stage details. It is a future handoff preview only; it is not executed and is not a claim that Verilator already accepts the option.
+This adds top-level `verilator_command_argv` and `verilator_command` fields synthesized from the structured `verilator_build` and `hybrid_sidecar_run` stage details. `verilator_command_argv` is the machine-readable form; `verilator_command` is shell-quoted for human inspection. It is a future handoff preview only; it is not executed and is not a claim that Verilator already accepts the option.
 
 ## Non-Claims
 

@@ -280,6 +280,14 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         payload = json.loads(result.stdout)
         self.assertEqual(payload["status"], "ready_for_verilator_option_shim")
         self.assertTrue(payload["verilator_command_emitted"])
+        argv = payload["verilator_command_argv"]
+        self.assertEqual(argv[0], "verilator")
+        self.assertIn("--sim-accel", argv)
+        self.assertIn("sidecar-gpu", argv)
+        self.assertIn("--sim-accel-states", argv)
+        self.assertIn("64", argv)
+        self.assertIn("--sim-accel-steps", argv)
+        self.assertIn("1", argv)
         command = payload["verilator_command"]
         self.assertIn("verilator --cc", command)
         self.assertIn("--sim-accel sidecar-gpu", command)
