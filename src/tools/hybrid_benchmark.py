@@ -10,7 +10,9 @@ from hybrid_benchmark_catalog import (
     benchmark_plan,
     default_summary_path,
     format_report_command as _format_report_command,
+    operator_discovery_hint,
     repo_path as _repo_path,
+    sidecar_target_list_report,
     target_list_report,
 )
 from hybrid_benchmark_specs import (
@@ -50,6 +52,12 @@ def benchmark_summary(
     operator_entrypoint: dict[str, object] | None = None,
 ) -> dict[str, object]:
     commands = benchmark_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+    preview = verilator_option_preview(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+    discovery_hint = operator_discovery_hint_for_preview(
+        preview=preview,
+        target=target,
+        requested_shape=shape,
+    )
     return {
         "schema_version": 1,
         "tool": "src/tools/run_hybrid_benchmark.py",
@@ -70,13 +78,8 @@ def benchmark_summary(
             mode=mode,
             phases=phases,
         ),
-        "verilator_option_preview": verilator_option_preview(
-            target=target,
-            shape=shape,
-            limit=limit,
-            mode=mode,
-            phases=phases,
-        ),
+        "verilator_option_preview": preview,
+        "discovery_hint": discovery_hint,
         "sidecar_stage_plan": _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases),
         "evidence": _evidence_summary(
             target=target,
@@ -93,6 +96,17 @@ def benchmark_summary(
             "coverage-output equivalence is not raw full-state equality",
         ],
     }
+
+
+def operator_discovery_hint_for_preview(
+    *,
+    preview: dict[str, object],
+    target: str,
+    requested_shape: str | None,
+) -> dict[str, object] | None:
+    if preview["status"] != "planned":
+        return None
+    return operator_discovery_hint(target=target, requested_shape=requested_shape)
 
 
 def write_summary(
@@ -138,6 +152,13 @@ def preflight_report(
     operator_entrypoint: dict[str, object] | None = None,
 ) -> dict[str, object]:
     commands = benchmark_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+    preview = verilator_option_preview(
+        target=target,
+        shape=shape,
+        limit=limit,
+        mode=mode,
+        phases=phases,
+    )
     return {
         "schema_version": 1,
         "tool": "src/tools/run_hybrid_benchmark.py",
@@ -156,12 +177,11 @@ def preflight_report(
             mode=mode,
             phases=phases,
         ),
-        "verilator_option_preview": verilator_option_preview(
+        "verilator_option_preview": preview,
+        "discovery_hint": operator_discovery_hint_for_preview(
+            preview=preview,
             target=target,
-            shape=shape,
-            limit=limit,
-            mode=mode,
-            phases=phases,
+            requested_shape=shape,
         ),
         "sidecar_stage_plan": _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases),
         "execution_mode": "preflight",
@@ -271,6 +291,10 @@ def verilator_option_preview(
             {
                 "command_argv": report["command_argv"],
                 "command": report["command"],
+                "estimate_command_argv": report["estimate_command_argv"],
+                "estimate_command": report["estimate_command"],
+                "estimate_flag": report["estimate_flag"],
+                "requested_compatibility_entrypoint": report["requested_compatibility_entrypoint"],
                 "correctness_policy": report["correctness_policy"],
                 "handoff_contract": report["handoff_contract"],
             }
@@ -329,6 +353,7 @@ def operator_plan_json_report(
         report["operator_entrypoint"] = operator_entrypoint
         report["schema_role"] = SCHEMA_ROLE_TARGET_FIRST_OPERATOR_PLAN
         report["tool"] = "src/tools/run_hybrid_benchmark.py"
+        report["discovery_hint"] = operator_discovery_hint(target=target, requested_shape=shape)
         report["use_when"] = [
             "automation starts from run_hybrid_benchmark.py --list-targets",
             "automation needs the synthesized Verilator command and efficiency estimate",
@@ -430,6 +455,30 @@ def print_verilator_command(
     return 0
 
 
+def print_verilator_estimate_command(
+    *,
+    target: str,
+    shape: str | None = None,
+    limit: int | None = None,
+    mode: str = MODE_TEMPLATE,
+    phases: int = 4,
+    operator_entrypoint: dict[str, object] | None = None,
+) -> int:
+    exit_code, report = operator_plan_json_report(
+        target=target,
+        shape=shape,
+        limit=limit,
+        mode=mode,
+        phases=phases,
+        operator_entrypoint=operator_entrypoint,
+    )
+    if exit_code != 0:
+        print(json.dumps(report, indent=2))
+        return exit_code
+    print(report["estimate_command"])
+    return 0
+
+
 def format_verilator_option_preview(preview: dict[str, object]) -> str:
     lines = [
         "# verilator_option_preview",
@@ -438,6 +487,12 @@ def format_verilator_option_preview(preview: dict[str, object]) -> str:
     ]
     if "command" in preview:
         lines.extend(["command:", str(preview["command"])])
+    if "estimate_command" in preview:
+        lines.extend(["estimate_command:", str(preview["estimate_command"])])
+    if "estimate_flag" in preview:
+        lines.append(f"estimate_flag: {preview['estimate_flag']}")
+    if "requested_compatibility_entrypoint" in preview:
+        lines.append(f"requested_compatibility_entrypoint: {preview['requested_compatibility_entrypoint']}")
     if "correctness_policy" in preview:
         lines.append(f"correctness_policy: {preview['correctness_policy']}")
     if "missing" in preview:
@@ -482,5 +537,11 @@ def print_operator_plan_json(
     return exit_code
 
 
-def print_target_list() -> None:
-    print(json.dumps(target_list_report(), indent=2))
+def print_target_list(view: str | None = None) -> None:
+    if view is None:
+        report = target_list_report()
+    elif view == "sidecar_gpu":
+        report = sidecar_target_list_report()
+    else:
+        raise ValueError(f"unsupported --list-targets view: {view}; supported: sidecar_gpu")
+    print(json.dumps(report, indent=2))

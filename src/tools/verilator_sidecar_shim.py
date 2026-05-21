@@ -8,6 +8,7 @@ import json
 import shlex
 import sys
 
+from hybrid_benchmark_catalog import operator_discovery_hint
 from hybrid_benchmark_efficiency import efficiency_estimate, format_efficiency_estimate
 from hybrid_benchmark_sidecar_plan import (
     format_sidecar_operator_plan,
@@ -22,7 +23,7 @@ from hybrid_benchmark_specs import (
     STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
     STATUS_READY_FOR_VERILATOR_OPTION_SHIM,
 )
-from verilator_sidecar_options import resolve_sidecar_shape, validate_sim_accel_mode
+from verilator_sidecar_options import normalize_shim_sidecar_options
 
 
 TOOL = "src/tools/verilator_sidecar_shim.py"
@@ -37,6 +38,9 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""examples:
   python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command
+  python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel-shape 64x1 --print-verilator-estimate-command
+  python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel-shape 64x1 --emit-verilator-command
+  python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel-shape 64x1 --sim-accel-estimate-efficiency
   python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-operator-plan
   python3 src/tools/verilator_sidecar_shim.py --target mobile_vit --limit 128 --stage host_preprocess --emit-command
   python3 src/tools/verilator_sidecar_shim.py --target pulp_ita_mha --sim-accel-states 1 --sim-accel-steps 64 --mode resident-state-reuse --stage resident_state_reuse_workflow --emit-command
@@ -89,9 +93,22 @@ notes:
         help="Print only the synthesized future Verilator command when ready. Does not execute it.",
     )
     parser.add_argument(
+        "--print-verilator-estimate-command",
+        action="store_true",
+        help=(
+            "Print only the synthesized future Verilator command with "
+            "--sim-accel-estimate-efficiency when ready. Does not execute it."
+        ),
+    )
+    parser.add_argument(
         "--print-efficiency-estimate",
         action="store_true",
         help="Print only the human-readable efficiency estimate. Does not execute commands.",
+    )
+    parser.add_argument(
+        "--sim-accel-estimate-efficiency",
+        action="store_true",
+        help="Verilator-compatible alias for --print-efficiency-estimate. Does not execute commands.",
     )
     parser.add_argument(
         "--print-operator-plan",
@@ -102,26 +119,28 @@ notes:
 
 
 def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
-    validate_sim_accel_mode(args.sim_accel)
     if args.emit_command and args.stage is None:
         raise ValueError("--emit-command requires --stage")
-    print_only_modes = [args.print_verilator_command, args.print_efficiency_estimate, args.print_operator_plan]
-    if sum(1 for enabled in print_only_modes if enabled) > 1:
-        raise ValueError(
-            "--print-verilator-command, --print-efficiency-estimate, and --print-operator-plan are mutually exclusive"
-        )
-    shape = resolve_sidecar_shape(
+    sidecar_options = normalize_shim_sidecar_options(
         shape=args.shape,
+        sim_accel=args.sim_accel,
         sim_accel_shape=args.sim_accel_shape,
         sim_accel_states=args.sim_accel_states,
         sim_accel_steps=args.sim_accel_steps,
+        emit_verilator_command=args.emit_verilator_command,
+        print_verilator_command=args.print_verilator_command,
+        print_verilator_estimate_command=args.print_verilator_estimate_command,
+        print_efficiency_estimate=args.print_efficiency_estimate,
+        sim_accel_estimate_efficiency=args.sim_accel_estimate_efficiency,
+        print_operator_plan=args.print_operator_plan,
     )
+    shape = sidecar_options.shape
     plan = sidecar_stage_plan(target=args.target, shape=shape, limit=args.limit, mode=args.mode, phases=args.phases)
     readiness = plan.get("verilator_option_readiness")
     ready = isinstance(readiness, dict) and readiness.get("status") == STATUS_READY_FOR_VERILATOR_OPTION_SHIM
     status = STATUS_READY_FOR_VERILATOR_OPTION_SHIM if ready else STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM
     selected_stage = select_sidecar_stage(plan, args.stage) if args.stage is not None else None
-    emit_verilator_command = bool(args.emit_verilator_command or args.print_verilator_command or args.print_operator_plan)
+    emit_verilator_command = sidecar_options.emit_verilator_command
     report = {
         "schema_version": 1,
         "tool": TOOL,
@@ -162,12 +181,17 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
         command_argv = synthesized_verilator_command_argv(plan)
         report["verilator_command_argv"] = command_argv
         report["verilator_command"] = shlex.join(command_argv)
+        discovery_hint = operator_discovery_hint(target=args.target, requested_shape=shape)
+        report["discovery_hint"] = discovery_hint
         report["operator_plan"] = sidecar_operator_plan(
             command_argv=command_argv,
             command=report["verilator_command"],
             efficiency_estimate=report["efficiency_estimate"],
             handoff_contract=sidecar_handoff_contract(plan),
+            discovery_hint=discovery_hint,
         )
+        report["verilator_estimate_command_argv"] = report["operator_plan"]["estimate_command_argv"]
+        report["verilator_estimate_command"] = report["operator_plan"]["estimate_command"]
     return (0 if ready else 2), report
 
 
@@ -196,7 +220,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.print_verilator_command and exit_code == 0:
         print(report["verilator_command"])
         return 0
-    if args.print_efficiency_estimate:
+    if args.print_verilator_estimate_command and exit_code == 0:
+        print(report["verilator_estimate_command"])
+        return 0
+    if args.print_efficiency_estimate or args.sim_accel_estimate_efficiency:
         print(format_efficiency_estimate(report["efficiency_estimate"]))
         return exit_code
     if args.print_operator_plan and exit_code == 0:

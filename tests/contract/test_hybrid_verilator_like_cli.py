@@ -57,6 +57,11 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertEqual(sidecar["sim_accel"], "sidecar-gpu")
         self.assertEqual(sidecar["option_shim_status"], "ready_for_template_shape")
         self.assertEqual(sidecar["requires"], ["--sim-accel-states", "--sim-accel-steps"])
+        self.assertEqual(sidecar["recommended_entrypoint"], "--sim-accel-shape <NxS>")
+        self.assertEqual(
+            sidecar["compatibility_entrypoint"],
+            "--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>",
+        )
         self.assertEqual(
             sidecar["shape_spellings"],
             [
@@ -69,7 +74,31 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
             sidecar["operator_plan_command_template"],
             (
                 "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha "
-                "--sim-accel sidecar-gpu --sim-accel-shape <NxS> --print-operator-plan"
+                "--sim-accel-shape <NxS> --print-operator-plan"
+            ),
+        )
+        self.assertIn(sidecar["recommended_entrypoint"], sidecar["operator_plan_command_template"])
+        self.assertNotIn(sidecar["compatibility_entrypoint"], sidecar["operator_plan_command_template"])
+        self.assertEqual(
+            sidecar["operator_plan_json_command_template"],
+            (
+                "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha "
+                "--sim-accel-shape <NxS> --operator-plan-json"
+            ),
+        )
+        self.assertEqual(sidecar["recommended_shape"], "64x1")
+        self.assertEqual(
+            sidecar["operator_plan_example_command"],
+            (
+                "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha "
+                "--sim-accel-shape 64x1 --print-operator-plan"
+            ),
+        )
+        self.assertEqual(
+            sidecar["operator_plan_json_example_command"],
+            (
+                "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha "
+                "--sim-accel-shape 64x1 --operator-plan-json"
             ),
         )
         self.assertEqual(sidecar["ready_modes"], ["template"])
@@ -209,12 +238,8 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",
             "paged_attention_kv_score",
-            "--sim-accel",
-            "sidecar-gpu",
-            "--sim-accel-states",
-            "64",
-            "--sim-accel-steps",
-            "1",
+            "--sim-accel-shape",
+            "64x1",
             "--print-efficiency-estimate",
         )
 
@@ -225,6 +250,7 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertIn("speedup_class: high", stdout)
         self.assertIn("coverage-output equivalence remains separate from performance", stdout)
         self.assertNotIn("verilator --cc", stdout)
+        self.assertNotIn("requested_compatibility_entrypoint", stdout)
 
     def test_target_first_efficiency_estimate_not_ready_keeps_shim_exit_code(self) -> None:
         result = self.run_python_tool(
@@ -242,6 +268,8 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertIn("target: mobile_vit", stdout)
         self.assertIn("limit: 128", stdout)
         self.assertIn("speedup_class: unknown", stdout)
+        self.assertNotIn("verilator --cc", stdout)
+        self.assertNotIn("requested_compatibility_entrypoint", stdout)
         self.assertNotIn("schema_version", stdout)
 
     def test_target_first_print_efficiency_rejects_other_estimate_output_flags(self) -> None:
@@ -278,6 +306,14 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertIn("command_emitted: true", stdout)
         self.assertIn("command:\nverilator --cc", stdout)
         self.assertIn("--sim-accel sidecar-gpu", stdout)
+        self.assertIn("estimate_command:\nverilator --cc", stdout)
+        self.assertIn("--sim-accel-estimate-efficiency", stdout)
+        self.assertIn("estimate_flag: --sim-accel-estimate-efficiency", stdout)
+        self.assertIn(
+            "requested_compatibility_entrypoint: "
+            "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1",
+            stdout,
+        )
         self.assertIn("correctness_policy: coverage_output_equivalence", stdout)
         self.assertIn("+ python3 src/tools/run_hybrid_template.py", stdout)
         self.assertIn("# efficiency_estimate", stdout)
@@ -298,6 +334,13 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertIn("--sim-accel sidecar-gpu", stdout)
         self.assertIn("--sim-accel-states 64", stdout)
         self.assertIn("--sim-accel-steps 1", stdout)
+        self.assertIn("estimate_command:\nverilator --cc", stdout)
+        self.assertIn("--sim-accel-estimate-efficiency", stdout)
+        self.assertIn(
+            "requested_compatibility_entrypoint: "
+            "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1",
+            stdout,
+        )
         self.assertIn("+ python3 src/tools/run_hybrid_template.py", stdout)
         self.assertIn("# efficiency_estimate", stdout)
 
@@ -320,7 +363,27 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         preview = report["verilator_option_preview"]
         self.assertTrue(preview["command_emitted"])
         self.assertIn("--sim-accel sidecar-gpu", preview["command"])
+        self.assertNotIn("--sim-accel-estimate-efficiency", preview["command"])
+        self.assertIn("--sim-accel-estimate-efficiency", preview["estimate_command"])
+        self.assertEqual(
+            preview["estimate_command_argv"],
+            [*preview["command_argv"], "--sim-accel-estimate-efficiency"],
+        )
+        self.assertEqual(preview["estimate_flag"], "--sim-accel-estimate-efficiency")
+        self.assertEqual(
+            preview["requested_compatibility_entrypoint"],
+            "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1",
+        )
+        self.assertIn(preview["requested_compatibility_entrypoint"], preview["command"])
         self.assertEqual(preview["correctness_policy"], "coverage_output_equivalence")
+        self.assertEqual(
+            report["discovery_hint"]["requested_compatibility_entrypoint"],
+            preview["requested_compatibility_entrypoint"],
+        )
+        self.assertEqual(
+            report["discovery_hint"]["source"],
+            "src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu",
+        )
         self.assertNotIn("# efficiency_estimate", result.stdout)
 
     def test_sidecar_gpu_print_verilator_command_stays_command_only(self) -> None:
@@ -335,6 +398,7 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
 
         self.assertIn("verilator --cc", result.stdout)
         self.assertIn("--sim-accel sidecar-gpu", result.stdout)
+        self.assertNotIn("requested_compatibility_entrypoint", result.stdout)
         self.assertNotIn("# efficiency_estimate", result.stdout)
         self.assertNotIn("schema_version", result.stdout)
 
@@ -367,10 +431,23 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
 
         self.assertEqual(sidecar["operator_entrypoint"]["surface"], "sidecar_gpu_alias")
         self.assertTrue(sidecar["operator_entrypoint"]["sidecar_gpu_requested"])
+        self.assertEqual(sidecar["operator_entrypoint"]["effective_sim_accel"], "sidecar-gpu")
+        self.assertEqual(sidecar["operator_entrypoint"]["sim_accel_source"], "sidecar_gpu_alias")
         self.assertEqual(sidecar["operator_entrypoint"]["shape_source"], "shape")
         self.assertEqual(plain["operator_entrypoint"]["surface"], "target_shape")
         self.assertFalse(plain["operator_entrypoint"]["sidecar_gpu_requested"])
+        self.assertIsNone(plain["operator_entrypoint"]["effective_sim_accel"])
+        self.assertIsNone(plain["operator_entrypoint"]["sim_accel_source"])
         self.assertEqual(sidecar["verilator_option_preview"]["correctness_policy"], "coverage_output_equivalence")
+        self.assertEqual(sidecar["discovery_hint"]["requested_shape"], "64x1")
+        self.assertEqual(sidecar["discovery_hint"]["recommended_shape"], "64x1")
+        self.assertTrue(sidecar["discovery_hint"]["recommended_shape_matches_request"])
+        self.assertEqual(sidecar["discovery_hint"]["recommended_entrypoint"], "--sim-accel-shape <NxS>")
+        self.assertEqual(
+            sidecar["discovery_hint"]["requested_compatibility_entrypoint"],
+            "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1",
+        )
+        self.assertIn("--print-operator-plan", sidecar["discovery_hint"]["operator_plan_example_command"])
 
     def test_operator_plan_json_records_sim_accel_entrypoint_surface(self) -> None:
         result = self.run_python_tool(
@@ -389,6 +466,8 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertEqual(report["operator_entrypoint"]["surface"], "sim_accel_compat")
         self.assertTrue(report["operator_entrypoint"]["sidecar_gpu_requested"])
         self.assertEqual(report["operator_entrypoint"]["sim_accel"], "sidecar-gpu")
+        self.assertEqual(report["operator_entrypoint"]["effective_sim_accel"], "sidecar-gpu")
+        self.assertEqual(report["operator_entrypoint"]["sim_accel_source"], "sim_accel")
         self.assertEqual(report["operator_entrypoint"]["shape"], "64x1")
         self.assertEqual(report["operator_entrypoint"]["shape_source"], "sim_accel_states_steps")
 
@@ -396,8 +475,6 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",
             "paged_attention_kv_score",
-            "--sim-accel",
-            "sidecar-gpu",
             "--sim-accel-shape",
             "64x1",
             "--operator-plan-json",
@@ -407,6 +484,57 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertEqual(report["operator_entrypoint"]["surface"], "sim_accel_compat")
         self.assertEqual(report["operator_entrypoint"]["shape"], "64x1")
         self.assertEqual(report["operator_entrypoint"]["shape_source"], "sim_accel_shape")
+        self.assertIsNone(report["operator_entrypoint"]["sim_accel"])
+        self.assertEqual(report["operator_entrypoint"]["sim_accel_source"], "sim_accel_shape_spelling")
+        self.assertEqual(report["operator_entrypoint"]["effective_sim_accel"], "sidecar-gpu")
+        self.assertEqual(
+            report["discovery_hint"]["source"],
+            "src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu",
+        )
+        self.assertEqual(report["discovery_hint"]["requested_shape"], "64x1")
+        self.assertEqual(report["discovery_hint"]["recommended_shape"], "64x1")
+        self.assertTrue(report["discovery_hint"]["recommended_shape_matches_request"])
+        self.assertEqual(report["discovery_hint"]["recommended_entrypoint"], "--sim-accel-shape <NxS>")
+        self.assertEqual(
+            report["discovery_hint"]["compatibility_entrypoint"],
+            "--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>",
+        )
+        self.assertEqual(
+            report["discovery_hint"]["requested_compatibility_entrypoint"],
+            "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1",
+        )
+        self.assertEqual(
+            report["requested_compatibility_entrypoint"],
+            report["discovery_hint"]["requested_compatibility_entrypoint"],
+        )
+        self.assertIn(report["requested_compatibility_entrypoint"], report["command"])
+        self.assertIn(report["discovery_hint"]["requested_compatibility_entrypoint"], report["command"])
+        self.assertNotIn("--sim-accel-estimate-efficiency", report["command"])
+        self.assertEqual(report["estimate_flag"], "--sim-accel-estimate-efficiency")
+        self.assertEqual(
+            report["estimate_command_argv"],
+            [*report["command_argv"], "--sim-accel-estimate-efficiency"],
+        )
+        self.assertIn(report["command"], report["estimate_command"])
+        self.assertIn("--sim-accel-estimate-efficiency", report["estimate_command"])
+        self.assertEqual(
+            report["discovery_hint"]["operator_plan_example_command"],
+            (
+                "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score "
+                "--sim-accel-shape 64x1 --print-operator-plan"
+            ),
+        )
+        self.assertEqual(
+            report["discovery_hint"]["operator_plan_json_example_command"],
+            (
+                "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score "
+                "--sim-accel-shape 64x1 --operator-plan-json"
+            ),
+        )
+        self.assertIn(
+            "recommended shape is an operator starting point, not timing evidence",
+            report["discovery_hint"]["non_claims"],
+        )
 
     def test_preflight_still_rejects_explicit_human_estimate_flags(self) -> None:
         result = self.run_python_tool(
@@ -480,6 +608,14 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertTrue(preview["command_emitted"])
         self.assertIn("--sim-accel sidecar-gpu", preview["command"])
         self.assertIn("--sim-accel-states 64", preview["command"])
+        self.assertNotIn("--sim-accel-estimate-efficiency", preview["command"])
+        self.assertIn("--sim-accel-estimate-efficiency", preview["estimate_command"])
+        self.assertEqual(preview["estimate_flag"], "--sim-accel-estimate-efficiency")
+        self.assertEqual(
+            preview["requested_compatibility_entrypoint"],
+            "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1",
+        )
+        self.assertIn(preview["requested_compatibility_entrypoint"], preview["command"])
         self.assertEqual(preview["correctness_policy"], "coverage_output_equivalence")
         self.assertEqual(preview["handoff_contract"]["compare"]["acceptance_policy"], "coverage_output_equivalence")
         self.assertIn("preview does not execute commands", preview["non_claims"])

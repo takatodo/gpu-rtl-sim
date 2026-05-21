@@ -12,13 +12,14 @@ from hybrid_benchmark import (
     print_preflight,
     print_target_list,
     print_verilator_efficiency_estimate,
+    print_verilator_estimate_command,
     print_verilator_command,
     print_verilator_option_preview,
     run_benchmark,
     write_summary,
 )
 from hybrid_benchmark_specs import BENCHMARKS, KIND_SLICE_TEMPLATE
-from verilator_sidecar_options import normalize_benchmark_sidecar_options
+from verilator_sidecar_options import normalize_benchmark_sidecar_options, operator_entrypoint_metadata
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -27,15 +28,19 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
 epilog="""examples:
   python3 src/tools/run_hybrid_benchmark.py --list-targets
+  python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu
   python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --sidecar-gpu --dry-run
   python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --sidecar-gpu --preflight
-  python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command
-  python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-shape 64x1 --print-operator-plan
-  python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-operator-plan
-  python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --operator-plan-json
+  python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --sim-accel-estimate-efficiency --dry-run
+  python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-verilator-command
+  python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-verilator-estimate-command
+  python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-efficiency-estimate
+  python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-operator-plan
+  python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json
 
 notes:
-  --print-verilator-command, --print-efficiency-estimate, --print-operator-plan, and --operator-plan-json do not execute commands.
+  --print-verilator-command, --print-verilator-estimate-command, --print-efficiency-estimate, --print-operator-plan, and --operator-plan-json do not execute commands.
+  --sim-accel-estimate-efficiency follows the normal execution or --dry-run path; use --print-efficiency-estimate for estimate-only preview.
   coverage_output_equivalence remains the correctness policy; efficiency output is separate.
 """,
     )
@@ -61,7 +66,7 @@ notes:
     parser.add_argument(
         "--sim-accel-estimate-efficiency",
         action="store_true",
-        help="Verilator-compatible alias for --estimate-efficiency.",
+        help="Verilator-compatible alias for --estimate-efficiency after normal execution or --dry-run.",
     )
     parser.add_argument("--limit", type=int, help="Input limit for dataset-backed targets, e.g. mobile_vit --limit 128.")
     parser.add_argument(
@@ -108,6 +113,14 @@ notes:
         help="Print only the synthesized future Verilator sidecar command without executing commands.",
     )
     parser.add_argument(
+        "--print-verilator-estimate-command",
+        action="store_true",
+        help=(
+            "Print only the synthesized future Verilator sidecar command with "
+            "--sim-accel-estimate-efficiency without executing commands."
+        ),
+    )
+    parser.add_argument(
         "--print-efficiency-estimate",
         action="store_true",
         help="Print only the human-readable efficiency estimate without executing commands.",
@@ -122,7 +135,11 @@ notes:
         action="store_true",
         help="Print the synthesized Verilator sidecar operator plan as JSON without executing commands.",
     )
-    parser.add_argument("--list-targets", action="store_true", help="Print supported benchmark targets and exit.")
+    parser.add_argument(
+        "--list-targets",
+        action="store_true",
+        help="Print supported benchmark targets and exit. Optional view: sidecar_gpu.",
+    )
     return parser
 
 
@@ -145,34 +162,14 @@ def write_summary_for_args(args: argparse.Namespace, execution_mode: str) -> Pat
 
 
 def operator_entrypoint_for_args(args: argparse.Namespace) -> dict[str, object]:
-    if args.sim_accel == "sidecar-gpu":
-        surface = "sim_accel_compat"
-    elif args.sidecar_gpu:
-        surface = "sidecar_gpu_alias"
-    else:
-        surface = "target_shape"
-    return {
-        "schema_version": 1,
-        "surface": surface,
-        "sidecar_gpu_requested": surface in {"sim_accel_compat", "sidecar_gpu_alias"},
-        "sim_accel": args.sim_accel,
-        "shape": args.shape,
-        "shape_source": shape_source_for_args(args),
-        "non_claims": [
-            "entrypoint metadata records wrapper invocation only",
-            "entrypoint metadata is not execution, correctness, or timing evidence",
-        ],
-    }
-
-
-def shape_source_for_args(args: argparse.Namespace) -> str | None:
-    if args.sim_accel_shape is not None:
-        return "sim_accel_shape"
-    if args.sim_accel_states is not None or args.sim_accel_steps is not None:
-        return "sim_accel_states_steps"
-    if args.shape is not None:
-        return "shape"
-    return None
+    return operator_entrypoint_metadata(
+        shape=args.shape,
+        sim_accel=args.sim_accel,
+        sim_accel_shape=args.sim_accel_shape,
+        sim_accel_states=args.sim_accel_states,
+        sim_accel_steps=args.sim_accel_steps,
+        sidecar_gpu=args.sidecar_gpu,
+    )
 
 
 def validate_sidecar_shape_hint(args: argparse.Namespace) -> None:
@@ -191,7 +188,7 @@ def validate_sidecar_shape_hint(args: argparse.Namespace) -> None:
 
 def run_with_args(args: argparse.Namespace) -> None:
     if args.list_targets:
-        print_target_list()
+        print_target_list(view=args.target)
         return
     if args.target is None:
         raise ValueError("target is required unless --list-targets is used")
@@ -217,19 +214,43 @@ def run_with_args(args: argparse.Namespace) -> None:
     validate_sidecar_shape_hint(args)
     print_only_modes = [
         args.print_verilator_command,
+        args.print_verilator_estimate_command,
         args.print_efficiency_estimate,
         args.print_operator_plan,
         args.operator_plan_json,
     ]
     if sum(1 for enabled in print_only_modes if enabled) > 1:
         raise ValueError(
-            "--print-verilator-command, --print-efficiency-estimate, --print-operator-plan, "
-            "and --operator-plan-json are mutually exclusive"
+            "--print-verilator-command, --print-verilator-estimate-command, "
+            "--print-efficiency-estimate, --print-operator-plan, and --operator-plan-json are mutually exclusive"
         )
     if args.print_verilator_command:
         if args.preflight or args.dry_run or args.summary_from_existing or args.summary_out is not None:
             raise ValueError("--print-verilator-command cannot be combined with execution, preflight, or summary options")
+        if explicit_estimate_output:
+            raise ValueError(
+                "--print-verilator-command cannot be combined with estimate output flags; "
+                "use --print-verilator-estimate-command"
+            )
         exit_code = print_verilator_command(
+            target=args.target,
+            shape=args.shape,
+            limit=args.limit,
+            mode=args.mode,
+            phases=args.phases,
+            operator_entrypoint=operator_entrypoint_for_args(args),
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+        return
+    if args.print_verilator_estimate_command:
+        if args.preflight or args.dry_run or args.summary_from_existing or args.summary_out is not None:
+            raise ValueError(
+                "--print-verilator-estimate-command cannot be combined with execution, preflight, or summary options"
+            )
+        if explicit_estimate_output:
+            raise ValueError("--print-verilator-estimate-command already includes --sim-accel-estimate-efficiency")
+        exit_code = print_verilator_estimate_command(
             target=args.target,
             shape=args.shape,
             limit=args.limit,

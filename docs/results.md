@@ -330,13 +330,29 @@ python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_page
 The target-oriented benchmark runner provides a shorter Verilator-like interface for supported workloads:
 
 ```bash
+python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-operator-plan
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json
+```
+
+Those three commands are the shortest operator path: discover sidecar-ready targets, inspect the terminal command plus efficiency estimate, then emit the same non-executing plan as JSON for automation.
+
+The fuller reference remains:
+
+```bash
 python3 src/tools/run_hybrid_benchmark.py --list-targets
+python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu
 python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --estimate-efficiency
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --estimate-efficiency-json
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --sidecar-gpu
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --dry-run
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-verilator-command
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-verilator-estimate-command
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-efficiency-estimate
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-operator-plan
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json
 python3 src/tools/run_hybrid_benchmark.py pulp_paged_kv_cache_large --shape 256x1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run
 python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode resident-state-reuse --dry-run
@@ -349,19 +365,23 @@ python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --mode persis
 python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --summary-from-existing --summary-out reports/hybrid_benchmark_mobile_vit_template_limit128.json
 ```
 
-Use `--list-targets` to inspect supported target names, aliases, required `--shape` or `--limit` arguments, supported modes, and the current `sidecar_gpu` option-shim discovery status before running a measurement. It is a discovery command only; it does not run benchmarks, write reports, or create measurement evidence.
+Use `--list-targets` to inspect supported target names, aliases, required `--shape` or `--limit` arguments, supported modes, and the current `sidecar_gpu` option-shim discovery status before running a measurement. Use `--list-targets sidecar_gpu` for the focused sidecar discovery view referenced by operator-plan JSON discovery hints. It is a discovery command only; it does not run benchmarks, write reports, or create measurement evidence.
 
-For ready slice-template targets, `--list-targets` also exposes `sidecar_gpu.shape_spellings`: the expanded `--sim-accel-states <N> --sim-accel-steps <S>` form, compact `--sim-accel-shape <NxS>`, and wrapper `--shape <NxS>`. The same block includes `operator_plan_command_template` as the next non-executing command to try.
+For ready slice-template targets, `--list-targets` also exposes `sidecar_gpu.shape_spellings`: the expanded `--sim-accel-states <N> --sim-accel-steps <S>` form, compact `--sim-accel-shape <NxS>`, and wrapper `--shape <NxS>`. The focused `--list-targets sidecar_gpu` view includes `shortest_operator_path`, matching the three documented commands above. The same block includes terminal and JSON operator-plan command templates plus concrete `64x1` non-executing commands to try immediately; these use `sidecar_gpu.recommended_entrypoint` (`--sim-accel-shape <NxS>`), while `sidecar_gpu.compatibility_entrypoint` keeps the expanded spelling explicit for future direct-Verilator compatibility.
 
-Use `--help` on `run_hybrid_benchmark.py` for the shortest supported Verilator-like examples: target discovery, compact `--sim-accel-shape`, terminal operator plan, and JSON operator plan.
+Use `--help` on `run_hybrid_benchmark.py` for the shortest supported Verilator-like examples: target discovery, compact `--sim-accel-shape`, terminal command preview, terminal estimate-command preview, terminal operator plan, and JSON operator plan.
 
 Use `--estimate-efficiency` on `run_hybrid_benchmark.py` for a short terminal-oriented estimate after the dry-run or execution command list. It prints the speedup class, reason, next action, scoped observed speedup when existing reports are available, and the non-claims that separate performance estimates from CPU/GPU equivalence. Use `--estimate-efficiency-json` when automation needs the same data.
 
 Use `--sidecar-gpu` as the shortest operator-facing spelling for the existing hybrid sidecar GPU flow plus the human-readable efficiency estimate. It is an alias for usability, not a new correctness policy or a stronger speedup claim.
 
-The wrapper now also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` and compact `--sim-accel-shape <NxS>` as tested compatibility spellings. The intended long-term spelling is a direct Verilator option. `docs/verilator_sidecar_option.md` records the target `verilator --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` interface and the non-claims that must survive that migration.
+When `--summary-out` writes a wrapper summary and the direct-option preview can be synthesized, the summary includes the same `discovery_hint` as operator-plan JSON. This keeps generated summaries aligned with discovery while preserving the existing non-claim that dry-run summaries are not correctness or timing evidence.
+
+The wrapper now also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` and compact `--sim-accel-shape <NxS>` as tested compatibility spellings. A `--sim-accel-*` shape spelling is enough to enter the sidecar preview path on the wrapper, while the long-term direct Verilator spelling remains explicit. `docs/verilator_sidecar_option.md` records the target `verilator --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` interface and the non-claims that must survive that migration.
 
 Template-target `--preflight` output now includes `sidecar_stage_plan`, a stage-level view of the intended direct-Verilator boundary: Verilator build, host probe build, CPU reference output, GPU artifact build, hybrid sidecar run, and `coverage_output_equivalence` compare. Stages include structured `details` for the Verilator build inputs, state files, launch shape, and compare policy. This is still non-executed planning evidence.
+
+Preflight, summary, and operator-plan JSON keep raw and effective accelerator metadata separate. `operator_entrypoint.sim_accel` records the explicit selector if present, while `operator_entrypoint.effective_sim_accel` records the normalized sidecar path selected by `--sidecar-gpu` or `--sim-accel-*` shape spelling.
 
 The stage plan also includes `verilator_option_readiness`. `ready_for_verilator_option_shim` means the plan has the minimum structured inputs needed for a future shim, but it is not execution evidence and does not claim Verilator itself implements `--sim-accel`.
 
@@ -371,21 +391,21 @@ The shim can now select one planned stage with `--stage <name> --emit-command` a
 
 `--emit-verilator-command` adds a more direct handoff preview: synthesized `verilator_command_argv` and shell-quoted `verilator_command` fields containing the Verilator build inputs plus `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`. This remains non-executed planning output.
 
-`--print-verilator-command` is the terminal-only variant: it prints only the shell-quoted command when the shim is ready, while not-ready targets keep the JSON status output and exit code `2`. This command-only behavior is preserved even when invoked through the short `--sidecar-gpu` alias.
+`--print-verilator-command` is the terminal-only variant: it prints only the shell-quoted command when the shim is ready, while not-ready targets keep the JSON status output and exit code `2`. This command-only behavior is preserved even when invoked through the short `--sidecar-gpu` alias. `--print-verilator-estimate-command` is the matching command-only variant for an estimate-annotated future Verilator run; it prints the same command with `--sim-accel-estimate-efficiency` appended and no human estimate block.
 
 `--print-efficiency-estimate` is the terminal-only estimate variant. It prints the speedup class, reason, next action, and non-claims carried by the JSON report without executing commands, and cannot be combined with command-only output. Not-ready targets keep the human estimate but return exit code `2`.
 
-`--print-operator-plan` combines the terminal command preview and terminal efficiency estimate in one non-executing view. Ready targets stay terminal-oriented; not-ready targets return the same JSON status and exit code `2` used by `--operator-plan-json`. The print-only modes remain mutually exclusive so command-only output can stay script-friendly.
+`--print-operator-plan` combines the terminal command preview, terminal estimate-command preview, and terminal efficiency estimate in one non-executing view. Ready targets stay terminal-oriented; not-ready targets return the same JSON status and exit code `2` used by `--operator-plan-json`. The print-only modes remain mutually exclusive so command-only output can stay script-friendly.
 
-`run_hybrid_benchmark.py` also exposes `--print-operator-plan` with the same `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` spelling. This is the target-first terminal path from discovery to direct-option preview; the shim JSON remains the automation path for structured stage details and stable not-ready exit codes.
+`run_hybrid_benchmark.py` also exposes terminal previews with the compact `--sim-accel-shape <NxS>` spelling, for example `--sim-accel-shape 64x1 --print-operator-plan` or `--sim-accel-shape 64x1 --print-verilator-estimate-command`. This is the shortest target-first terminal path from discovery to direct-option preview; the shim JSON remains the automation path for structured stage details and stable not-ready exit codes. The expanded `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` spelling remains available as the explicit future-Verilator form.
 
-`run_hybrid_benchmark.py --operator-plan-json` provides the same target-first operator plan as JSON. It exits `0` with `status: planned` when ready and exits `2` with `status: not_ready_for_verilator_option_shim` when the target cannot synthesize the direct-option preview. Its `schema_role` is `target_first_operator_plan`, and its `operator_entrypoint` records the wrapper spelling and shape spelling that produced the plan. The shim remains the fuller readiness and stage-detail handoff. It is still non-executing planning output and keeps `correctness_policy: coverage_output_equivalence` separate from the efficiency estimate.
+`run_hybrid_benchmark.py --sim-accel-shape <NxS> --operator-plan-json` provides the same target-first operator plan as JSON. It exits `0` with `status: planned` when ready and exits `2` with `status: not_ready_for_verilator_option_shim` when the target cannot synthesize the direct-option preview. Its `schema_role` is `target_first_operator_plan`, and its `operator_entrypoint` records the wrapper spelling and shape spelling that produced the plan. Ready reports include top-level `requested_compatibility_entrypoint`, the concrete expanded suffix included in `command`, plus `estimate_command` with `--sim-accel-estimate-efficiency`; `discovery_hint` repeats the requested compatibility spelling while linking automation back to the same `64x1` starting-shape example exposed by `--list-targets`. `requested_shape`, `recommended_shape_matches_request`, `recommended_entrypoint`, and `compatibility_entrypoint` make it explicit when the actual plan shape differs from that starting point and which spelling should be preferred. The shim remains the fuller readiness and stage-detail handoff. It is still non-executing planning output and keeps `correctness_policy: coverage_output_equivalence` separate from the efficiency estimate. Generated compare reports must be read through the selected `coverage_output_equivalence` policy; raw final-state `match` can be false without invalidating the operator plan's correctness policy.
 
 For not-ready targets, `--operator-plan-json` also exposes top-level `missing` and `fallback_command` fields so automation can route the operator without digging into the full `sidecar_stage_plan`.
 
 The readiness vocabulary is intentionally shared across target discovery, wrapper operator-plan JSON, and shim JSON: `ready_for_template_shape`, `ready_for_verilator_option_shim`, and `not_ready_for_verilator_option_shim`.
 
-The JSON output now includes the same idea as structured `operator_plan` when the synthesized command is available. It groups command argv, shell-quoted command, efficiency estimate, and `coverage_output_equivalence` as the correctness policy.
+Wrapper `--operator-plan-json` emits the operator-plan fields at top level. Shim JSON nests the same synthesized command/handoff shape under `operator_plan` when the command is available. Both forms group command argv, shell-quoted command, estimate-command argv, shell-quoted estimate command, concrete requested compatibility entrypoint, efficiency estimate, and `coverage_output_equivalence` as the correctness policy.
 
 `--summary-out` writes a generated unified wrapper summary under `reports/` by default. The schema records target, shape or limit, mode, command list, expected reports, and collected evidence when commands actually execute; dry-run summaries explicitly remain non-evidence.
 

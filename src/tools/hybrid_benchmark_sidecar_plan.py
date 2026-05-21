@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import shlex
 
 from hybrid_benchmark_catalog import (
     BENCHMARKS,
@@ -11,6 +12,7 @@ from hybrid_benchmark_catalog import (
     MODE_PERSISTENT_RESIDENT_STATE_ABI,
     MODE_RESIDENT_STATE_REUSE,
     MODE_TEMPLATE,
+    compatibility_entrypoint_for_shape,
 )
 from hybrid_benchmark_efficiency import format_efficiency_estimate
 from hybrid_benchmark_paths import sanitize_local_absolute_paths
@@ -27,6 +29,8 @@ from hybrid_template_commands import command_plan
 from hybrid_template_runner import load_template_plan
 from hybrid_template_types import HybridTemplatePlan, parse_shape
 from mobile_vit_hybrid_imagenet_defaults import DEFAULT_TEMPLATE as MOBILE_VIT_TEMPLATE
+
+SIM_ACCEL_ESTIMATE_EFFICIENCY_FLAG = "--sim-accel-estimate-efficiency"
 from results_reproduction_mobile_vit import (
     MOBILE_VIT_ACCURACY_REPORT_128,
     MOBILE_VIT_CPU_KICK_PREDICTIONS_128,
@@ -296,6 +300,10 @@ def synthesized_verilator_command_argv(plan: dict[str, object]) -> list[str]:
     ]
 
 
+def synthesized_verilator_estimate_command_argv(command_argv: list[str]) -> list[str]:
+    return [*command_argv, SIM_ACCEL_ESTIMATE_EFFICIENCY_FLAG]
+
+
 def sidecar_handoff_contract(plan: dict[str, object]) -> dict[str, object]:
     hybrid_run = select_sidecar_stage(plan, "hybrid_sidecar_run")
     compare = select_sidecar_stage(plan, "coverage_output_compare")
@@ -338,12 +346,18 @@ def sidecar_operator_plan(
     command: str,
     efficiency_estimate: dict[str, object],
     handoff_contract: dict[str, object],
+    discovery_hint: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    return {
+    estimate_command_argv = synthesized_verilator_estimate_command_argv(command_argv)
+    report: dict[str, object] = {
         "schema_version": 1,
         "status": "planned",
         "command_argv": command_argv,
         "command": command,
+        "estimate_command_argv": estimate_command_argv,
+        "estimate_command": shlex.join(estimate_command_argv),
+        "estimate_flag": SIM_ACCEL_ESTIMATE_EFFICIENCY_FLAG,
+        "requested_compatibility_entrypoint": compatibility_entrypoint_for_shape(str(handoff_contract["shape"])),
         "efficiency_estimate": efficiency_estimate,
         "handoff_contract": handoff_contract,
         "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
@@ -353,6 +367,9 @@ def sidecar_operator_plan(
             "coverage-output equivalence remains separate from performance estimates",
         ],
     }
+    if discovery_hint is not None:
+        report["discovery_hint"] = discovery_hint
+    return report
 
 
 def format_sidecar_operator_plan(operator_plan: dict[str, object]) -> str:
@@ -360,6 +377,10 @@ def format_sidecar_operator_plan(operator_plan: dict[str, object]) -> str:
         "# verilator_sidecar_operator_plan",
         "command:",
         str(operator_plan["command"]),
+        "estimate_command:",
+        str(operator_plan["estimate_command"]),
+        f"requested_compatibility_entrypoint: {operator_plan['requested_compatibility_entrypoint']}",
+        f"estimate_flag: {operator_plan['estimate_flag']}",
         f"correctness_policy: {operator_plan['correctness_policy']}",
         "operator_plan_non_claims:",
     ]

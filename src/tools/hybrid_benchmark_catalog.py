@@ -22,10 +22,82 @@ from hybrid_benchmark_paths import (
     sanitize_local_absolute_paths,
     shape_tag,
 )
+from hybrid_template_types import parse_shape
 from results_reproduction import (
     ReproductionCommand,
     mobile_vit_imagenet_128_plan,
 )
+
+OPERATOR_PLAN_EXAMPLE_SHAPE = "64x1"
+OPERATOR_PLAN_EXAMPLE_TARGET = "paged_attention_kv_score"
+SIDECAR_RECOMMENDED_ENTRYPOINT = "--sim-accel-shape <NxS>"
+SIDECAR_COMPATIBILITY_ENTRYPOINT = (
+    f"--sim-accel {SIDECAR_ACCEL} --sim-accel-states <N> --sim-accel-steps <S>"
+)
+
+
+def operator_plan_command(*, target: str, shape: str) -> str:
+    return (
+        f"python3 src/tools/run_hybrid_benchmark.py {target} "
+        f"--sim-accel-shape {shape} --print-operator-plan"
+    )
+
+
+def verilator_estimate_command(*, target: str, shape: str) -> str:
+    return (
+        f"python3 src/tools/run_hybrid_benchmark.py {target} "
+        f"--sim-accel-shape {shape} --print-verilator-estimate-command"
+    )
+
+
+def operator_plan_json_command(*, target: str, shape: str) -> str:
+    return (
+        f"python3 src/tools/run_hybrid_benchmark.py {target} "
+        f"--sim-accel-shape {shape} --operator-plan-json"
+    )
+
+
+def compatibility_entrypoint_for_shape(shape: str | None) -> str | None:
+    if shape is None:
+        return None
+    nstates, steps = parse_shape(shape)
+    return f"--sim-accel {SIDECAR_ACCEL} --sim-accel-states {nstates} --sim-accel-steps {steps}"
+
+
+def shortest_operator_path() -> list[str]:
+    return [
+        "python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu",
+        operator_plan_command(target=OPERATOR_PLAN_EXAMPLE_TARGET, shape=OPERATOR_PLAN_EXAMPLE_SHAPE),
+        operator_plan_json_command(target=OPERATOR_PLAN_EXAMPLE_TARGET, shape=OPERATOR_PLAN_EXAMPLE_SHAPE),
+    ]
+
+
+def operator_discovery_hint(*, target: str, requested_shape: str | None) -> dict[str, object]:
+    return {
+        "source": "src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu",
+        "requested_shape": requested_shape,
+        "recommended_shape": OPERATOR_PLAN_EXAMPLE_SHAPE,
+        "recommended_shape_matches_request": requested_shape == OPERATOR_PLAN_EXAMPLE_SHAPE,
+        "recommended_entrypoint": SIDECAR_RECOMMENDED_ENTRYPOINT,
+        "compatibility_entrypoint": SIDECAR_COMPATIBILITY_ENTRYPOINT,
+        "requested_compatibility_entrypoint": compatibility_entrypoint_for_shape(requested_shape),
+        "operator_plan_example_command": operator_plan_command(
+            target=target,
+            shape=OPERATOR_PLAN_EXAMPLE_SHAPE,
+        ),
+        "verilator_estimate_command_example_command": verilator_estimate_command(
+            target=target,
+            shape=OPERATOR_PLAN_EXAMPLE_SHAPE,
+        ),
+        "operator_plan_json_example_command": operator_plan_json_command(
+            target=target,
+            shape=OPERATOR_PLAN_EXAMPLE_SHAPE,
+        ),
+        "non_claims": [
+            "recommended shape is an operator starting point, not timing evidence",
+            "example command is non-executing unless the operator runs it explicitly",
+        ],
+    }
 
 
 def _template_command(*, template: str, shape: str) -> ReproductionCommand:
@@ -125,14 +197,31 @@ def target_list_report() -> dict[str, object]:
                 "sim_accel": SIDECAR_ACCEL,
                 "option_shim_status": STATUS_READY_FOR_TEMPLATE_SHAPE,
                 "requires": ["--sim-accel-states", "--sim-accel-steps"],
+                "recommended_entrypoint": SIDECAR_RECOMMENDED_ENTRYPOINT,
+                "compatibility_entrypoint": SIDECAR_COMPATIBILITY_ENTRYPOINT,
                 "shape_spellings": [
                     "--sim-accel-states <N> --sim-accel-steps <S>",
                     "--sim-accel-shape <NxS>",
                     "--shape <NxS>",
                 ],
                 "operator_plan_command_template": (
-                    f"python3 src/tools/run_hybrid_benchmark.py {name} "
-                    "--sim-accel sidecar-gpu --sim-accel-shape <NxS> --print-operator-plan"
+                    operator_plan_command(target=name, shape="<NxS>")
+                ),
+                "verilator_estimate_command_template": (
+                    verilator_estimate_command(target=name, shape="<NxS>")
+                ),
+                "operator_plan_json_command_template": (
+                    operator_plan_json_command(target=name, shape="<NxS>")
+                ),
+                "recommended_shape": OPERATOR_PLAN_EXAMPLE_SHAPE,
+                "operator_plan_example_command": (
+                    operator_plan_command(target=name, shape=OPERATOR_PLAN_EXAMPLE_SHAPE)
+                ),
+                "verilator_estimate_example_command": (
+                    verilator_estimate_command(target=name, shape=OPERATOR_PLAN_EXAMPLE_SHAPE)
+                ),
+                "operator_plan_json_example_command": (
+                    operator_plan_json_command(target=name, shape=OPERATOR_PLAN_EXAMPLE_SHAPE)
                 ),
                 "ready_modes": [MODE_TEMPLATE],
                 "ready_stage_names": [
@@ -187,4 +276,28 @@ def target_list_report() -> dict[str, object]:
         "schema_version": 1,
         "tool": "src/tools/run_hybrid_benchmark.py",
         "targets": targets,
+    }
+
+
+def sidecar_target_list_report() -> dict[str, object]:
+    full_report = target_list_report()
+    return {
+        "schema_version": 1,
+        "tool": "src/tools/run_hybrid_benchmark.py",
+        "view": "sidecar_gpu",
+        "shortest_operator_path": shortest_operator_path(),
+        "targets": [
+            {
+                "name": target["name"],
+                "canonical_target": target["canonical_target"],
+                "kind": target["kind"],
+                "modes": target["modes"],
+                "sidecar_gpu": target["sidecar_gpu"],
+            }
+            for target in full_report["targets"]
+        ],
+        "non_claims": [
+            "sidecar discovery is not execution evidence",
+            "sidecar discovery does not mean Verilator itself implements --sim-accel",
+        ],
     }

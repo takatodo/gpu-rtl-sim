@@ -162,7 +162,18 @@ python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_page
 Verilator-like benchmark runner:
 
 ```bash
+python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-operator-plan
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json
+```
+
+Those three commands are the shortest operator path: discover sidecar-ready targets, inspect the terminal command plus efficiency estimate, then emit the same non-executing plan as JSON for automation.
+
+Full command reference:
+
+```bash
 python3 src/tools/run_hybrid_benchmark.py --list-targets
+python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu
 python3 src/tools/run_hybrid_benchmark.py --help
 python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run
@@ -170,10 +181,11 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --estimate-efficiency-json
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --sidecar-gpu
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --dry-run
-python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command
-python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-efficiency-estimate
-python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-operator-plan
-python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --operator-plan-json
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-verilator-command
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-verilator-estimate-command
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-efficiency-estimate
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-operator-plan
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json
 python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1
 python3 src/tools/run_hybrid_benchmark.py pulp_paged_kv_cache_large --shape 256x1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run
@@ -187,21 +199,27 @@ python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --mode persis
 python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --summary-from-existing --summary-out reports/hybrid_benchmark_mobile_vit_template_limit128.json
 ```
 
-Use `--list-targets` to inspect supported target names, aliases, required `--shape` or `--limit` arguments, supported modes, and the current `sidecar_gpu` option-shim discovery status before running a measurement.
+Use `--list-targets` to inspect supported target names, aliases, required `--shape` or `--limit` arguments, supported modes, and the current `sidecar_gpu` option-shim discovery status before running a measurement. Use `--list-targets sidecar_gpu` for the focused sidecar discovery view referenced by operator-plan JSON discovery hints.
 
-Use `--help` for the shortest Verilator-like entrypoint examples: target discovery, `--sidecar-gpu --dry-run`, `--sidecar-gpu --preflight`, terminal operator plan, and JSON operator plan.
+Use `--help` for the shortest Verilator-like entrypoint examples: target discovery, `--sidecar-gpu --dry-run`, `--sidecar-gpu --preflight`, terminal command preview, terminal estimate-command preview, terminal operator plan, and JSON operator plan.
 
-The `--list-targets` sidecar discovery block also reports ready template stage names, not-ready resident fallback stage names, and dataset-backed stage names. This keeps the first discovery command tied to the shim commands that can inspect or emit stage commands.
+The `--list-targets` sidecar discovery block also reports ready template stage names, not-ready resident fallback stage names, and dataset-backed stage names. The focused `--list-targets sidecar_gpu` view includes `shortest_operator_path`, matching the three commands above. For ready slice-template targets, it includes parameterized and concrete commands for terminal operator plans, estimate-command previews, and JSON operator plans, using the recommended `64x1` starting shape. These commands use `recommended_entrypoint: --sim-accel-shape <NxS>`; the expanded `compatibility_entrypoint` remains visible separately for tools that need the future direct-Verilator spelling. This keeps the first discovery command tied to the shim commands that can inspect or emit stage commands.
 
 `run_hybrid_benchmark.py --estimate-efficiency` is the operator-facing form: it prints the target, shape or limit, speedup class, reason, next action, and non-claims after the command plan. `--estimate-efficiency-json` keeps the same estimate machine-readable. `--preflight` already emits JSON and cannot be combined with the extra efficiency output flags.
 
 `--sidecar-gpu` is a short Verilator-like alias for the existing hybrid sidecar GPU benchmark flow. It does not change the CPU/GPU comparison policy; it adds the human-readable efficiency estimate so the operator can see the command plan, speedup class, and equivalence non-claims in one terminal view.
 
-The wrapper also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` and compact `--sim-accel-shape <NxS>` as tested compatibility spellings for the planned Verilator option. These names map to the same internal `NxS` shape and reject mixed shape spellings.
+The wrapper also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` and compact `--sim-accel-shape <NxS>` as tested compatibility spellings for the planned Verilator option. Using a `--sim-accel-*` shape spelling enters the sidecar preview path even when `--sim-accel sidecar-gpu` is omitted. These names map to the same internal `NxS` shape and reject mixed shape spellings.
 
-`--print-verilator-command` on the wrapper prints only the synthesized future Verilator command without executing commands. `--print-efficiency-estimate` prints only the matching human-readable estimate. `--print-operator-plan` prints that command plus the same efficiency estimate. These are the shortest terminal paths from target discovery to the direct-option preview, while the JSON shim remains the structured automation boundary.
+`--sim-accel-estimate-efficiency` on the wrapper follows the normal execution or `--dry-run` path, matching a future Verilator command-line flag that annotates a run with an estimate. Use `--print-efficiency-estimate` when you want the estimate-only, non-executing preview.
 
-`--operator-plan-json` prints the same wrapper operator plan as machine-readable JSON without executing commands. It exits `0` with a `planned` report when ready, and exits `2` with a `not_ready_for_verilator_option_shim` JSON report when the target cannot synthesize the direct-option preview. The ready report includes `handoff_contract` metadata for state authority, init/reference/candidate dumps, generated compare report path, and `coverage_output_equivalence`. Its `schema_role` is `target_first_operator_plan`; use `verilator_sidecar_shim.py` when automation needs the fuller readiness or stage-detail boundary.
+```bash
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --sim-accel-estimate-efficiency --dry-run
+```
+
+`--print-verilator-command` on the wrapper prints only the synthesized future Verilator command without executing commands. `--print-verilator-estimate-command` prints only the same command with `--sim-accel-estimate-efficiency` appended. `--print-efficiency-estimate` prints only the matching human-readable estimate. `--print-operator-plan` prints both command forms plus the same efficiency estimate. These are the shortest terminal paths from target discovery to the direct-option preview, while the JSON shim remains the structured automation boundary.
+
+`--operator-plan-json` prints the same wrapper operator plan as machine-readable JSON without executing commands. It exits `0` with a `planned` report when ready, and exits `2` with a `not_ready_for_verilator_option_shim` JSON report when the target cannot synthesize the direct-option preview. The ready report includes `handoff_contract` metadata for state authority, init/reference/candidate dumps, generated compare report path, and `coverage_output_equivalence`; it also includes top-level `requested_compatibility_entrypoint`, the concrete expanded option suffix included in `command`. Treat the generated compare report through its selected `coverage_output_equivalence` policy, not raw final-state `match`; raw state equality may remain false while strict coverage-output words pass. The separate `estimate_command` appends `--sim-accel-estimate-efficiency`, keeping command-only previews clean while giving automation the future Verilator spelling for an estimate-annotated run. `discovery_hint` repeats the same requested-shape compatibility spelling plus the recommended `64x1` starting shape, `recommended_entrypoint`, `compatibility_entrypoint`, and terminal/JSON example commands exposed by `--list-targets`. `discovery_hint.requested_shape` and `recommended_shape_matches_request` keep the requested benchmark shape separate from the discovery starting point. Its `schema_role` is `target_first_operator_plan`; use `verilator_sidecar_shim.py` when automation needs the fuller readiness or stage-detail boundary.
 
 Readiness status strings are shared across discovery and JSON entrypoints: `ready_for_template_shape`, `ready_for_verilator_option_shim`, and `not_ready_for_verilator_option_shim`.
 
@@ -209,19 +227,19 @@ Readiness status strings are shared across discovery and JSON entrypoints: `read
 
 `sidecar_stage_plan.verilator_option_readiness` reports whether the wrapper has the minimum structured inputs for a future Verilator option shim. `ready_for_verilator_option_shim` is a planning/readiness claim only; it is not execution evidence and does not mean Verilator itself already implements `--sim-accel`.
 
-Wrapper `--preflight` and summary JSON also include `verilator_option_preview`. Ready previews include the synthesized direct-option command and handoff contract; not-ready previews keep the missing input list without pretending Verilator already implements `--sim-accel`.
+Wrapper `--preflight` and summary JSON also include `verilator_option_preview`. Ready previews include the synthesized direct-option command, matching `estimate_command` with `--sim-accel-estimate-efficiency`, concrete `requested_compatibility_entrypoint`, and handoff contract; not-ready previews keep the missing input list without pretending Verilator already implements `--sim-accel`. Preflight and summary JSON also include the same `discovery_hint` as operator-plan JSON when a preview can be synthesized.
 
-When `--dry-run` is used with `--sidecar-gpu` or explicit `--sim-accel sidecar-gpu`, the wrapper prints a compact `# verilator_option_preview` block before the existing wrapper command plan. This keeps the future Verilator command visible while leaving the current dry-run and `coverage_output_equivalence` flow unchanged.
+When `--dry-run` is used with `--sidecar-gpu` or explicit `--sim-accel sidecar-gpu`, the wrapper prints a compact `# verilator_option_preview` block before the existing wrapper command plan. It includes both command forms and the concrete requested compatibility entrypoint, keeping the future Verilator command visible while leaving the current dry-run and `coverage_output_equivalence` flow unchanged.
 
 `--sidecar-gpu --preflight` is accepted as the JSON-only companion path. It includes `efficiency_estimate` and `verilator_option_preview` in the JSON report, while explicit terminal estimate output flags remain invalid with `--preflight`.
 
-Preflight and summary JSON include `operator_entrypoint` so downstream tooling can tell whether the wrapper was invoked through `--sidecar-gpu`, explicit `--sim-accel`, or the ordinary target/shape surface.
+Preflight and summary JSON include `operator_entrypoint` so downstream tooling can tell whether the wrapper was invoked through `--sidecar-gpu`, explicit `--sim-accel`, or the ordinary target/shape surface. The entrypoint keeps the raw `sim_accel` value separate from `effective_sim_accel`, so compact `--sim-accel-shape` invocations still record the effective `sidecar-gpu` path even when the explicit selector was omitted.
 
 Dataset-backed targets stay not-ready for the direct Verilator option until they have a direct RTL sidecar handoff. `mobile_vit --limit 128` still exposes non-executing `host_preprocess` and `rtl_sidecar_proxy_eval` stages so automation can inspect the host preprocessing boundary and the current RTL proxy eval command without treating either as shim readiness.
 
 Resident modes also stay not-ready for the direct Verilator option. Their not-ready plan exposes a `resident_state_reuse_workflow` or `persistent_resident_state_abi_workflow` fallback command so low-efficiency `1xN` shapes can move to the supported resident workflow without implying Verilator owns that flow yet.
 
-`src/tools/verilator_sidecar_shim.py` emits the future option handoff as JSON without executing commands. It exits `0` when ready for the shim, `2` when the target or mode is not ready for the shim, and `1` for input/planning errors with JSON on stderr.
+`src/tools/verilator_sidecar_shim.py` emits the future option handoff as JSON without executing commands. It exits `0` when ready for the shim, `2` when the target or mode is not ready for the shim, and `1` for input/planning errors with JSON on stderr. The shim accepts both expanded `--sim-accel-states <N> --sim-accel-steps <S>` and compact `--sim-accel-shape <NxS>` shape spellings. When the shim emits a synthesized Verilator command, it also includes the same `discovery_hint` as wrapper operator-plan JSON, both at the top level and inside `operator_plan`.
 
 To inspect the exact command for one planned stage without running it:
 
@@ -234,7 +252,7 @@ The emitted command is still planning output; it is not execution evidence.
 To preview the future direct Verilator command shape without running it:
 
 ```bash
-python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --emit-verilator-command
+python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel-shape 64x1 --emit-verilator-command
 ```
 
 This synthesized command is a handoff preview for automation. It does not mean Verilator itself already implements `--sim-accel`.
@@ -248,8 +266,10 @@ python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --
 For the matching human-readable efficiency estimate:
 
 ```bash
-python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-efficiency-estimate
+python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel-shape 64x1 --sim-accel-estimate-efficiency
 ```
+
+`--sim-accel-estimate-efficiency` is the Verilator-compatible spelling for the shim's estimate-only terminal mode. It is equivalent to `--print-efficiency-estimate` on the current non-executing shim and remains separate from command-only output.
 
 To see both the command preview and efficiency estimate in one terminal view:
 
