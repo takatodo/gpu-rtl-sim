@@ -375,7 +375,7 @@ The shim can now select one planned stage with `--stage <name> --emit-command` a
 
 `run_hybrid_benchmark.py` also exposes `--print-operator-plan` with the same `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` spelling. This is the target-first terminal path from discovery to direct-option preview; the shim JSON remains the automation path for structured stage details and stable not-ready exit codes.
 
-`run_hybrid_benchmark.py --operator-plan-json` provides the same target-first operator plan as JSON. It exits `0` with `status: planned` when ready and exits `2` with `status: not_ready_for_verilator_option_shim` when the target cannot synthesize the direct-option preview. It is still non-executing planning output and keeps `correctness_policy: coverage_output_equivalence` separate from the efficiency estimate.
+`run_hybrid_benchmark.py --operator-plan-json` provides the same target-first operator plan as JSON. It exits `0` with `status: planned` when ready and exits `2` with `status: not_ready_for_verilator_option_shim` when the target cannot synthesize the direct-option preview. Its `schema_role` is `target_first_operator_plan`, while the shim remains the fuller readiness and stage-detail handoff. It is still non-executing planning output and keeps `correctness_policy: coverage_output_equivalence` separate from the efficiency estimate.
 
 The JSON output now includes the same idea as structured `operator_plan` when the synthesized command is available. It groups command argv, shell-quoted command, efficiency estimate, and `coverage_output_equivalence` as the correctness policy.
 

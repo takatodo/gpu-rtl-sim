@@ -233,10 +233,23 @@ def operator_plan_json_report(
     ready = isinstance(readiness, dict) and readiness.get("status") == "ready_for_verilator_option_shim"
     if ready:
         report = operator_plan_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+        report["schema_role"] = "target_first_operator_plan"
+        report["tool"] = "src/tools/run_hybrid_benchmark.py"
+        report["use_when"] = [
+            "automation starts from run_hybrid_benchmark.py --list-targets",
+            "automation needs the synthesized Verilator command and efficiency estimate",
+            "full sidecar stage details are not required",
+        ]
+        report["shim_boundary"] = {
+            "tool": "src/tools/verilator_sidecar_shim.py",
+            "use_when": "need readiness/stage details, stage command emission, or stable shim handoff fields",
+        }
         report["exit_code"] = 0
         return 0, report
     return 2, {
         "schema_version": 1,
+        "schema_role": "target_first_operator_plan",
+        "tool": "src/tools/run_hybrid_benchmark.py",
         "status": "not_ready_for_verilator_option_shim",
         "target": target,
         "shape": shape,
@@ -252,6 +265,14 @@ def operator_plan_json_report(
             phases=phases,
         ),
         "sidecar_stage_plan": plan,
+        "use_when": [
+            "automation starts from run_hybrid_benchmark.py --list-targets",
+            "automation needs a stable not-ready JSON result without parsing stderr",
+        ],
+        "shim_boundary": {
+            "tool": "src/tools/verilator_sidecar_shim.py",
+            "use_when": "need readiness/stage details, stage command emission, or stable shim handoff fields",
+        },
         "non_claims": [
             "operator plan JSON does not execute commands",
             "not-ready status is not correctness or timing evidence",
