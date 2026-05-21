@@ -172,6 +172,7 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         result = self.run_python_tool("src/tools/run_hybrid_benchmark.py", "--help")
 
         self.assertIn("--print-efficiency-estimate", result.stdout)
+        self.assertIn("--sim-accel-shape 64x1 --print-operator-plan", result.stdout)
         self.assertIn("without executing commands", result.stdout)
 
     def test_target_first_can_print_efficiency_estimate_without_execution(self) -> None:

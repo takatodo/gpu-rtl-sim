@@ -351,7 +351,7 @@ python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --summary-from-
 
 Use `--list-targets` to inspect supported target names, aliases, required `--shape` or `--limit` arguments, supported modes, and the current `sidecar_gpu` option-shim discovery status before running a measurement. It is a discovery command only; it does not run benchmarks, write reports, or create measurement evidence.
 
-Use `--help` on `run_hybrid_benchmark.py` for the shortest supported Verilator-like examples: target discovery, terminal operator plan, and JSON operator plan.
+Use `--help` on `run_hybrid_benchmark.py` for the shortest supported Verilator-like examples: target discovery, compact `--sim-accel-shape`, terminal operator plan, and JSON operator plan.
 
 Use `--estimate-efficiency` on `run_hybrid_benchmark.py` for a short terminal-oriented estimate after the dry-run or execution command list. It prints the speedup class, reason, next action, scoped observed speedup when existing reports are available, and the non-claims that separate performance estimates from CPU/GPU equivalence. Use `--estimate-efficiency-json` when automation needs the same data.
 
@@ -377,7 +377,7 @@ The shim can now select one planned stage with `--stage <name> --emit-command` a
 
 `run_hybrid_benchmark.py` also exposes `--print-operator-plan` with the same `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` spelling. This is the target-first terminal path from discovery to direct-option preview; the shim JSON remains the automation path for structured stage details and stable not-ready exit codes.
 
-`run_hybrid_benchmark.py --operator-plan-json` provides the same target-first operator plan as JSON. It exits `0` with `status: planned` when ready and exits `2` with `status: not_ready_for_verilator_option_shim` when the target cannot synthesize the direct-option preview. Its `schema_role` is `target_first_operator_plan`, while the shim remains the fuller readiness and stage-detail handoff. It is still non-executing planning output and keeps `correctness_policy: coverage_output_equivalence` separate from the efficiency estimate.
+`run_hybrid_benchmark.py --operator-plan-json` provides the same target-first operator plan as JSON. It exits `0` with `status: planned` when ready and exits `2` with `status: not_ready_for_verilator_option_shim` when the target cannot synthesize the direct-option preview. Its `schema_role` is `target_first_operator_plan`, and its `operator_entrypoint` records the wrapper spelling that produced the plan. The shim remains the fuller readiness and stage-detail handoff. It is still non-executing planning output and keeps `correctness_policy: coverage_output_equivalence` separate from the efficiency estimate.
 
 The readiness vocabulary is intentionally shared across target discovery, wrapper operator-plan JSON, and shim JSON: `ready_for_template_shape`, `ready_for_verilator_option_shim`, and `not_ready_for_verilator_option_shim`.
 
