@@ -11,6 +11,7 @@ from hybrid_benchmark import (
     print_operator_plan_json,
     print_preflight,
     print_target_list,
+    print_verilator_efficiency_estimate,
     print_verilator_command,
     run_benchmark,
     write_summary,
@@ -29,7 +30,7 @@ epilog="""examples:
   python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --operator-plan-json
 
 notes:
-  --print-verilator-command, --print-operator-plan, and --operator-plan-json do not execute commands.
+  --print-verilator-command, --print-efficiency-estimate, --print-operator-plan, and --operator-plan-json do not execute commands.
   coverage_output_equivalence remains the correctness policy; efficiency output is separate.
 """,
     )
@@ -102,6 +103,11 @@ notes:
         help="Print only the synthesized future Verilator sidecar command without executing commands.",
     )
     parser.add_argument(
+        "--print-efficiency-estimate",
+        action="store_true",
+        help="Print only the human-readable efficiency estimate without executing commands.",
+    )
+    parser.add_argument(
         "--print-operator-plan",
         action="store_true",
         help="Print the synthesized Verilator sidecar command and efficiency estimate without executing commands.",
@@ -138,6 +144,9 @@ def run_with_args(args: argparse.Namespace) -> None:
         return
     if args.target is None:
         raise ValueError("target is required unless --list-targets is used")
+    explicit_estimate_output = (
+        args.estimate_efficiency or args.estimate_efficiency_json or args.sim_accel_estimate_efficiency
+    )
     sidecar_options = normalize_benchmark_sidecar_options(
         shape=args.shape,
         sim_accel=args.sim_accel,
@@ -154,13 +163,39 @@ def run_with_args(args: argparse.Namespace) -> None:
     args.sidecar_gpu = sidecar_options.sidecar_gpu
     args.estimate_efficiency = sidecar_options.estimate_efficiency
     args.estimate_efficiency_json = sidecar_options.estimate_efficiency_json
-    operator_plan_modes = [args.print_verilator_command, args.print_operator_plan, args.operator_plan_json]
-    if sum(1 for enabled in operator_plan_modes if enabled) > 1:
-        raise ValueError("--print-verilator-command, --print-operator-plan, and --operator-plan-json are mutually exclusive")
+    print_only_modes = [
+        args.print_verilator_command,
+        args.print_efficiency_estimate,
+        args.print_operator_plan,
+        args.operator_plan_json,
+    ]
+    if sum(1 for enabled in print_only_modes if enabled) > 1:
+        raise ValueError(
+            "--print-verilator-command, --print-efficiency-estimate, --print-operator-plan, "
+            "and --operator-plan-json are mutually exclusive"
+        )
     if args.print_verilator_command:
         if args.preflight or args.dry_run or args.summary_from_existing or args.summary_out is not None:
             raise ValueError("--print-verilator-command cannot be combined with execution, preflight, or summary options")
         exit_code = print_verilator_command(
+            target=args.target,
+            shape=args.shape,
+            limit=args.limit,
+            mode=args.mode,
+            phases=args.phases,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+        return
+    if args.print_efficiency_estimate:
+        if args.preflight or args.dry_run or args.summary_from_existing or args.summary_out is not None:
+            raise ValueError("--print-efficiency-estimate cannot be combined with execution, preflight, or summary options")
+        if explicit_estimate_output:
+            raise ValueError(
+                "--print-efficiency-estimate cannot be combined with --estimate-efficiency, "
+                "--estimate-efficiency-json, or --sim-accel-estimate-efficiency"
+            )
+        exit_code = print_verilator_efficiency_estimate(
             target=args.target,
             shape=args.shape,
             limit=args.limit,

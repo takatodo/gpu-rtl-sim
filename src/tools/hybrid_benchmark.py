@@ -200,6 +200,19 @@ def print_efficiency_estimate(
     print(_format_efficiency_estimate(estimate))
 
 
+def print_verilator_efficiency_estimate(
+    *,
+    target: str,
+    shape: str | None = None,
+    limit: int | None = None,
+    mode: str = MODE_TEMPLATE,
+    phases: int = 4,
+) -> int:
+    exit_code, report = operator_plan_json_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+    print(_format_efficiency_estimate(report["efficiency_estimate"]))
+    return exit_code
+
+
 def operator_plan_report(
     *,
     target: str,

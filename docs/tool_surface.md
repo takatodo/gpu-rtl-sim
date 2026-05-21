@@ -55,7 +55,7 @@ For the matching terminal estimate, `--print-efficiency-estimate` prints the hum
 
 For an operator-oriented terminal view, `--print-operator-plan` prints the synthesized command followed by the same efficiency estimate. The three print-only modes are mutually exclusive; use the JSON output for automation that needs both structured command fields and stage details.
 
-The same command-only and operator views are also available from the primary wrapper as `python3 src/tools/run_hybrid_benchmark.py <target> --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S> --print-verilator-command` or `--print-operator-plan`. That path keeps the usual target/shape entrypoint while still avoiding execution.
+The same command-only, estimate-only, and operator views are also available from the primary wrapper as `python3 src/tools/run_hybrid_benchmark.py <target> --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S> --print-verilator-command`, `--print-efficiency-estimate`, or `--print-operator-plan`. That path keeps the usual target/shape entrypoint while still avoiding execution.
 
 For wrapper-first automation, use the same command with `--operator-plan-json` instead of `--print-operator-plan`. It emits the synthesized command, efficiency estimate, `correctness_policy`, and non-claims as JSON when ready; not-ready targets return JSON with exit code `2` instead of a plain text error. The wrapper JSON declares `schema_role: target_first_operator_plan`; the shim remains the fuller readiness/stage-detail boundary.
 

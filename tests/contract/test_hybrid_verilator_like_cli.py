@@ -168,6 +168,67 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("target is required unless --list-targets is used", result.stderr)
 
+    def test_hybrid_benchmark_help_exposes_estimate_only_preview(self) -> None:
+        result = self.run_python_tool("src/tools/run_hybrid_benchmark.py", "--help")
+
+        self.assertIn("--print-efficiency-estimate", result.stdout)
+        self.assertIn("without executing commands", result.stdout)
+
+    def test_target_first_can_print_efficiency_estimate_without_execution(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--print-efficiency-estimate",
+        )
+
+        stdout = result.stdout
+        self.assertIn("# efficiency_estimate", stdout)
+        self.assertIn("target: paged_attention_kv_score", stdout)
+        self.assertIn("shape: 64x1", stdout)
+        self.assertIn("speedup_class: high", stdout)
+        self.assertIn("coverage-output equivalence remains separate from performance", stdout)
+        self.assertNotIn("verilator --cc", stdout)
+
+    def test_target_first_efficiency_estimate_not_ready_keeps_shim_exit_code(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "mobile_vit",
+            "--limit",
+            "128",
+            "--print-efficiency-estimate",
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 2)
+        stdout = result.stdout
+        self.assertIn("# efficiency_estimate", stdout)
+        self.assertIn("target: mobile_vit", stdout)
+        self.assertIn("limit: 128", stdout)
+        self.assertIn("speedup_class: unknown", stdout)
+        self.assertNotIn("schema_version", stdout)
+
+    def test_target_first_print_efficiency_rejects_other_estimate_output_flags(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--print-efficiency-estimate",
+            "--estimate-efficiency-json",
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--print-efficiency-estimate cannot be combined", result.stderr)
+
     def test_paged_attention_kv_cache_scale_up_measurement_dry_run_commands_pass(self) -> None:
         dry_run_commands = [
             hybrid_benchmark_command("pulp_paged_kv_cache_large", "--shape", "256x1", "--dry-run"),
