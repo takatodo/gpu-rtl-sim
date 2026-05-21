@@ -209,6 +209,8 @@ Readiness status strings are shared across discovery and JSON entrypoints: `read
 
 `sidecar_stage_plan.verilator_option_readiness` reports whether the wrapper has the minimum structured inputs for a future Verilator option shim. `ready_for_verilator_option_shim` is a planning/readiness claim only; it is not execution evidence and does not mean Verilator itself already implements `--sim-accel`.
 
+Wrapper `--preflight` and summary JSON also include `verilator_option_preview`. Ready previews include the synthesized direct-option command and handoff contract; not-ready previews keep the missing input list without pretending Verilator already implements `--sim-accel`.
+
 Dataset-backed targets stay not-ready for the direct Verilator option until they have a direct RTL sidecar handoff. `mobile_vit --limit 128` still exposes non-executing `host_preprocess` and `rtl_sidecar_proxy_eval` stages so automation can inspect the host preprocessing boundary and the current RTL proxy eval command without treating either as shim readiness.
 
 Resident modes also stay not-ready for the direct Verilator option. Their not-ready plan exposes a `resident_state_reuse_workflow` or `persistent_resident_state_abi_workflow` fallback command so low-efficiency `1xN` shapes can move to the supported resident workflow without implying Verilator owns that flow yet.

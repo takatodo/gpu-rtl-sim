@@ -68,6 +68,13 @@ def benchmark_summary(
             mode=mode,
             phases=phases,
         ),
+        "verilator_option_preview": verilator_option_preview(
+            target=target,
+            shape=shape,
+            limit=limit,
+            mode=mode,
+            phases=phases,
+        ),
         "sidecar_stage_plan": _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases),
         "evidence": _evidence_summary(
             target=target,
@@ -143,6 +150,13 @@ def preflight_report(
             mode=mode,
             phases=phases,
         ),
+        "verilator_option_preview": verilator_option_preview(
+            target=target,
+            shape=shape,
+            limit=limit,
+            mode=mode,
+            phases=phases,
+        ),
         "sidecar_stage_plan": _sidecar_stage_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases),
         "execution_mode": "preflight",
         "non_claims": [
@@ -211,6 +225,43 @@ def print_verilator_efficiency_estimate(
     exit_code, report = operator_plan_json_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
     print(_format_efficiency_estimate(report["efficiency_estimate"]))
     return exit_code
+
+
+def verilator_option_preview(
+    *,
+    target: str,
+    shape: str | None = None,
+    limit: int | None = None,
+    mode: str = MODE_TEMPLATE,
+    phases: int = 4,
+) -> dict[str, object]:
+    exit_code, report = operator_plan_json_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+    preview: dict[str, object] = {
+        "schema_version": 1,
+        "status": report["status"],
+        "exit_code": exit_code,
+        "command_emitted": exit_code == 0,
+        "non_claims": [
+            "preview does not execute commands",
+            "preview does not mean Verilator itself implements --sim-accel",
+            "coverage-output equivalence remains the correctness policy",
+        ],
+    }
+    if exit_code == 0:
+        preview.update(
+            {
+                "command_argv": report["command_argv"],
+                "command": report["command"],
+                "correctness_policy": report["correctness_policy"],
+                "handoff_contract": report["handoff_contract"],
+            }
+        )
+    else:
+        plan = report.get("sidecar_stage_plan")
+        readiness = plan.get("verilator_option_readiness") if isinstance(plan, dict) else None
+        if isinstance(readiness, dict):
+            preview["missing"] = readiness.get("missing", [])
+    return preview
 
 
 def operator_plan_report(

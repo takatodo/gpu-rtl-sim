@@ -229,6 +229,52 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("--print-efficiency-estimate cannot be combined", result.stderr)
 
+    def test_preflight_includes_target_first_verilator_option_preview(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--preflight",
+        )
+
+        report = json.loads(result.stdout)
+        preview = report["verilator_option_preview"]
+        self.assertEqual(preview["status"], "planned")
+        self.assertEqual(preview["exit_code"], 0)
+        self.assertTrue(preview["command_emitted"])
+        self.assertIn("--sim-accel sidecar-gpu", preview["command"])
+        self.assertIn("--sim-accel-states 64", preview["command"])
+        self.assertEqual(preview["correctness_policy"], "coverage_output_equivalence")
+        self.assertEqual(preview["handoff_contract"]["compare"]["acceptance_policy"], "coverage_output_equivalence")
+        self.assertIn("preview does not execute commands", preview["non_claims"])
+
+    def test_summary_includes_not_ready_verilator_option_preview(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "mobile_vit_summary.json"
+            self.run_python_tool(
+                "src/tools/run_hybrid_benchmark.py",
+                "mobile_vit",
+                "--limit",
+                "128",
+                "--dry-run",
+                "--summary-out",
+                str(summary_path),
+            )
+
+            report = json.loads(summary_path.read_text(encoding="utf-8"))
+
+        preview = report["verilator_option_preview"]
+        self.assertEqual(preview["status"], "not_ready_for_verilator_option_shim")
+        self.assertEqual(preview["exit_code"], 2)
+        self.assertFalse(preview["command_emitted"])
+        self.assertEqual(preview["missing"], ["direct_verilator_rtl_sidecar_handoff"])
+        self.assertNotIn("command", preview)
+
     def test_paged_attention_kv_cache_scale_up_measurement_dry_run_commands_pass(self) -> None:
         dry_run_commands = [
             hybrid_benchmark_command("pulp_paged_kv_cache_large", "--shape", "256x1", "--dry-run"),
