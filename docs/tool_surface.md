@@ -23,7 +23,7 @@ python3 src/tools/run_hybrid_benchmark.py <target> --shape <NxS> --sidecar-gpu
 
 `--sidecar-gpu` uses the same benchmark plan as the target wrapper and adds the short efficiency estimate. It is a migration surface toward the direct Verilator option, and it does not replace the documented CPU/GPU compare policy.
 
-Use `python3 src/tools/run_hybrid_benchmark.py --list-targets` before choosing a target. Its `sidecar_gpu` block shows whether a target is ready for the template-shape option shim or why it is not ready.
+Use `python3 src/tools/run_hybrid_benchmark.py --list-targets` before choosing a target. Its `sidecar_gpu` block shows whether a target is ready for the template-shape option shim, the ready template stage names, not-ready resident fallback stage names, and dataset-backed stage names or inspect commands.
 
 Use `python3 src/tools/run_hybrid_benchmark.py --help` for the shortest supported examples: target discovery, terminal operator plan, and JSON operator plan.
 
@@ -61,7 +61,9 @@ For wrapper-first automation, use the same command with `--operator-plan-json` i
 
 The readiness vocabulary is shared across `--list-targets`, wrapper operator-plan JSON, and shim JSON: template-shape discovery uses `ready_for_template_shape`, executable shim readiness uses `ready_for_verilator_option_shim`, and not-ready paths use `not_ready_for_verilator_option_shim`.
 
-When a command can be synthesized, the JSON output also includes `operator_plan`, grouping `command_argv`, shell-quoted `command`, `efficiency_estimate`, and `correctness_policy: coverage_output_equivalence`.
+When a command can be synthesized, the JSON output also includes `operator_plan`, grouping `command_argv`, shell-quoted `command`, `efficiency_estimate`, `handoff_contract`, and `correctness_policy: coverage_output_equivalence`. The handoff contract records state authority, init/reference/candidate dumps, generated compare report path, and the compare policy without executing anything.
+
+Dataset-backed and resident modes are intentionally still not-ready for the direct Verilator option. Their stage plans expose non-executing fallback stages such as `host_preprocess`, `rtl_sidecar_proxy_eval`, `resident_state_reuse_workflow`, and `persistent_resident_state_abi_workflow` so operators can inspect the next supported command while keeping shim readiness separate from higher-level orchestration.
 
 These are still public enough to appear in generated command plans, but they are not the first place an operator should start:
 

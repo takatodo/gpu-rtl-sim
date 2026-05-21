@@ -83,6 +83,7 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         option_doc = (REPO_ROOT / "docs/verilator_sidecar_option.md").read_text(encoding="utf-8")
         readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
         results = (REPO_ROOT / "docs/results.md").read_text(encoding="utf-8")
+        status = (REPO_ROOT / "docs/status.md").read_text(encoding="utf-8")
         self.add_tools_to_path()
         from results_reproduction_manifest_sources import PUBLIC_PACK_SOURCE_PATHS
 
@@ -118,6 +119,11 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertIn("compact compatibility spelling", option_doc)
         self.assertIn("coverage_output_equivalence", option_doc)
         self.assertIn("coverage_output_equivalence", tool_surface)
+        self.assertIn("handoff_contract", status)
+        self.assertIn("handoff_contract", tool_surface)
+        self.assertIn("host_preprocess", status)
+        self.assertIn("resident_state_reuse_workflow", status)
+        self.assertIn("persistent_resident_state_abi_workflow", tool_surface)
 
     def test_verilator_sidecar_option_mapping_is_shared_and_strict(self) -> None:
         self.add_tools_to_path()
