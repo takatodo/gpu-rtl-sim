@@ -270,6 +270,39 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertIn("+ python3 src/tools/run_hybrid_template.py", stdout)
         self.assertIn("# efficiency_estimate", stdout)
 
+    def test_sidecar_gpu_preflight_uses_json_preview_without_extra_human_estimate(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--shape",
+            "64x1",
+            "--sidecar-gpu",
+            "--preflight",
+        )
+
+        report = json.loads(result.stdout)
+        self.assertEqual(report["execution_mode"], "preflight")
+        self.assertEqual(report["efficiency_estimate"]["shape"], "64x1")
+        preview = report["verilator_option_preview"]
+        self.assertTrue(preview["command_emitted"])
+        self.assertIn("--sim-accel sidecar-gpu", preview["command"])
+        self.assertEqual(preview["correctness_policy"], "coverage_output_equivalence")
+        self.assertNotIn("# efficiency_estimate", result.stdout)
+
+    def test_preflight_still_rejects_explicit_human_estimate_flags(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--shape",
+            "64x1",
+            "--preflight",
+            "--estimate-efficiency",
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--estimate-efficiency cannot be combined with --preflight", result.stderr)
+
     def test_explicit_sim_accel_dry_run_keeps_not_ready_preview_non_fatal(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",

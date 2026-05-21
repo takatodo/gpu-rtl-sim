@@ -213,6 +213,8 @@ Wrapper `--preflight` and summary JSON also include `verilator_option_preview`. 
 
 When `--dry-run` is used with `--sidecar-gpu` or explicit `--sim-accel sidecar-gpu`, the wrapper prints a compact `# verilator_option_preview` block before the existing wrapper command plan. This keeps the future Verilator command visible while leaving the current dry-run and `coverage_output_equivalence` flow unchanged.
 
+`--sidecar-gpu --preflight` is accepted as the JSON-only companion path. It includes `efficiency_estimate` and `verilator_option_preview` in the JSON report, while explicit terminal estimate output flags remain invalid with `--preflight`.
+
 Dataset-backed targets stay not-ready for the direct Verilator option until they have a direct RTL sidecar handoff. `mobile_vit --limit 128` still exposes non-executing `host_preprocess` and `rtl_sidecar_proxy_eval` stages so automation can inspect the host preprocessing boundary and the current RTL proxy eval command without treating either as shim readiness.
 
 Resident modes also stay not-ready for the direct Verilator option. Their not-ready plan exposes a `resident_state_reuse_workflow` or `persistent_resident_state_abi_workflow` fallback command so low-efficiency `1xN` shapes can move to the supported resident workflow without implying Verilator owns that flow yet.

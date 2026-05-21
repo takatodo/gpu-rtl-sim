@@ -1143,8 +1143,11 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
             check=False,
         )
 
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("--estimate-efficiency cannot be combined with --preflight", result.stderr)
+        self.assertEqual(result.returncode, 0)
+        report = json.loads(result.stdout)
+        self.assertEqual(report["execution_mode"], "preflight")
+        self.assertEqual(report["verilator_option_preview"]["status"], "planned")
+        self.assertEqual(report["efficiency_estimate"]["shape"], "64x1")
 
     def test_run_hybrid_benchmark_summary_out_uses_unified_schema(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

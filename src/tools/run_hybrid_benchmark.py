@@ -227,7 +227,7 @@ def run_with_args(args: argparse.Namespace) -> None:
     if args.preflight:
         if args.summary_from_existing:
             raise ValueError("--summary-from-existing cannot be combined with --preflight")
-        if sidecar_options.explicit_sidecar_gpu or args.estimate_efficiency or args.estimate_efficiency_json:
+        if explicit_estimate_output:
             raise ValueError("--estimate-efficiency cannot be combined with --preflight")
         print_preflight(target=args.target, shape=args.shape, limit=args.limit, mode=args.mode, phases=args.phases)
         return
