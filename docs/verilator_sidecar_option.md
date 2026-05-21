@@ -100,6 +100,19 @@ python3 src/tools/verilator_sidecar_shim.py \
 
 This adds top-level `verilator_command_argv` and `verilator_command` fields synthesized from the structured `verilator_build` and `hybrid_sidecar_run` stage details. `verilator_command_argv` is the machine-readable form; `verilator_command` is shell-quoted for human inspection. It is a future handoff preview only; it is not executed and is not a claim that Verilator already accepts the option.
 
+For terminal use, `--print-verilator-command` prints only the shell-quoted command when the shim is ready:
+
+```bash
+python3 src/tools/verilator_sidecar_shim.py \
+  --target paged_attention_kv_score \
+  --sim-accel sidecar-gpu \
+  --sim-accel-states 64 \
+  --sim-accel-steps 1 \
+  --print-verilator-command
+```
+
+If the target or mode is not ready, the shim keeps the JSON status output and exit code `2` instead of printing a fake command.
+
 ## Non-Claims
 
 - This is not a new correctness policy.

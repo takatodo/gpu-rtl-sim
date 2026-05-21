@@ -45,6 +45,8 @@ The shim accepts `--stage <name> --emit-command` to expose one stage command as 
 
 For the closest preview of the future direct Verilator surface, use `--emit-verilator-command`. It synthesizes top-level `verilator_command_argv` and shell-quoted `verilator_command` fields from structured stage details and appends `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` without running the command.
 
+For a terminal-only preview, `--print-verilator-command` prints just the shell-quoted command when the shim is ready. Not-ready targets keep the JSON status output and exit code `2`.
+
 These are still public enough to appear in generated command plans, but they are not the first place an operator should start:
 
 | Tool | Role |

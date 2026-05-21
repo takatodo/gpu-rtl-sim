@@ -367,6 +367,8 @@ The shim can now select one planned stage with `--stage <name> --emit-command` a
 
 `--emit-verilator-command` adds a more direct handoff preview: synthesized `verilator_command_argv` and shell-quoted `verilator_command` fields containing the Verilator build inputs plus `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`. This remains non-executed planning output.
 
+`--print-verilator-command` is the terminal-only variant: it prints only the shell-quoted command when the shim is ready, while not-ready targets keep the JSON status output and exit code `2`.
+
 `--summary-out` writes a generated unified wrapper summary under `reports/` by default. The schema records target, shape or limit, mode, command list, expected reports, and collected evidence when commands actually execute; dry-run summaries explicitly remain non-evidence.
 
 `--summary-from-existing` writes the same wrapper schema from already generated reports without rerunning benchmark commands. It is useful for publishing the current benchmark pack, but it is not fresh execution evidence by itself.

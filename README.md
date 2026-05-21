@@ -212,6 +212,12 @@ python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --
 
 This synthesized command is a handoff preview for automation. It does not mean Verilator itself already implements `--sim-accel`.
 
+For a one-line human-readable preview:
+
+```bash
+python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command
+```
+
 The target end state is a direct Verilator option, documented in `docs/verilator_sidecar_option.md`. The wrapper spelling above is the current compatibility surface while that option is not implemented in Verilator itself.
 
 `--summary-from-existing` writes a wrapper summary from already generated reports without rerunning benchmark commands.

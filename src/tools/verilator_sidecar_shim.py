@@ -59,6 +59,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Include the synthesized future Verilator --sim-accel command without executing it.",
     )
+    parser.add_argument(
+        "--print-verilator-command",
+        action="store_true",
+        help="Print only the synthesized future Verilator command when ready. Does not execute it.",
+    )
     return parser
 
 
@@ -106,6 +111,7 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
     ready = isinstance(readiness, dict) and readiness.get("status") == "ready_for_verilator_option_shim"
     status = "ready_for_verilator_option_shim" if ready else "not_ready_for_verilator_option_shim"
     selected_stage = select_sidecar_stage(plan, args.stage) if ready else None
+    emit_verilator_command = bool(args.emit_verilator_command or args.print_verilator_command)
     report = {
         "schema_version": 1,
         "tool": TOOL,
@@ -118,7 +124,8 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
         "sim_accel": args.sim_accel,
         "selected_stage": selected_stage,
         "command_emitted": bool(args.emit_command),
-        "verilator_command_emitted": bool(args.emit_verilator_command),
+        "verilator_command_requested": emit_verilator_command,
+        "verilator_command_emitted": bool(emit_verilator_command and ready),
         "exit_code": 0 if ready else 2,
         "efficiency_estimate": efficiency_estimate(
             target=args.target,
@@ -141,7 +148,7 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
         report["emitted_command"] = selected_stage["command"]
         report["emitted_stage"] = selected_stage["stage"]
         report["selected_stage_command"] = selected_stage["command"]
-    if args.emit_verilator_command and ready:
+    if emit_verilator_command and ready:
         command_argv = _synthesized_verilator_command_argv(plan)
         report["verilator_command_argv"] = command_argv
         report["verilator_command"] = shlex.join(command_argv)
@@ -170,6 +177,9 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         print(json.dumps(error_report(exc), indent=2), file=sys.stderr)
         return 1
+    if args.print_verilator_command and exit_code == 0:
+        print(report["verilator_command"])
+        return 0
     print(json.dumps(report, indent=2))
     return exit_code
 

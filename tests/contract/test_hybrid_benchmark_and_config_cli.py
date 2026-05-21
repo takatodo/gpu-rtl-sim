@@ -279,6 +279,7 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
 
         payload = json.loads(result.stdout)
         self.assertEqual(payload["status"], "ready_for_verilator_option_shim")
+        self.assertTrue(payload["verilator_command_requested"])
         self.assertTrue(payload["verilator_command_emitted"])
         argv = payload["verilator_command_argv"]
         self.assertEqual(argv[0], "verilator")
@@ -297,6 +298,45 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("--top-module pulp_ita_mha_gpu_cov_tb", command)
         self.assertIn("overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv", command)
         self.assertIn("synthesized Verilator commands are printed but not executed", payload["non_claims"])
+
+    def test_verilator_sidecar_shim_can_print_future_verilator_command_only(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "pulp_ita_mha",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--print-verilator-command",
+        )
+
+        stdout = result.stdout.strip()
+        self.assertTrue(stdout.startswith("verilator --cc"))
+        self.assertIn("--sim-accel sidecar-gpu", stdout)
+        self.assertIn("--sim-accel-states 64", stdout)
+        self.assertIn("--sim-accel-steps 1", stdout)
+        self.assertNotIn("schema_version", stdout)
+
+    def test_verilator_sidecar_shim_print_command_not_ready_keeps_json_status(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "mobile_vit",
+            "--limit",
+            "128",
+            "--print-verilator-command",
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 2)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")
+        self.assertTrue(payload["verilator_command_requested"])
+        self.assertFalse(payload["verilator_command_emitted"])
+        self.assertNotIn("verilator_command", payload)
 
     def test_verilator_sidecar_shim_rejects_unknown_stage_as_json_error(self) -> None:
         result = self.run_python_tool(
