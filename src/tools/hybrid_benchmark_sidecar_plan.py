@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from hybrid_benchmark_catalog import BENCHMARKS, KIND_SLICE_TEMPLATE, MODE_TEMPLATE
+from hybrid_benchmark_efficiency import format_efficiency_estimate
 from hybrid_benchmark_paths import sanitize_local_absolute_paths
 from hybrid_benchmark_specs import (
     CORRECTNESS_POLICY_COVERAGE_OUTPUT,
@@ -221,6 +222,19 @@ def sidecar_operator_plan(
             "coverage-output equivalence remains separate from performance estimates",
         ],
     }
+
+
+def format_sidecar_operator_plan(operator_plan: dict[str, object]) -> str:
+    lines = [
+        "# verilator_sidecar_operator_plan",
+        "command:",
+        str(operator_plan["command"]),
+        f"correctness_policy: {operator_plan['correctness_policy']}",
+        "operator_plan_non_claims:",
+    ]
+    lines.extend(f"- {item}" for item in operator_plan["non_claims"])
+    lines.append(format_efficiency_estimate(operator_plan["efficiency_estimate"]))
+    return "\n".join(lines)
 
 
 def sidecar_stage_plan(

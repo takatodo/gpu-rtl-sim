@@ -10,6 +10,7 @@ import sys
 
 from hybrid_benchmark_efficiency import efficiency_estimate, format_efficiency_estimate
 from hybrid_benchmark_sidecar_plan import (
+    format_sidecar_operator_plan,
     select_sidecar_stage,
     sidecar_operator_plan,
     sidecar_stage_plan,
@@ -185,15 +186,7 @@ def main(argv: list[str] | None = None) -> int:
         print(format_efficiency_estimate(report["efficiency_estimate"]))
         return exit_code
     if args.print_operator_plan and exit_code == 0:
-        operator_plan = report["operator_plan"]
-        print("# verilator_sidecar_operator_plan")
-        print("command:")
-        print(operator_plan["command"])
-        print(f"correctness_policy: {operator_plan['correctness_policy']}")
-        print("operator_plan_non_claims:")
-        for item in operator_plan["non_claims"]:
-            print(f"- {item}")
-        print(format_efficiency_estimate(operator_plan["efficiency_estimate"]))
+        print(format_sidecar_operator_plan(report["operator_plan"]))
         return 0
     print(json.dumps(report, indent=2))
     return exit_code

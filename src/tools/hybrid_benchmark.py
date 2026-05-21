@@ -28,6 +28,7 @@ from hybrid_benchmark_efficiency import (
     format_efficiency_estimate as _format_efficiency_estimate,
 )
 from hybrid_benchmark_sidecar_plan import (
+    format_sidecar_operator_plan as _format_sidecar_operator_plan,
     sidecar_operator_plan as _sidecar_operator_plan,
     sidecar_stage_plan as _sidecar_stage_plan,
     synthesized_verilator_command_argv as _synthesized_verilator_command_argv,
@@ -296,14 +297,7 @@ def print_operator_plan(
     phases: int = 4,
 ) -> None:
     plan = operator_plan_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
-    print("# verilator_sidecar_operator_plan")
-    print("command:")
-    print(plan["command"])
-    print(f"correctness_policy: {plan['correctness_policy']}")
-    print("operator_plan_non_claims:")
-    for item in plan["non_claims"]:
-        print(f"- {item}")
-    print(_format_efficiency_estimate(plan["efficiency_estimate"]))
+    print(_format_sidecar_operator_plan(plan))
 
 
 def print_operator_plan_json(

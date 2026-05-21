@@ -442,6 +442,64 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         )
         self.assertEqual(json.loads(shim_not_ready.stdout)["status"], STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM)
 
+    def test_target_first_and_shim_operator_plans_share_command_and_text(self) -> None:
+        wrapper_json = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--operator-plan-json",
+        )
+        shim_json = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--emit-verilator-command",
+        )
+
+        wrapper_payload = json.loads(wrapper_json.stdout)
+        shim_payload = json.loads(shim_json.stdout)
+        shim_operator_plan = shim_payload["operator_plan"]
+        self.assertEqual(wrapper_payload["command_argv"], shim_operator_plan["command_argv"])
+        self.assertEqual(wrapper_payload["command"], shim_operator_plan["command"])
+        self.assertEqual(wrapper_payload["correctness_policy"], shim_operator_plan["correctness_policy"])
+        self.assertEqual(wrapper_payload["non_claims"], shim_operator_plan["non_claims"])
+
+        wrapper_text = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--print-operator-plan",
+        )
+        shim_text = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--print-operator-plan",
+        )
+        self.assertEqual(wrapper_text.stdout, shim_text.stdout)
+
     def test_run_hybrid_benchmark_operator_plan_json_is_exclusive(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",
