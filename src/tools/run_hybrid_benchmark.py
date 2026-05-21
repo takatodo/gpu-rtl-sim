@@ -136,7 +136,28 @@ def write_summary_for_args(args: argparse.Namespace, execution_mode: str) -> Pat
         mode=args.mode,
         phases=args.phases,
         execution_mode=execution_mode,
+        operator_entrypoint=operator_entrypoint_for_args(args),
     )
+
+
+def operator_entrypoint_for_args(args: argparse.Namespace) -> dict[str, object]:
+    if args.sim_accel == "sidecar-gpu":
+        surface = "sim_accel_compat"
+    elif args.sidecar_gpu:
+        surface = "sidecar_gpu_alias"
+    else:
+        surface = "target_shape"
+    return {
+        "schema_version": 1,
+        "surface": surface,
+        "sidecar_gpu_requested": surface in {"sim_accel_compat", "sidecar_gpu_alias"},
+        "sim_accel": args.sim_accel,
+        "shape": args.shape,
+        "non_claims": [
+            "entrypoint metadata records wrapper invocation only",
+            "entrypoint metadata is not execution, correctness, or timing evidence",
+        ],
+    }
 
 
 def run_with_args(args: argparse.Namespace) -> None:
@@ -229,7 +250,14 @@ def run_with_args(args: argparse.Namespace) -> None:
             raise ValueError("--summary-from-existing cannot be combined with --preflight")
         if explicit_estimate_output:
             raise ValueError("--estimate-efficiency cannot be combined with --preflight")
-        print_preflight(target=args.target, shape=args.shape, limit=args.limit, mode=args.mode, phases=args.phases)
+        print_preflight(
+            target=args.target,
+            shape=args.shape,
+            limit=args.limit,
+            mode=args.mode,
+            phases=args.phases,
+            operator_entrypoint=operator_entrypoint_for_args(args),
+        )
         return
     if args.summary_from_existing:
         if args.dry_run:

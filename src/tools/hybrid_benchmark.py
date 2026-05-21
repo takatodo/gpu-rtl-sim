@@ -47,6 +47,7 @@ def benchmark_summary(
     mode: str = MODE_TEMPLATE,
     phases: int = 4,
     execution_mode: str,
+    operator_entrypoint: dict[str, object] | None = None,
 ) -> dict[str, object]:
     commands = benchmark_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
     return {
@@ -58,6 +59,7 @@ def benchmark_summary(
         "mode": mode,
         "phases": phases,
         "execution_mode": execution_mode,
+        "operator_entrypoint": operator_entrypoint,
         "command_count": len(commands),
         "commands": [_format_report_command(command) for command in commands],
         "expected_reports": _expected_reports(target=target, shape=shape, limit=limit, mode=mode, phases=phases),
@@ -102,6 +104,7 @@ def write_summary(
     mode: str = MODE_TEMPLATE,
     phases: int = 4,
     execution_mode: str,
+    operator_entrypoint: dict[str, object] | None = None,
 ) -> Path:
     out = path or default_summary_path(target=target, shape=shape, limit=limit, mode=mode)
     out = _repo_path(out)
@@ -115,6 +118,7 @@ def write_summary(
                 mode=mode,
                 phases=phases,
                 execution_mode=execution_mode,
+                operator_entrypoint=operator_entrypoint,
             ),
             indent=2,
         )
@@ -131,6 +135,7 @@ def preflight_report(
     limit: int | None = None,
     mode: str = MODE_TEMPLATE,
     phases: int = 4,
+    operator_entrypoint: dict[str, object] | None = None,
 ) -> dict[str, object]:
     commands = benchmark_plan(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
     return {
@@ -141,6 +146,7 @@ def preflight_report(
         "limit": limit,
         "mode": mode,
         "phases": phases,
+        "operator_entrypoint": operator_entrypoint,
         "command_count": len(commands),
         "commands": [format_command(command) for command in commands],
         "efficiency_estimate": _efficiency_estimate(
@@ -187,8 +193,21 @@ def print_preflight(
     limit: int | None = None,
     mode: str = MODE_TEMPLATE,
     phases: int = 4,
+    operator_entrypoint: dict[str, object] | None = None,
 ) -> None:
-    print(json.dumps(preflight_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases), indent=2))
+    print(
+        json.dumps(
+            preflight_report(
+                target=target,
+                shape=shape,
+                limit=limit,
+                mode=mode,
+                phases=phases,
+                operator_entrypoint=operator_entrypoint,
+            ),
+            indent=2,
+        )
+    )
 
 
 def print_efficiency_estimate(

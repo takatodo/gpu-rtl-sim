@@ -79,6 +79,8 @@ For terminal dry-runs with `--sidecar-gpu` or explicit `--sim-accel sidecar-gpu`
 
 For JSON planning, `--sidecar-gpu --preflight` is accepted and remains JSON-only. The preflight report includes `efficiency_estimate` and `verilator_option_preview`; explicit terminal estimate flags such as `--estimate-efficiency` remain invalid with `--preflight`.
 
+Preflight and summary JSON include `operator_entrypoint` to record whether the invocation used `--sidecar-gpu`, explicit `--sim-accel`, or the ordinary target/shape surface. This is wrapper invocation metadata only, not execution or correctness evidence.
+
 `src/tools/verilator_sidecar_shim.py` is the non-executing JSON boundary intended to match the future Verilator option handoff. It returns exit code `0` when `verilator_option_readiness.status` is `ready_for_verilator_option_shim`, exit code `2` when the target or mode is not ready for the shim, and exit code `1` for input/planning errors with a JSON error object on stderr. The shim also includes the same efficiency estimate so performance expectations stay separate from correctness.
 
 The shim can also select one planned stage and emit that stage command without executing it:

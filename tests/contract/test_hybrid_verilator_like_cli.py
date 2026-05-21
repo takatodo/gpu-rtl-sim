@@ -282,12 +282,47 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
 
         report = json.loads(result.stdout)
         self.assertEqual(report["execution_mode"], "preflight")
+        self.assertEqual(report["operator_entrypoint"]["surface"], "sidecar_gpu_alias")
+        self.assertTrue(report["operator_entrypoint"]["sidecar_gpu_requested"])
         self.assertEqual(report["efficiency_estimate"]["shape"], "64x1")
         preview = report["verilator_option_preview"]
         self.assertTrue(preview["command_emitted"])
         self.assertIn("--sim-accel sidecar-gpu", preview["command"])
         self.assertEqual(preview["correctness_policy"], "coverage_output_equivalence")
         self.assertNotIn("# efficiency_estimate", result.stdout)
+
+    def test_summary_records_sidecar_entrypoint_surface(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            sidecar_summary = Path(tmpdir) / "sidecar.json"
+            plain_summary = Path(tmpdir) / "plain.json"
+            self.run_python_tool(
+                "src/tools/run_hybrid_benchmark.py",
+                "paged_attention_kv_score",
+                "--shape",
+                "64x1",
+                "--sidecar-gpu",
+                "--dry-run",
+                "--summary-out",
+                str(sidecar_summary),
+            )
+            self.run_python_tool(
+                "src/tools/run_hybrid_benchmark.py",
+                "paged_attention_kv_score",
+                "--shape",
+                "64x1",
+                "--dry-run",
+                "--summary-out",
+                str(plain_summary),
+            )
+
+            sidecar = json.loads(sidecar_summary.read_text(encoding="utf-8"))
+            plain = json.loads(plain_summary.read_text(encoding="utf-8"))
+
+        self.assertEqual(sidecar["operator_entrypoint"]["surface"], "sidecar_gpu_alias")
+        self.assertTrue(sidecar["operator_entrypoint"]["sidecar_gpu_requested"])
+        self.assertEqual(plain["operator_entrypoint"]["surface"], "target_shape")
+        self.assertFalse(plain["operator_entrypoint"]["sidecar_gpu_requested"])
+        self.assertEqual(sidecar["verilator_option_preview"]["correctness_policy"], "coverage_output_equivalence")
 
     def test_preflight_still_rejects_explicit_human_estimate_flags(self) -> None:
         result = self.run_python_tool(
