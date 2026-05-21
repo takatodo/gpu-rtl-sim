@@ -220,6 +220,46 @@ def operator_plan_report(
     )
 
 
+def operator_plan_json_report(
+    *,
+    target: str,
+    shape: str | None = None,
+    limit: int | None = None,
+    mode: str = MODE_TEMPLATE,
+    phases: int = 4,
+) -> tuple[int, dict[str, object]]:
+    plan = _sidecar_stage_plan(target=target, shape=shape, mode=mode)
+    readiness = plan.get("verilator_option_readiness")
+    ready = isinstance(readiness, dict) and readiness.get("status") == "ready_for_verilator_option_shim"
+    if ready:
+        report = operator_plan_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+        report["exit_code"] = 0
+        return 0, report
+    return 2, {
+        "schema_version": 1,
+        "status": "not_ready_for_verilator_option_shim",
+        "target": target,
+        "shape": shape,
+        "limit": limit,
+        "mode": mode,
+        "phases": phases,
+        "exit_code": 2,
+        "efficiency_estimate": _efficiency_estimate(
+            target=target,
+            shape=shape,
+            limit=limit,
+            mode=mode,
+            phases=phases,
+        ),
+        "sidecar_stage_plan": plan,
+        "non_claims": [
+            "operator plan JSON does not execute commands",
+            "not-ready status is not correctness or timing evidence",
+            "coverage-output equivalence remains separate from performance estimates",
+        ],
+    }
+
+
 def print_operator_plan(
     *,
     target: str,
@@ -246,8 +286,10 @@ def print_operator_plan_json(
     limit: int | None = None,
     mode: str = MODE_TEMPLATE,
     phases: int = 4,
-) -> None:
-    print(json.dumps(operator_plan_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases), indent=2))
+) -> int:
+    exit_code, report = operator_plan_json_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+    print(json.dumps(report, indent=2))
+    return exit_code
 
 
 def print_target_list() -> None:

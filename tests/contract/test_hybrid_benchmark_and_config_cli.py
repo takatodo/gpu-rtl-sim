@@ -284,12 +284,34 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         payload = json.loads(result.stdout)
         self.assertEqual(payload["schema_version"], 1)
         self.assertEqual(payload["status"], "planned")
+        self.assertEqual(payload["exit_code"], 0)
         self.assertEqual(payload["correctness_policy"], "coverage_output_equivalence")
         self.assertIn("--sim-accel", payload["command_argv"])
         self.assertIn("--sim-accel sidecar-gpu", payload["command"])
         self.assertEqual(payload["efficiency_estimate"]["target"], "paged_attention_kv_score")
         self.assertEqual(payload["efficiency_estimate"]["shape"], "64x1")
         self.assertIn("operator plan does not execute commands", payload["non_claims"])
+
+    def test_run_hybrid_benchmark_operator_plan_json_reports_not_ready(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "mobile_vit",
+            "--limit",
+            "128",
+            "--operator-plan-json",
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stderr, "")
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")
+        self.assertEqual(payload["exit_code"], 2)
+        self.assertEqual(payload["target"], "mobile_vit")
+        self.assertEqual(payload["limit"], 128)
+        self.assertEqual(payload["sidecar_stage_plan"]["status"], "unsupported_for_stage_plan")
+        self.assertIn("host preprocessing", payload["sidecar_stage_plan"]["reason"])
+        self.assertIn("operator plan JSON does not execute commands", payload["non_claims"])
 
     def test_run_hybrid_benchmark_operator_plan_json_is_exclusive(self) -> None:
         result = self.run_python_tool(

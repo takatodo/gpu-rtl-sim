@@ -165,7 +165,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score \
   --operator-plan-json
 ```
 
-This is still a non-executing operator plan. It carries the synthesized command, efficiency estimate, `coverage_output_equivalence`, and non-claims without turning the estimate into correctness or timing evidence.
+This is still a non-executing operator plan. It carries the synthesized command, efficiency estimate, `coverage_output_equivalence`, and non-claims without turning the estimate into correctness or timing evidence. If the target is not ready for the direct-option preview, the wrapper returns `status: not_ready_for_verilator_option_shim` JSON with exit code `2`.
 
 ## Non-Claims
 
