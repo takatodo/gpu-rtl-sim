@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+
+python3 src/tools/check_staged_large_files.py
