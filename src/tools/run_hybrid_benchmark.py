@@ -247,7 +247,7 @@ def run_with_args(args: argparse.Namespace) -> None:
             )
         return
 
-    if args.dry_run and args.sim_accel is not None:
+    if args.dry_run and args.sidecar_gpu:
         print_verilator_option_preview(
             target=args.target,
             shape=args.shape,

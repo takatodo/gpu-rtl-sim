@@ -251,6 +251,25 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertIn("+ python3 src/tools/run_hybrid_template.py", stdout)
         self.assertIn("# efficiency_estimate", stdout)
 
+    def test_sidecar_gpu_dry_run_prints_verilator_option_preview(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--shape",
+            "64x1",
+            "--sidecar-gpu",
+            "--dry-run",
+        )
+
+        stdout = result.stdout
+        self.assertIn("# verilator_option_preview", stdout)
+        self.assertIn("command_emitted: true", stdout)
+        self.assertIn("--sim-accel sidecar-gpu", stdout)
+        self.assertIn("--sim-accel-states 64", stdout)
+        self.assertIn("--sim-accel-steps 1", stdout)
+        self.assertIn("+ python3 src/tools/run_hybrid_template.py", stdout)
+        self.assertIn("# efficiency_estimate", stdout)
+
     def test_explicit_sim_accel_dry_run_keeps_not_ready_preview_non_fatal(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",
