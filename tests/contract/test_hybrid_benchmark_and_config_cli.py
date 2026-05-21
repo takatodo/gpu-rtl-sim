@@ -342,6 +342,29 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("coverage-output equivalence remains separate from performance", stdout)
         self.assertNotIn("schema_version", stdout)
 
+    def test_verilator_sidecar_shim_can_print_operator_plan_without_execution(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "pulp_ita_mha",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--print-operator-plan",
+        )
+
+        stdout = result.stdout
+        self.assertIn("# verilator_sidecar_operator_plan", stdout)
+        self.assertIn("command:\nverilator --cc", stdout)
+        self.assertIn("--sim-accel sidecar-gpu", stdout)
+        self.assertIn("# efficiency_estimate", stdout)
+        self.assertIn("speedup_class: high", stdout)
+        self.assertIn("coverage-output equivalence remains separate from performance", stdout)
+        self.assertNotIn("schema_version", stdout)
+
     def test_verilator_sidecar_shim_rejects_two_print_only_modes(self) -> None:
         result = self.run_python_tool(
             "src/tools/verilator_sidecar_shim.py",
@@ -359,7 +382,7 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(result.returncode, 1)
         payload = json.loads(result.stderr)
         self.assertEqual(payload["status"], "error")
-        self.assertIn("cannot be combined", payload["error"])
+        self.assertIn("mutually exclusive", payload["error"])
 
     def test_verilator_sidecar_shim_print_command_not_ready_keeps_json_status(self) -> None:
         result = self.run_python_tool(

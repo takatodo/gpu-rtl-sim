@@ -69,6 +69,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print only the human-readable efficiency estimate. Does not execute commands.",
     )
+    parser.add_argument(
+        "--print-operator-plan",
+        action="store_true",
+        help="Print the synthesized command plus efficiency estimate when ready. Does not execute commands.",
+    )
     return parser
 
 
@@ -105,8 +110,11 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
     validate_sim_accel_mode(args.sim_accel)
     if args.emit_command and args.stage is None:
         raise ValueError("--emit-command requires --stage")
-    if args.print_verilator_command and args.print_efficiency_estimate:
-        raise ValueError("--print-verilator-command cannot be combined with --print-efficiency-estimate")
+    print_only_modes = [args.print_verilator_command, args.print_efficiency_estimate, args.print_operator_plan]
+    if sum(1 for enabled in print_only_modes if enabled) > 1:
+        raise ValueError(
+            "--print-verilator-command, --print-efficiency-estimate, and --print-operator-plan are mutually exclusive"
+        )
     shape = resolve_sidecar_shape(
         shape=args.shape,
         sim_accel_shape=args.sim_accel_shape,
@@ -118,7 +126,7 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
     ready = isinstance(readiness, dict) and readiness.get("status") == "ready_for_verilator_option_shim"
     status = "ready_for_verilator_option_shim" if ready else "not_ready_for_verilator_option_shim"
     selected_stage = select_sidecar_stage(plan, args.stage) if ready else None
-    emit_verilator_command = bool(args.emit_verilator_command or args.print_verilator_command)
+    emit_verilator_command = bool(args.emit_verilator_command or args.print_verilator_command or args.print_operator_plan)
     report = {
         "schema_version": 1,
         "tool": TOOL,
@@ -190,6 +198,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.print_efficiency_estimate:
         print(format_efficiency_estimate(report["efficiency_estimate"]))
         return exit_code
+    if args.print_operator_plan and exit_code == 0:
+        print("# verilator_sidecar_operator_plan")
+        print("command:")
+        print(report["verilator_command"])
+        print(format_efficiency_estimate(report["efficiency_estimate"]))
+        return 0
     print(json.dumps(report, indent=2))
     return exit_code
 

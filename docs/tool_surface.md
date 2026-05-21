@@ -49,6 +49,8 @@ For a terminal-only preview, `--print-verilator-command` prints just the shell-q
 
 For the matching terminal estimate, `--print-efficiency-estimate` prints the human-readable speedup class, reason, next action, and non-claims without executing commands. It cannot be combined with `--print-verilator-command`.
 
+For an operator-oriented terminal view, `--print-operator-plan` prints the synthesized command followed by the same efficiency estimate. The three print-only modes are mutually exclusive; use the JSON output for automation that needs both structured command fields and stage details.
+
 These are still public enough to appear in generated command plans, but they are not the first place an operator should start:
 
 | Tool | Role |

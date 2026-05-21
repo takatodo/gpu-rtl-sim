@@ -224,6 +224,12 @@ For the matching human-readable efficiency estimate:
 python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-efficiency-estimate
 ```
 
+To see both the command preview and efficiency estimate in one terminal view:
+
+```bash
+python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-operator-plan
+```
+
 The target end state is a direct Verilator option, documented in `docs/verilator_sidecar_option.md`. The wrapper spelling above is the current compatibility surface while that option is not implemented in Verilator itself.
 
 `--summary-from-existing` writes a wrapper summary from already generated reports without rerunning benchmark commands.

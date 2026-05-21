@@ -126,6 +126,19 @@ python3 src/tools/verilator_sidecar_shim.py \
 
 This prints the same non-executing estimate carried in the JSON report. It is separate from the command-only mode and remains separate from correctness evidence.
 
+For a single operator view, use `--print-operator-plan`:
+
+```bash
+python3 src/tools/verilator_sidecar_shim.py \
+  --target paged_attention_kv_score \
+  --sim-accel sidecar-gpu \
+  --sim-accel-states 64 \
+  --sim-accel-steps 1 \
+  --print-operator-plan
+```
+
+This prints the synthesized command followed by the same human-readable efficiency estimate. It still does not execute the command, and it does not replace the JSON form for automation.
+
 ## Non-Claims
 
 - This is not a new correctness policy.
