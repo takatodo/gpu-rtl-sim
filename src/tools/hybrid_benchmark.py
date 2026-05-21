@@ -302,6 +302,22 @@ def print_operator_plan(
     print(_format_sidecar_operator_plan(plan))
 
 
+def print_verilator_command(
+    *,
+    target: str,
+    shape: str | None = None,
+    limit: int | None = None,
+    mode: str = MODE_TEMPLATE,
+    phases: int = 4,
+) -> int:
+    exit_code, report = operator_plan_json_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+    if exit_code != 0:
+        print(json.dumps(report, indent=2))
+        return exit_code
+    print(report["command"])
+    return 0
+
+
 def print_operator_plan_json(
     *,
     target: str,

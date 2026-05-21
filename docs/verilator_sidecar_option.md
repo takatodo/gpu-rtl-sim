@@ -153,7 +153,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score \
   --print-operator-plan
 ```
 
-Use this when starting from `run_hybrid_benchmark.py --list-targets`; use the shim JSON when automation needs structured stage details or stable not-ready exit codes.
+For a command-only target-first preview, replace `--print-operator-plan` with `--print-verilator-command`. Use these wrapper paths when starting from `run_hybrid_benchmark.py --list-targets`; use the shim JSON when automation needs structured stage details or stable not-ready exit codes.
 
 The same wrapper path can emit machine-readable JSON:
 

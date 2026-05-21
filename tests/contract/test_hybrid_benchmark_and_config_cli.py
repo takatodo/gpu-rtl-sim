@@ -13,6 +13,7 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("examples:", stdout)
         self.assertIn("python3 src/tools/run_hybrid_benchmark.py --list-targets", stdout)
         self.assertIn("--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1", stdout)
+        self.assertIn("--print-verilator-command", stdout)
         self.assertIn("--print-operator-plan", stdout)
         self.assertIn("--operator-plan-json", stdout)
         self.assertIn("do not execute commands", stdout)
@@ -30,6 +31,11 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
             example_commands,
             [
                 "python3 src/tools/run_hybrid_benchmark.py --list-targets",
+                (
+                    "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score "
+                    "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 "
+                    "--print-verilator-command"
+                ),
                 (
                     "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score "
                     "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 "
@@ -59,6 +65,10 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
                     self.assertEqual(report["status"], "planned")
                     self.assertEqual(report["correctness_policy"], "coverage_output_equivalence")
                     self.assertEqual(report["exit_code"], 0)
+                elif "--print-verilator-command" in command:
+                    self.assertIn("verilator --cc", command_result.stdout)
+                    self.assertIn("--sim-accel sidecar-gpu", command_result.stdout)
+                    self.assertNotIn("# efficiency_estimate", command_result.stdout)
                 else:
                     stdout = command_result.stdout
                     self.assertIn("# verilator_sidecar_operator_plan", stdout)
@@ -574,6 +584,51 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         )
         self.assertEqual(wrapper_text.stdout, shim_text.stdout)
 
+    def test_target_first_can_print_same_verilator_command_as_shim(self) -> None:
+        wrapper_command = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--print-verilator-command",
+        )
+        shim_command = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--print-verilator-command",
+        )
+
+        self.assertEqual(wrapper_command.stdout, shim_command.stdout)
+        self.assertIn("verilator --cc", wrapper_command.stdout)
+        self.assertNotIn("# efficiency_estimate", wrapper_command.stdout)
+
+    def test_target_first_print_verilator_command_reports_not_ready_as_json(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "mobile_vit",
+            "--limit",
+            "128",
+            "--print-verilator-command",
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 2)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")
+        stage_names = [stage["stage"] for stage in payload["sidecar_stage_plan"]["stages"]]
+        self.assertEqual(stage_names, ["host_preprocess", "rtl_sidecar_proxy_eval"])
+
     def test_run_hybrid_benchmark_operator_plan_json_is_exclusive(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",
@@ -583,7 +638,7 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
             "--sim-accel-steps",
             "1",
             "--operator-plan-json",
-            "--print-operator-plan",
+            "--print-verilator-command",
             check=False,
         )
 
