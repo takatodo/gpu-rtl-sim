@@ -25,7 +25,7 @@ python3 src/tools/run_hybrid_benchmark.py <target> --shape <NxS> --sidecar-gpu
 
 Use `python3 src/tools/run_hybrid_benchmark.py --list-targets` before choosing a target. Its `sidecar_gpu` block shows whether a target is ready for the template-shape option shim, the ready template stage names, not-ready resident fallback stage names, and dataset-backed stage names or inspect commands.
 
-Use `python3 src/tools/run_hybrid_benchmark.py --help` for the shortest supported examples: target discovery, terminal operator plan, and JSON operator plan.
+Use `python3 src/tools/run_hybrid_benchmark.py --help` for the shortest supported examples: target discovery, `--sidecar-gpu --dry-run`, `--sidecar-gpu --preflight`, terminal operator plan, and JSON operator plan.
 
 The wrapper also accepts the planned Verilator shape spelling so the option semantics have one tested mapping before they move into Verilator itself:
 

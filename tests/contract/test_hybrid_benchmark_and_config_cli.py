@@ -12,6 +12,8 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         stdout = result.stdout
         self.assertIn("examples:", stdout)
         self.assertIn("python3 src/tools/run_hybrid_benchmark.py --list-targets", stdout)
+        self.assertIn("--shape 64x1 --sidecar-gpu --dry-run", stdout)
+        self.assertIn("--shape 64x1 --sidecar-gpu --preflight", stdout)
         self.assertIn("--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1", stdout)
         self.assertIn("--print-verilator-command", stdout)
         self.assertIn("--print-operator-plan", stdout)
@@ -31,6 +33,8 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
             example_commands,
             [
                 "python3 src/tools/run_hybrid_benchmark.py --list-targets",
+                "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --sidecar-gpu --dry-run",
+                "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --sidecar-gpu --preflight",
                 (
                     "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score "
                     "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 "
@@ -59,6 +63,14 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
                     self.assertEqual(report["tool"], "src/tools/run_hybrid_benchmark.py")
                     target_names = {target["name"] for target in report["targets"]}
                     self.assertIn("paged_attention_kv_score", target_names)
+                elif "--preflight" in command:
+                    report = json.loads(command_result.stdout)
+                    self.assertEqual(report["operator_entrypoint"]["surface"], "sidecar_gpu_alias")
+                    self.assertEqual(report["verilator_option_preview"]["status"], "planned")
+                elif "--dry-run" in command:
+                    self.assertIn("# verilator_option_preview", command_result.stdout)
+                    self.assertIn("+ python3 src/tools/run_hybrid_template.py", command_result.stdout)
+                    self.assertIn("# efficiency_estimate", command_result.stdout)
                 elif "--operator-plan-json" in command:
                     report = json.loads(command_result.stdout)
                     self.assertEqual(report["schema_role"], "target_first_operator_plan")

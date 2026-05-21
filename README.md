@@ -189,7 +189,7 @@ python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --summary-from-
 
 Use `--list-targets` to inspect supported target names, aliases, required `--shape` or `--limit` arguments, supported modes, and the current `sidecar_gpu` option-shim discovery status before running a measurement.
 
-Use `--help` for the shortest Verilator-like entrypoint examples: target discovery, terminal operator plan, and JSON operator plan.
+Use `--help` for the shortest Verilator-like entrypoint examples: target discovery, `--sidecar-gpu --dry-run`, `--sidecar-gpu --preflight`, terminal operator plan, and JSON operator plan.
 
 The `--list-targets` sidecar discovery block also reports ready template stage names, not-ready resident fallback stage names, and dataset-backed stage names. This keeps the first discovery command tied to the shim commands that can inspect or emit stage commands.
 
