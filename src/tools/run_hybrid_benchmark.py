@@ -17,6 +17,7 @@ from hybrid_benchmark import (
     run_benchmark,
     write_summary,
 )
+from hybrid_benchmark_specs import BENCHMARKS, KIND_SLICE_TEMPLATE
 from verilator_sidecar_options import normalize_benchmark_sidecar_options
 
 
@@ -163,6 +164,20 @@ def operator_entrypoint_for_args(args: argparse.Namespace) -> dict[str, object]:
     }
 
 
+def validate_sidecar_shape_hint(args: argparse.Namespace) -> None:
+    if args.shape is not None:
+        return
+    if not (args.sidecar_gpu or args.sim_accel == "sidecar-gpu"):
+        return
+    spec = BENCHMARKS.get(args.target)
+    if spec is None or spec.kind != KIND_SLICE_TEMPLATE:
+        return
+    raise ValueError(
+        f"{args.target} requires a shape for sidecar GPU planning; use "
+        "--sim-accel-states N --sim-accel-steps S, --sim-accel-shape NxS, or --shape NxS"
+    )
+
+
 def run_with_args(args: argparse.Namespace) -> None:
     if args.list_targets:
         print_target_list()
@@ -188,6 +203,7 @@ def run_with_args(args: argparse.Namespace) -> None:
     args.sidecar_gpu = sidecar_options.sidecar_gpu
     args.estimate_efficiency = sidecar_options.estimate_efficiency
     args.estimate_efficiency_json = sidecar_options.estimate_efficiency_json
+    validate_sidecar_shape_hint(args)
     print_only_modes = [
         args.print_verilator_command,
         args.print_efficiency_estimate,

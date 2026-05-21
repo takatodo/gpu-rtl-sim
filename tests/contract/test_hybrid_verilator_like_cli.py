@@ -168,6 +168,21 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("target is required unless --list-targets is used", result.stderr)
 
+    def test_sidecar_gpu_missing_shape_error_names_verilator_style_shape_options(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--print-operator-plan",
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("requires a shape for sidecar GPU planning", result.stderr)
+        self.assertIn("--sim-accel-states N --sim-accel-steps S", result.stderr)
+        self.assertIn("--sim-accel-shape NxS", result.stderr)
+
     def test_hybrid_benchmark_help_exposes_estimate_only_preview(self) -> None:
         result = self.run_python_tool("src/tools/run_hybrid_benchmark.py", "--help")
 
