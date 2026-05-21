@@ -5,14 +5,20 @@ import argparse
 import sys
 from pathlib import Path
 
-from hybrid_benchmark import print_preflight, run_benchmark, write_summary
+from hybrid_benchmark import (
+    print_efficiency_estimate,
+    print_preflight,
+    print_target_list,
+    run_benchmark,
+    write_summary,
+)
 
 
-def main(argv: list[str] | None = None) -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run one supported hybrid RTL benchmark with a Verilator-like target/shape interface."
     )
-    parser.add_argument("target", help="Benchmark target, e.g. pulp_ita_mha, paged_attention_kv_score, mobile_vit.")
+    parser.add_argument("target", nargs="?", help="Benchmark target, e.g. pulp_ita_mha, paged_attention_kv_score, mobile_vit.")
     parser.add_argument("--shape", help="Shape for RTL slice-template targets, e.g. 64x1 or 1x64.")
     parser.add_argument("--limit", type=int, help="Input limit for dataset-backed targets, e.g. mobile_vit --limit 128.")
     parser.add_argument(
@@ -35,48 +41,104 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Write a summary from existing generated reports without running benchmark commands.",
     )
+    parser.add_argument(
+        "--estimate-efficiency",
+        action="store_true",
+        help="Print a short human-readable efficiency estimate after planning or execution.",
+    )
+    parser.add_argument(
+        "--estimate-efficiency-json",
+        action="store_true",
+        help="Print the efficiency estimate as JSON after planning or execution.",
+    )
+    parser.add_argument(
+        "--sidecar-gpu",
+        action="store_true",
+        help=(
+            "Use the existing hybrid sidecar GPU benchmark flow and print the "
+            "human-readable efficiency estimate."
+        ),
+    )
+    parser.add_argument("--list-targets", action="store_true", help="Print supported benchmark targets and exit.")
+    return parser
+
+
+def display_path(path: Path) -> Path | str:
+    return path.relative_to(Path.cwd()) if path.is_relative_to(Path.cwd()) else path
+
+
+def write_summary_for_args(args: argparse.Namespace, execution_mode: str) -> Path:
+    summary_path = None if args.summary_out in (None, "auto") else Path(args.summary_out)
+    return write_summary(
+        path=summary_path,
+        target=args.target,
+        shape=args.shape,
+        limit=args.limit,
+        mode=args.mode,
+        phases=args.phases,
+        execution_mode=execution_mode,
+    )
+
+
+def run_with_args(args: argparse.Namespace) -> None:
+    if args.list_targets:
+        print_target_list()
+        return
+    if args.target is None:
+        raise ValueError("target is required unless --list-targets is used")
+    if args.sidecar_gpu and not args.estimate_efficiency_json:
+        args.estimate_efficiency = True
+    if args.preflight:
+        if args.summary_from_existing:
+            raise ValueError("--summary-from-existing cannot be combined with --preflight")
+        if args.sidecar_gpu or args.estimate_efficiency or args.estimate_efficiency_json:
+            raise ValueError("--estimate-efficiency cannot be combined with --preflight")
+        print_preflight(target=args.target, shape=args.shape, limit=args.limit, mode=args.mode, phases=args.phases)
+        return
+    if args.summary_from_existing:
+        if args.dry_run:
+            raise ValueError("--summary-from-existing cannot be combined with --dry-run")
+        written = write_summary_for_args(args, execution_mode="existing_evidence")
+        print(f"+ write {display_path(written)}")
+        if args.estimate_efficiency or args.estimate_efficiency_json:
+            print_efficiency_estimate(
+                target=args.target,
+                shape=args.shape,
+                limit=args.limit,
+                mode=args.mode,
+                phases=args.phases,
+                as_json=args.estimate_efficiency_json,
+            )
+        return
+
+    run_benchmark(
+        target=args.target,
+        shape=args.shape,
+        limit=args.limit,
+        mode=args.mode,
+        phases=args.phases,
+        dry_run=args.dry_run,
+    )
+    if args.summary_out is not None:
+        written = write_summary_for_args(args, execution_mode="dry_run" if args.dry_run else "executed")
+        print(f"+ write {display_path(written)}")
+    if args.estimate_efficiency or args.estimate_efficiency_json:
+        print_efficiency_estimate(
+            target=args.target,
+            shape=args.shape,
+            limit=args.limit,
+            mode=args.mode,
+            phases=args.phases,
+            as_json=args.estimate_efficiency_json,
+        )
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
     args = parser.parse_args(argv)
 
     try:
-        if args.preflight:
-            if args.summary_from_existing:
-                raise ValueError("--summary-from-existing cannot be combined with --preflight")
-            print_preflight(target=args.target, shape=args.shape, limit=args.limit, mode=args.mode, phases=args.phases)
-        elif args.summary_from_existing:
-            if args.dry_run:
-                raise ValueError("--summary-from-existing cannot be combined with --dry-run")
-            summary_path = None if args.summary_out in (None, "auto") else Path(args.summary_out)
-            written = write_summary(
-                path=summary_path,
-                target=args.target,
-                shape=args.shape,
-                limit=args.limit,
-                mode=args.mode,
-                phases=args.phases,
-                execution_mode="existing_evidence",
-            )
-            print(f"+ write {written.relative_to(Path.cwd()) if written.is_relative_to(Path.cwd()) else written}")
-        else:
-            run_benchmark(
-                target=args.target,
-                shape=args.shape,
-                limit=args.limit,
-                mode=args.mode,
-                phases=args.phases,
-                dry_run=args.dry_run,
-            )
-            if args.summary_out is not None:
-                summary_path = None if args.summary_out == "auto" else Path(args.summary_out)
-                written = write_summary(
-                    path=summary_path,
-                    target=args.target,
-                    shape=args.shape,
-                    limit=args.limit,
-                    mode=args.mode,
-                    phases=args.phases,
-                    execution_mode="dry_run" if args.dry_run else "executed",
-                )
-                print(f"+ write {written.relative_to(Path.cwd()) if written.is_relative_to(Path.cwd()) else written}")
+        run_with_args(args)
     except Exception as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

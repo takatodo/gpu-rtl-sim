@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
+from hybrid_template_efficiency import format_template_efficiency_report, template_efficiency_report
 from hybrid_template_runner import load_template_plan, run_plan
 
 
@@ -30,6 +32,16 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Print the generated commands without executing them.",
     )
+    parser.add_argument(
+        "--estimate-efficiency",
+        action="store_true",
+        help="Print a short human-readable efficiency estimate after the command plan.",
+    )
+    parser.add_argument(
+        "--estimate-efficiency-json",
+        action="store_true",
+        help="Print the efficiency estimate as JSON after the command plan.",
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -42,6 +54,13 @@ def main(argv: list[str] | None = None) -> int:
             cfg_seed=args.cfg_seed,
         )
         run_plan(plan, dry_run=args.dry_run)
+        if args.estimate_efficiency or args.estimate_efficiency_json:
+            report = template_efficiency_report(plan)
+            if args.estimate_efficiency_json:
+                print("# efficiency_estimate_json")
+                print(json.dumps(report, indent=2))
+            else:
+                print(format_template_efficiency_report(report))
     except Exception as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
