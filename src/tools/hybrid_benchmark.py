@@ -382,6 +382,37 @@ def print_verilator_command(
     return 0
 
 
+def format_verilator_option_preview(preview: dict[str, object]) -> str:
+    lines = [
+        "# verilator_option_preview",
+        f"status: {preview['status']}",
+        f"command_emitted: {str(preview['command_emitted']).lower()}",
+    ]
+    if "command" in preview:
+        lines.extend(["command:", str(preview["command"])])
+    if "correctness_policy" in preview:
+        lines.append(f"correctness_policy: {preview['correctness_policy']}")
+    if "missing" in preview:
+        lines.append("missing:")
+        lines.extend(f"- {item}" for item in preview["missing"])
+    lines.append("non_claims:")
+    lines.extend(f"- {item}" for item in preview["non_claims"])
+    return "\n".join(lines)
+
+
+def print_verilator_option_preview(
+    *,
+    target: str,
+    shape: str | None = None,
+    limit: int | None = None,
+    mode: str = MODE_TEMPLATE,
+    phases: int = 4,
+) -> int:
+    preview = verilator_option_preview(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+    print(format_verilator_option_preview(preview))
+    return int(preview["exit_code"])
+
+
 def print_operator_plan_json(
     *,
     target: str,

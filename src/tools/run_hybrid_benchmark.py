@@ -13,6 +13,7 @@ from hybrid_benchmark import (
     print_target_list,
     print_verilator_efficiency_estimate,
     print_verilator_command,
+    print_verilator_option_preview,
     run_benchmark,
     write_summary,
 )
@@ -246,6 +247,14 @@ def run_with_args(args: argparse.Namespace) -> None:
             )
         return
 
+    if args.dry_run and args.sim_accel is not None:
+        print_verilator_option_preview(
+            target=args.target,
+            shape=args.shape,
+            limit=args.limit,
+            mode=args.mode,
+            phases=args.phases,
+        )
     run_benchmark(
         target=args.target,
         shape=args.shape,

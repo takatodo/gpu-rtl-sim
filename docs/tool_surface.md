@@ -45,6 +45,8 @@ The stage plan also includes `verilator_option_readiness`. `ready_for_verilator_
 
 Wrapper preflight and summary JSON also include `verilator_option_preview`. Ready targets include the synthesized command plus the handoff contract; not-ready targets keep the not-ready status and missing input list. This lets operators inspect the future direct-option surface from the same target-first dry-run or summary path without treating the preview as execution evidence.
 
+When `--dry-run` is invoked with explicit `--sim-accel sidecar-gpu`, the wrapper prints a short `# verilator_option_preview` block before the existing command plan. Ready targets show the synthesized command; not-ready targets show the missing input list but keep dry-run non-fatal.
+
 For automation, `src/tools/verilator_sidecar_shim.py` emits the same readiness surface as JSON. Exit code `0` means ready for the option shim, `2` means the target or mode is not ready for the shim, and `1` means input or planning error with a JSON error object on stderr.
 
 The shim accepts `--stage <name> --emit-command` to expose one stage command as top-level JSON for automation. This remains non-executing output; unknown stages and `--emit-command` without `--stage` are JSON errors.

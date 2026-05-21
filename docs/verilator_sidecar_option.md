@@ -75,6 +75,8 @@ The same preflight block includes `verilator_option_readiness`. `ready_for_veril
 
 Wrapper preflight and summary JSON also include `verilator_option_preview`. Ready template targets include the synthesized direct-option command and handoff contract; not-ready targets keep a stable not-ready status and missing input list. The preview is non-executing metadata so the direct-option surface stays visible during normal dry-run and summary workflows.
 
+For terminal dry-runs with explicit `--sim-accel sidecar-gpu`, the wrapper prints a compact `# verilator_option_preview` block before the existing command plan. This keeps the Verilator-facing command visible in the shortest dry-run path while preserving the current wrapper execution plan and CPU/GPU comparison policy.
+
 `src/tools/verilator_sidecar_shim.py` is the non-executing JSON boundary intended to match the future Verilator option handoff. It returns exit code `0` when `verilator_option_readiness.status` is `ready_for_verilator_option_shim`, exit code `2` when the target or mode is not ready for the shim, and exit code `1` for input/planning errors with a JSON error object on stderr. The shim also includes the same efficiency estimate so performance expectations stay separate from correctness.
 
 The shim can also select one planned stage and emit that stage command without executing it:

@@ -229,6 +229,47 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("--print-efficiency-estimate cannot be combined", result.stderr)
 
+    def test_explicit_sim_accel_dry_run_prints_verilator_option_preview(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--dry-run",
+        )
+
+        stdout = result.stdout
+        self.assertIn("# verilator_option_preview", stdout)
+        self.assertIn("command_emitted: true", stdout)
+        self.assertIn("command:\nverilator --cc", stdout)
+        self.assertIn("--sim-accel sidecar-gpu", stdout)
+        self.assertIn("correctness_policy: coverage_output_equivalence", stdout)
+        self.assertIn("+ python3 src/tools/run_hybrid_template.py", stdout)
+        self.assertIn("# efficiency_estimate", stdout)
+
+    def test_explicit_sim_accel_dry_run_keeps_not_ready_preview_non_fatal(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "mobile_vit",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--limit",
+            "128",
+            "--dry-run",
+        )
+
+        stdout = result.stdout
+        self.assertIn("# verilator_option_preview", stdout)
+        self.assertIn("status: not_ready_for_verilator_option_shim", stdout)
+        self.assertIn("command_emitted: false", stdout)
+        self.assertIn("direct_verilator_rtl_sidecar_handoff", stdout)
+        self.assertIn("mobile_vit_imagenet_manifest.py", stdout)
+        self.assertIn("# efficiency_estimate", stdout)
+
     def test_preflight_includes_target_first_verilator_option_preview(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",
