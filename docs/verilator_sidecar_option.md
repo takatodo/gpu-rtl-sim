@@ -155,6 +155,18 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score \
 
 Use this when starting from `run_hybrid_benchmark.py --list-targets`; use the shim JSON when automation needs structured stage details or stable not-ready exit codes.
 
+The same wrapper path can emit machine-readable JSON:
+
+```bash
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score \
+  --sim-accel sidecar-gpu \
+  --sim-accel-states 64 \
+  --sim-accel-steps 1 \
+  --operator-plan-json
+```
+
+This is still a non-executing operator plan. It carries the synthesized command, efficiency estimate, `coverage_output_equivalence`, and non-claims without turning the estimate into correctness or timing evidence.
+
 ## Non-Claims
 
 - This is not a new correctness policy.

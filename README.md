@@ -170,6 +170,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run --sidecar-gpu
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-operator-plan
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --operator-plan-json
 python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1
 python3 src/tools/run_hybrid_benchmark.py pulp_paged_kv_cache_large --shape 256x1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run
@@ -192,6 +193,8 @@ Use `--list-targets` to inspect supported target names, aliases, required `--sha
 The wrapper also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` and compact `--sim-accel-shape <NxS>` as tested compatibility spellings for the planned Verilator option. These names map to the same internal `NxS` shape and reject mixed shape spellings.
 
 `--print-operator-plan` on the wrapper prints the synthesized future Verilator command plus the same efficiency estimate without executing commands. It is the shortest terminal path from target discovery to the direct-option preview, while the JSON shim remains the structured automation boundary.
+
+`--operator-plan-json` prints the same wrapper operator plan as machine-readable JSON without executing commands. Use it when automation starts from `run_hybrid_benchmark.py --list-targets` and only needs the synthesized command, efficiency estimate, correctness policy, and non-claims; use `verilator_sidecar_shim.py` when stable not-ready exit codes or full stage details are needed.
 
 `--preflight` includes a `sidecar_stage_plan` for template targets. It names the direct-Verilator migration stages, including `gpu_artifact_build`, `hybrid_sidecar_run`, and the final `coverage_output_compare` using `coverage_output_equivalence`. Each stage also carries structured `details` so `mdir`, `top_module`, source files, state files, shape, and compare policy are available without scraping command strings.
 

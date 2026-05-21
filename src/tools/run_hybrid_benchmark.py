@@ -8,6 +8,7 @@ from pathlib import Path
 from hybrid_benchmark import (
     print_efficiency_estimate,
     print_operator_plan,
+    print_operator_plan_json,
     print_preflight,
     print_target_list,
     run_benchmark,
@@ -88,6 +89,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print the synthesized Verilator sidecar command and efficiency estimate without executing commands.",
     )
+    parser.add_argument(
+        "--operator-plan-json",
+        action="store_true",
+        help="Print the synthesized Verilator sidecar operator plan as JSON without executing commands.",
+    )
     parser.add_argument("--list-targets", action="store_true", help="Print supported benchmark targets and exit.")
     return parser
 
@@ -131,6 +137,19 @@ def run_with_args(args: argparse.Namespace) -> None:
     args.sidecar_gpu = sidecar_options.sidecar_gpu
     args.estimate_efficiency = sidecar_options.estimate_efficiency
     args.estimate_efficiency_json = sidecar_options.estimate_efficiency_json
+    if args.print_operator_plan and args.operator_plan_json:
+        raise ValueError("--print-operator-plan and --operator-plan-json are mutually exclusive")
+    if args.operator_plan_json:
+        if args.preflight or args.dry_run or args.summary_from_existing or args.summary_out is not None:
+            raise ValueError("--operator-plan-json cannot be combined with execution, preflight, or summary options")
+        print_operator_plan_json(
+            target=args.target,
+            shape=args.shape,
+            limit=args.limit,
+            mode=args.mode,
+            phases=args.phases,
+        )
+        return
     if args.print_operator_plan:
         if args.preflight or args.dry_run or args.summary_from_existing or args.summary_out is not None:
             raise ValueError("--print-operator-plan cannot be combined with execution, preflight, or summary options")

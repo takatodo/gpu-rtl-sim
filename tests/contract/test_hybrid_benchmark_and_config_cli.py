@@ -268,6 +268,45 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("coverage-output equivalence remains separate from performance", stdout)
         self.assertNotIn("schema_version", stdout)
 
+    def test_run_hybrid_benchmark_can_print_operator_plan_json_without_execution(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--operator-plan-json",
+        )
+
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["schema_version"], 1)
+        self.assertEqual(payload["status"], "planned")
+        self.assertEqual(payload["correctness_policy"], "coverage_output_equivalence")
+        self.assertIn("--sim-accel", payload["command_argv"])
+        self.assertIn("--sim-accel sidecar-gpu", payload["command"])
+        self.assertEqual(payload["efficiency_estimate"]["target"], "paged_attention_kv_score")
+        self.assertEqual(payload["efficiency_estimate"]["shape"], "64x1")
+        self.assertIn("operator plan does not execute commands", payload["non_claims"])
+
+    def test_run_hybrid_benchmark_operator_plan_json_is_exclusive(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--operator-plan-json",
+            "--print-operator-plan",
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("mutually exclusive", result.stderr)
+
     def test_run_hybrid_benchmark_operator_plan_rejects_execution_options(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",

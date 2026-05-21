@@ -239,5 +239,16 @@ def print_operator_plan(
     print(_format_efficiency_estimate(plan["efficiency_estimate"]))
 
 
+def print_operator_plan_json(
+    *,
+    target: str,
+    shape: str | None = None,
+    limit: int | None = None,
+    mode: str = MODE_TEMPLATE,
+    phases: int = 4,
+) -> None:
+    print(json.dumps(operator_plan_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases), indent=2))
+
+
 def print_target_list() -> None:
     print(json.dumps(target_list_report(), indent=2))
