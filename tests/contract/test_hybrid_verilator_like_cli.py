@@ -58,11 +58,24 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertEqual(sidecar["option_shim_status"], "ready_for_template_shape")
         self.assertEqual(sidecar["requires"], ["--sim-accel-states", "--sim-accel-steps"])
         self.assertEqual(sidecar["ready_modes"], ["template"])
+        self.assertIn("hybrid_sidecar_run", sidecar["ready_stage_names"])
+        self.assertEqual(
+            sidecar["not_ready_modes"]["resident-state-reuse"]["stage_names"],
+            ["resident_state_reuse_workflow"],
+        )
+        self.assertEqual(
+            sidecar["not_ready_modes"]["persistent-resident-state-abi"]["missing"],
+            ["direct_verilator_resident_sidecar_handoff"],
+        )
         self.assertEqual(sidecar["correctness_policy"], "coverage_output_equivalence")
         self.assertIn("readiness does not mean Verilator itself implements --sim-accel", sidecar["non_claims"])
         mobile_sidecar = targets["mobile_vit"]["sidecar_gpu"]
         self.assertEqual(mobile_sidecar["option_shim_status"], "not_ready_for_verilator_option_shim")
         self.assertIn("host preprocessing", mobile_sidecar["reason"])
+        self.assertEqual(mobile_sidecar["stage_plan_status"], "planned_not_ready_for_verilator_option_shim")
+        self.assertEqual(mobile_sidecar["stage_names"], ["host_preprocess", "rtl_sidecar_proxy_eval"])
+        self.assertEqual(mobile_sidecar["missing"], ["direct_verilator_rtl_sidecar_handoff"])
+        self.assertIn("--stage host_preprocess --emit-command", mobile_sidecar["inspect_stage_command"])
         self.assert_no_local_absolute_paths(result.stdout)
 
     def test_operator_tool_surface_documents_small_entrypoint_set(self) -> None:

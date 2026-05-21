@@ -10,6 +10,7 @@ from hybrid_benchmark_specs import (
     MODE_TEMPLATE,
     SIDECAR_ACCEL,
     STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+    STATUS_PLANNED_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
     STATUS_READY_FOR_TEMPLATE_SHAPE,
     BenchmarkSpec,
 )
@@ -125,6 +126,29 @@ def target_list_report() -> dict[str, object]:
                 "option_shim_status": STATUS_READY_FOR_TEMPLATE_SHAPE,
                 "requires": ["--sim-accel-states", "--sim-accel-steps"],
                 "ready_modes": [MODE_TEMPLATE],
+                "ready_stage_names": [
+                    "verilator_build",
+                    "host_probe_build",
+                    "cpu_init_state",
+                    "cpu_reference_output",
+                    "gpu_artifact_build",
+                    "hybrid_sidecar_run",
+                    "coverage_output_compare",
+                ],
+                "not_ready_modes": {
+                    MODE_RESIDENT_STATE_REUSE: {
+                        "stage_plan_status": STATUS_PLANNED_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+                        "stage_names": ["resident_state_reuse_workflow"],
+                        "missing": ["direct_verilator_resident_sidecar_handoff"],
+                    },
+                    MODE_PERSISTENT_RESIDENT_STATE_ABI: {
+                        "stage_plan_status": STATUS_PLANNED_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+                        "stage_names": ["persistent_resident_state_abi_workflow"],
+                        "missing": ["direct_verilator_resident_sidecar_handoff"],
+                    },
+                }
+                if MODE_RESIDENT_STATE_REUSE in spec.modes
+                else {},
                 "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
                 "non_claims": [
                     "readiness is a discovery hint, not execution evidence",
@@ -136,6 +160,13 @@ def target_list_report() -> dict[str, object]:
                 "sim_accel": SIDECAR_ACCEL,
                 "option_shim_status": STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
                 "reason": "dataset-backed targets expose host preprocessing as a stage but are not ready for a direct Verilator option",
+                "stage_plan_status": STATUS_PLANNED_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+                "stage_names": ["host_preprocess", "rtl_sidecar_proxy_eval"],
+                "missing": ["direct_verilator_rtl_sidecar_handoff"],
+                "inspect_stage_command": (
+                    "python3 src/tools/verilator_sidecar_shim.py --target mobile_vit --limit 128 "
+                    "--stage host_preprocess --emit-command"
+                ),
                 "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
                 "non_claims": [
                     "not-ready status is not a correctness or timing result",

@@ -6,7 +6,7 @@ The long-term usability target is a direct Verilator option, not a project-speci
 
 Canonical option prefix: `verilator --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`.
 
-Use `python3 src/tools/run_hybrid_benchmark.py --list-targets` to inspect which targets currently expose a `sidecar_gpu` option-shim discovery block. Slice-template targets are marked `ready_for_template_shape`; dataset-backed targets remain not-ready for the direct Verilator option, but `mobile_vit --limit 128` now exposes non-executing `host_preprocess` and `rtl_sidecar_proxy_eval` stages so the host/RTL boundary is visible.
+Use `python3 src/tools/run_hybrid_benchmark.py --list-targets` to inspect which targets currently expose a `sidecar_gpu` option-shim discovery block. Slice-template targets are marked `ready_for_template_shape` and list their ready stage names; dataset-backed targets remain not-ready for the direct Verilator option, but `mobile_vit --limit 128` now exposes non-executing `host_preprocess` and `rtl_sidecar_proxy_eval` stage names so the host/RTL boundary is visible from discovery.
 
 ```bash
 verilator --cc --timing \

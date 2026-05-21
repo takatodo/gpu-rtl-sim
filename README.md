@@ -189,6 +189,8 @@ Use `--list-targets` to inspect supported target names, aliases, required `--sha
 
 Use `--help` for the shortest Verilator-like entrypoint examples: target discovery, terminal operator plan, and JSON operator plan.
 
+The `--list-targets` sidecar discovery block also reports ready template stage names, not-ready resident fallback stage names, and dataset-backed stage names. This keeps the first discovery command tied to the shim commands that can inspect or emit stage commands.
+
 `run_hybrid_benchmark.py --estimate-efficiency` is the operator-facing form: it prints the target, shape or limit, speedup class, reason, next action, and non-claims after the command plan. `--estimate-efficiency-json` keeps the same estimate machine-readable. `--preflight` already emits JSON and cannot be combined with the extra efficiency output flags.
 
 `--sidecar-gpu` is a short Verilator-like alias for the existing hybrid sidecar GPU benchmark flow. It does not change the CPU/GPU comparison policy; it adds the human-readable efficiency estimate so the operator can see the command plan, speedup class, and equivalence non-claims in one terminal view.
