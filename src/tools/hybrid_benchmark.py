@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import shlex
 from pathlib import Path
 
 from hybrid_benchmark_catalog import (
@@ -20,7 +21,11 @@ from hybrid_benchmark_efficiency import (
     efficiency_estimate as _efficiency_estimate,
     format_efficiency_estimate as _format_efficiency_estimate,
 )
-from hybrid_benchmark_sidecar_plan import sidecar_stage_plan as _sidecar_stage_plan
+from hybrid_benchmark_sidecar_plan import (
+    sidecar_operator_plan as _sidecar_operator_plan,
+    sidecar_stage_plan as _sidecar_stage_plan,
+    synthesized_verilator_command_argv as _synthesized_verilator_command_argv,
+)
 from hybrid_benchmark_execution import run_benchmark_commands
 from results_reproduction import (
     format_command,
@@ -185,6 +190,53 @@ def print_efficiency_estimate(
         print(json.dumps(estimate, indent=2))
         return
     print(_format_efficiency_estimate(estimate))
+
+
+def operator_plan_report(
+    *,
+    target: str,
+    shape: str | None = None,
+    limit: int | None = None,
+    mode: str = MODE_TEMPLATE,
+    phases: int = 4,
+) -> dict[str, object]:
+    plan = _sidecar_stage_plan(target=target, shape=shape, mode=mode)
+    readiness = plan.get("verilator_option_readiness")
+    ready = isinstance(readiness, dict) and readiness.get("status") == "ready_for_verilator_option_shim"
+    if not ready:
+        raise ValueError(f"{target} is not ready for the Verilator sidecar option shim")
+    estimate = _efficiency_estimate(
+        target=target,
+        shape=shape,
+        limit=limit,
+        mode=mode,
+        phases=phases,
+    )
+    command_argv = _synthesized_verilator_command_argv(plan)
+    return _sidecar_operator_plan(
+        command_argv=command_argv,
+        command=shlex.join(command_argv),
+        efficiency_estimate=estimate,
+    )
+
+
+def print_operator_plan(
+    *,
+    target: str,
+    shape: str | None = None,
+    limit: int | None = None,
+    mode: str = MODE_TEMPLATE,
+    phases: int = 4,
+) -> None:
+    plan = operator_plan_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
+    print("# verilator_sidecar_operator_plan")
+    print("command:")
+    print(plan["command"])
+    print(f"correctness_policy: {plan['correctness_policy']}")
+    print("operator_plan_non_claims:")
+    for item in plan["non_claims"]:
+        print(f"- {item}")
+    print(_format_efficiency_estimate(plan["efficiency_estimate"]))
 
 
 def print_target_list() -> None:

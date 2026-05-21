@@ -373,6 +373,8 @@ The shim can now select one planned stage with `--stage <name> --emit-command` a
 
 `--print-operator-plan` combines the terminal command preview and terminal efficiency estimate in one non-executing view. The print-only modes remain mutually exclusive so command-only output can stay script-friendly.
 
+`run_hybrid_benchmark.py` also exposes `--print-operator-plan` with the same `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` spelling. This is the target-first terminal path from discovery to direct-option preview; the shim JSON remains the automation path for structured stage details and stable not-ready exit codes.
+
 The JSON output now includes the same idea as structured `operator_plan` when the synthesized command is available. It groups command argv, shell-quoted command, efficiency estimate, and `coverage_output_equivalence` as the correctness policy.
 
 `--summary-out` writes a generated unified wrapper summary under `reports/` by default. The schema records target, shape or limit, mode, command list, expected reports, and collected evidence when commands actually execute; dry-run summaries explicitly remain non-evidence.

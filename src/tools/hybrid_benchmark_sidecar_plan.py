@@ -165,6 +165,57 @@ def select_sidecar_stage(plan: dict[str, object], stage_name: str | None) -> dic
     raise ValueError(f"unknown sidecar stage: {stage_name}{suffix}")
 
 
+def selected_stage_details(stage: dict[str, object] | None) -> dict[str, object]:
+    details = stage.get("details", {}) if isinstance(stage, dict) else {}
+    return details if isinstance(details, dict) else {}
+
+
+def synthesized_verilator_command_argv(plan: dict[str, object]) -> list[str]:
+    verilator_build = select_sidecar_stage(plan, "verilator_build")
+    hybrid_run = select_sidecar_stage(plan, "hybrid_sidecar_run")
+    build_details = selected_stage_details(verilator_build)
+    run_details = selected_stage_details(hybrid_run)
+    return [
+        "verilator",
+        "--cc",
+        "--timing",
+        "-Mdir",
+        str(build_details["mdir"]),
+        *[f"-D{define}" for define in build_details.get("verilator_defines", [])],
+        *[str(arg) for arg in build_details.get("verilator_args", [])],
+        *[str(path) for path in build_details.get("source_files", [])],
+        "--top-module",
+        str(build_details["top_module"]),
+        "--sim-accel",
+        "sidecar-gpu",
+        "--sim-accel-states",
+        str(run_details["nstates"]),
+        "--sim-accel-steps",
+        str(run_details["steps"]),
+    ]
+
+
+def sidecar_operator_plan(
+    *,
+    command_argv: list[str],
+    command: str,
+    efficiency_estimate: dict[str, object],
+) -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "status": "planned",
+        "command_argv": command_argv,
+        "command": command,
+        "efficiency_estimate": efficiency_estimate,
+        "correctness_policy": "coverage_output_equivalence",
+        "non_claims": [
+            "operator plan does not execute commands",
+            "operator plan is not correctness or timing evidence",
+            "coverage-output equivalence remains separate from performance estimates",
+        ],
+    }
+
+
 def sidecar_stage_plan(
     *,
     target: str,

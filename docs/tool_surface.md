@@ -53,6 +53,8 @@ For the matching terminal estimate, `--print-efficiency-estimate` prints the hum
 
 For an operator-oriented terminal view, `--print-operator-plan` prints the synthesized command followed by the same efficiency estimate. The three print-only modes are mutually exclusive; use the JSON output for automation that needs both structured command fields and stage details.
 
+The same operator view is also available from the primary wrapper as `python3 src/tools/run_hybrid_benchmark.py <target> --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S> --print-operator-plan`. That path keeps the usual target/shape entrypoint while still avoiding execution.
+
 When a command can be synthesized, the JSON output also includes `operator_plan`, grouping `command_argv`, shell-quoted `command`, `efficiency_estimate`, and `correctness_policy: coverage_output_equivalence`.
 
 These are still public enough to appear in generated command plans, but they are not the first place an operator should start:

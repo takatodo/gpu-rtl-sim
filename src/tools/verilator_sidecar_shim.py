@@ -9,7 +9,12 @@ import shlex
 import sys
 
 from hybrid_benchmark_efficiency import efficiency_estimate, format_efficiency_estimate
-from hybrid_benchmark_sidecar_plan import select_sidecar_stage, sidecar_stage_plan
+from hybrid_benchmark_sidecar_plan import (
+    select_sidecar_stage,
+    sidecar_operator_plan,
+    sidecar_stage_plan,
+    synthesized_verilator_command_argv,
+)
 from verilator_sidecar_options import resolve_sidecar_shape, validate_sim_accel_mode
 
 
@@ -77,51 +82,6 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _stage_details(stage: dict[str, object] | None) -> dict[str, object]:
-    details = stage.get("details", {}) if isinstance(stage, dict) else {}
-    return details if isinstance(details, dict) else {}
-
-
-def _synthesized_verilator_command_argv(plan: dict[str, object]) -> list[str]:
-    verilator_build = select_sidecar_stage(plan, "verilator_build")
-    hybrid_run = select_sidecar_stage(plan, "hybrid_sidecar_run")
-    build_details = _stage_details(verilator_build)
-    run_details = _stage_details(hybrid_run)
-    return [
-        "verilator",
-        "--cc",
-        "--timing",
-        "-Mdir",
-        str(build_details["mdir"]),
-        *[str(arg) for arg in build_details.get("verilator_args", [])],
-        *[str(path) for path in build_details.get("source_files", [])],
-        "--top-module",
-        str(build_details["top_module"]),
-        "--sim-accel",
-        "sidecar-gpu",
-        "--sim-accel-states",
-        str(run_details["nstates"]),
-        "--sim-accel-steps",
-        str(run_details["steps"]),
-    ]
-
-
-def _operator_plan(report: dict[str, object]) -> dict[str, object]:
-    return {
-        "schema_version": 1,
-        "status": "planned",
-        "command_argv": report["verilator_command_argv"],
-        "command": report["verilator_command"],
-        "efficiency_estimate": report["efficiency_estimate"],
-        "correctness_policy": "coverage_output_equivalence",
-        "non_claims": [
-            "operator plan does not execute commands",
-            "operator plan is not correctness or timing evidence",
-            "coverage-output equivalence remains separate from performance estimates",
-        ],
-    }
-
-
 def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
     validate_sim_accel_mode(args.sim_accel)
     if args.emit_command and args.stage is None:
@@ -180,10 +140,14 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
         report["emitted_stage"] = selected_stage["stage"]
         report["selected_stage_command"] = selected_stage["command"]
     if emit_verilator_command and ready:
-        command_argv = _synthesized_verilator_command_argv(plan)
+        command_argv = synthesized_verilator_command_argv(plan)
         report["verilator_command_argv"] = command_argv
         report["verilator_command"] = shlex.join(command_argv)
-        report["operator_plan"] = _operator_plan(report)
+        report["operator_plan"] = sidecar_operator_plan(
+            command_argv=command_argv,
+            command=report["verilator_command"],
+            efficiency_estimate=report["efficiency_estimate"],
+        )
     return (0 if ready else 2), report
 
 
@@ -220,6 +184,10 @@ def main(argv: list[str] | None = None) -> int:
         print("# verilator_sidecar_operator_plan")
         print("command:")
         print(operator_plan["command"])
+        print(f"correctness_policy: {operator_plan['correctness_policy']}")
+        print("operator_plan_non_claims:")
+        for item in operator_plan["non_claims"]:
+            print(f"- {item}")
         print(format_efficiency_estimate(operator_plan["efficiency_estimate"]))
         return 0
     print(json.dumps(report, indent=2))

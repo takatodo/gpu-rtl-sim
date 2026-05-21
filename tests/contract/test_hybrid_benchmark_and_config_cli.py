@@ -198,6 +198,49 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(report["sidecar_stage_plan"]["sim_accel"], "sidecar-gpu")
         self.assertEqual(report["sidecar_stage_plan"]["stages"][0]["stage"], "verilator_build")
 
+    def test_run_hybrid_benchmark_can_print_operator_plan_without_execution(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--print-operator-plan",
+        )
+
+        stdout = result.stdout
+        self.assertIn("# verilator_sidecar_operator_plan", stdout)
+        self.assertIn("command:\nverilator --cc", stdout)
+        self.assertIn("--sim-accel sidecar-gpu", stdout)
+        self.assertIn("--sim-accel-states 64", stdout)
+        self.assertIn("--sim-accel-steps 1", stdout)
+        self.assertIn("correctness_policy: coverage_output_equivalence", stdout)
+        self.assertIn("operator plan does not execute commands", stdout)
+        self.assertIn("operator plan is not correctness or timing evidence", stdout)
+        self.assertIn("# efficiency_estimate", stdout)
+        self.assertIn("speedup_class: high", stdout)
+        self.assertIn("coverage-output equivalence remains separate from performance", stdout)
+        self.assertNotIn("schema_version", stdout)
+
+    def test_run_hybrid_benchmark_operator_plan_rejects_execution_options(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--print-operator-plan",
+            "--dry-run",
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--print-operator-plan cannot be combined", result.stderr)
+
     def test_verilator_sidecar_shim_reports_ready_json_and_exit_zero(self) -> None:
         result = self.run_python_tool(
             "src/tools/verilator_sidecar_shim.py",
@@ -289,11 +332,13 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("64", argv)
         self.assertIn("--sim-accel-steps", argv)
         self.assertIn("1", argv)
+        self.assertIn("+define+ITA_M=16", argv)
         command = payload["verilator_command"]
         self.assertIn("verilator --cc", command)
         self.assertIn("--sim-accel sidecar-gpu", command)
         self.assertIn("--sim-accel-states 64", command)
         self.assertIn("--sim-accel-steps 1", command)
+        self.assertIn("+define+ITA_M=16", command)
         self.assertIn("-Mdir artifacts/pulp_ita_mha_obj_dir", command)
         self.assertIn("--top-module pulp_ita_mha_gpu_cov_tb", command)
         self.assertIn("overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv", command)
@@ -305,6 +350,37 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(operator_plan["correctness_policy"], "coverage_output_equivalence")
         self.assertIn("operator plan does not execute commands", operator_plan["non_claims"])
         self.assertIn("synthesized Verilator commands are printed but not executed", payload["non_claims"])
+
+    def test_synthesized_verilator_command_preserves_verilator_defines(self) -> None:
+        self.add_tools_to_path()
+        from hybrid_benchmark_sidecar_plan import synthesized_verilator_command_argv
+
+        argv = synthesized_verilator_command_argv(
+            {
+                "stages": [
+                    {
+                        "stage": "verilator_build",
+                        "details": {
+                            "mdir": "artifacts/example_obj_dir",
+                            "top_module": "example_top",
+                            "source_files": ["overlays/example_top.sv"],
+                            "verilator_defines": ["EXAMPLE_DEFINE=1"],
+                            "verilator_args": ["--flatten"],
+                        },
+                    },
+                    {
+                        "stage": "hybrid_sidecar_run",
+                        "details": {
+                            "nstates": 64,
+                            "steps": 1,
+                        },
+                    },
+                ],
+            }
+        )
+
+        self.assertIn("-DEXAMPLE_DEFINE=1", argv)
+        self.assertLess(argv.index("-DEXAMPLE_DEFINE=1"), argv.index("--flatten"))
 
     def test_verilator_sidecar_shim_can_print_future_verilator_command_only(self) -> None:
         result = self.run_python_tool(
@@ -367,6 +443,9 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("# verilator_sidecar_operator_plan", stdout)
         self.assertIn("command:\nverilator --cc", stdout)
         self.assertIn("--sim-accel sidecar-gpu", stdout)
+        self.assertIn("correctness_policy: coverage_output_equivalence", stdout)
+        self.assertIn("operator plan does not execute commands", stdout)
+        self.assertIn("operator plan is not correctness or timing evidence", stdout)
         self.assertIn("# efficiency_estimate", stdout)
         self.assertIn("speedup_class: high", stdout)
         self.assertIn("coverage-output equivalence remains separate from performance", stdout)

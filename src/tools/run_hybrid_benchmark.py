@@ -7,6 +7,7 @@ from pathlib import Path
 
 from hybrid_benchmark import (
     print_efficiency_estimate,
+    print_operator_plan,
     print_preflight,
     print_target_list,
     run_benchmark,
@@ -82,6 +83,11 @@ def build_parser() -> argparse.ArgumentParser:
             "human-readable efficiency estimate."
         ),
     )
+    parser.add_argument(
+        "--print-operator-plan",
+        action="store_true",
+        help="Print the synthesized Verilator sidecar command and efficiency estimate without executing commands.",
+    )
     parser.add_argument("--list-targets", action="store_true", help="Print supported benchmark targets and exit.")
     return parser
 
@@ -124,6 +130,11 @@ def run_with_args(args: argparse.Namespace) -> None:
         args.estimate_efficiency = True
     if args.sidecar_gpu and not args.estimate_efficiency_json:
         args.estimate_efficiency = True
+    if args.print_operator_plan:
+        if args.preflight or args.dry_run or args.summary_from_existing or args.summary_out is not None:
+            raise ValueError("--print-operator-plan cannot be combined with execution, preflight, or summary options")
+        print_operator_plan(target=args.target, shape=args.shape, limit=args.limit, mode=args.mode, phases=args.phases)
+        return
     if args.preflight:
         if args.summary_from_existing:
             raise ValueError("--summary-from-existing cannot be combined with --preflight")

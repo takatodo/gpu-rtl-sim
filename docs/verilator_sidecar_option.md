@@ -143,6 +143,18 @@ python3 src/tools/verilator_sidecar_shim.py \
 
 This prints the synthesized command followed by the same human-readable efficiency estimate. It still does not execute the command, and it does not replace the JSON form for automation.
 
+The primary benchmark wrapper exposes the same terminal operator view with the target-first spelling:
+
+```bash
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score \
+  --sim-accel sidecar-gpu \
+  --sim-accel-states 64 \
+  --sim-accel-steps 1 \
+  --print-operator-plan
+```
+
+Use this when starting from `run_hybrid_benchmark.py --list-targets`; use the shim JSON when automation needs structured stage details or stable not-ready exit codes.
+
 ## Non-Claims
 
 - This is not a new correctness policy.
