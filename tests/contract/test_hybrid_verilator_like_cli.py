@@ -53,6 +53,16 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertEqual(targets["paged_kv_cache_large"]["canonical_target"], "pulp_paged_kv_cache_large")
         self.assertEqual(targets["mobile_vit"]["requires"], ["--limit 128"])
         self.assertIn("persistent-resident-state-abi", targets["pulp_ita_mha"]["modes"])
+        sidecar = targets["pulp_ita_mha"]["sidecar_gpu"]
+        self.assertEqual(sidecar["sim_accel"], "sidecar-gpu")
+        self.assertEqual(sidecar["option_shim_status"], "ready_for_template_shape")
+        self.assertEqual(sidecar["requires"], ["--sim-accel-states", "--sim-accel-steps"])
+        self.assertEqual(sidecar["ready_modes"], ["template"])
+        self.assertEqual(sidecar["correctness_policy"], "coverage_output_equivalence")
+        self.assertIn("readiness does not mean Verilator itself implements --sim-accel", sidecar["non_claims"])
+        mobile_sidecar = targets["mobile_vit"]["sidecar_gpu"]
+        self.assertEqual(mobile_sidecar["option_shim_status"], "not_ready_for_verilator_option_shim")
+        self.assertIn("host preprocessing", mobile_sidecar["reason"])
         self.assert_no_local_absolute_paths(result.stdout)
 
     def test_operator_tool_surface_documents_small_entrypoint_set(self) -> None:

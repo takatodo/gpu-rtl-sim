@@ -182,7 +182,7 @@ python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --mode persis
 python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --summary-from-existing --summary-out reports/hybrid_benchmark_mobile_vit_template_limit128.json
 ```
 
-Use `--list-targets` to inspect supported target names, aliases, required `--shape` or `--limit` arguments, and supported modes before running a measurement.
+Use `--list-targets` to inspect supported target names, aliases, required `--shape` or `--limit` arguments, supported modes, and the current `sidecar_gpu` option-shim discovery status before running a measurement.
 
 `run_hybrid_benchmark.py --estimate-efficiency` is the operator-facing form: it prints the target, shape or limit, speedup class, reason, next action, and non-claims after the command plan. `--estimate-efficiency-json` keeps the same estimate machine-readable. `--preflight` already emits JSON and cannot be combined with the extra efficiency output flags.
 
