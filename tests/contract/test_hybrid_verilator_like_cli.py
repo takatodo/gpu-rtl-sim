@@ -300,6 +300,7 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertEqual(report["execution_mode"], "preflight")
         self.assertEqual(report["operator_entrypoint"]["surface"], "sidecar_gpu_alias")
         self.assertTrue(report["operator_entrypoint"]["sidecar_gpu_requested"])
+        self.assertEqual(report["operator_entrypoint"]["shape_source"], "shape")
         self.assertEqual(report["efficiency_estimate"]["shape"], "64x1")
         preview = report["verilator_option_preview"]
         self.assertTrue(preview["command_emitted"])
@@ -336,6 +337,7 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
 
         self.assertEqual(sidecar["operator_entrypoint"]["surface"], "sidecar_gpu_alias")
         self.assertTrue(sidecar["operator_entrypoint"]["sidecar_gpu_requested"])
+        self.assertEqual(sidecar["operator_entrypoint"]["shape_source"], "shape")
         self.assertEqual(plain["operator_entrypoint"]["surface"], "target_shape")
         self.assertFalse(plain["operator_entrypoint"]["sidecar_gpu_requested"])
         self.assertEqual(sidecar["verilator_option_preview"]["correctness_policy"], "coverage_output_equivalence")
@@ -358,6 +360,23 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertTrue(report["operator_entrypoint"]["sidecar_gpu_requested"])
         self.assertEqual(report["operator_entrypoint"]["sim_accel"], "sidecar-gpu")
         self.assertEqual(report["operator_entrypoint"]["shape"], "64x1")
+        self.assertEqual(report["operator_entrypoint"]["shape_source"], "sim_accel_states_steps")
+
+    def test_operator_plan_json_records_compact_shape_source(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-shape",
+            "64x1",
+            "--operator-plan-json",
+        )
+
+        report = json.loads(result.stdout)
+        self.assertEqual(report["operator_entrypoint"]["surface"], "sim_accel_compat")
+        self.assertEqual(report["operator_entrypoint"]["shape"], "64x1")
+        self.assertEqual(report["operator_entrypoint"]["shape_source"], "sim_accel_shape")
 
     def test_preflight_still_rejects_explicit_human_estimate_flags(self) -> None:
         result = self.run_python_tool(

@@ -157,11 +157,22 @@ def operator_entrypoint_for_args(args: argparse.Namespace) -> dict[str, object]:
         "sidecar_gpu_requested": surface in {"sim_accel_compat", "sidecar_gpu_alias"},
         "sim_accel": args.sim_accel,
         "shape": args.shape,
+        "shape_source": shape_source_for_args(args),
         "non_claims": [
             "entrypoint metadata records wrapper invocation only",
             "entrypoint metadata is not execution, correctness, or timing evidence",
         ],
     }
+
+
+def shape_source_for_args(args: argparse.Namespace) -> str | None:
+    if args.sim_accel_shape is not None:
+        return "sim_accel_shape"
+    if args.sim_accel_states is not None or args.sim_accel_steps is not None:
+        return "sim_accel_states_steps"
+    if args.shape is not None:
+        return "shape"
+    return None
 
 
 def validate_sidecar_shape_hint(args: argparse.Namespace) -> None:
