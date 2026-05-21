@@ -125,6 +125,11 @@ def target_list_report() -> dict[str, object]:
                 "sim_accel": SIDECAR_ACCEL,
                 "option_shim_status": STATUS_READY_FOR_TEMPLATE_SHAPE,
                 "requires": ["--sim-accel-states", "--sim-accel-steps"],
+                "shape_spellings": [
+                    "--sim-accel-states <N> --sim-accel-steps <S>",
+                    "--sim-accel-shape <NxS>",
+                    "--shape <NxS>",
+                ],
                 "ready_modes": [MODE_TEMPLATE],
                 "ready_stage_names": [
                     "verilator_build",

@@ -57,6 +57,14 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
         self.assertEqual(sidecar["sim_accel"], "sidecar-gpu")
         self.assertEqual(sidecar["option_shim_status"], "ready_for_template_shape")
         self.assertEqual(sidecar["requires"], ["--sim-accel-states", "--sim-accel-steps"])
+        self.assertEqual(
+            sidecar["shape_spellings"],
+            [
+                "--sim-accel-states <N> --sim-accel-steps <S>",
+                "--sim-accel-shape <NxS>",
+                "--shape <NxS>",
+            ],
+        )
         self.assertEqual(sidecar["ready_modes"], ["template"])
         self.assertIn("hybrid_sidecar_run", sidecar["ready_stage_names"])
         self.assertEqual(

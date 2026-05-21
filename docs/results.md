@@ -351,6 +351,8 @@ python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --summary-from-
 
 Use `--list-targets` to inspect supported target names, aliases, required `--shape` or `--limit` arguments, supported modes, and the current `sidecar_gpu` option-shim discovery status before running a measurement. It is a discovery command only; it does not run benchmarks, write reports, or create measurement evidence.
 
+For ready slice-template targets, `--list-targets` also exposes `sidecar_gpu.shape_spellings`: the expanded `--sim-accel-states <N> --sim-accel-steps <S>` form, compact `--sim-accel-shape <NxS>`, and wrapper `--shape <NxS>`.
+
 Use `--help` on `run_hybrid_benchmark.py` for the shortest supported Verilator-like examples: target discovery, compact `--sim-accel-shape`, terminal operator plan, and JSON operator plan.
 
 Use `--estimate-efficiency` on `run_hybrid_benchmark.py` for a short terminal-oriented estimate after the dry-run or execution command list. It prints the speedup class, reason, next action, scoped observed speedup when existing reports are available, and the non-claims that separate performance estimates from CPU/GPU equivalence. Use `--estimate-efficiency-json` when automation needs the same data.
