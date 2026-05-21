@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from hybrid_benchmark_catalog import BENCHMARKS, KIND_SLICE_TEMPLATE, MODE_TEMPLATE
 from hybrid_benchmark_paths import sanitize_local_absolute_paths
 from hybrid_template_commands import command_plan
 from hybrid_template_runner import load_template_plan
+from hybrid_template_types import HybridTemplatePlan
 
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 TEMPLATE_STAGE_NAMES = (
     "verilator_build",
@@ -21,6 +26,86 @@ TEMPLATE_STAGE_NAMES = (
 
 def _format_command(command: list[str]) -> str:
     return sanitize_local_absolute_paths(" ".join(command))
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(REPO_ROOT))
+    except ValueError:
+        return sanitize_local_absolute_paths(str(path))
+
+
+def _stage_details(plan: HybridTemplatePlan, stage: str) -> dict[str, object]:
+    shape = f"{plan.nstates}x{plan.steps}"
+    if stage == "verilator_build":
+        return {
+            "mdir": _display_path(plan.mdir),
+            "top_module": plan.top_module,
+            "source_files": [_display_path(path) for path in plan.source_files],
+            "verilator_defines": list(plan.verilator_defines),
+            "verilator_args": list(plan.verilator_args),
+        }
+    if stage == "host_probe_build":
+        return {
+            "host_probe_target": plan.host_probe_target,
+            "template": _display_path(plan.template_path),
+        }
+    if stage == "cpu_init_state":
+        return {
+            "nstates": 1,
+            "steps": 1,
+            "output": _display_path(plan.cpu_init_state),
+            "cfg": _cfg_details(plan),
+        }
+    if stage == "cpu_reference_output":
+        return {
+            "nstates": plan.nstates,
+            "steps": plan.steps,
+            "shape": shape,
+            "output": _display_path(plan.cpu_reference_state),
+            "cfg": _cfg_details(plan),
+        }
+    if stage == "gpu_artifact_build":
+        return {
+            "mdir": _display_path(plan.mdir),
+            "builder": "src/tools/build_vl_gpu.py",
+            "force": True,
+        }
+    if stage == "hybrid_sidecar_run":
+        return {
+            "runner": "src/tools/run_vl_hybrid.py",
+            "mdir": _display_path(plan.mdir),
+            "nstates": plan.nstates,
+            "steps": plan.steps,
+            "init_state": _display_path(plan.cpu_init_state),
+            "dump_state": _display_path(plan.gpu_candidate_state),
+            "sanitize_host_only_internals": True,
+        }
+    if stage == "coverage_output_compare":
+        details: dict[str, object] = {
+            "comparator": "src/tools/compare_vl_hybrid_modes.py",
+            "mdir": _display_path(plan.mdir),
+            "reference_dump": _display_path(plan.cpu_reference_state),
+            "candidate_dump": _display_path(plan.gpu_candidate_state),
+            "reference_label": f"cpu_repeat_{shape}",
+            "candidate_label": f"hybrid_from_cpu_init_{shape}",
+            "acceptance_policy": "coverage_output_equivalence",
+            "json_out": _display_path(plan.compare_report),
+            "coverage_output_target": plan.target_name,
+        }
+        if plan.source_gate is not None:
+            details["coverage_output_gate"] = _display_path(plan.source_gate)
+        return details
+    return {}
+
+
+def _cfg_details(plan: HybridTemplatePlan) -> dict[str, int]:
+    return {
+        "batch_length": plan.cfg_batch_length,
+        "reset_cycles": plan.cfg_reset_cycles,
+        "drain_cycles": plan.cfg_drain_cycles,
+        "seed": plan.cfg_seed,
+    }
 
 
 def sidecar_stage_plan(
@@ -67,7 +152,13 @@ def sidecar_stage_plan(
     plan = load_template_plan(spec.template, shape=shape)
     stages = []
     for name, command in zip(TEMPLATE_STAGE_NAMES, command_plan(plan), strict=True):
-        stages.append({"stage": name, "command": _format_command(command)})
+        stages.append(
+            {
+                "stage": name,
+                "command": _format_command(command),
+                "details": _stage_details(plan, name),
+            }
+        )
     report.update(
         {
             "status": "planned",

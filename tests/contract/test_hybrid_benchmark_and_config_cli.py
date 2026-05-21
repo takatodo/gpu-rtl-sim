@@ -86,6 +86,18 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("src/tools/build_vl_gpu.py", sidecar_plan["stages"][4]["command"])
         self.assertIn("src/tools/run_vl_hybrid.py", sidecar_plan["stages"][5]["command"])
         self.assertIn("--acceptance-policy coverage_output_equivalence", sidecar_plan["stages"][6]["command"])
+        verilator_details = sidecar_plan["stages"][0]["details"]
+        self.assertEqual(verilator_details["top_module"], "pulp_ita_mha_gpu_cov_tb")
+        self.assertEqual(verilator_details["mdir"], "artifacts/pulp_ita_mha_obj_dir")
+        self.assertIn("overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv", verilator_details["source_files"])
+        hybrid_details = sidecar_plan["stages"][5]["details"]
+        self.assertEqual(hybrid_details["nstates"], 64)
+        self.assertEqual(hybrid_details["steps"], 1)
+        self.assertTrue(hybrid_details["sanitize_host_only_internals"])
+        compare_details = sidecar_plan["stages"][6]["details"]
+        self.assertEqual(compare_details["acceptance_policy"], "coverage_output_equivalence")
+        self.assertEqual(compare_details["reference_label"], "cpu_repeat_64x1")
+        self.assertEqual(compare_details["candidate_label"], "hybrid_from_cpu_init_64x1")
 
     def test_run_hybrid_benchmark_preflight_flags_single_state_repeated_step_as_low_efficiency(self) -> None:
         result = self.run_python_tool(
