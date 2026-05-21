@@ -369,6 +369,8 @@ The shim can now select one planned stage with `--stage <name> --emit-command` a
 
 `--print-verilator-command` is the terminal-only variant: it prints only the shell-quoted command when the shim is ready, while not-ready targets keep the JSON status output and exit code `2`.
 
+`--print-efficiency-estimate` is the terminal-only estimate variant. It prints the speedup class, reason, next action, and non-claims carried by the JSON report without executing commands, and cannot be combined with command-only output.
+
 `--summary-out` writes a generated unified wrapper summary under `reports/` by default. The schema records target, shape or limit, mode, command list, expected reports, and collected evidence when commands actually execute; dry-run summaries explicitly remain non-evidence.
 
 `--summary-from-existing` writes the same wrapper schema from already generated reports without rerunning benchmark commands. It is useful for publishing the current benchmark pack, but it is not fresh execution evidence by itself.

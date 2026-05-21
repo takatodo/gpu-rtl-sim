@@ -8,7 +8,7 @@ import json
 import shlex
 import sys
 
-from hybrid_benchmark_efficiency import efficiency_estimate
+from hybrid_benchmark_efficiency import efficiency_estimate, format_efficiency_estimate
 from hybrid_benchmark_sidecar_plan import select_sidecar_stage, sidecar_stage_plan
 from verilator_sidecar_options import resolve_sidecar_shape, validate_sim_accel_mode
 
@@ -64,6 +64,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print only the synthesized future Verilator command when ready. Does not execute it.",
     )
+    parser.add_argument(
+        "--print-efficiency-estimate",
+        action="store_true",
+        help="Print only the human-readable efficiency estimate. Does not execute commands.",
+    )
     return parser
 
 
@@ -100,6 +105,8 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
     validate_sim_accel_mode(args.sim_accel)
     if args.emit_command and args.stage is None:
         raise ValueError("--emit-command requires --stage")
+    if args.print_verilator_command and args.print_efficiency_estimate:
+        raise ValueError("--print-verilator-command cannot be combined with --print-efficiency-estimate")
     shape = resolve_sidecar_shape(
         shape=args.shape,
         sim_accel_shape=args.sim_accel_shape,
@@ -180,6 +187,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.print_verilator_command and exit_code == 0:
         print(report["verilator_command"])
         return 0
+    if args.print_efficiency_estimate:
+        print(format_efficiency_estimate(report["efficiency_estimate"]))
+        return exit_code
     print(json.dumps(report, indent=2))
     return exit_code
 

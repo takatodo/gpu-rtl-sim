@@ -113,6 +113,19 @@ python3 src/tools/verilator_sidecar_shim.py \
 
 If the target or mode is not ready, the shim keeps the JSON status output and exit code `2` instead of printing a fake command.
 
+For the matching terminal efficiency view, use `--print-efficiency-estimate`:
+
+```bash
+python3 src/tools/verilator_sidecar_shim.py \
+  --target paged_attention_kv_score \
+  --sim-accel sidecar-gpu \
+  --sim-accel-states 64 \
+  --sim-accel-steps 1 \
+  --print-efficiency-estimate
+```
+
+This prints the same non-executing estimate carried in the JSON report. It is separate from the command-only mode and remains separate from correctness evidence.
+
 ## Non-Claims
 
 - This is not a new correctness policy.

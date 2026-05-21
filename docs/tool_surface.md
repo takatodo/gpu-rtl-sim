@@ -47,6 +47,8 @@ For the closest preview of the future direct Verilator surface, use `--emit-veri
 
 For a terminal-only preview, `--print-verilator-command` prints just the shell-quoted command when the shim is ready. Not-ready targets keep the JSON status output and exit code `2`.
 
+For the matching terminal estimate, `--print-efficiency-estimate` prints the human-readable speedup class, reason, next action, and non-claims without executing commands. It cannot be combined with `--print-verilator-command`.
+
 These are still public enough to appear in generated command plans, but they are not the first place an operator should start:
 
 | Tool | Role |
