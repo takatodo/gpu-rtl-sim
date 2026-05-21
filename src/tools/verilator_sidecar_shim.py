@@ -12,6 +12,7 @@ from hybrid_benchmark_efficiency import efficiency_estimate, format_efficiency_e
 from hybrid_benchmark_sidecar_plan import (
     format_sidecar_operator_plan,
     select_sidecar_stage,
+    sidecar_handoff_contract,
     sidecar_operator_plan,
     sidecar_stage_plan,
     synthesized_verilator_command_argv,
@@ -153,6 +154,7 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
             command_argv=command_argv,
             command=report["verilator_command"],
             efficiency_estimate=report["efficiency_estimate"],
+            handoff_contract=sidecar_handoff_contract(plan),
         )
     return (0 if ready else 2), report
 

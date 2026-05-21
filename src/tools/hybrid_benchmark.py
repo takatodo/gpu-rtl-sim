@@ -29,6 +29,7 @@ from hybrid_benchmark_efficiency import (
 )
 from hybrid_benchmark_sidecar_plan import (
     format_sidecar_operator_plan as _format_sidecar_operator_plan,
+    sidecar_handoff_contract as _sidecar_handoff_contract,
     sidecar_operator_plan as _sidecar_operator_plan,
     sidecar_stage_plan as _sidecar_stage_plan,
     synthesized_verilator_command_argv as _synthesized_verilator_command_argv,
@@ -224,6 +225,7 @@ def operator_plan_report(
         command_argv=command_argv,
         command=shlex.join(command_argv),
         efficiency_estimate=estimate,
+        handoff_contract=_sidecar_handoff_contract(plan),
     )
 
 

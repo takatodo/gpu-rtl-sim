@@ -197,7 +197,7 @@ The wrapper also accepts `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-a
 
 `--print-operator-plan` on the wrapper prints the synthesized future Verilator command plus the same efficiency estimate without executing commands. It is the shortest terminal path from target discovery to the direct-option preview, while the JSON shim remains the structured automation boundary.
 
-`--operator-plan-json` prints the same wrapper operator plan as machine-readable JSON without executing commands. It exits `0` with a `planned` report when ready, and exits `2` with a `not_ready_for_verilator_option_shim` JSON report when the target cannot synthesize the direct-option preview. Its `schema_role` is `target_first_operator_plan`; use `verilator_sidecar_shim.py` when automation needs the fuller readiness or stage-detail boundary.
+`--operator-plan-json` prints the same wrapper operator plan as machine-readable JSON without executing commands. It exits `0` with a `planned` report when ready, and exits `2` with a `not_ready_for_verilator_option_shim` JSON report when the target cannot synthesize the direct-option preview. The ready report includes `handoff_contract` metadata for state authority, init/reference/candidate dumps, generated compare report path, and `coverage_output_equivalence`. Its `schema_role` is `target_first_operator_plan`; use `verilator_sidecar_shim.py` when automation needs the fuller readiness or stage-detail boundary.
 
 Readiness status strings are shared across discovery and JSON entrypoints: `ready_for_template_shape`, `ready_for_verilator_option_shim`, and `not_ready_for_verilator_option_shim`.
 

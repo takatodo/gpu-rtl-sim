@@ -351,6 +351,16 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("--sim-accel sidecar-gpu", payload["command"])
         self.assertEqual(payload["efficiency_estimate"]["target"], "paged_attention_kv_score")
         self.assertEqual(payload["efficiency_estimate"]["shape"], "64x1")
+        handoff = payload["handoff_contract"]
+        self.assertEqual(handoff["state_authority"], "cpu_init_state_to_hybrid_candidate_dump")
+        self.assertEqual(handoff["shape"], "64x1")
+        self.assertEqual(handoff["compare"]["correctness_policy"], "coverage_output_equivalence")
+        self.assertEqual(handoff["compare"]["acceptance_policy"], "coverage_output_equivalence")
+        self.assertIn("cpu_repeat_1x1", handoff["state_files"]["init_state"])
+        self.assertIn("cpu_repeat_64x1", handoff["state_files"]["reference_dump"])
+        self.assertIn("gpu_from_cpu_init_64x1", handoff["state_files"]["candidate_dump"])
+        self.assertIn("compare_report", handoff["generated_reports"])
+        self.assertIn("raw full-state equality", handoff["non_claims"][2])
         self.assertIn("run_hybrid_benchmark.py --list-targets", payload["use_when"][0])
         self.assertEqual(payload["shim_boundary"]["tool"], "src/tools/verilator_sidecar_shim.py")
         self.assertIn("stage details", payload["shim_boundary"]["use_when"])
@@ -474,6 +484,7 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(wrapper_payload["command"], shim_operator_plan["command"])
         self.assertEqual(wrapper_payload["correctness_policy"], shim_operator_plan["correctness_policy"])
         self.assertEqual(wrapper_payload["non_claims"], shim_operator_plan["non_claims"])
+        self.assertEqual(wrapper_payload["handoff_contract"], shim_operator_plan["handoff_contract"])
 
         wrapper_text = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",
@@ -639,6 +650,10 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(operator_plan["command"], command)
         self.assertEqual(operator_plan["efficiency_estimate"]["speedup_class"], "high")
         self.assertEqual(operator_plan["correctness_policy"], "coverage_output_equivalence")
+        handoff = operator_plan["handoff_contract"]
+        self.assertEqual(handoff["state_authority"], "cpu_init_state_to_hybrid_candidate_dump")
+        self.assertEqual(handoff["compare"]["acceptance_policy"], "coverage_output_equivalence")
+        self.assertIn("compare_report", handoff["generated_reports"])
         self.assertIn("operator plan does not execute commands", operator_plan["non_claims"])
         self.assertIn("synthesized Verilator commands are printed but not executed", payload["non_claims"])
 

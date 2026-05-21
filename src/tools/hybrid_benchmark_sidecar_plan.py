@@ -203,11 +203,48 @@ def synthesized_verilator_command_argv(plan: dict[str, object]) -> list[str]:
     ]
 
 
+def sidecar_handoff_contract(plan: dict[str, object]) -> dict[str, object]:
+    hybrid_run = select_sidecar_stage(plan, "hybrid_sidecar_run")
+    compare = select_sidecar_stage(plan, "coverage_output_compare")
+    run_details = selected_stage_details(hybrid_run)
+    compare_details = selected_stage_details(compare)
+    nstates = run_details["nstates"]
+    steps = run_details["steps"]
+    return {
+        "schema_version": 1,
+        "state_authority": "cpu_init_state_to_hybrid_candidate_dump",
+        "shape": f"{nstates}x{steps}",
+        "nstates": nstates,
+        "steps": steps,
+        "state_files": {
+            "init_state": run_details["init_state"],
+            "reference_dump": compare_details["reference_dump"],
+            "candidate_dump": compare_details["candidate_dump"],
+        },
+        "compare": {
+            "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
+            "acceptance_policy": compare_details["acceptance_policy"],
+            "reference_label": compare_details["reference_label"],
+            "candidate_label": compare_details["candidate_label"],
+            "coverage_output_target": compare_details["coverage_output_target"],
+        },
+        "generated_reports": {
+            "compare_report": compare_details["json_out"],
+        },
+        "non_claims": [
+            "handoff contract does not execute commands",
+            "handoff contract is not correctness or timing evidence",
+            "coverage-output equivalence remains separate from raw full-state equality",
+        ],
+    }
+
+
 def sidecar_operator_plan(
     *,
     command_argv: list[str],
     command: str,
     efficiency_estimate: dict[str, object],
+    handoff_contract: dict[str, object],
 ) -> dict[str, object]:
     return {
         "schema_version": 1,
@@ -215,6 +252,7 @@ def sidecar_operator_plan(
         "command_argv": command_argv,
         "command": command,
         "efficiency_estimate": efficiency_estimate,
+        "handoff_contract": handoff_contract,
         "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
         "non_claims": [
             "operator plan does not execute commands",

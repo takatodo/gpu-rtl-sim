@@ -102,7 +102,7 @@ python3 src/tools/verilator_sidecar_shim.py \
 
 This adds top-level `verilator_command_argv` and `verilator_command` fields synthesized from the structured `verilator_build` and `hybrid_sidecar_run` stage details. `verilator_command_argv` is the machine-readable form; `verilator_command` is shell-quoted for human inspection. It is a future handoff preview only; it is not executed and is not a claim that Verilator already accepts the option.
 
-When the shim can synthesize the command, the JSON report also includes `operator_plan`. This groups `command_argv`, shell-quoted `command`, `efficiency_estimate`, and `correctness_policy: coverage_output_equivalence` in one machine-readable object for automation that wants the same information as the terminal operator view.
+When the shim can synthesize the command, the JSON report also includes `operator_plan`. This groups `command_argv`, shell-quoted `command`, `efficiency_estimate`, `handoff_contract`, and `correctness_policy: coverage_output_equivalence` in one machine-readable object for automation that wants the same information as the terminal operator view. The handoff contract is non-executing metadata for the future Verilator-owned boundary: state authority, init/reference/candidate dumps, generated compare report path, and compare policy.
 
 For terminal use, `--print-verilator-command` prints only the shell-quoted command when the shim is ready:
 
@@ -165,7 +165,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score \
   --operator-plan-json
 ```
 
-This is still a non-executing operator plan. It carries the synthesized command, efficiency estimate, `coverage_output_equivalence`, and non-claims without turning the estimate into correctness or timing evidence. The wrapper JSON declares `schema_role: target_first_operator_plan`; use the shim JSON for readiness/stage-detail handoff fields. If the target is not ready for the direct-option preview, the wrapper returns `status: not_ready_for_verilator_option_shim` JSON with exit code `2`.
+This is still a non-executing operator plan. It carries the synthesized command, efficiency estimate, handoff contract, `coverage_output_equivalence`, and non-claims without turning the estimate into correctness or timing evidence. The wrapper JSON declares `schema_role: target_first_operator_plan`; use the shim JSON for readiness/stage-detail handoff fields. If the target is not ready for the direct-option preview, the wrapper returns `status: not_ready_for_verilator_option_shim` JSON with exit code `2`.
 
 Readiness status strings are shared across discovery and JSON entrypoints: `ready_for_template_shape`, `ready_for_verilator_option_shim`, and `not_ready_for_verilator_option_shim`.
 
