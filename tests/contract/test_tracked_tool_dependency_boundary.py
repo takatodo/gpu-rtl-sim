@@ -11,6 +11,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TOOLS_DIR = REPO_ROOT / "src" / "tools"
+CONTRACT_TEST_DIR = REPO_ROOT / "tests" / "contract"
 
 
 def tracked_paths() -> set[str]:
@@ -69,6 +70,39 @@ class TrackedToolDependencyBoundaryTest(unittest.TestCase):
                     violations.append(f"{root}->{module_path}")
 
         self.assertEqual(violations, [])
+
+    def test_tracked_contract_tests_do_not_depend_on_untracked_local_helpers(self) -> None:
+        tracked = tracked_paths()
+        tracked_contract_tests = sorted(
+            path
+            for path in tracked
+            if path.startswith("tests/contract/") and path.endswith(".py")
+        )
+        violations = []
+
+        for test_path in tracked_contract_tests:
+            for module in sorted(contract_test_imports(REPO_ROOT / test_path)):
+                module_path = f"tests/contract/{module}.py"
+                if (CONTRACT_TEST_DIR / f"{module}.py").exists() and module_path not in tracked:
+                    violations.append(f"{test_path}->{module_path}")
+
+        self.assertEqual(violations, [])
+
+
+def contract_test_imports(path: Path) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    imports: set[str] = set()
+    prefix = "tests.contract."
+    for node in ast.walk(tree):
+        modules = []
+        if isinstance(node, ast.ImportFrom) and node.module:
+            modules.append(node.module)
+        elif isinstance(node, ast.Import):
+            modules.extend(alias.name for alias in node.names)
+        for module in modules:
+            if module.startswith(prefix):
+                imports.add(module.removeprefix(prefix).split(".")[0])
+    return imports
 
 
 if __name__ == "__main__":
