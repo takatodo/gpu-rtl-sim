@@ -53,6 +53,7 @@ REPO_PATH_REFERENCE_PATTERN = re.compile(
     r"(?:(?:config/scaling_gates)|(?:records/scaling_gates)|(?:overlays)|(?:src/tools)|(?:tests/contract))"
     r"/[A-Za-z0-9_./-]+"
 )
+GATE_RECORD_NAME_PATTERN = re.compile(r"[A-Za-z0-9_.-]+\.json")
 
 
 def tracked_paths() -> set[str]:
@@ -280,13 +281,23 @@ def public_pack_record_untracked_references(paths: tuple[str, ...], tracked: set
 
 def active_gate_record_references(paths: set[str]) -> set[str]:
     references = set(public_pack_record_paths())
+    tracked_records_by_name = {
+        Path(path).name: path
+        for path in paths
+        if path.startswith("records/scaling_gates/") and path.endswith(".json")
+    }
     for path in tracked_active_surface_files(paths):
         source = REPO_ROOT / path
         if not source.exists():
             continue
-        for match in REPO_PATH_REFERENCE_PATTERN.finditer(source.read_text(encoding="utf-8")):
+        text = source.read_text(encoding="utf-8")
+        for match in REPO_PATH_REFERENCE_PATTERN.finditer(text):
             reference = _canonical_reference_path(match.group(0))
             if reference.startswith("records/scaling_gates/") and reference.endswith(".json"):
+                references.add(reference)
+        for match in GATE_RECORD_NAME_PATTERN.finditer(text):
+            reference = tracked_records_by_name.get(match.group(0))
+            if reference:
                 references.add(reference)
     return references
 
