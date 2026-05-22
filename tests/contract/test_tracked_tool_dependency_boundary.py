@@ -16,6 +16,19 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 TOOLS_DIR = REPO_ROOT / "src" / "tools"
 CONTRACT_TEST_DIR = REPO_ROOT / "tests" / "contract"
 MANIFEST_SOURCE_PATH = REPO_ROOT / "src" / "tools" / "results_reproduction_manifest_sources.py"
+PUBLIC_PACK_TOOL_ROOTS = (
+    "run_results_reproduction",
+    "compare_vl_hybrid_cli",
+    "run_vl_hybrid",
+    "run_hybrid_benchmark",
+    "run_hybrid_template",
+    "build_host_probe",
+    "build_vl_gpu",
+    "mobile_vit_hybrid_imagenet_cli",
+    "mobile_vit_hybrid_imagenet_eval",
+    "mobile_vit_imagenet_manifest_cli",
+    "verilator_sidecar_shim",
+)
 TRACKED_REFERENCE_PREFIXES = (
     "AGENTS.md",
     "README.md",
@@ -139,6 +152,14 @@ def public_pack_source_paths() -> tuple[str, ...]:
     return paths
 
 
+def public_pack_tool_modules() -> set[str]:
+    return {
+        Path(path).stem
+        for path in public_pack_source_paths()
+        if path.startswith("src/tools/") and path.endswith(".py")
+    }
+
+
 def public_pack_record_paths() -> tuple[str, ...]:
     sys.path.insert(0, str(TOOLS_DIR))
     try:
@@ -246,6 +267,13 @@ class PublicPackSourceBoundaryTest(unittest.TestCase):
         violations = public_pack_local_import_edges(public_pack_source_paths())
 
         self.assertEqual(violations, [])
+
+    def test_public_pack_tool_sources_are_reachable_from_public_entrypoints(self) -> None:
+        expected = set()
+        for root in PUBLIC_PACK_TOOL_ROOTS:
+            expected.update(reachable_local_modules(root))
+
+        self.assertEqual(sorted(public_pack_tool_modules() - expected), [])
 
     def test_public_pack_record_paths_are_tracked(self) -> None:
         tracked = tracked_paths()

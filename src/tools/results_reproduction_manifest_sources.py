@@ -61,8 +61,6 @@ PUBLIC_PACK_SOURCE_PATHS = (
     "requirements/mobile_vit.txt",
     "src/tools/mobile_vit_accuracy_core.py",
     "src/tools/mobile_vit_accuracy_report.py",
-    "src/tools/mobile_vit_clone_imagenet_core.py",
-    "src/tools/mobile_vit_cpu_kick_proxy_inputs.py",
     "src/tools/mobile_vit_hybrid_eval_core.py",
     "src/tools/mobile_vit_hybrid_imagenet_cli.py",
     "src/tools/mobile_vit_hybrid_imagenet_defaults.py",
