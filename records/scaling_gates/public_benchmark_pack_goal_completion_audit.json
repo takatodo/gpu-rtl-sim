@@ -3,7 +3,7 @@
   "objective": "LLM serving に近い RTL workload を、Verilator に近い簡単さで hybrid 実行し、正しさ・速度傾向・再現手順を公開可能な benchmark pack として維持する",
   "status": "complete_public_benchmark_pack_current_revision",
   "source_packaging_gate": "config/scaling_gates/public_results_packaging_gate.json",
-    "current_priority": "public_benchmark_pack_externalization_ready",
+  "current_priority": "run_config_generation_validation_breadth_execution_gate",
   "success_criteria": [
     "LLM-serving-like RTL workloads are represented by MHA, paged-attention KV-score, paged KV-cache, resident decode, resident batch-decode, file-boundary state reuse, process-scoped persistent resident ABI evidence, and MobileViT CPU-kick ImageNet limit-128 hybrid control-boundary evidence",
     "hybrid execution is exposed through Verilator-like public entrypoints and generated-template flows",
@@ -11,15 +11,15 @@
     "speed trends are summarized with repeat-median and resident/persistent measurements",
     "reproduction commands are documented from public CLI entrypoints",
     "the public benchmark pack has explicit non-claims",
-    "source-of-truth files point at the packaging gate",
+    "source-of-truth files point at the current selection gate",
     "contract tests verify the public pack, evidence paths, CLI surface, and source-of-truth alignment",
-        "wrapper summary schema is published in docs/results.md",
-        "wrapper summary reports cover template, resident, persistent resident, and MobileViT existing-evidence paths",
-        "wrapper summaries avoid local absolute paths",
-        "public pack manifest and prerequisites are documented for external readers",
-        "public dry-run reproduction smoke commands are documented and tested",
-        "public_release_checklist_ready is documented and tested",
-        "public_pack_archive_ready dry-run plan is documented and tested"
+    "wrapper summary schema is published in docs/results.md",
+    "wrapper summary reports cover template, resident, persistent resident, and MobileViT existing-evidence paths",
+    "wrapper summaries avoid local absolute paths",
+    "public pack manifest and prerequisites are documented for external readers",
+    "public dry-run reproduction smoke commands are documented and tested",
+    "public_release_checklist_ready is documented and tested",
+    "public_pack_archive_ready dry-run plan is documented and tested"
   ],
   "prompt_to_artifact_checklist": [
     {
@@ -134,50 +134,50 @@
         "reports/hybrid_benchmark_mobile_vit_template_limit128.json"
       ]
     },
-        {
-            "requirement": "local absolute path policy",
-            "status": "satisfied",
-            "evidence": [
-                "reports/hybrid_benchmark_mobile_vit_template_limit128.json commands use <local-absolute-path>",
-                "tests/contract/test_hybrid_verilator_like_cli.py"
-            ]
-        },
-        {
-            "requirement": "public pack manifest",
-            "status": "satisfied",
-            "evidence": [
-                "docs/results.md:Public pack manifest",
-                "docs/results.md:Prerequisites by path",
-                "README.md:How to read the public benchmark pack",
-                "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
-            ]
-        },
-        {
-            "requirement": "public reproduction smoke",
-            "status": "satisfied",
-            "evidence": [
-                "docs/results.md:Public reproduction smoke",
-                "tests/contract/test_hybrid_verilator_like_cli.py"
-            ]
-        },
-        {
-            "requirement": "public_release_checklist_ready",
-            "status": "satisfied",
-            "evidence": [
-                "docs/results.md:Public Release Checklist",
-                "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
-            ]
-        },
-        {
-            "requirement": "public_pack_archive_ready",
-            "status": "satisfied",
-            "evidence": [
-                "docs/results.md:Public archive dry-run",
-                "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
-                "tests/contract/test_hybrid_verilator_like_cli.py"
-            ]
-        }
-    ],
+    {
+      "requirement": "local absolute path policy",
+      "status": "satisfied",
+      "evidence": [
+        "reports/hybrid_benchmark_mobile_vit_template_limit128.json commands use <local-absolute-path>",
+        "tests/contract/test_hybrid_verilator_like_cli.py"
+      ]
+    },
+    {
+      "requirement": "public pack manifest",
+      "status": "satisfied",
+      "evidence": [
+        "docs/results.md:Public pack manifest",
+        "docs/results.md:Prerequisites by path",
+        "README.md:How to read the public benchmark pack",
+        "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+      ]
+    },
+    {
+      "requirement": "public reproduction smoke",
+      "status": "satisfied",
+      "evidence": [
+        "docs/results.md:Public reproduction smoke",
+        "tests/contract/test_hybrid_verilator_like_cli.py"
+      ]
+    },
+    {
+      "requirement": "public_release_checklist_ready",
+      "status": "satisfied",
+      "evidence": [
+        "docs/results.md:Public Release Checklist",
+        "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+      ]
+    },
+    {
+      "requirement": "public_pack_archive_ready",
+      "status": "satisfied",
+      "evidence": [
+        "docs/results.md:Public archive dry-run",
+        "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+        "tests/contract/test_hybrid_verilator_like_cli.py"
+      ]
+    }
+  ],
   "measured_evidence_summary": {
     "repeat_median": {
       "summary": "reports/results_reproduction_median_summary.json",
@@ -231,9 +231,9 @@
       "coverage_output_mismatch_count": 0,
       "compared_word_count": 21
     },
-        "wrapper_summary_schema": {
-            "gate": "config/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
-            "reports": [
+    "wrapper_summary_schema": {
+      "gate": "config/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
+      "reports": [
         "reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json",
         "reports/hybrid_benchmark_paged_attention_kv_score_template_1x1.json",
         "reports/hybrid_benchmark_pulp_ita_mha_resident_state_reuse_1x1.json",
@@ -242,22 +242,22 @@
       ],
       "all_reported_coverage_output_passed": true,
       "max_coverage_output_mismatch_count": 0,
-            "mobile_vit_execution_mode": "existing_evidence",
-            "local_absolute_path_policy": "commands sanitized in wrapper summaries"
-        },
-        "minimum_public_dry_run_smoke": {
-            "commands": [
-                "python3 src/tools/run_results_reproduction.py --dry-run",
-                "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
-                "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run",
-                "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run",
-                "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run",
-                "python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run"
-            ],
-            "claim": "CLI parsing and command expansion only; not correctness or timing evidence",
-            "local_absolute_path_policy": "public dry-run output must not expose local absolute paths"
-        }
+      "mobile_vit_execution_mode": "existing_evidence",
+      "local_absolute_path_policy": "commands sanitized in wrapper summaries"
     },
+    "minimum_public_dry_run_smoke": {
+      "commands": [
+        "python3 src/tools/run_results_reproduction.py --dry-run",
+        "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+        "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run",
+        "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run",
+        "python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run",
+        "python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run"
+      ],
+      "claim": "CLI parsing and command expansion only; not correctness or timing evidence",
+      "local_absolute_path_policy": "public dry-run output must not expose local absolute paths"
+    }
+  },
   "non_claims": [
     "not production LLM serving throughput",
     "not raw full-state equality",
@@ -276,8 +276,9 @@
   ],
   "completion_decision": {
     "achieved": true,
-        "reason": "The current revision has a public results document, reproduction entrypoints, public dry-run smoke commands, public release checklist, public archive dry-run plan, correctness policy, speed evidence, persistent resident ABI evidence, MobileViT limit-128 CPU-kick plus hybrid control-boundary evidence, wrapper summary schema publication, public pack manifest and prerequisites, local absolute path sanitization for wrapper summaries, non-claims, source-of-truth alignment, and contract-test coverage for the benchmark pack objective."
+    "reason": "The current revision has a public results document, reproduction entrypoints, public dry-run smoke commands, public release checklist, public archive dry-run plan, correctness policy, speed evidence, persistent resident ABI evidence, MobileViT limit-128 CPU-kick plus hybrid control-boundary evidence, wrapper summary schema publication, public pack manifest and prerequisites, local absolute path sanitization for wrapper summaries, non-claims, source-of-truth alignment, and contract-test coverage for the benchmark pack objective."
   },
-    "next_task": "public_benchmark_pack_externalization_ready",
-  "source_packaging_gate_status": "refreshed_public_benchmark_pack_after_wrapper_summary_schema_publication"
+  "next_task": "run_config_generation_validation_breadth_execution_gate",
+  "source_packaging_gate_status": "refreshed_public_benchmark_pack_after_wrapper_summary_schema_publication",
+  "current_priority_source_artifact": "config/scaling_gates/config_generation_validation_breadth_execution_gate.json"
 }
