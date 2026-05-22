@@ -3,10 +3,15 @@
   "gate": "tlul_template_schema_normalization_more_breadth_gate",
   "status": "defined_tlul_template_schema_normalization_more_breadth_boundary",
   "objective": "Define the next historical OpenTitan TL-UL legacy-template breadth expansion after the clock/reset metadata matrix and public-pack selection gate.",
-  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_tlul_legacy_clock_reset_metadata_matrix_public_pack_refresh_gate.json",
-  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_tlul_legacy_clock_reset_metadata_matrix_execution_gate.json",
-  "source_metadata_matrix_gate": "config/scaling_gates/tlul_legacy_clock_reset_metadata_matrix_gate.json",
-  "source_result_gate": "config/scaling_gates/tlul_legacy_clock_reset_metadata_matrix_execution_result_gate.json",
+  "source_context": {
+    "summary": "Historical TL-UL clock/reset metadata matrix and public-pack selection selected this breadth expansion. Those local candidate records are summarized by the tracked roadmap and selection state, not required as public-pack source files.",
+    "historical_gate_names": [
+      "tlul_legacy_clock_reset_metadata_matrix_gate",
+      "tlul_legacy_clock_reset_metadata_matrix_execution_result_gate",
+      "public_benchmark_pack_externalization_completion_after_tlul_legacy_clock_reset_metadata_matrix_execution_gate",
+      "next_measurement_selection_after_tlul_legacy_clock_reset_metadata_matrix_public_pack_refresh_gate"
+    ]
+  },
   "long_term_goal": "Keep hybrid execution close to Verilator usage while making modern LLM-serving-like RTL workload correctness, speed trends, reproduction commands, and non-claims easy to regenerate and review.",
   "current_priority": "run_tlul_template_schema_normalization_more_breadth_dry_run_gate",
   "selected_templates": [

@@ -3,8 +3,13 @@
   "gate": "persistent_resident_state_abi_shape_phase_sweep_gate",
   "status": "defined_persistent_resident_state_abi_shape_phase_sweep",
   "objective": "Define a conservative shape/phase sweep for the existing persistent resident state ABI path before changing runtime ABI or returning to a different workload family.",
-  "source_review_gate": "config/scaling_gates/resident_execution_overhead_runtime_boundary_review_gate.json",
-  "source_analysis_gate": "config/scaling_gates/resident_execution_overhead_breakdown_analysis_gate.json",
+  "source_context": {
+    "summary": "Historical resident overhead breakdown and runtime-boundary review selected this sweep. Those local candidate records are summarized by the tracked roadmap and selection state, not required as public-pack source files.",
+    "historical_gate_names": [
+      "resident_execution_overhead_breakdown_analysis_gate",
+      "resident_execution_overhead_runtime_boundary_review_gate"
+    ]
+  },
   "current_priority": "implement_persistent_resident_state_abi_shape_phase_sweep_workflow_gate",
   "target": "pulp_ita_mha",
   "existing_workflow": {

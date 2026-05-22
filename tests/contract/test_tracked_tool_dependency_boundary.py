@@ -214,6 +214,21 @@ def public_pack_local_import_edges(paths: tuple[str, ...]) -> list[str]:
     return edges
 
 
+def public_pack_record_untracked_references(paths: tuple[str, ...], tracked: set[str]) -> list[str]:
+    violations: list[str] = []
+    for path in sorted(paths):
+        source = REPO_ROOT / path
+        if not source.exists():
+            continue
+        for lineno, line in enumerate(source.read_text(encoding="utf-8").splitlines(), start=1):
+            for match in REPO_PATH_REFERENCE_PATTERN.finditer(line):
+                reference = match.group(0)
+                canonical = _canonical_reference_path(reference)
+                if (REPO_ROOT / canonical).is_file() and canonical not in tracked:
+                    violations.append(f"{path}:{lineno}->{reference}")
+    return violations
+
+
 class PublicPackSourceBoundaryTest(unittest.TestCase):
     def test_public_pack_source_paths_are_tracked(self) -> None:
         tracked = tracked_paths()
@@ -229,6 +244,12 @@ class PublicPackSourceBoundaryTest(unittest.TestCase):
     def test_public_pack_record_paths_are_tracked(self) -> None:
         tracked = tracked_paths()
         violations = [path for path in public_pack_record_paths() if path not in tracked]
+
+        self.assertEqual(violations, [])
+
+    def test_public_pack_records_do_not_reference_existing_untracked_repo_files(self) -> None:
+        tracked = tracked_paths()
+        violations = public_pack_record_untracked_references(public_pack_record_paths(), tracked)
 
         self.assertEqual(violations, [])
 
