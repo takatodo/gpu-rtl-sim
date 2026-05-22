@@ -6,6 +6,7 @@ from __future__ import annotations
 import ast
 import json
 import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -132,6 +133,15 @@ def public_pack_source_paths() -> tuple[str, ...]:
     return paths
 
 
+def public_pack_record_paths() -> tuple[str, ...]:
+    sys.path.insert(0, str(TOOLS_DIR))
+    try:
+        from results_reproduction_manifest import PUBLIC_PACK_RECORD_PATHS
+    finally:
+        sys.path.pop(0)
+    return PUBLIC_PACK_RECORD_PATHS
+
+
 def _looks_like_tool_path(token: str) -> str | None:
     path = token.strip("`'\".,:;)(")
     if path.startswith("src/tools/") and path.endswith(".py"):
@@ -185,6 +195,12 @@ class PublicPackSourceBoundaryTest(unittest.TestCase):
 
     def test_public_pack_source_paths_include_tracked_local_imports(self) -> None:
         violations = public_pack_local_import_edges(public_pack_source_paths())
+
+        self.assertEqual(violations, [])
+
+    def test_public_pack_record_paths_are_tracked(self) -> None:
+        tracked = tracked_paths()
+        violations = [path for path in public_pack_record_paths() if path not in tracked]
 
         self.assertEqual(violations, [])
 

@@ -1,5 +1,8 @@
 """Public result-pack path manifest for results reproduction workflows."""
 
+from pathlib import Path
+import subprocess
+
 from results_reproduction_manifest_sources import PUBLIC_PACK_SOURCE_PATHS
 
 
@@ -31,7 +34,22 @@ def _measurement_gate_records(stem: str) -> tuple[str, ...]:
     )
 
 
-PUBLIC_PACK_RECORD_PATHS = (
+def _tracked_or_packaged_record_paths(paths: tuple[str, ...]) -> tuple[str, ...]:
+    repo_root = Path(__file__).resolve().parents[2]
+    try:
+        tracked = set(
+            subprocess.check_output(
+                ["git", "-C", str(repo_root), "ls-files", "--", "records/scaling_gates"],
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).splitlines()
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return tuple(path for path in paths if (repo_root / path).exists())
+    return tuple(path for path in paths if path in tracked)
+
+
+_PUBLIC_PACK_RECORD_CANDIDATE_PATHS = (
     *_gate_records(
         "public_results_packaging_gate", "public_benchmark_pack_externalization_readiness_audit",
         "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate",
@@ -113,6 +131,8 @@ PUBLIC_PACK_RECORD_PATHS = (
         "pulp_ita_mha_shape_expansion_review_gate",
     ),
 )
+
+PUBLIC_PACK_RECORD_PATHS = _tracked_or_packaged_record_paths(_PUBLIC_PACK_RECORD_CANDIDATE_PATHS)
 
 PUBLIC_PACK_REPORT_PATHS = (
     *_report_paths(

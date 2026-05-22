@@ -79,7 +79,7 @@ Use this command to print the archive include/exclude plan without creating an a
 python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run
 ```
 
-The archive dry-run is intentionally non-writing. It lists the same source-of-truth files, gate/audit records, tools, templates, tests, and optional generated evidence snapshots as the public pack manifest. It also prints the non-executed command `tar -czf <generated-output>/public-benchmark-pack.tgz <listed paths>`. Archive files, if created outside this workflow, are generated outputs and must not become source of truth.
+The archive dry-run is intentionally non-writing. It lists the same source-of-truth files, tracked gate/audit records, tools, templates, tests, and optional generated evidence snapshots as the public pack manifest. Record candidates that are not in git are excluded from the include plan so local candidate gates do not become canonical pack content accidentally. It also prints the non-executed command `tar -czf <generated-output>/public-benchmark-pack.tgz <listed paths>`. Archive files, if created outside this workflow, are generated outputs and must not become source of truth.
 
 Public reproduction smoke:
 
