@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "role": "tlul_fifo_async_promotion_verification_commands",
+  "commands": [
+    "verilator --lint-only --timing -Wno-fatal ... --top-module tlul_fifo_async_gpu_cov_tb",
+    "verilator --cc --timing -Wno-fatal ... --Mdir artifacts/tlul_fifo_async_obj_dir --top-module tlul_fifo_async_gpu_cov_tb",
+    "make -C src/hybrid tlul_fifo_async_host_probe",
+    "artifacts/tlul_fifo_async_obj_dir/tlul_slice_host_probe --reset-cycles 6 --post-reset-cycles 40 --state-out artifacts/tlul_fifo_async_obj_dir/tlul_fifo_async_cpu_reference_state.bin",
+    "make -C src/passes && PYTHONPATH=src/tools python3 src/tools/build_vl_gpu.py artifacts/tlul_fifo_async_obj_dir --ptxas-opt-level 0",
+    "make -C src/hybrid run_vl_hybrid && PYTHONPATH=src/tools python3 src/tools/run_vl_hybrid.py --mdir artifacts/tlul_fifo_async_obj_dir --nstates 1 --steps 1 --init-state artifacts/tlul_fifo_async_obj_dir/tlul_fifo_async_cpu_reference_state.bin --gpu-replicate-init-state --sanitize-host-only-internals --dump-state artifacts/tlul_fifo_async_obj_dir/tlul_fifo_async_gpu_from_cpu_reference_state.bin",
+    "PYTHONPATH=src/tools python3 src/tools/compare_vl_hybrid_modes.py artifacts/tlul_fifo_async_obj_dir --compare-dumps artifacts/tlul_fifo_async_obj_dir/tlul_fifo_async_cpu_reference_state.bin artifacts/tlul_fifo_async_obj_dir/tlul_fifo_async_gpu_from_cpu_reference_state.bin --reference-label cpu_reference --candidate-label gpu_from_cpu_reference_init --acceptance-policy coverage_output_equivalence --coverage-output-gate config/scaling_gates/tlul_fifo_async_source_gate.json --coverage-output-target tlul_fifo_async --json-out reports/tlul_fifo_async_source_gate.json",
+    "python3 - <<'PY' ... generate reports/tlul_fifo_async_repeated_steps_scaling.json",
+    "PYTHONPATH=src/tools python3 src/tools/run_tlul_fifo_sync_cpu_baseline.py --exact-loop --gate config/scaling_gates/tlul_fifo_async_cpu_exact_loop_repeated_steps.json --mdir artifacts/tlul_fifo_async_obj_dir --json-out reports/tlul_fifo_async_cpu_exact_loop_repeated_steps.json --gpu-scaling-report reports/tlul_fifo_async_repeated_steps_scaling.json",
+    "jq empty config/selection.json config/targets.json config/scaling_gates/tlul_fifo_async_source_gate.json config/slice_launch_templates/tlul_fifo_async.json config/scaling_gates/tlul_fifo_async_repeated_steps.json config/scaling_gates/tlul_fifo_async_cpu_exact_loop_repeated_steps.json config/scaling_gates/tlul_fifo_async_coverage_output_depth.json",
+    "python3 -m unittest tests.contract.test_resident_runtime_contract"
+  ]
+}
