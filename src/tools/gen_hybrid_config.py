@@ -12,7 +12,7 @@ from hybrid_config_generator import (
 )
 
 
-def main(argv: list[str] | None = None) -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Generate the config needed by run_hybrid_template.py: scaling gate, "
@@ -56,13 +56,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Extra Verilator arg. Defaults to --flatten; repeat for multiple args.",
     )
     parser.add_argument("--dry-run", action="store_true")
-    args = parser.parse_args(argv)
+    return parser
 
-    if not args.source and not args.overlay:
-        print("error: at least one --source or --overlay is required", file=sys.stderr)
-        return 1
 
-    spec = HybridConfigSpec(
+def spec_from_args(args: argparse.Namespace) -> HybridConfigSpec:
+    return HybridConfigSpec(
         target=args.target,
         top_module=args.top_module,
         source_files=args.source,
@@ -81,6 +79,17 @@ def main(argv: list[str] | None = None) -> int:
         host_reset_control=args.host_reset_control,
         probe_syms_state=args.probe_syms_state,
     )
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    if not args.source and not args.overlay:
+        print("error: at least one --source or --overlay is required", file=sys.stderr)
+        return 1
+
+    spec = spec_from_args(args)
     write_payloads(generated_payloads(spec), dry_run=args.dry_run)
     return 0
 
