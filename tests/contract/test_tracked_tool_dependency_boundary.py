@@ -13,6 +13,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 TOOLS_DIR = REPO_ROOT / "src" / "tools"
 CONTRACT_TEST_DIR = REPO_ROOT / "tests" / "contract"
 MANIFEST_SOURCE_PATH = REPO_ROOT / "src" / "tools" / "results_reproduction_manifest_sources.py"
+TRACKED_REFERENCE_PREFIXES = (
+    "README.md",
+    "config/",
+    "docs/",
+    "src/tools/",
+    "tests/contract/",
+)
 
 
 def tracked_paths() -> set[str]:
@@ -115,6 +122,36 @@ def public_pack_source_paths() -> tuple[str, ...]:
     return paths
 
 
+def _looks_like_tool_path(token: str) -> str | None:
+    path = token.strip("`'\".,:;)(")
+    if path.startswith("src/tools/") and path.endswith(".py"):
+        return path
+    return None
+
+
+def tracked_active_surface_files(paths: set[str]) -> list[str]:
+    return sorted(
+        path
+        for path in paths
+        if path.endswith((".py", ".md", ".json", ".txt"))
+        and any(path == prefix or path.startswith(prefix) for prefix in TRACKED_REFERENCE_PREFIXES)
+    )
+
+
+def untracked_tool_path_references(paths: set[str]) -> list[str]:
+    violations: list[str] = []
+    for path in tracked_active_surface_files(paths):
+        source = REPO_ROOT / path
+        if not source.exists():
+            continue
+        for lineno, line in enumerate(source.read_text(encoding="utf-8").splitlines(), start=1):
+            for token in line.replace("\\", " ").split():
+                tool_path = _looks_like_tool_path(token)
+                if tool_path and (REPO_ROOT / tool_path).exists() and tool_path not in paths:
+                    violations.append(f"{path}:{lineno}->{tool_path}")
+    return violations
+
+
 def public_pack_local_import_edges(paths: tuple[str, ...]) -> list[str]:
     manifest_paths = set(paths)
     edges: list[str] = []
@@ -138,6 +175,13 @@ class PublicPackSourceBoundaryTest(unittest.TestCase):
 
     def test_public_pack_source_paths_include_tracked_local_imports(self) -> None:
         violations = public_pack_local_import_edges(public_pack_source_paths())
+
+        self.assertEqual(violations, [])
+
+
+class TrackedReferenceBoundaryTest(unittest.TestCase):
+    def test_active_surface_does_not_reference_untracked_tool_paths(self) -> None:
+        violations = untracked_tool_path_references(tracked_paths())
 
         self.assertEqual(violations, [])
 
