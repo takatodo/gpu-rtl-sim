@@ -97,8 +97,9 @@ The config minimization audit is `records/scaling_gates/config_minimal_surface_c
 make simple          # status + validate + smoke (まずはこれ)
 make status          # jq on config/selection.json (current_priority)
 make validate        # jq empty on canonical config/*.json
+make surface         # fast active-surface guard
 make test            # python3 -m unittest discover -s tests/contract
-make check           # validate, then test
+make check           # validate, surface, then test
 make smoke           # python3 src/tools/run_results_reproduction.py --dry-run
 make mobile-vit-venv # venv + pip install -r requirements/mobile_vit.txt
 make clean-mobile-vit-venv

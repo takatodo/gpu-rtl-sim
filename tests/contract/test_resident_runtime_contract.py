@@ -17,9 +17,13 @@ class ReducedActiveSurfaceContractTest(ResidentRuntimeContractHelpers, unittest.
         self.assertFalse((REPO_ROOT / "src" / "tools" / "repo.py").exists())
         self.assertIn("Operator shortcuts", readme)
         self.assertIn("make simple", readme)
+        self.assertIn("make surface", readme)
         self.assertIn("make check", readme)
         self.assertIn("run_results_reproduction.py --dry-run", readme)
         self.assertNotIn("src/tools/repo.py", readme)
+        makefile_text = makefile.read_text(encoding="utf-8")
+        self.assertIn("surface:", makefile_text)
+        self.assertIn("test_tracked_tool_dependency_boundary", makefile_text)
 
         completed = subprocess.run(
             ["make", "simple"],

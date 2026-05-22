@@ -1,6 +1,6 @@
 # Thin wrappers over existing tools only — no unified Python operator CLI.
 # See README "Operator shortcuts".
-.PHONY: simple status validate test smoke check mobile-vit-venv clean-mobile-vit-venv hooks
+.PHONY: simple status validate surface test smoke check mobile-vit-venv clean-mobile-vit-venv hooks
 
 PY ?= python3
 CONFIG_JSON = config/selection.json config/selection_extensions.json \
@@ -15,13 +15,16 @@ status:
 validate:
 	jq empty $(CONFIG_JSON)
 
+surface:
+	$(PY) -m unittest tests.contract.test_tracked_tool_dependency_boundary -q
+
 test:
 	$(PY) -m unittest discover -s tests/contract -q
 
 smoke:
 	$(PY) src/tools/run_results_reproduction.py --dry-run
 
-check: validate test
+check: validate surface test
 
 mobile-vit-venv:
 	$(PY) -m venv $(MOBILE_VIT_VENV)
