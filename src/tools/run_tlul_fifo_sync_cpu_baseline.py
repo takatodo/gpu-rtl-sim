@@ -5,14 +5,9 @@ from __future__ import annotations
 
 import argparse
 import json
-import statistics
-import subprocess
-import sys
-import tempfile
-import time
 from pathlib import Path
 
-from named_patch_lowering import resolve_patch_script_lines
+from run_tlul_fifo_sync_cpu_runner import run_selected_gate
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -40,341 +35,7 @@ def _require_file(path: Path, message: str) -> None:
         raise SystemExit(f"error: {message}: {path}")
 
 
-def _parse_probe_json(stdout: str) -> dict[str, object] | None:
-    text = stdout.strip()
-    if not text:
-        return None
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        pass
-    start = text.find("{")
-    end = text.rfind("}")
-    if start < 0 or end < start:
-        return None
-    try:
-        parsed = json.loads(text[start : end + 1])
-    except json.JSONDecodeError:
-        return None
-    return parsed if isinstance(parsed, dict) else None
-
-
-def _run_probe_once(*, probe: Path, reset_cycles: int, post_reset_cycles: int) -> dict[str, object]:
-    cmd = [
-        str(probe),
-        "--reset-cycles",
-        str(reset_cycles),
-        "--post-reset-cycles",
-        str(post_reset_cycles),
-    ]
-    started = time.perf_counter()
-    completed = subprocess.run(cmd, text=True, capture_output=True)
-    elapsed_ms = (time.perf_counter() - started) * 1000.0
-    parsed = _parse_probe_json(completed.stdout)
-    constructor_ok = bool(parsed and parsed.get("constructor_ok") is True)
-    root_size = int(parsed.get("root_size", 0)) if parsed else 0
-    return {
-        "returncode": completed.returncode,
-        "elapsed_ms": elapsed_ms,
-        "constructor_ok": constructor_ok,
-        "root_size": root_size,
-        "stdout_tail": completed.stdout.splitlines()[-20:],
-        "stderr_tail": completed.stderr.splitlines()[-20:],
-    }
-
-
-def _run_multistate_case(
-    *,
-    probe: Path,
-    run_cfg: dict[str, object],
-    storage_size: int,
-) -> dict[str, object]:
-    nstates = int(run_cfg["nstates"])
-    steps = int(run_cfg["steps"])
-    reset_cycles = int(run_cfg["reset_cycles"])
-    post_reset_cycles = int(run_cfg["post_reset_cycles"])
-    started = time.perf_counter()
-    states = [
-        _run_probe_once(
-            probe=probe,
-            reset_cycles=reset_cycles,
-            post_reset_cycles=post_reset_cycles,
-        )
-        for _ in range(nstates)
-    ]
-    elapsed_ms = (time.perf_counter() - started) * 1000.0
-    passed = all(
-        int(state["returncode"]) == 0
-        and bool(state["constructor_ok"])
-        and int(state["root_size"]) == storage_size
-        for state in states
-    )
-    states_per_second = (nstates * steps) / (elapsed_ms / 1000.0) if elapsed_ms > 0 else None
-    return {
-        "name": str(run_cfg["name"]),
-        "nstates": nstates,
-        "steps": steps,
-        "reset_cycles": reset_cycles,
-        "post_reset_cycles": post_reset_cycles,
-        "elapsed_ms": elapsed_ms,
-        "states_per_second": states_per_second,
-        "state_count": len(states),
-        "passed": passed,
-        "state_summaries": states,
-    }
-
-
-def _run_exact_loop_case(
-    *,
-    gate: dict[str, object],
-    mdir: Path,
-    probe: Path,
-    run_cfg: dict[str, object],
-    storage_size: int,
-    dump_dir: Path,
-) -> dict[str, object]:
-    nstates = int(run_cfg["nstates"])
-    steps = int(run_cfg["steps"])
-    reset_cycles = int(run_cfg["reset_cycles"])
-    post_reset_cycles = int(run_cfg["post_reset_cycles"])
-    patch_script_lines, lowering = resolve_patch_script_lines(gate=gate, run_cfg=run_cfg, mdir=mdir)
-    cmd = [
-        str(probe),
-        "--reset-cycles",
-        str(reset_cycles),
-        "--post-reset-cycles",
-        str(post_reset_cycles),
-        "--repeat-states",
-        str(nstates),
-        "--repeat-eval-steps",
-        str(steps),
-    ]
-    dump_state = dump_dir / f"{run_cfg['name']}_cpu_final_state.bin"
-    cmd.extend(["--repeat-state-out", str(dump_state)])
-    patch_script_tmp: Path | None = None
-    if patch_script_lines is not None:
-        if not isinstance(patch_script_lines, list) or not all(
-            isinstance(line, str) for line in patch_script_lines
-        ):
-            raise SystemExit(f"error: {run_cfg['name']} patch_script_lines must be a list of strings")
-        fd, tmp_name = tempfile.mkstemp(prefix=f"{run_cfg['name']}_", suffix=".patch_script")
-        patch_script_tmp = Path(tmp_name)
-        with open(fd, "w", encoding="utf-8") as fp:
-            fp.write("\n".join(patch_script_lines))
-            fp.write("\n")
-        cmd.extend(["--patch-script", str(patch_script_tmp)])
-    try:
-        completed = subprocess.run(cmd, text=True, capture_output=True)
-    finally:
-        if patch_script_tmp is not None:
-            patch_script_tmp.unlink(missing_ok=True)
-    parsed = _parse_probe_json(completed.stdout)
-    expected_dump_bytes = storage_size * nstates
-    dump_bytes = dump_state.stat().st_size if dump_state.is_file() else 0
-    elapsed_ms = float(parsed.get("elapsed_ms", 0.0)) if parsed else 0.0
-    states_per_second = (
-        float(parsed.get("state_steps_per_second", parsed.get("states_per_second", 0.0)))
-        if parsed
-        else None
-    )
-    constructor_ok = bool(parsed and parsed.get("constructor_ok") is True)
-    root_size = int(parsed.get("root_size", 0)) if parsed else 0
-    passed = (
-        completed.returncode == 0
-        and constructor_ok
-        and root_size == storage_size
-        and dump_bytes == expected_dump_bytes
-    )
-    return {
-        "name": str(run_cfg["name"]),
-        "nstates": nstates,
-        "steps": steps,
-        "reset_cycles": reset_cycles,
-        "post_reset_cycles": post_reset_cycles,
-        "returncode": completed.returncode,
-        "patch_script_line_count": len(patch_script_lines) if isinstance(patch_script_lines, list) else 0,
-        "patch_script_lowering": lowering,
-        "elapsed_ms": elapsed_ms,
-        "states_per_second": states_per_second,
-        "constructor_ok": constructor_ok,
-        "root_size": root_size,
-        "cpu_final_state_dump": str(dump_state.relative_to(REPO_ROOT)),
-        "dump_bytes": dump_bytes,
-        "expected_dump_bytes": expected_dump_bytes,
-        "dump_contract": "concat_root_storage_by_state",
-        "throughput_unit": "state_steps_per_second",
-        "passed": passed,
-        "stdout_tail": completed.stdout.splitlines()[-20:],
-        "stderr_tail": completed.stderr.splitlines()[-20:],
-    }
-
-
-def _gpu_runs_by_shape(path: Path) -> dict[tuple[int, int], dict[str, object]]:
-    if not path.is_file():
-        return {}
-    report = _load_json(path)
-    runs = report.get("runs", [])
-    if not isinstance(runs, list):
-        return {}
-    out: dict[tuple[int, int], dict[str, object]] = {}
-    for run in runs:
-        if isinstance(run, dict):
-            out[(int(run["nstates"]), int(run["steps"]))] = run
-    return out
-
-
-def _attach_gpu_comparison(
-    *,
-    cpu_results: list[dict[str, object]],
-    gpu_scaling_report: Path,
-) -> list[dict[str, object]]:
-    gpu_by_shape = _gpu_runs_by_shape(gpu_scaling_report)
-    compared: list[dict[str, object]] = []
-    for result in cpu_results:
-        shape = (int(result["nstates"]), int(result["steps"]))
-        gpu = gpu_by_shape.get(shape)
-        if gpu is None:
-            result["gpu_comparison"] = None
-            compared.append(result)
-            continue
-        cpu_sps = result.get("states_per_second")
-        gpu_sps = gpu.get("states_per_second")
-        throughput_ratio = (
-            float(gpu_sps) / float(cpu_sps)
-            if cpu_sps is not None and gpu_sps is not None and float(cpu_sps) > 0
-            else None
-        )
-        result["gpu_comparison"] = {
-            "gpu_elapsed_ms": gpu.get("elapsed_ms"),
-            "gpu_states_per_second": gpu_sps,
-            "cpu_states_per_second": cpu_sps,
-            "gpu_over_cpu_throughput_ratio": throughput_ratio,
-        }
-        compared.append(result)
-    return compared
-
-
-def _run_single_state_gate(*, gate: dict[str, object], probe: Path, storage_size: int) -> dict[str, object]:
-    run_cfg = gate["runs"][0]
-    reset_cycles = int(run_cfg["reset_cycles"])
-    post_reset_cycles = int(run_cfg["post_reset_cycles"])
-    reps = int(run_cfg["reps"])
-    reps_out = [
-        _run_probe_once(
-            probe=probe,
-            reset_cycles=reset_cycles,
-            post_reset_cycles=post_reset_cycles,
-        )
-        for _ in range(reps)
-    ]
-    elapsed = [float(rep["elapsed_ms"]) for rep in reps_out]
-    all_passed = all(
-        int(rep["returncode"]) == 0
-        and bool(rep["constructor_ok"])
-        and int(rep["root_size"]) == storage_size
-        for rep in reps_out
-    )
-    return {
-        "schema_version": 1,
-        "gate": gate["gate"],
-        "target": gate["target"],
-        "status": "ok" if all_passed else "fail",
-        "storage_size": storage_size,
-        "reset_cycles": reset_cycles,
-        "post_reset_cycles": post_reset_cycles,
-        "reps": reps_out,
-        "timing": {
-            "rep_count": reps,
-            "median_elapsed_ms": statistics.median(elapsed),
-            "min_elapsed_ms": min(elapsed),
-            "max_elapsed_ms": max(elapsed),
-        },
-        "acceptance": {
-            "all_reps_passed": all_passed,
-            "policy": gate["acceptance"],
-        },
-        "comparison_policy": gate["comparison_policy"],
-    }
-
-
-def _run_multistate_gate(
-    *,
-    gate: dict[str, object],
-    probe: Path,
-    storage_size: int,
-    gpu_scaling_report: Path,
-) -> dict[str, object]:
-    results = [
-        _run_multistate_case(probe=probe, run_cfg=run, storage_size=storage_size)
-        for run in gate["runs"]
-    ]
-    results = _attach_gpu_comparison(cpu_results=results, gpu_scaling_report=gpu_scaling_report)
-    passed = all(bool(result["passed"]) for result in results)
-    return {
-        "schema_version": 1,
-        "gate": gate["gate"],
-        "target": gate["target"],
-        "status": "ok" if passed else "fail",
-        "storage_size": storage_size,
-        "runs": results,
-        "acceptance": {
-            "all_required_runs_passed": passed,
-            "policy": gate["acceptance"],
-        },
-        "comparison_policy": gate["comparison_policy"],
-        "source_gpu_scaling_report": (
-            str(gpu_scaling_report.relative_to(REPO_ROOT)) if gpu_scaling_report.is_file() else None
-        ),
-}
-
-
-def _run_exact_loop_gate(
-    *,
-    gate: dict[str, object],
-    mdir: Path,
-    probe: Path,
-    storage_size: int,
-    gpu_scaling_report: Path,
-    dump_dir: Path,
-) -> dict[str, object]:
-    results = [
-        _run_exact_loop_case(
-            gate=gate,
-            mdir=mdir,
-            probe=probe,
-            run_cfg=run,
-            storage_size=storage_size,
-            dump_dir=dump_dir,
-        )
-        for run in gate["runs"]
-    ]
-    results = _attach_gpu_comparison(cpu_results=results, gpu_scaling_report=gpu_scaling_report)
-    passed = all(bool(result["passed"]) for result in results)
-    return {
-        "schema_version": 1,
-        "gate": gate["gate"],
-        "target": gate["target"],
-        "status": "ok" if passed else "fail",
-        "storage_size": storage_size,
-        "cpu_final_state_dump_contract": {
-            "status": "defined",
-            "layout": "concat_root_storage_by_state",
-            "dump_dir": str(dump_dir.relative_to(REPO_ROOT)),
-            "expected_bytes_per_run": "storage_size * nstates",
-        },
-        "runs": results,
-        "acceptance": {
-            "all_required_runs_passed": passed,
-            "policy": gate["acceptance"],
-        },
-        "comparison_policy": gate["comparison_policy"],
-        "source_gpu_scaling_report": (
-            str(gpu_scaling_report.relative_to(REPO_ROOT)) if gpu_scaling_report.is_file() else None
-        ),
-    }
-
-
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gate", type=Path, default=DEFAULT_GATE)
     parser.add_argument("--mdir", type=Path, default=DEFAULT_MDIR)
@@ -387,23 +48,32 @@ def main() -> None:
         type=Path,
         help="Host probe binary; defaults to <mdir>/tlul_slice_host_probe for existing TL-UL flows",
     )
-    args = parser.parse_args()
+    return parser
 
+
+def _resolved_gate_path(args: argparse.Namespace) -> Path:
     if args.multi_state and args.exact_loop:
         raise SystemExit("error: choose only one of --multi-state or --exact-loop")
     if args.exact_loop and args.gate == DEFAULT_GATE:
-        gate_path = DEFAULT_EXACT_LOOP_GATE.resolve()
-    elif args.multi_state and args.gate == DEFAULT_GATE:
-        gate_path = DEFAULT_MULTISTATE_GATE.resolve()
-    else:
-        gate_path = args.gate.resolve()
-    mdir = args.mdir.resolve()
+        return DEFAULT_EXACT_LOOP_GATE.resolve()
+    if args.multi_state and args.gate == DEFAULT_GATE:
+        return DEFAULT_MULTISTATE_GATE.resolve()
+    return args.gate.resolve()
+
+
+def _resolved_json_out(args: argparse.Namespace) -> Path:
     if args.exact_loop and args.json_out == DEFAULT_REPORT:
-        json_out = DEFAULT_EXACT_LOOP_REPORT.resolve()
-    elif args.multi_state and args.json_out == DEFAULT_REPORT:
-        json_out = DEFAULT_MULTISTATE_REPORT.resolve()
-    else:
-        json_out = args.json_out.resolve()
+        return DEFAULT_EXACT_LOOP_REPORT.resolve()
+    if args.multi_state and args.json_out == DEFAULT_REPORT:
+        return DEFAULT_MULTISTATE_REPORT.resolve()
+    return args.json_out.resolve()
+
+
+def main() -> None:
+    args = build_parser().parse_args()
+    gate_path = _resolved_gate_path(args)
+    mdir = args.mdir.resolve()
+    json_out = _resolved_json_out(args)
     gpu_scaling_report = args.gpu_scaling_report.resolve()
     _require_file(gate_path, "CPU baseline gate config not found")
     probe = args.probe.resolve() if args.probe else mdir / "tlul_slice_host_probe"
@@ -416,26 +86,16 @@ def main() -> None:
     storage_size = int(meta["storage_size"])
     json_out.parent.mkdir(parents=True, exist_ok=True)
 
-    if args.exact_loop:
-        dump_dir = mdir / "cpu_exact_loop_final_states"
-        dump_dir.mkdir(parents=True, exist_ok=True)
-        report = _run_exact_loop_gate(
-            gate=gate,
-            mdir=mdir,
-            probe=probe,
-            storage_size=storage_size,
-            gpu_scaling_report=gpu_scaling_report,
-            dump_dir=dump_dir,
-        )
-    elif args.multi_state:
-        report = _run_multistate_gate(
-            gate=gate,
-            probe=probe,
-            storage_size=storage_size,
-            gpu_scaling_report=gpu_scaling_report,
-        )
-    else:
-        report = _run_single_state_gate(gate=gate, probe=probe, storage_size=storage_size)
+    report = run_selected_gate(
+        exact_loop=args.exact_loop,
+        multi_state=args.multi_state,
+        gate=gate,
+        mdir=mdir,
+        probe=probe,
+        storage_size=storage_size,
+        gpu_scaling_report=gpu_scaling_report,
+        load_json=_load_json,
+    )
     json_out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(f"wrote: {json_out.relative_to(REPO_ROOT)}")
     print(json.dumps({"status": report["status"], "gate": report["gate"]}, indent=2))
