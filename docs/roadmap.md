@@ -211,7 +211,7 @@ Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
 - active `config/` file count: `146`
-- historical gate JSON records under `records/scaling_gates/`: `632`
+- tracked gate JSON records under `records/scaling_gates/`: `568`
 - compatibility link: `config/scaling_gates -> ../records/scaling_gates`
 - generated files under `reports/` and `artifacts/`: reproducible evidence only, never source of truth
 
