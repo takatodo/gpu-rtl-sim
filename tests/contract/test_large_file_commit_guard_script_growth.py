@@ -94,15 +94,15 @@ class LargeFileCommitGuardScriptGrowthTest(unittest.TestCase):
             size_map.return_value = {"a" * 40: 100}
             script_growth.return_value = []
             new_script_count.return_value = 0
-            script_sizes.return_value = [check_staged_large_files.ScriptSize("src/tools/large_flow.py", 1801)]
+            script_sizes.return_value = [check_staged_large_files.ScriptSize("src/tools/large_flow.py", 301)]
 
             stderr = io.StringIO()
             with contextlib.redirect_stderr(stderr):
-                status = check_staged_large_files.main(["--max-script-total-lines", "1800"])
+                status = check_staged_large_files.main(["--max-script-total-lines", "300"])
 
         self.assertEqual(status, 1)
         self.assertIn("guarded scripts exceed the total line budget", stderr.getvalue())
-        self.assertIn("src/tools/large_flow.py: 1801 lines", stderr.getvalue())
+        self.assertIn("src/tools/large_flow.py: 301 lines", stderr.getvalue())
         self.assertIn("GPU_TOGGLE_MAX_SCRIPT_TOTAL_LINES=<lines>", stderr.getvalue())
 
     def test_guarded_scripts_in_worktree_stay_below_total_line_budget(self) -> None:
@@ -164,7 +164,7 @@ class LargeFileCommitGuardScriptGrowthTest(unittest.TestCase):
         self.assertIn("Commit guard state", status)
         self.assertIn("100` staged non-submodule file changes including deletions and type changes", status)
         self.assertIn("250` added lines per guarded script", status)
-        self.assertIn("1800` total lines per guarded script", status)
+        self.assertIn("300` total lines per guarded script", status)
         self.assertIn("3` new guarded scripts", status)
         self.assertIn("contract tests above `1200` total lines", status)
         self.assertIn("skips submodule gitlinks", status)
