@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import subprocess
 import unittest
 from pathlib import Path
@@ -191,6 +192,32 @@ class PublicPackSourceBoundaryTest(unittest.TestCase):
 class TrackedReferenceBoundaryTest(unittest.TestCase):
     def test_active_surface_does_not_reference_untracked_tool_paths(self) -> None:
         violations = untracked_tool_path_references(tracked_paths())
+
+        self.assertEqual(violations, [])
+
+    def test_tracked_templates_do_not_reference_untracked_repo_overlays(self) -> None:
+        tracked = tracked_paths()
+        violations = []
+        for path in sorted(
+            item
+            for item in tracked
+            if item.startswith("config/slice_launch_templates/") and item.endswith(".json")
+        ):
+            data = json.loads((REPO_ROOT / path).read_text(encoding="utf-8"))
+            refs = []
+            source_files = data.get("source_files")
+            if isinstance(source_files, list):
+                refs.extend(item for item in source_files if isinstance(item, str))
+            planned_overlay = data.get("planned_overlay")
+            if isinstance(planned_overlay, dict):
+                refs.extend(
+                    planned_overlay[key]
+                    for key in ("coverage_tb_path", "coverage_manifest_path")
+                    if isinstance(planned_overlay.get(key), str)
+                )
+            for ref in refs:
+                if ref.startswith("overlays/") and (REPO_ROOT / ref).exists() and ref not in tracked:
+                    violations.append(f"{path}->{ref}")
 
         self.assertEqual(violations, [])
 
