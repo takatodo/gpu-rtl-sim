@@ -55,10 +55,10 @@ def read_combined_docs(*paths: Path) -> str:
     return "\n".join(path.read_text(encoding="utf-8") for path in selected_paths)
 
 
-CURRENT_PRIORITY = "run_resident_execution_optimization_followup_measurement_gate"
+CURRENT_PRIORITY = "run_config_generation_validation_breadth_execution_gate"
 CURRENT_PRIORITY_SOURCE_ARTIFACT = (
     "config/scaling_gates/"
-    "run_resident_execution_optimization_followup_measurement_dry_run_gate.json"
+    "config_generation_validation_breadth_execution_gate.json"
 )
 
 

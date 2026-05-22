@@ -1,4 +1,5 @@
 import importlib
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -18,9 +19,20 @@ def load_tests(
         return tests
 
     suite = unittest.TestSuite()
+    suite.addTests(tests)
     package = __package__ or "tests.contract"
+    repo_root = Path(__file__).resolve().parents[2]
+    tracked = set(
+        subprocess.check_output(
+            ["git", "ls-files", "--", str(Path(__file__).parent.relative_to(repo_root))],
+            cwd=repo_root,
+            text=True,
+        ).splitlines()
+    )
     for shard in sorted(Path(__file__).parent.glob("test_full_ita_mha_larger_paged_kv_next_*.py")):
         if shard.stem == "test_full_ita_mha_larger_paged_kv_next":
+            continue
+        if str(shard.relative_to(repo_root)) not in tracked:
             continue
         module = importlib.import_module(f"{package}.{shard.stem}")
         suite.addTests(loader.loadTestsFromModule(module))
