@@ -29,6 +29,17 @@ PUBLIC_PACK_TOOL_ROOTS = (
     "mobile_vit_imagenet_manifest_cli",
     "verilator_sidecar_shim",
 )
+TRACKED_TOOL_ROOTS = (
+    *PUBLIC_PACK_TOOL_ROOTS,
+    "check_staged_large_files",
+    "gen_hybrid_config",
+    "gen_vl_gpu_kernel",
+    "llvm_stub_gen",
+    "named_patch_lowering",
+    "run_tlul_fifo_sync_cpu_baseline",
+    "run_tlul_fifo_sync_scaling_validation",
+    "selection_state",
+)
 TRACKED_REFERENCE_PREFIXES = (
     "AGENTS.md",
     "README.md",
@@ -126,6 +137,14 @@ class TrackedToolDependencyBoundaryTest(unittest.TestCase):
 
         self.assertEqual(violations, [])
 
+    def test_tracked_tools_are_reachable_from_declared_roots(self) -> None:
+        tracked = tracked_paths()
+        expected = set()
+        for root in TRACKED_TOOL_ROOTS:
+            expected.update(reachable_local_modules(root))
+
+        self.assertEqual(sorted(tracked_tool_modules(tracked) - expected), [])
+
 
 def contract_test_imports(path: Path) -> set[str]:
     tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -156,6 +175,14 @@ def public_pack_tool_modules() -> set[str]:
     return {
         Path(path).stem
         for path in public_pack_source_paths()
+        if path.startswith("src/tools/") and path.endswith(".py")
+    }
+
+
+def tracked_tool_modules(paths: set[str]) -> set[str]:
+    return {
+        Path(path).stem
+        for path in paths
         if path.startswith("src/tools/") and path.endswith(".py")
     }
 
