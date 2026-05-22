@@ -16,16 +16,27 @@ Current gate:
 
 `config/scaling_gates/config_generation_validation_breadth_execution_gate.json`
 
+Current alignment check: `config/selection.json`, `docs/status.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
+
+## 追跡タスク (Tracked tasks)
+
+1. **Config-generation breadth execution**: Run the non-dry-run commands in `config_generation_validation_breadth_execution_gate.json`, then record/review scoped coverage-output equivalence evidence.
+2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
+3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
+
+**Recommended cleanup order** (deeper refactors): see **「整理の順序（推奨）」** in `docs/migration_notes.md`.
+
 ## Plan
 
 1. Keep active surface compact.
-2. Keep `config/selection.json` current-state-only.
+2. Keep `config/selection.json` compact (core pointer) and historical maps in `config/selection_extensions.json`; merge via `src/tools/selection_state.py` when tooling needs the full selection.
 3. Keep `config/README.md` as the map for config roles and add/move rules.
 4. Keep generated evidence reproducible under `reports/` and build outputs under `artifacts/`, but do not retain them as source of truth.
 5. Make hybrid launch as close as possible to Verilator usage.
 6. Generate config from target/top/overlay metadata.
 7. Keep the public benchmark pack aligned with the latest correctness, timing, and non-claim evidence.
 8. Validate generated host-probe metadata across more target shapes.
+9. Keep commits review-sized and let `.githooks/pre-commit` reject oversized staged files, too many staged files, oversized script deltas, oversized total script line counts, too many new scripts, and non-shrinking oversized contract tests before they enter normal history.
 
 ## Concrete Milestones
 
@@ -68,7 +79,22 @@ The concrete stages are:
 
 Current strongest next stage:
 
-`Define and run config-generation validation breadth for the Verilator-like hybrid flow.`
+Define and run config-generation validation breadth for the Verilator-like hybrid flow.
+
+TL-UL template schema normalization breadth:
+
+- selected tracked templates: `nvdla_cmac_a2cacc`, `prim_count`, and `prim_secded_inv_39_32_enc`
+- execution result: all three non-dry-run `1x1` build/run/compare commands exited with code `0`
+- coverage result: all three selected `coverage_output_equivalence` policies passed with mismatch count `0`
+- selected breadth templates: `tlul_sink`, `tlul_request_loopback`, and `tlul_adapter_host`
+- dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/<template>.json --shape 1x1 --dry-run`
+- dry-run result: all three selected dry-run commands exited with code `0`
+- execution commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/<template>.json --shape 1x1`
+- execution breadth result: all three selected non-dry-run commands exited with code `0`
+- coverage breadth result: all three selected `coverage_output_equivalence` policies passed with mismatch count `0` over `29` words / `116` bytes
+- historical gate-chain details are intentionally summarized here. Use tracked records under `records/scaling_gates/`, `config/selection_extensions.json`, and the public-pack manifest for clone-reproducible evidence. Local candidate records are not canonical until tracked.
+- deferred: MobileViT CPU-kick, Ibex, quantized KV-cache, and untracked PULP candidates
+- non-claim: this is not timing evidence, speedup evidence, runtime/ABI change, raw full-state equality, or production LLM-serving throughput claim
 
 Candidate-template selection gate:
 
@@ -240,17 +266,22 @@ External-facing synthesis:
 - `python3 src/tools/run_results_reproduction.py --repeat-median 3`
 - `python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4`
 - `python3 src/tools/run_results_reproduction.py --mobile-vit-imagenet-128`
+- `python3 src/tools/run_hybrid_benchmark.py --list-targets`
 - `python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run`
 - `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`
+- `python3 src/tools/run_hybrid_benchmark.py pulp_paged_kv_cache_large --shape 256x1 --dry-run`
 - `python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --dry-run`
 - `python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run`
 - `python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --summary-out reports/hybrid_benchmark_pulp_ita_mha_template_1x1.json`
 - `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x1 --summary-out reports/hybrid_benchmark_paged_attention_kv_score_template_1x1.json`
+- `python3 src/tools/run_hybrid_benchmark.py pulp_paged_kv_cache_large --shape 1x1 --summary-out reports/hybrid_benchmark_pulp_paged_kv_cache_large_template_1x1.json`
 - `python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --mode resident-state-reuse --phases 2 --summary-out reports/hybrid_benchmark_pulp_ita_mha_resident_state_reuse_1x1.json`
 - `python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 1x1 --mode persistent-resident-state-abi --phases 2 --summary-out reports/hybrid_benchmark_pulp_ita_mha_persistent_resident_state_abi_1x1.json`
 - `python3 src/tools/run_hybrid_benchmark.py mobile_vit --limit 128 --summary-from-existing --summary-out reports/hybrid_benchmark_mobile_vit_template_limit128.json`
 
 ## Next Goal
+
+This section is a historical milestone snapshot from the persistent resident state ABI repeat-median packaging boundary. For the open pointer, use **Current Frontier** above, `config/selection.json`, `README.md`, and **Next Gate** below.
 
 Record the completed persistent resident state ABI repeat-median measurement and select the next measurement boundary:
 
@@ -378,6 +409,9 @@ Acceptance criteria:
 - review `config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json`
 - review `config/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json`
 - review `config/scaling_gates/config_generation_validation_breadth_execution_gate.json`
+- review tracked gate records only when they are part of the staged source-of-truth set
+- use `config/selection.json` and `config/selection_extensions.json` for current and historical gate-chain pointers instead of copying long local candidate record lists into this roadmap
+- verify the persistent resident state ABI shape/phase sweep summary is reproducible and records all four cases with coverage-output equivalence pass and mismatch count `0`
 - preserve the measured repeat-median result for the existing `16x64` four-phase path
 - preserve `coverage_output_equivalence` as the correctness policy
 - keep reports and artifacts as generated evidence, not source of truth
@@ -400,14 +434,26 @@ Acceptance criteria:
 - review that the six tracked dry-run command plans use generic host-probe metadata without Makefile host-probe targets
 - define the build/run/compare execution boundary before claiming breadth execution evidence
 - run the six tracked `1x1` build/run/compare commands only after the execution boundary is fixed
+- keep the reviewed six-report execution result packaged before selecting another measurement
+- preserve the 12-command non-`1x1` shape-breadth dry-run result before claiming execution evidence
+- review that the 12 shape-breadth dry-run command plans use generic host-probe metadata and `coverage_output_equivalence` compare plans
+- run the tracked non-dry-run shape-breadth build/run/compare commands fixed by the current tracked execution boundary
+- verify the 12 generated shape-breadth compare reports passed `coverage_output_equivalence` with mismatch count `0`
+- keep the reviewed 12-report execution result packaged before selecting another measurement
 - avoid importing unreviewed candidate overlays, MobileViT, Ibex, or quantized KV-cache files
 - keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the externalization pack
 
 Working tree review boundary:
 
-`next_task: run_config_generation_validation_breadth_execution_gate`
+Canonical next measurement selection task:
 
-Run the config-generation validation breadth execution gate after the tracked six-template `1x1` build/run/compare boundary has been defined. Do not mix in runtime, MobileViT, Ibex, untracked candidate overlays, quantized KV-cache, unrelated workload execution outputs, or production serving claims.
+`select_next_measurement_after_paged_attention_kv_cache_scale_up_followup_public_pack_refresh`
+
+Historical public-packaging boundary (superseded by the follow-up chain):
+
+`select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`
+
+The config-generation validation breadth execution result is now reviewed, refreshed into the public pack, closed by an externalization completion gate, followed by a selection gate, defined as a non-`1x1` shape-breadth dry-run set, dry-run command plans have passed, the dry-run result is accepted, the 12-command shape-breadth execution boundary is defined, all 12 build/run/compare commands passed `coverage_output_equivalence` with mismatch count `0`, the shape-breadth execution result is reviewed, the shape-breadth public-results refresh is defined, the shape-breadth externalization completion gate is closed, the next measurement selection gate selects resident execution overhead breakdown, the overhead breakdown analysis is recorded from existing evidence, the runtime-boundary review selects a persistent resident ABI shape/phase sweep, the sweep matrix is defined, the public sweep workflow is implemented with distinct per-case reports, the four-case sweep measurement is recorded with mismatch count `0`, the sweep result is reviewed and refreshed into the public pack, the persistent-resident externalization completion gate is closed, the next measurement selection gate selects `define_paged_attention_kv_cache_scale_up_continuation_gate`, the continuation definition gate fixes tracked `pulp_paged_kv_cache_large` `512x1` and `1x128` plus tracked `pulp_paged_attention_kv_score` `128x1` and `1x128`, the continuation dry-run gate passed 4 command plans, the dry-run review accepted the non-dry-run boundary, and the continuation measurement recorded all 4 build/run/compare commands passing `coverage_output_equivalence` with mismatch count `0`, the measurement review accepted that result, the public results refresh packaged the reviewed four-report correctness evidence, the externalization completion gate selected the next measurement selection task, that selection gate chose repeat-median timing for the same four scale-up continuation shapes, the repeat-median workflow and measurement are complete, the review accepts the scoped repeat-count `3` result, the repeat-median public results refresh is defined, the externalization completion gate selects `select_next_measurement_after_paged_attention_kv_cache_scale_up_continuation_repeat_median_public_pack_refresh`, that selection chooses `define_paged_attention_kv_cache_scale_up_next_shapes_gate`, the next-shapes definition pins four larger same-target shapes before dry-run, the next-shapes dry-run gate passed 4 command plans, the dry-run review accepts the non-dry-run measurement boundary, the next-shapes measurement recorded all 4 build/run/compare commands passing `coverage_output_equivalence` with mismatch count `0`, the measurement review accepts that scoped correctness result, and the public results refresh packages the reviewed four-report correctness evidence. Do not mix in MobileViT, Ibex, untracked candidate overlays, quantized KV-cache, unrelated workload execution outputs, runtime/ABI changes, repeat-median timing claims, or production serving claims.
 
 Review/stage boundary:
 
