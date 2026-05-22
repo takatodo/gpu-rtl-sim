@@ -8,11 +8,27 @@
     "mdir": "artifacts/prim_secded_inv_39_32_enc_obj_dir",
     "work_dir": "work/slice_pilots/prim_secded_inv_39_32_enc",
     "host_probe_target": "prim_secded_inv_39_32_enc_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "host_probe": {
+      "output": "tlul_slice_host_probe",
+      "clock_field": "prim_secded_inv_39_32_enc_gpu_cov_tb__DOT__clk_i",
+      "clock_report_name": "clk_i",
+      "reset_field": "prim_secded_inv_39_32_enc_gpu_cov_tb__DOT__rst_ni",
+      "reset_report_name": "rst_ni",
+      "reset_asserted_value": "0U",
+      "reset_deasserted_value": "1U",
+      "host_clock_control": true,
+      "host_reset_control": false,
+      "probe_syms_state": false
+    },
     "cpu_reference_state": "artifacts/prim_secded_inv_39_32_enc_obj_dir/prim_secded_inv_39_32_enc_cpu_reference_state.bin",
     "gpu_candidate_state": "artifacts/prim_secded_inv_39_32_enc_obj_dir/prim_secded_inv_39_32_enc_gpu_from_cpu_reference_state.bin"
   },
   "source_files": [
     "third_party/rtlmeter/designs/OpenTitan/src/prim_secded_inv_39_32_enc.sv"
+  ],
+  "verilator_args": [
+    "-Wno-fatal"
   ],
   "coverage_output_contract": {
     "strict_output_words": [

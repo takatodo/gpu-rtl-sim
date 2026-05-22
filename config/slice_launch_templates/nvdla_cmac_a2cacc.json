@@ -25,6 +25,11 @@
   "source_files": [
     "third_party/rtlmeter/designs/NVDLA/src/NV_NVDLA_RT_cmac_a2cacc.v"
   ],
+  "verilator_args": [
+    "-Wno-fatal",
+    "-Wno-WIDTHXZEXPAND",
+    "-Wno-WIDTHTRUNC"
+  ],
   "planned_overlay": {
     "coverage_tb_path": "overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_a2cacc_gpu_cov_tb.sv",
     "coverage_manifest_path": "overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_a2cacc_coverage_regions.json",
