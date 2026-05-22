@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`run_resident_execution_optimization_followup_measurement_gate`
+`run_config_generation_validation_breadth_execution_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/run_resident_execution_optimization_followup_measurement_dry_run_gate.json`
+`config/scaling_gates/config_generation_validation_breadth_execution_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 

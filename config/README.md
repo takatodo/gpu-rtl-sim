@@ -31,7 +31,7 @@ in a clean minimized tree.
 - Current machine-readable state: `config/selection.json`
 - Operator shortcuts: `Makefile` at repo root (see README **Operator shortcuts**; calls existing tools only)
 - Current target inventory: `config/targets.json`
-- Current gate pointer: `current_priority_source_artifact` in `config/selection.json` (at time of writing this is `config/scaling_gates/run_resident_execution_optimization_followup_measurement_dry_run_gate.json`; treat `selection.json` as authoritative if they drift)
+- Current gate pointer: `current_priority_source_artifact` in `config/selection.json` (at time of writing this is `config/scaling_gates/config_generation_validation_breadth_execution_gate.json`; treat `selection.json` as authoritative if they drift)
 - Public benchmark pack gate: `config/scaling_gates/public_results_packaging_gate.json`
 - Public benchmark pack audit: `config/scaling_gates/public_benchmark_pack_goal_completion_audit.json`
 - Gate record storage: `records/scaling_gates/`
