@@ -45,6 +45,7 @@ TRACKED_REFERENCE_PREFIXES = (
     "README.md",
     "config/",
     "docs/",
+    "records/README.md",
     "src/tools/",
     "tests/contract/",
 )
@@ -277,6 +278,19 @@ def public_pack_record_untracked_references(paths: tuple[str, ...], tracked: set
     return violations
 
 
+def active_gate_record_references(paths: set[str]) -> set[str]:
+    references = set(public_pack_record_paths())
+    for path in tracked_active_surface_files(paths):
+        source = REPO_ROOT / path
+        if not source.exists():
+            continue
+        for match in REPO_PATH_REFERENCE_PATTERN.finditer(source.read_text(encoding="utf-8")):
+            reference = _canonical_reference_path(match.group(0))
+            if reference.startswith("records/scaling_gates/") and reference.endswith(".json"):
+                references.add(reference)
+    return references
+
+
 class PublicPackSourceBoundaryTest(unittest.TestCase):
     def test_public_pack_records_are_explicit_not_candidate_filtered(self) -> None:
         manifest_source = MANIFEST_SOURCE_PATH.with_name("results_reproduction_manifest.py").read_text(encoding="utf-8")
@@ -351,6 +365,19 @@ class TrackedReferenceBoundaryTest(unittest.TestCase):
                     violations.append(f"{path}->{ref}")
 
         self.assertEqual(violations, [])
+
+    def test_tracked_gate_records_are_referenced_by_active_surface(self) -> None:
+        tracked = tracked_paths()
+        references = active_gate_record_references(tracked)
+        unreferenced = sorted(
+            path
+            for path in tracked
+            if path.startswith("records/scaling_gates/")
+            and path.endswith(".json")
+            and path not in references
+        )
+
+        self.assertEqual(unreferenced, [])
 
 
 if __name__ == "__main__":
