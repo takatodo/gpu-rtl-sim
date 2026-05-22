@@ -59,7 +59,7 @@ def clone_report(
 ) -> dict[str, object]:
     return {
         "schema_version": 1,
-        "tool": "src/tools/mobile_vit_clone_imagenet_data.py",
+        "tool": "mobile_vit_clone_imagenet_core.clone_hf_imagenet_data",
         "source": manifest.get("source", "huggingface_datasets_streaming"),
         "dataset": dataset_name,
         "split": split,
