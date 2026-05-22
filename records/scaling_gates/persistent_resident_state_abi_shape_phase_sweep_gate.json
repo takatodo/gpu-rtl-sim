@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "gate": "persistent_resident_state_abi_shape_phase_sweep_gate",
+  "status": "defined_persistent_resident_state_abi_shape_phase_sweep",
+  "objective": "Define a conservative shape/phase sweep for the existing persistent resident state ABI path before changing runtime ABI or returning to a different workload family.",
+  "source_review_gate": "config/scaling_gates/resident_execution_overhead_runtime_boundary_review_gate.json",
+  "source_analysis_gate": "config/scaling_gates/resident_execution_overhead_breakdown_analysis_gate.json",
+  "current_priority": "implement_persistent_resident_state_abi_shape_phase_sweep_workflow_gate",
+  "target": "pulp_ita_mha",
+  "existing_workflow": {
+    "single_case_cli": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi <shape> --persistent-resident-state-abi-phases <phases> --persistent-resident-state-abi-repeat-median 3",
+    "baseline_case": {
+      "shape": "16x64",
+      "phases": 4,
+      "repeat_count": 3,
+      "source_gate": "config/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+      "summary_report": "reports/persistent_resident_state_abi_repeat_median_summary.json"
+    },
+    "workflow_gap": "The existing public CLI measures one shape/phase case at a time and writes the fixed repeat-median summary path, so the next implementation gate must add a reproducible sweep workflow with distinct per-case reports and an aggregate summary."
+  },
+  "planned_matrix": [
+    {
+      "case_id": "16x64_p2_r3",
+      "shape": "16x64",
+      "phases": 2,
+      "repeat_count": 3,
+      "reason": "shorter phase count for the existing baseline shape"
+    },
+    {
+      "case_id": "16x64_p4_r3",
+      "shape": "16x64",
+      "phases": 4,
+      "repeat_count": 3,
+      "reason": "existing baseline shape and phase count, retained as the anchor"
+    },
+    {
+      "case_id": "16x128_p4_r3",
+      "shape": "16x128",
+      "phases": 4,
+      "repeat_count": 3,
+      "reason": "longer per-phase repeated-step span with the same state count"
+    },
+    {
+      "case_id": "32x64_p4_r3",
+      "shape": "32x64",
+      "phases": 4,
+      "repeat_count": 3,
+      "reason": "larger state-parallel count with the existing per-phase step count"
+    }
+  ],
+  "required_metrics": [
+    "median hybrid wall ms",
+    "median GPU kernel total ms",
+    "median wall-minus-kernel residual ms",
+    "median hybrid wall ms per final state-step",
+    "median GPU kernel total ms per final state-step",
+    "coverage-output equivalence pass/fail",
+    "maximum coverage-output mismatch count",
+    "state authority and phase shape list"
+  ],
+  "required_workflow_gate": {
+    "name": "implement_persistent_resident_state_abi_shape_phase_sweep_workflow_gate",
+    "must_implement": [
+      "a public dry-run path for the fixed matrix",
+      "distinct per-case report paths so matrix cases do not overwrite each other",
+      "an aggregate generated summary report under reports/",
+      "contract tests for command expansion, report naming, and source-of-truth references",
+      "documentation mention for the new public workflow"
+    ],
+    "suggested_aggregate_report": "reports/persistent_resident_state_abi_shape_phase_sweep_summary.json"
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_measurement": true,
+    "max_mismatch_count_required_for_later_measurement": 0,
+    "repeat_count_required_for_later_measurement": 3,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "direct_speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "new_public_cli_requires_contract_test_and_doc_mention": true
+  },
+  "next_task": "implement_persistent_resident_state_abi_shape_phase_sweep_workflow_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not proof that resident mode alone fixes single-request decode latency",
+    "not paged-attention or KV-cache scale-up",
+    "not production LLM serving throughput",
+    "not raw full-state equality"
+  ]
+}

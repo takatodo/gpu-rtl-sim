@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_template_schema_normalization_more_breadth_gate",
+  "status": "defined_tlul_template_schema_normalization_more_breadth_boundary",
+  "objective": "Define the next historical OpenTitan TL-UL legacy-template breadth expansion after the clock/reset metadata matrix and public-pack selection gate.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_tlul_legacy_clock_reset_metadata_matrix_public_pack_refresh_gate.json",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_tlul_legacy_clock_reset_metadata_matrix_execution_gate.json",
+  "source_metadata_matrix_gate": "config/scaling_gates/tlul_legacy_clock_reset_metadata_matrix_gate.json",
+  "source_result_gate": "config/scaling_gates/tlul_legacy_clock_reset_metadata_matrix_execution_result_gate.json",
+  "long_term_goal": "Keep hybrid execution close to Verilator usage while making modern LLM-serving-like RTL workload correctness, speed trends, reproduction commands, and non-claims easy to regenerate and review.",
+  "current_priority": "run_tlul_template_schema_normalization_more_breadth_dry_run_gate",
+  "selected_templates": [
+    {
+      "template": "config/slice_launch_templates/tlul_socket_m1.json",
+      "target": "OpenTitan.tlul_socket_m1",
+      "top_module": "tlul_socket_m1_gpu_cov_tb",
+      "metadata_source": "target_specific_root_clock_reset_override",
+      "clock_field": "clk_i",
+      "reset_field": "rst_ni",
+      "reset_report_name": "rst_ni",
+      "reason": "adds one socket routing/arbitration template after the endpoint and adapter-host matrix targets"
+    },
+    {
+      "template": "config/slice_launch_templates/tlul_socket_1n.json",
+      "target": "OpenTitan.tlul_socket_1n",
+      "top_module": "tlul_socket_1n_gpu_cov_tb",
+      "metadata_source": "target_specific_root_clock_reset_override",
+      "clock_field": "clk_i",
+      "reset_field": "rst_ni",
+      "reset_report_name": "rst_ni",
+      "reason": "pairs the socket breadth with the opposite fanout direction while keeping the set small"
+    },
+    {
+      "template": "config/slice_launch_templates/tlul_adapter_reg.json",
+      "target": "OpenTitan.tlul_adapter_reg",
+      "top_module": "tlul_adapter_reg_gpu_cov_tb",
+      "metadata_source": "target_specific_reset_override",
+      "clock_field": "tlul_adapter_reg_gpu_cov_tb__DOT__clk_i",
+      "reset_field": "tlul_adapter_reg_gpu_cov_tb__DOT__rst_ni",
+      "reset_report_name": "rst_ni",
+      "reason": "extends the adapter family from host-side behavior to register-side behavior without RACL complexity"
+    },
+    {
+      "template": "config/slice_launch_templates/tlul_adapter_sram.json",
+      "target": "OpenTitan.tlul_adapter_sram",
+      "top_module": "tlul_adapter_sram_gpu_cov_tb",
+      "metadata_source": "target_specific_reset_override",
+      "clock_field": "tlul_adapter_sram_gpu_cov_tb__DOT__clk_i",
+      "reset_field": "tlul_adapter_sram_gpu_cov_tb__DOT__rst_ni",
+      "reset_report_name": "rst_ni",
+      "reason": "adds the SRAM adapter path while deferring the RACL and byte-SRAM variants"
+    }
+  ],
+  "already_matrix_covered_templates": [
+    "tlul_fifo_sync",
+    "tlul_sink",
+    "tlul_request_loopback",
+    "tlul_adapter_host"
+  ],
+  "shape": "1x1",
+  "required_dry_run_commands": [
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_socket_m1.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_socket_1n.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_adapter_reg.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_adapter_sram.json --shape 1x1 --dry-run"
+  ],
+  "later_execution_form": [
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_socket_m1.json --shape 1x1",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_socket_1n.json --shape 1x1",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_adapter_reg.json --shape 1x1",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_adapter_sram.json --shape 1x1"
+  ],
+  "compile_plan_expectations": [
+    "-DROOT_CLK_FIELD=clk_i",
+    "-DROOT_RST_FIELD=rst_ni",
+    "-DROOT_CLK_FIELD=tlul_adapter_reg_gpu_cov_tb__DOT__clk_i",
+    "-DROOT_RST_FIELD=tlul_adapter_reg_gpu_cov_tb__DOT__rst_ni",
+    "-DROOT_CLK_FIELD=tlul_adapter_sram_gpu_cov_tb__DOT__clk_i",
+    "-DROOT_RST_FIELD=tlul_adapter_sram_gpu_cov_tb__DOT__rst_ni"
+  ],
+  "deferred_templates": [
+    "tlul_adapter_dmi",
+    "tlul_adapter_reg_racl",
+    "tlul_adapter_sram_racl",
+    "tlul_sram_byte",
+    "tlul_fifo_async",
+    "tlul_lc_gate",
+    "tlul_err",
+    "tlul_err_resp",
+    "tlul_cmd_intg_chk",
+    "tlul_cmd_intg_gen",
+    "tlul_rsp_intg_chk",
+    "tlul_rsp_intg_gen",
+    "tlul_data_integ_enc",
+    "tlul_data_integ_dec"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "dry_run_required_next": true,
+    "non_dry_run_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "generic_host_probe_builder_required": true,
+    "makefile_host_probe_target_allowed": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "universal_legacy_template_validation_claim_allowed": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_tlul_template_schema_normalization_more_breadth_dry_run_gate",
+  "non_claims": [
+    "not a dry-run result",
+    "not a build/run/compare result",
+    "not all legacy TL-UL templates",
+    "not non-TL-UL legacy-template compatibility",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not a runtime or ABI change",
+    "not production LLM-serving throughput"
+  ]
+}
