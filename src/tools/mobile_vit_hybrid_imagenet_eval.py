@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-from importlib import import_module
 from pathlib import Path
 
 from hybrid_template_runner import run_plan
@@ -26,8 +25,10 @@ from mobile_vit_hybrid_imagenet_inputs import (
 
 
 def _run_cpu_kick_inference(**kwargs: object) -> dict[str, object]:
-    module = import_module("mobile_vit_cpu_kick_infer")
-    return module.run_cpu_kick_inference(**kwargs)
+    raise RuntimeError(
+        "--run-cpu-kick-infer requires a tracked CPU-kick inference backend; "
+        "use --dry-run to plan generation or provide prepared predictions"
+    )
 
 
 def parse_args():

@@ -40,6 +40,15 @@ def local_imports(path: Path) -> set[str]:
             imports.add(node.module.split(".")[0])
         elif isinstance(node, ast.Import):
             imports.update(alias.name.split(".")[0] for alias in node.names)
+        elif (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "import_module"
+            and node.args
+            and isinstance(node.args[0], ast.Constant)
+            and isinstance(node.args[0].value, str)
+        ):
+            imports.add(node.args[0].value.split(".")[0])
     return {
         module
         for module in imports
