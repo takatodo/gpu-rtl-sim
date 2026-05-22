@@ -1,138 +1,47 @@
 """Public result-pack path manifest for results reproduction workflows."""
 
-from pathlib import Path
-import subprocess
-
 from results_reproduction_manifest_sources import PUBLIC_PACK_SOURCE_PATHS
-
-
-def _gate_records(*names: str) -> tuple[str, ...]:
-    return tuple(f"records/scaling_gates/{name}.json" for name in names)
 
 
 def _report_paths(*names: str) -> tuple[str, ...]:
     return tuple(f"reports/{name}" for name in names)
 
 
-def _execution_gate_records(stem: str) -> tuple[str, ...]:
-    return _gate_records(
-        f"{stem}_gate", f"{stem}_dry_run_gate", f"{stem}_dry_run_review_gate",
-        f"{stem}_execution_gate", f"{stem}_execution_result_gate", f"{stem}_execution_review_gate",
-        f"public_results_packaging_refresh_after_{stem}_execution_gate",
-        f"public_benchmark_pack_externalization_completion_after_{stem}_execution_gate",
-        f"next_measurement_selection_after_{stem}_public_pack_refresh_gate",
-    )
-
-
-def _measurement_gate_records(stem: str) -> tuple[str, ...]:
-    return _gate_records(
-        f"{stem}_gate", f"{stem}_dry_run_gate", f"{stem}_dry_run_review_gate",
-        f"{stem}_measurement_gate", f"{stem}_measurement_review_gate",
-        f"public_results_packaging_refresh_after_{stem}_gate",
-        f"public_benchmark_pack_externalization_completion_after_{stem}_gate",
-        f"next_measurement_selection_after_{stem}_public_pack_refresh_gate",
-    )
-
-
-def _tracked_or_packaged_record_paths(paths: tuple[str, ...]) -> tuple[str, ...]:
-    repo_root = Path(__file__).resolve().parents[2]
-    try:
-        tracked = set(
-            subprocess.check_output(
-                ["git", "-C", str(repo_root), "ls-files", "--", "records/scaling_gates"],
-                text=True,
-                stderr=subprocess.DEVNULL,
-            ).splitlines()
-        )
-    except (OSError, subprocess.CalledProcessError):
-        return tuple(path for path in paths if (repo_root / path).exists())
-    return tuple(path for path in paths if path in tracked)
-
-
-_PUBLIC_PACK_RECORD_CANDIDATE_PATHS = (
-    *_gate_records(
-        "public_results_packaging_gate", "public_benchmark_pack_externalization_readiness_audit",
-        "public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate",
-        "next_goal_selection_after_persistent_resident_repeat_median_gate",
-        "persistent_resident_state_abi_repeat_median_measurement_gate",
-        "public_results_packaging_refresh_after_persistent_resident_repeat_median_gate",
-        "public_benchmark_pack_externalization_completion_gate",
-        "next_measurement_selection_after_public_benchmark_pack_externalization_gate",
-        "paged_attention_kv_cache_scale_up_measurement_gate",
-        "paged_attention_kv_cache_scale_up_measurement_review_gate",
-        "paged_attention_kv_cache_timing_summary_gate", "paged_attention_kv_cache_timing_summary_review_gate",
-        "public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate",
-        "public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_timing_summary_gate",
-        "next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate",
-        "paged_attention_kv_cache_repeat_median_timing_gate",
-        "paged_attention_kv_cache_repeat_median_workflow_gate",
-        "paged_attention_kv_cache_repeat_median_measurement_gate", "paged_attention_kv_cache_repeat_median_review_gate",
-        "public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate",
-        "public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate",
-        "next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate",
-    ),
-    *_execution_gate_records("config_generation_validation_breadth"),
-    *_execution_gate_records("config_generation_validation_shape_breadth"),
-    *_gate_records(
-        "resident_execution_overhead_breakdown_gate", "resident_execution_overhead_breakdown_analysis_gate",
-        "resident_execution_overhead_runtime_boundary_review_gate",
-        "persistent_resident_state_abi_shape_phase_sweep_workflow_gate",
-    ),
-    *_measurement_gate_records("persistent_resident_state_abi_shape_phase_sweep"),
-    *_measurement_gate_records("paged_attention_kv_cache_scale_up_continuation"),
-    *_gate_records("paged_attention_kv_cache_scale_up_continuation_repeat_median_workflow_gate"),
-    *_measurement_gate_records("paged_attention_kv_cache_scale_up_continuation_repeat_median"),
-    *_measurement_gate_records("paged_attention_kv_cache_scale_up_next_shapes"),
-    *_gate_records("paged_attention_kv_cache_scale_up_next_shapes_repeat_median_workflow_gate"),
-    *_measurement_gate_records("paged_attention_kv_cache_scale_up_next_shapes_repeat_median"),
-    *_execution_gate_records("config_generation_validation_additional_targets"),
-    *_gate_records(
-        "tlul_template_schema_normalization_gate", "tlul_template_schema_normalization_implementation_gate",
-        "tlul_template_schema_normalization_implementation_review_gate",
-        "tlul_template_schema_normalization_execution_gate",
-        "tlul_template_schema_normalization_execution_result_gate",
-        "tlul_template_schema_normalization_execution_review_gate",
-        "tlul_template_schema_normalization_breadth_public_pack_refresh_gate",
-        "public_benchmark_pack_externalization_completion_after_tlul_template_schema_normalization_breadth_gate",
-    ),
-    *_execution_gate_records("tlul_template_schema_normalization_breadth"),
-    *_execution_gate_records("tlul_legacy_clock_reset_metadata_matrix"),
-    *_execution_gate_records("tlul_template_schema_normalization_more_breadth"),
-    *_execution_gate_records("tlul_template_schema_normalization_even_more_breadth"),
-    *_execution_gate_records("config_generation_validation_followup"),
-    *_gate_records(
-        "tlul_template_schema_metadata_invariant_review_gate",
-        "tlul_template_schema_metadata_invariant_review_dry_run_gate",
-        "tlul_template_schema_metadata_invariant_review_dry_run_review_gate",
-        "tlul_template_schema_metadata_invariant_execution_gate",
-        "tlul_template_schema_metadata_invariant_execution_result_gate",
-        "tlul_template_schema_metadata_invariant_execution_review_gate",
-        "public_results_packaging_refresh_after_tlul_template_schema_metadata_invariant_execution_gate",
-        "public_benchmark_pack_externalization_completion_after_tlul_template_schema_metadata_invariant_execution_gate",
-        "next_measurement_selection_after_tlul_template_schema_metadata_invariant_public_pack_refresh_gate",
-        "resident_execution_launch_overhead_reduction_gate", "resident_execution_launch_overhead_reduction_analysis_gate",
-        "resident_execution_launch_overhead_reduction_analysis_review_gate",
-        "single_state_repeated_launch_isolation_measurement_gate",
-        "single_state_repeated_launch_isolation_measurement_result_gate",
-        "single_state_repeated_launch_isolation_measurement_review_gate",
-        "single_state_launch_orchestration_cleanup_gate",
-        "single_state_launch_orchestration_cleanup_surface_inspection_gate",
-        "repeat_median_summary_helper_cleanup_implementation_gate", "repeat_median_summary_helper_cleanup_review_gate",
-        "next_goal_selection_after_helper_cleanup_review_gate",
-        "paged_attention_kv_cache_scale_up_followup_gate", "paged_attention_kv_cache_scale_up_followup_dry_run_gate",
-        "paged_attention_kv_cache_scale_up_followup_measurement_gate",
-        "paged_attention_kv_cache_scale_up_followup_measurement_review_gate",
-        "public_results_packaging_refresh_after_paged_attention_kv_cache_scale_up_followup_gate",
-        "public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_scale_up_followup_gate",
-        "public_benchmark_pack_goal_completion_audit",
-        "generic_hybrid_benchmark_cli_gate",
-        "pulp_ita_mha_first_generic_host_probe_build_run_compare_gate",
-        "pulp_ita_mha_shape_expansion_gate",
-        "pulp_ita_mha_shape_expansion_review_gate",
-    ),
+PUBLIC_PACK_RECORD_PATHS = (
+    "records/scaling_gates/public_results_packaging_gate.json",
+    "records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json",
+    "records/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json",
+    "records/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json",
+    "records/scaling_gates/public_benchmark_pack_externalization_completion_gate.json",
+    "records/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_scale_up_measurement_review_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate.json",
+    "records/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_timing_summary_gate.json",
+    "records/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json",
+    "records/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_repeat_median_gate.json",
+    "records/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json",
+    "records/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json",
+    "records/scaling_gates/config_generation_validation_breadth_gate.json",
+    "records/scaling_gates/config_generation_validation_breadth_dry_run_gate.json",
+    "records/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json",
+    "records/scaling_gates/config_generation_validation_breadth_execution_gate.json",
+    "records/scaling_gates/persistent_resident_state_abi_shape_phase_sweep_gate.json",
+    "records/scaling_gates/tlul_template_schema_normalization_more_breadth_gate.json",
+    "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
+    "records/scaling_gates/generic_hybrid_benchmark_cli_gate.json",
+    "records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json",
+    "records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json",
+    "records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json",
 )
-
-PUBLIC_PACK_RECORD_PATHS = _tracked_or_packaged_record_paths(_PUBLIC_PACK_RECORD_CANDIDATE_PATHS)
 
 PUBLIC_PACK_REPORT_PATHS = (
     *_report_paths(

@@ -230,6 +230,12 @@ def public_pack_record_untracked_references(paths: tuple[str, ...], tracked: set
 
 
 class PublicPackSourceBoundaryTest(unittest.TestCase):
+    def test_public_pack_records_are_explicit_not_candidate_filtered(self) -> None:
+        manifest_source = MANIFEST_SOURCE_PATH.with_name("results_reproduction_manifest.py").read_text(encoding="utf-8")
+
+        self.assertNotIn("_PUBLIC_PACK_RECORD_CANDIDATE_PATHS", manifest_source)
+        self.assertNotIn("_tracked_or_packaged_record_paths", manifest_source)
+
     def test_public_pack_source_paths_are_tracked(self) -> None:
         tracked = tracked_paths()
         violations = [path for path in public_pack_source_paths() if path not in tracked]
