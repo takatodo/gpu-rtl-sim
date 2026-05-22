@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 import subprocess
 import sys
 import unittest
@@ -16,11 +17,16 @@ TOOLS_DIR = REPO_ROOT / "src" / "tools"
 CONTRACT_TEST_DIR = REPO_ROOT / "tests" / "contract"
 MANIFEST_SOURCE_PATH = REPO_ROOT / "src" / "tools" / "results_reproduction_manifest_sources.py"
 TRACKED_REFERENCE_PREFIXES = (
+    "AGENTS.md",
     "README.md",
     "config/",
     "docs/",
     "src/tools/",
     "tests/contract/",
+)
+REPO_PATH_REFERENCE_PATTERN = re.compile(
+    r"(?:(?:config/scaling_gates)|(?:records/scaling_gates)|(?:overlays)|(?:src/tools)|(?:tests/contract))"
+    r"/[A-Za-z0-9_./-]+"
 )
 
 
@@ -172,6 +178,28 @@ def untracked_tool_path_references(paths: set[str]) -> list[str]:
     return violations
 
 
+def _canonical_reference_path(reference: str) -> str:
+    path = reference.strip("`'\".,:;)]}")
+    if path.startswith("config/scaling_gates/"):
+        return f"records/scaling_gates/{Path(path).name}"
+    return path
+
+
+def untracked_repo_path_references(paths: set[str]) -> list[str]:
+    violations: list[str] = []
+    for path in tracked_active_surface_files(paths):
+        source = REPO_ROOT / path
+        if not source.exists():
+            continue
+        for lineno, line in enumerate(source.read_text(encoding="utf-8").splitlines(), start=1):
+            for match in REPO_PATH_REFERENCE_PATTERN.finditer(line):
+                reference = match.group(0)
+                canonical = _canonical_reference_path(reference)
+                if (REPO_ROOT / canonical).is_file() and canonical not in paths:
+                    violations.append(f"{path}:{lineno}->{reference}")
+    return violations
+
+
 def public_pack_local_import_edges(paths: tuple[str, ...]) -> list[str]:
     manifest_paths = set(paths)
     edges: list[str] = []
@@ -208,6 +236,11 @@ class PublicPackSourceBoundaryTest(unittest.TestCase):
 class TrackedReferenceBoundaryTest(unittest.TestCase):
     def test_active_surface_does_not_reference_untracked_tool_paths(self) -> None:
         violations = untracked_tool_path_references(tracked_paths())
+
+        self.assertEqual(violations, [])
+
+    def test_active_surface_does_not_reference_existing_untracked_repo_paths(self) -> None:
+        violations = untracked_repo_path_references(tracked_paths())
 
         self.assertEqual(violations, [])
 
