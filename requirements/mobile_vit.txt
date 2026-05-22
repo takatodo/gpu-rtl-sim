@@ -1,0 +1,7 @@
+torch
+torchvision
+transformers
+pillow
+datasets
+huggingface_hub
+pyarrow
