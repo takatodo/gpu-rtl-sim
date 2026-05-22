@@ -162,6 +162,7 @@ class LargeFileCommitGuardScriptGrowthTest(unittest.TestCase):
         self.assertIn("python3 -m venv artifacts/mobile_vit/venv", readme)
         self.assertIn("artifacts/mobile_vit/venv/bin/python -m pip install -r requirements/mobile_vit.txt", readme)
         self.assertIn("Commit guard state", status)
+        self.assertIn("test_tracked_tool_dependency_boundary", status)
         self.assertIn("100` staged non-submodule file changes including deletions and type changes", status)
         self.assertIn("250` added lines per guarded script", status)
         self.assertIn("300` total lines per guarded script", status)
