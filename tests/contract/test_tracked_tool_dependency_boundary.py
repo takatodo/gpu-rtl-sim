@@ -16,6 +16,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 TOOLS_DIR = REPO_ROOT / "src" / "tools"
 CONTRACT_TEST_DIR = REPO_ROOT / "tests" / "contract"
 MANIFEST_SOURCE_PATH = REPO_ROOT / "src" / "tools" / "results_reproduction_manifest_sources.py"
+SELECTION_PATH = REPO_ROOT / "config" / "selection.json"
+CONFIG_MINIMAL_SURFACE_AUDIT_PATH = (
+    REPO_ROOT / "records" / "scaling_gates" / "config_minimal_surface_completion_audit.json"
+)
 PUBLIC_PACK_TOOL_ROOTS = (
     "run_results_reproduction",
     "compare_vl_hybrid_cli",
@@ -187,6 +191,16 @@ def tracked_tool_modules(paths: set[str]) -> set[str]:
         for path in paths
         if path.startswith("src/tools/") and path.endswith(".py")
     }
+
+
+def tracked_gate_record_count(paths: set[str]) -> int:
+    return len(
+        [
+            path
+            for path in paths
+            if path.startswith("records/scaling_gates/") and path.endswith(".json")
+        ]
+    )
 
 
 def public_pack_record_paths() -> tuple[str, ...]:
@@ -389,6 +403,14 @@ class TrackedReferenceBoundaryTest(unittest.TestCase):
         )
 
         self.assertEqual(unreferenced, [])
+
+    def test_canonical_gate_record_counts_match_tracked_surface(self) -> None:
+        tracked_count = tracked_gate_record_count(tracked_paths())
+        selection = json.loads(SELECTION_PATH.read_text(encoding="utf-8"))
+        audit = json.loads(CONFIG_MINIMAL_SURFACE_AUDIT_PATH.read_text(encoding="utf-8"))
+
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], tracked_count)
+        self.assertEqual(audit["measured_state"]["records_scaling_gate_json_count"], tracked_count)
 
 
 if __name__ == "__main__":
