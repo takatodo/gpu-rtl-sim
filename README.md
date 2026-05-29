@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`review_verilator_native_option_parser_stub_fixture_gate`
+`implement_verilator_native_option_parser_stub_fixture_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/define_verilator_native_option_parser_stub_fixture_gate.json`
+`config/scaling_gates/review_verilator_native_option_parser_stub_fixture_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -124,6 +124,7 @@ Commit cadence: keep commits small enough to review by one gate or one workflow 
 - Verilator native option parser stub boundary defined: `config/scaling_gates/define_verilator_native_option_parser_stub_boundary_gate.json` assigns canonical unknown-accelerator validation to the parser-stub validation contract, keeps current argparse choices as wrapper compatibility only, and defines the structured handoff fields for future non-executing parser-stub fixtures. The next task is `review_verilator_native_option_parser_stub_boundary_gate`; this adds no parser implementation, source patch, execution, measurement, runtime/ABI change, arbitrary filelist support, dependency inference, automatic allocation, GEM comparison, production-serving claim, or raw full-state equality claim.
 - Verilator native option parser stub boundary review accepted: `config/scaling_gates/review_verilator_native_option_parser_stub_boundary_gate.json` accepts that boundary narrowly and keeps the weak point explicit: the repository still has no Verilator source tree or parser patch, and observable unknown-accelerator rejection still comes through wrapper argparse choices. The next task is `define_verilator_native_option_parser_stub_fixture_gate`, limited to defining a non-executing fixture that makes the validation and handoff contract testable.
 - Verilator native option parser stub fixture defined: `config/scaling_gates/define_verilator_native_option_parser_stub_fixture_gate.json` defines the non-executing importable fixture contract for accepting `sidecar-gpu` `64x1`, rejecting unknown accelerators outside wrapper argparse choices, rejecting missing/non-positive shape inputs, rejecting compact `--sim-accel-shape` as wrapper compatibility outside the native minimum, preserving ordinary Verilator args, and serializing parser-only handoff fields. The next task is `review_verilator_native_option_parser_stub_fixture_gate`; this adds no helper implementation, parser implementation, source patch, execution, measurement, runtime/ABI change, arbitrary filelist support, dependency inference, automatic allocation, GEM comparison, production-serving claim, or raw full-state equality claim.
+- Verilator native option parser stub fixture review accepted: `config/scaling_gates/review_verilator_native_option_parser_stub_fixture_gate.json` accepts that fixture contract and advances to `implement_verilator_native_option_parser_stub_fixture_gate`. The implementation must be an importable non-executing helper, not a public CLI, and must make unknown-accelerator rejection observable outside wrapper argparse choices while preserving ordinary Verilator inputs and parser-only handoff fields.
 
 ## Source Of Truth
 
@@ -665,6 +666,7 @@ The paged-attention/KV-cache repeat-median public-pack boundary is complete. The
 - Verilator native option parser stub boundary defined: `config/scaling_gates/define_verilator_native_option_parser_stub_boundary_gate.json` advances the current task to `review_verilator_native_option_parser_stub_boundary_gate`.
 - Verilator native option parser stub boundary review accepted: `config/scaling_gates/review_verilator_native_option_parser_stub_boundary_gate.json` advances the current task to `define_verilator_native_option_parser_stub_fixture_gate`.
 - Verilator native option parser stub fixture defined: `config/scaling_gates/define_verilator_native_option_parser_stub_fixture_gate.json` advances the current task to `review_verilator_native_option_parser_stub_fixture_gate`.
+- Verilator native option parser stub fixture review accepted: `config/scaling_gates/review_verilator_native_option_parser_stub_fixture_gate.json` advances the current task to `implement_verilator_native_option_parser_stub_fixture_gate`.
 - config-generation validation breadth execution and subsequent candidate measurement/publication gates are summarized by `config/selection.json`, `docs/status.md`, and the tracked public-pack manifest instead of being listed here one gate file at a time
 - local candidate gate files under `records/scaling_gates/` are not public-pack source of truth until they are intentionally tracked and included by `python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run`
 - previous paged-attention/KV-cache dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`

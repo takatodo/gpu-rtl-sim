@@ -30,6 +30,9 @@ PARSER_STUB_BOUNDARY_REVIEW_GATE = (
 PARSER_STUB_FIXTURE_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "define_verilator_native_option_parser_stub_fixture_gate.json"
 )
+PARSER_STUB_FIXTURE_REVIEW_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "review_verilator_native_option_parser_stub_fixture_gate.json"
+)
 SELECTION = REPO_ROOT / "config" / "selection.json"
 TOOLS = REPO_ROOT / "src" / "tools"
 REGISTRY_NEXT_SELECTION_GATE = (
@@ -73,6 +76,9 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
 
     def read_parser_stub_fixture_gate(self) -> dict[str, object]:
         return json.loads(PARSER_STUB_FIXTURE_GATE.read_text(encoding="utf-8"))
+
+    def read_parser_stub_fixture_review_gate(self) -> dict[str, object]:
+        return json.loads(PARSER_STUB_FIXTURE_REVIEW_GATE.read_text(encoding="utf-8"))
 
     def test_registry_next_selection_gate_chooses_commit_split_cleanup(self) -> None:
         selection = json.loads(REGISTRY_NEXT_SELECTION_GATE.read_text(encoding="utf-8"))
@@ -182,12 +188,12 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         self.assertFalse(completion["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
         self.assertFalse(completion["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
         self.assertFalse(completion["acceptance_policy"]["new_execution_allowed_by_this_gate"])
-        self.assertEqual(selection["current_priority"], "review_verilator_native_option_parser_stub_fixture_gate")
+        self.assertEqual(selection["current_priority"], "implement_verilator_native_option_parser_stub_fixture_gate")
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/define_verilator_native_option_parser_stub_fixture_gate.json",
+            "config/scaling_gates/review_verilator_native_option_parser_stub_fixture_gate.json",
         )
-        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 810)
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 811)
 
     def test_parser_boundary_definition_keeps_native_scope_parser_only(self) -> None:
         gate = self.read_parser_boundary_gate()
@@ -441,6 +447,58 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         self.assertFalse(gate["acceptance_policy"]["new_execution_allowed_by_this_gate"])
         self.assertFalse(gate["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
 
+    def test_parser_stub_fixture_review_accepts_contract_and_selects_implementation(self) -> None:
+        review = self.read_parser_stub_fixture_review_gate()
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_stub_fixture_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("argparse choices", review["review_decision"]["weakest_point"])
+        self.assertEqual(review["current_priority"], "implement_verilator_native_option_parser_stub_fixture_gate")
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "implement_verilator_native_option_parser_stub_fixture_gate",
+        )
+        accepted = review["accepted_scope"]
+        self.assertEqual(accepted["fixture_kind"], "importable_helper_contract_not_public_cli")
+        self.assertEqual(accepted["candidate_module"], "src/tools/verilator_native_option_parser_stub_fixture.py")
+        self.assertEqual(accepted["candidate_entrypoint_function"], "parse_verilator_native_option_stub")
+        self.assertEqual(accepted["accepted_case"]["shape"], "64x1")
+        self.assertTrue(accepted["accepted_case"]["warning_flag_preserved"])
+        self.assertFalse(accepted["accepted_case"]["source_closure_inferred"])
+        self.assertIn("reject_unknown_accelerator", accepted["accepted_rejection_cases"])
+        self.assertEqual(
+            accepted["canonical_unknown_accelerator_error"]["rejection_layer"],
+            "parser_stub_validation_contract",
+        )
+        self.assertTrue(accepted["canonical_unknown_accelerator_error"]["must_not_depend_on_python_argparse_choices"])
+        self.assertEqual(
+            accepted["compact_shape_spelling_status"],
+            "wrapper_compatibility_outside_native_parser_stub_minimum",
+        )
+        self.assertEqual(
+            accepted["mixed_expanded_and_compact_shape_spelling_status"],
+            "must_reject_because_compact_shape_spelling_is_outside_native_parser_stub_minimum",
+        )
+        self.assertEqual(accepted["serialized_handoff_field_count"], 18)
+        self.assertEqual(accepted["parser_stub_helper_status"], "not_implemented")
+        decisions = review["validated_definition_decisions"]
+        self.assertTrue(decisions["unknown_accelerator_rejection_is_testable_outside_argparse_choices"])
+        self.assertTrue(decisions["compact_shape_spelling_rejected_as_wrapper_compatibility_not_native_minimum"])
+        self.assertTrue(decisions["execution_and_compare_stay_out_of_scope"])
+        must_implement = review["required_next_gate"]["must_implement"]
+        self.assertIn(
+            "mixed expanded --sim-accel-states/--sim-accel-steps plus compact --sim-accel-shape rejection through the same native-minimum rule",
+            must_implement,
+        )
+        self.assertFalse(review["acceptance_policy"]["implementation_allowed_by_this_gate"])
+        self.assertTrue(review["acceptance_policy"]["implementation_allowed_next"])
+        self.assertFalse(review["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
+        self.assertFalse(review["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+        self.assertFalse(review["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
+
     def test_public_pack_manifest_includes_definition_gate(self) -> None:
         sys.path.insert(0, str(TOOLS))
         try:
@@ -490,6 +548,10 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         )
         self.assertIn(
             "records/scaling_gates/define_verilator_native_option_parser_stub_fixture_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/review_verilator_native_option_parser_stub_fixture_gate.json",
             PUBLIC_PACK_ARCHIVE_PATHS,
         )
 

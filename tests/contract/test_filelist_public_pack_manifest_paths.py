@@ -59,6 +59,7 @@ EXPECTED_PUBLIC_PACK_RECORDS = (
     "records/scaling_gates/define_verilator_native_option_parser_stub_boundary_gate.json",
     "records/scaling_gates/review_verilator_native_option_parser_stub_boundary_gate.json",
     "records/scaling_gates/define_verilator_native_option_parser_stub_fixture_gate.json",
+    "records/scaling_gates/review_verilator_native_option_parser_stub_fixture_gate.json",
 )
 
 EXPECTED_PUBLIC_PACK_REPORTS = (
