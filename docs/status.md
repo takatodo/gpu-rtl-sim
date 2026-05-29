@@ -2,11 +2,11 @@
 
 ## Weakest Point
 
-The commit-split cleanup is complete, and the first Verilator native-option overlay patch build-only validation boundary has been reviewed. The current weak point is now running that build-only validation without overstating it: even `verilator_bin` build success would prove compile/link compatibility only, not parser behavior, upstream acceptance, execution, measurement, or arbitrary RTL/filelist support.
+The commit-split cleanup is complete, and the first Verilator native-option overlay patch build-only validation run has exposed a real compile failure. The patch applies cleanly and reaches `verilator_bin`, but the current patch places `V3Options.h` fields/accessors after the header guard end, so compile/link compatibility is not proven. The current weak point is fixing that patch placement without overstating it as parser behavior, upstream acceptance, execution, measurement, or arbitrary RTL/filelist support.
 
 Current cleanup policy: keep `config/selection.json` compact (core pointer and operational fields), park bulky historical maps in `config/selection_extensions.json`, keep historical gate records under `records/scaling_gates/` with `config/scaling_gates` as a compatibility link, and keep generated evidence reproducible under `reports/` and `artifacts/` without retaining it as source of truth.
 
-Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `821` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
+Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `822` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
 
 Hybrid usability state: generated templates now carry generic host-probe build metadata and can use `src/tools/build_host_probe.py` without adding a per-target Makefile rule.
 
@@ -52,15 +52,15 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`run_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
+`define_verilator_native_option_parser_overlay_patch_compile_fix_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json`
+`config/scaling_gates/run_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json`
 
 ## 追跡タスク
 
-- `run_verilator_native_option_parser_overlay_patch_build_only_validation_gate` で、外部 clean checkout に patch を適用して `verilator_bin` build-only validation を実行し、exit/log を記録する。
+- `define_verilator_native_option_parser_overlay_patch_compile_fix_gate` で、`V3Options.h` の挿入位置を修正するための最小 patch-fix 境界を定義する。
 - `docs/migration_notes.md` の「シンプル検証からの乖離」節を、前提変更時に見直す。
 - 新規ゲート完了時は `config/selection_extensions.json` の `completed_goal_evidence` / `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json` の整合を取る。
 - ゲート JSON に残る履歴表記の例: `next_task: select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`（正の源泉は常に `config/selection.json` の `current_priority` を優先）。マージ後の全体像が必要なら `src/tools/selection_state.py` の `load_selection` を参照。
@@ -196,6 +196,8 @@ Verilator native option parser overlay patch descriptor/apply-check definition: 
 Verilator native option parser overlay patch descriptor/apply-check review: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json` accepts the boundary narrowly and advances to `implement_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate`. The accepted implementation payload is limited to `overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json` and `overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch` plus source-of-truth/test/doc alignment. The pinned Verilator commit is treated as the peeled commit for release tag `v5.048`; HEAD remains informational only. This review adds no descriptor file, patch file, native parser implementation, execution, measurement, runtime/ABI change, arbitrary RTL/filelist support, automatic allocation, GEM comparison, production-serving claim, or raw full-state equality claim.
 
 Verilator native option parser overlay patch descriptor/apply-check implementation: `config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json` adds the accepted descriptor and patch under `overlays/verilator/patches/`. The descriptor validates with `python3 -m json.tool`, and the patch applies with `git apply --check` against Verilator `v5.048` peeled commit `d0aa828c217410fffc73d92077b6f4f54830357c`. The patch touches only upstream `src/V3Options.h` and `src/V3Options.cpp`; the new options are undocumented parse/store/validate-only registrations, leaving docs, upstream `test_regress`, `V3OptionParser.*`, `VlcMain.cpp`, compact shape, estimate-efficiency, execution, and runtime handoff out of scope. This implementation adds no native parser support claim, Verilator build/regression result, execution, measurement, runtime/ABI change, arbitrary RTL/filelist support, automatic allocation, GEM comparison, production-serving claim, or raw full-state equality claim.
+
+Verilator native option parser overlay patch build-only validation run: `config/scaling_gates/run_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json` records the external checkout/apply/build attempt. Descriptor validation and `git apply --check` passed, the patch was applied, `autoconf` and `configure` were reached with a checkout-local `VERILATOR_INSTALL` default, and `make verilator_bin` was reached but failed with exit code `2`. The failure is classified as `patch_compile_link_failure` because the current patch inserts `m_simAccel*` fields and accessors after `#endif  // guard` in `V3Options.h`. The next task is to define the smallest compile-fix gate; this run still adds no parser behavior, upstream regression, execution, measurement, runtime/ABI, arbitrary RTL/filelist, automatic allocation, GEM, production-serving, or raw full-state equality claim.
 
 Public benchmark pack externalization readiness state: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for handing the refreshed pack to an external reader. The status is `ready_for_external_review`; this is a packaging/readiness audit only, not a new measurement result or stronger performance claim.
 

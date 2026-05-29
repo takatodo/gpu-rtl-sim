@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "gate": "run_verilator_native_option_parser_overlay_patch_build_only_validation_gate",
+  "status": "failed_verilator_bin_build_only_validation",
+  "objective": "Run the reviewed external clean-checkout Verilator overlay patch build-only validation boundary and record the build result without claiming parser behavior, execution, timing, or automatic allocation.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json",
+  "current_priority": "define_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+  "execution_boundary": {
+    "validation_kind": "external_clean_checkout_apply_and_build_verilator_bin",
+    "upstream_repository_url": "https://github.com/verilator/verilator.git",
+    "upstream_ref": "v5.048",
+    "upstream_commit": "d0aa828c217410fffc73d92077b6f4f54830357c",
+    "descriptor_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+    "patch_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+    "selected_build_target": "verilator_bin",
+    "writes_under_third_party": false,
+    "requires_verilator_source_in_repository": false
+  },
+  "verilator_install": {
+    "provided_by_environment": false,
+    "mechanically_defaulted": true,
+    "default_policy": "checkout-local generated install prefix under artifacts",
+    "install_prefix_rel": "artifacts/verilator_native_option_parser_overlay_patch_build_only_validation/install"
+  },
+  "observed_result": {
+    "descriptor_json_validated": true,
+    "apply_check_exit_code": 0,
+    "patch_applied": true,
+    "autoconf_reached": true,
+    "configure_reached": true,
+    "make_verilator_bin_reached": true,
+    "make_verilator_bin_exit_code": 2,
+    "reached_verilator_bin_target": true,
+    "expected_success_exit_code": 0,
+    "build_only_validation_passed": false,
+    "failure_class": "patch_compile_link_failure",
+    "failure_summary": "The patch applies cleanly but inserts V3Options.h members and accessors after the header guard end, so the Verilator verilator_bin build fails with non-member cv-qualifier and redefinition errors.",
+    "primary_log_path": "artifacts/verilator_native_option_parser_overlay_patch_build_only_validation/build-only-validation.log",
+    "make_rerun_log_path": "artifacts/verilator_native_option_parser_overlay_patch_build_only_validation/make-verilator-bin-rerun.log",
+    "strict_clean_rerun_log_path": "artifacts/verilator_native_option_parser_overlay_patch_build_only_validation_strict/build-only-validation-strict.log",
+    "strict_clean_rerun_exit_code": 128,
+    "strict_clean_rerun_failure_class": "tooling_or_network_dependency",
+    "strict_clean_rerun_failure_summary": "A second strict clean-checkout rerun failed before build at git clone because github.com DNS resolution failed; it is not used as build evidence."
+  },
+  "command_boundary_note": {
+    "initial_full_sequence_wrapper_exit_code": 0,
+    "initial_full_sequence_wrapper_exit_code_accepted": false,
+    "reason": "The initial local shell wrapper did not use fail-fast behavior, so it continued after the make failure and returned the last printf status. The make-stage rerun exit code 2 and the build log are the accepted build evidence."
+  },
+  "root_cause_evidence": {
+    "patched_header_rel": "artifacts/verilator_native_option_parser_overlay_patch_build_only_validation/verilator-v5.048-patched/src/V3Options.h",
+    "observed_bad_region": "m_simAccel fields and simAccel accessors appear after '#endif  // guard'",
+    "representative_error": "non-member function 'string simAccel()' cannot have cv-qualifier",
+    "fix_direction": "regenerate the overlay patch with contextual hunks that place private fields in the V3Options class private region and accessors in the public region before the header guard end"
+  },
+  "required_next_gate": {
+    "name": "define_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+    "must_decide": [
+      "whether to fix the existing overlay patch in place or add a replacement patch descriptor",
+      "the exact V3Options.h contextual insertion points for fields and accessors",
+      "whether the compile fix may preserve the current V3Options.cpp option parsing hunks",
+      "how to rerun apply-check and build-only validation after the patch fix"
+    ],
+    "must_not_claim": [
+      "native Verilator parser support works",
+      "parser behavior is correct",
+      "Verilator upstream regression tests pass",
+      "the patch has landed upstream",
+      "sidecar runtime or ABI integration",
+      "arbitrary RTL or filelist support",
+      "automatic optimal GPU allocation",
+      "new simulation timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "run_executed": true,
+    "build_only_validation_passed": false,
+    "compile_link_compatibility_evidence_recorded": false,
+    "patch_compile_failure_recorded": true,
+    "verilator_build_success_claim_allowed": false,
+    "native_verilator_parser_support_claim_allowed_by_gate_alone": false,
+    "parser_behavior_claim_allowed_by_gate_alone": false,
+    "upstream_regression_success_claim_allowed_by_gate_alone": false,
+    "upstream_patch_landed_claim_allowed_by_gate_alone": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "define_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+  "non_claims": [
+    "not Verilator build success",
+    "not native Verilator parser support",
+    "not parser behavior validation",
+    "not a landed upstream Verilator patch",
+    "not Verilator regression-test success",
+    "not new simulation execution evidence",
+    "not new measurement evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

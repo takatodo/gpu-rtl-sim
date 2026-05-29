@@ -63,6 +63,12 @@ OVERLAY_PATCH_BUILD_ONLY_VALIDATION_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json"
 )
+OVERLAY_PATCH_BUILD_ONLY_VALIDATION_RUN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "run_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json"
+)
 OVERLAY_DESCRIPTOR_FILE = (
     REPO_ROOT
     / "overlays"
@@ -559,6 +565,41 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(
             review["next_task"],
             "run_verilator_native_option_parser_overlay_patch_build_only_validation_gate",
+        )
+
+    def test_overlay_patch_build_only_validation_run_records_compile_failure(self) -> None:
+        gate = json.loads(OVERLAY_PATCH_BUILD_ONLY_VALIDATION_RUN_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json",
+        )
+        self.assertEqual(gate["status"], "failed_verilator_bin_build_only_validation")
+        self.assertEqual(
+            gate["current_priority"],
+            "define_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+        )
+        self.assertEqual(gate["execution_boundary"]["selected_build_target"], "verilator_bin")
+        self.assertTrue(gate["verilator_install"]["mechanically_defaulted"])
+        result = gate["observed_result"]
+        self.assertEqual(result["apply_check_exit_code"], 0)
+        self.assertTrue(result["make_verilator_bin_reached"])
+        self.assertEqual(result["make_verilator_bin_exit_code"], 2)
+        self.assertFalse(result["build_only_validation_passed"])
+        self.assertEqual(result["failure_class"], "patch_compile_link_failure")
+        self.assertIn("V3Options.h", result["failure_summary"])
+        self.assertIn("artifacts/", result["primary_log_path"])
+        self.assertFalse(gate["command_boundary_note"]["initial_full_sequence_wrapper_exit_code_accepted"])
+        self.assertIn("#endif", gate["root_cause_evidence"]["observed_bad_region"])
+        self.assertFalse(gate["acceptance_policy"]["verilator_build_success_claim_allowed"])
+        self.assertFalse(gate["acceptance_policy"]["parser_behavior_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            gate["required_next_gate"]["name"],
+            "define_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+        )
+        self.assertEqual(
+            gate["next_task"],
+            "define_verilator_native_option_parser_overlay_patch_compile_fix_gate",
         )
 
 

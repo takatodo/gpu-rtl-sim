@@ -55,9 +55,9 @@ def read_combined_docs(*paths: Path) -> str:
     return "\n".join(path.read_text(encoding="utf-8") for path in selected_paths)
 
 
-CURRENT_PRIORITY = "run_verilator_native_option_parser_overlay_patch_build_only_validation_gate"
+CURRENT_PRIORITY = "define_verilator_native_option_parser_overlay_patch_compile_fix_gate"
 CURRENT_PRIORITY_SOURCE_ARTIFACT = (
-    "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json"
+    "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json"
 )
 
 
