@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "gate": "implement_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
+  "status": "implemented_verilator_native_option_parser_overlay_patch_descriptor_apply_check_payload",
+  "objective": "Add the accepted repo-owned Verilator overlay patch descriptor and patch file, then validate the descriptor and patch applicability against the pinned upstream Verilator commit without claiming native parser support.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json",
+  "current_priority": "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_implementation_gate",
+  "implemented_payload": {
+    "descriptor_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+    "patch_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+    "descriptor_added_by_this_gate": true,
+    "patch_file_added_by_this_gate": true,
+    "vendored_verilator_source_added": false,
+    "third_party_verilator_submodule_added": false,
+    "public_cli_added": false,
+    "runtime_or_abi_changed": false
+  },
+  "upstream_verilator_ref": {
+    "repository_url": "https://github.com/verilator/verilator.git",
+    "selected_ref": "v5.048",
+    "selected_commit_kind": "peeled_release_tag_commit",
+    "selected_commit": "d0aa828c217410fffc73d92077b6f4f54830357c",
+    "observed_head_commit": "9455dddab4c477c0e33d364bea735c541f6ca982",
+    "observed_head_status": "not_selected_because_HEAD_moves"
+  },
+  "descriptor_contract": {
+    "required_descriptor_fields_present": [
+      "schema_version",
+      "descriptor_name",
+      "source_gate",
+      "descriptor_path",
+      "upstream_repository_url",
+      "upstream_ref",
+      "upstream_commit",
+      "patch_path",
+      "patch_file",
+      "allowed_touched_files",
+      "native_parser_option_surface",
+      "validation_cases_promoted_from_fixture",
+      "handoff_contract_ref",
+      "apply_check_command",
+      "expected_apply_check_exit_code",
+      "scope_exclusions",
+      "non_claims"
+    ],
+    "allowed_touched_files": [
+      "src/V3Options.h",
+      "src/V3Options.cpp"
+    ],
+    "allowed_first_patch_options": [
+      "--sim-accel sidecar-gpu",
+      "--sim-accel-states <positive integer>",
+      "--sim-accel-steps <positive integer>"
+    ],
+    "deferred_from_first_patch": [
+      "--sim-accel-shape <NxS>",
+      "--sim-accel-estimate-efficiency",
+      "src/V3OptionParser.h",
+      "src/V3OptionParser.cpp",
+      "src/VlcMain.cpp",
+      "docs/guide/exe_verilator.rst",
+      "test_regress/t/",
+      "source closure inference",
+      "resident mode selection",
+      "automatic GPU allocation"
+    ]
+  },
+  "patch_summary": {
+    "touched_upstream_files": [
+      "src/V3Options.h",
+      "src/V3Options.cpp"
+    ],
+    "added_storage": [
+      "m_simAccel",
+      "m_simAccelStates",
+      "m_simAccelSteps"
+    ],
+    "added_accessors": [
+      "simAccel()",
+      "simAccelStates()",
+      "simAccelSteps()"
+    ],
+    "added_option_registrations": [
+      "-sim-accel",
+      "-sim-accel-states",
+      "-sim-accel-steps"
+    ],
+    "registration_visibility": "undocumented_to_keep_docs_and_upstream_regression_files_out_of_first_patch_scope",
+    "added_notify_checks": [
+      "state/step options require --sim-accel sidecar-gpu",
+      "--sim-accel requires both --sim-accel-states and --sim-accel-steps"
+    ],
+    "excluded_upstream_files_verified_not_touched": [
+      "src/V3OptionParser.h",
+      "src/V3OptionParser.cpp",
+      "src/VlcMain.cpp",
+      "docs/guide/exe_verilator.rst",
+      "test_regress/t/"
+    ]
+  },
+  "verification": {
+    "descriptor_validation_command": "python3 -m json.tool overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json >/dev/null",
+    "descriptor_validation_exit_code": 0,
+    "apply_check_checkout_command_template": "git clone --filter=blob:none --no-checkout https://github.com/verilator/verilator.git \"$VERILATOR_CHECKOUT\" && git -C \"$VERILATOR_CHECKOUT\" checkout d0aa828c217410fffc73d92077b6f4f54830357c",
+    "apply_check_command": "git -C \"$VERILATOR_CHECKOUT\" apply --check \"$REPO_ROOT/overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch\"",
+    "apply_check_exit_code": 0,
+    "verification_scope": "descriptor JSON syntax and patch applicability only; no Verilator build, upstream regression, execution, or timing claim"
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_implementation_gate",
+    "must_decide": [
+      "whether the descriptor fields fully match the accepted review boundary",
+      "whether the patch touches only src/V3Options.h and src/V3Options.cpp",
+      "whether apply-check against the pinned Verilator commit is enough before any build/test gate",
+      "whether the next gate should add a build-only validation or keep native parser support claims deferred"
+    ],
+    "must_not_claim": [
+      "native Verilator parser support works",
+      "the patch has landed upstream",
+      "Verilator builds with this patch",
+      "Verilator upstream regression tests pass with this patch",
+      "arbitrary RTL or filelist support",
+      "automatic optimal GPU allocation",
+      "new execution or timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "descriptor_and_patch_file_implementation_only": true,
+    "descriptor_validation_passed": true,
+    "apply_check_passed": true,
+    "native_verilator_parser_support_claim_allowed_by_gate_alone": false,
+    "upstream_patch_landed_claim_allowed_by_gate_alone": false,
+    "verilator_build_success_claim_allowed_by_gate_alone": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_implementation_gate",
+  "non_claims": [
+    "not native Verilator parser support",
+    "not a landed upstream Verilator patch",
+    "not Verilator build success",
+    "not Verilator regression-test success",
+    "not new execution evidence",
+    "not new measurement evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput"
+  ]
+}

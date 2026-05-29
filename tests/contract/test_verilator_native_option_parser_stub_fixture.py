@@ -39,6 +39,26 @@ OVERLAY_PATCH_DESCRIPTOR_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json"
 )
+OVERLAY_PATCH_DESCRIPTOR_IMPLEMENTATION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "implement_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json"
+)
+OVERLAY_DESCRIPTOR_FILE = (
+    REPO_ROOT
+    / "overlays"
+    / "verilator"
+    / "patches"
+    / "verilator_native_option_parser_sidecar_gpu_v5_048.json"
+)
+OVERLAY_PATCH_FILE = (
+    REPO_ROOT
+    / "overlays"
+    / "verilator"
+    / "patches"
+    / "verilator_native_option_parser_sidecar_gpu_v5_048.patch"
+)
 
 
 sys.path.insert(0, str(TOOLS))
@@ -378,6 +398,66 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(
             review["next_task"],
             "implement_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
+        )
+
+    def test_overlay_patch_descriptor_and_patch_match_accepted_boundary(self) -> None:
+        descriptor = json.loads(OVERLAY_DESCRIPTOR_FILE.read_text(encoding="utf-8"))
+        patch_text = OVERLAY_PATCH_FILE.read_text(encoding="utf-8")
+
+        self.assertEqual(
+            descriptor["source_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json",
+        )
+        self.assertEqual(descriptor["upstream_ref"], "v5.048")
+        self.assertEqual(descriptor["upstream_commit"], "d0aa828c217410fffc73d92077b6f4f54830357c")
+        self.assertEqual(descriptor["upstream_commit_kind"], "peeled_release_tag_commit")
+        self.assertEqual(
+            descriptor["descriptor_path"],
+            "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+        )
+        self.assertEqual(
+            descriptor["patch_path"],
+            "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+        )
+        self.assertEqual(descriptor["allowed_touched_files"], ["src/V3Options.h", "src/V3Options.cpp"])
+        self.assertEqual(descriptor["native_parser_option_surface"]["registration_visibility"], "undocumented")
+        self.assertEqual(descriptor["patch_behavior"]["scope"], "parse_store_and_validate_only")
+        self.assertTrue(descriptor["patch_behavior"]["does_not_launch_sidecar_runtime"])
+        self.assertIn("src/V3OptionParser.cpp", descriptor["scope_exclusions"])
+        self.assertIn("not upstream build or regression-test evidence", descriptor["non_claims"])
+        self.assertIn("diff --git a/src/V3Options.cpp b/src/V3Options.cpp", patch_text)
+        self.assertIn("diff --git a/src/V3Options.h b/src/V3Options.h", patch_text)
+        self.assertIn('DECL_OPTION("-sim-accel"', patch_text)
+        self.assertIn('}).undocumented();', patch_text)
+        self.assertIn("m_simAccelStates", patch_text)
+        self.assertNotIn("diff --git a/src/V3OptionParser.cpp", patch_text)
+        self.assertNotIn("diff --git a/docs/guide/exe_verilator.rst", patch_text)
+
+    def test_overlay_patch_descriptor_apply_check_implementation_records_verification(self) -> None:
+        gate = json.loads(OVERLAY_PATCH_DESCRIPTOR_IMPLEMENTATION_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_implementation_gate",
+        )
+        payload = gate["implemented_payload"]
+        self.assertTrue(payload["descriptor_added_by_this_gate"])
+        self.assertTrue(payload["patch_file_added_by_this_gate"])
+        self.assertFalse(payload["vendored_verilator_source_added"])
+        self.assertFalse(payload["public_cli_added"])
+        self.assertEqual(gate["descriptor_contract"]["allowed_touched_files"], ["src/V3Options.h", "src/V3Options.cpp"])
+        self.assertEqual(gate["verification"]["descriptor_validation_exit_code"], 0)
+        self.assertEqual(gate["verification"]["apply_check_exit_code"], 0)
+        self.assertIn("patch applicability only", gate["verification"]["verification_scope"])
+        self.assertEqual(gate["patch_summary"]["registration_visibility"], "undocumented_to_keep_docs_and_upstream_regression_files_out_of_first_patch_scope")
+        self.assertFalse(gate["acceptance_policy"]["verilator_build_success_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            gate["next_task"],
+            "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_implementation_gate",
         )
 
 

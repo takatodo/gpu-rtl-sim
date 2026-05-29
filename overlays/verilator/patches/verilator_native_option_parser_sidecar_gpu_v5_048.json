@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "descriptor_name": "verilator_native_option_parser_sidecar_gpu_v5_048",
+  "source_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json",
+  "descriptor_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+  "upstream_repository_url": "https://github.com/verilator/verilator.git",
+  "upstream_ref": "v5.048",
+  "upstream_commit": "d0aa828c217410fffc73d92077b6f4f54830357c",
+  "upstream_commit_kind": "peeled_release_tag_commit",
+  "patch_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+  "patch_file": "verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+  "allowed_touched_files": [
+    "src/V3Options.h",
+    "src/V3Options.cpp"
+  ],
+  "native_parser_option_surface": {
+    "accepted_accelerators": [
+      "sidecar-gpu"
+    ],
+    "registration_visibility": "undocumented",
+    "accepted_options": [
+      "--sim-accel sidecar-gpu",
+      "--sim-accel-states <positive integer>",
+      "--sim-accel-steps <positive integer>"
+    ],
+    "deferred_options": [
+      "--sim-accel-shape <NxS>",
+      "--sim-accel-estimate-efficiency",
+      "--target",
+      "--stage",
+      "--emit-command",
+      "--emit-verilator-command",
+      "--print-verilator-command",
+      "--print-verilator-estimate-command",
+      "--print-efficiency-estimate",
+      "--print-operator-plan",
+      "--operator-plan-json",
+      "--sidecar-gpu"
+    ]
+  },
+  "validation_cases_promoted_from_fixture": [
+    "accept expanded --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1",
+    "reject unknown accelerator while preserving the unsupported value",
+    "reject missing state or step shape half",
+    "reject non-positive state or step counts",
+    "reject compact --sim-accel-shape alone as outside the first native patch minimum",
+    "reject mixed expanded and compact shape spelling with the compact-shape native-minimum error",
+    "preserve ordinary Verilator arguments, source files, and -f filelist inputs without source closure inference"
+  ],
+  "handoff_contract_ref": {
+    "module": "src/tools/verilator_native_option_parser_stub_fixture.py",
+    "entrypoint": "parse_verilator_native_option_stub",
+    "field_count": 18,
+    "correctness_policy": "coverage_output_equivalence"
+  },
+  "patch_behavior": {
+    "scope": "parse_store_and_validate_only",
+    "stores": [
+      "m_simAccel",
+      "m_simAccelStates",
+      "m_simAccelSteps"
+    ],
+    "accessors": [
+      "simAccel()",
+      "simAccelStates()",
+      "simAccelSteps()"
+    ],
+    "notify_checks": [
+      "state/step options require --sim-accel sidecar-gpu",
+      "--sim-accel requires both --sim-accel-states and --sim-accel-steps"
+    ],
+    "does_not_launch_sidecar_runtime": true
+  },
+  "apply_check_command": "git -C \"$VERILATOR_CHECKOUT\" apply --check \"$REPO_ROOT/overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch\"",
+  "expected_apply_check_exit_code": 0,
+  "descriptor_validation_command": "python3 -m json.tool \"$REPO_ROOT/overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json\" >/dev/null",
+  "scope_exclusions": [
+    "src/V3OptionParser.h",
+    "src/V3OptionParser.cpp",
+    "src/VlcMain.cpp",
+    "docs/guide/exe_verilator.rst",
+    "test_regress/t/",
+    "vendored Verilator source",
+    "third_party/verilator",
+    "source closure inference",
+    "resident mode selection",
+    "dataset-backed host preprocessing",
+    "automatic GPU allocation"
+  ],
+  "non_claims": [
+    "not a native Verilator parser support claim",
+    "not a landed upstream Verilator patch",
+    "not upstream build or regression-test evidence",
+    "not new execution evidence",
+    "not new measurement evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput"
+  ]
+}

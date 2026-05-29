@@ -1,0 +1,55 @@
+diff --git a/src/V3Options.cpp b/src/V3Options.cpp
+index 6736434f..48f4c540 100644
+--- a/src/V3Options.cpp
++++ b/src/V3Options.cpp
+@@ -955,0 +956,12 @@ void V3Options::notify() VL_MT_DISABLED {
++    const bool hasSimAccel = !m_simAccel.empty();
++    const bool hasSimAccelStates = m_simAccelStates > 0;
++    const bool hasSimAccelSteps = m_simAccelSteps > 0;
++    if (hasSimAccel || hasSimAccelStates || hasSimAccelSteps) {
++        if (!hasSimAccel) {
++            cmdfl->v3error("--sim-accel-states/--sim-accel-steps require --sim-accel sidecar-gpu");
++        }
++        if (!hasSimAccelStates || !hasSimAccelSteps) {
++            cmdfl->v3error("--sim-accel requires both --sim-accel-states and --sim-accel-steps");
++        }
++    }
++
+@@ -1191,0 +1204,8 @@ void V3Options::parseOptsList(FileLine* fl, const string& optdir, int argc,
++    const auto parsePositiveSimAccelCount = [fl](const char* optp, const char* valp) {
++        int val = std::atoi(valp);
++        if (val <= 0) {
++            fl->v3error(optp << " requires a positive integer, but '" << valp << "' was passed");
++            val = 1;
++        }
++        return val;
++    };
+@@ -1727,0 +1748,14 @@ void V3Options::parseOptsList(FileLine* fl, const string& optdir, int argc,
++    DECL_OPTION("-sim-accel", CbVal, [this, fl](const char* valp) {
++        if (std::strcmp(valp, "sidecar-gpu")) {
++            fl->v3error("Unknown setting for --sim-accel: '"
++                        << valp << "'\n"
++                        << fl->warnMore() << "... Suggest 'sidecar-gpu'");
++        }
++        m_simAccel = valp;
++    }).undocumented();
++    DECL_OPTION("-sim-accel-states", CbVal, [this, &parsePositiveSimAccelCount](const char* valp) {
++        m_simAccelStates = parsePositiveSimAccelCount("--sim-accel-states", valp);
++    }).undocumented();
++    DECL_OPTION("-sim-accel-steps", CbVal, [this, &parsePositiveSimAccelCount](const char* valp) {
++        m_simAccelSteps = parsePositiveSimAccelCount("--sim-accel-steps", valp);
++    }).undocumented();
+diff --git a/src/V3Options.h b/src/V3Options.h
+index 127142f6..84241211 100644
+--- a/src/V3Options.h
++++ b/src/V3Options.h
+@@ -359,0 +360,2 @@ private:
++    int         m_simAccelStates = 0;  // main switch: --sim-accel-states
++    int         m_simAccelSteps = 0;  // main switch: --sim-accel-steps
+@@ -378,0 +381 @@ private:
++    string      m_simAccel;     // main switch: --sim-accel
+@@ -607,0 +611 @@ public:
++    string simAccel() const { return m_simAccel; }
+@@ -657,0 +662,2 @@ public:
++    int simAccelStates() const { return m_simAccelStates; }
++    int simAccelSteps() const { return m_simAccelSteps; }
