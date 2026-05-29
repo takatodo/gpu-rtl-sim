@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate",
+  "objective": "Refresh the public results packaging after reviewing the policy-selected 64x1 filelist repeat-median timing result.",
+  "status": "defined_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median",
+  "source_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json",
+  "source_measurement_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_measurement_gate.json",
+  "source_dry_run_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_dry_run_review_gate.json",
+  "source_workflow_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_workflow_gate.json",
+  "source_boundary_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_timing_gate.json",
+  "selected_workstream": "public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median",
+  "results_doc": "docs/results.md",
+  "summary_report": "reports/filelist_broader_policy_repeat_median_summary.json",
+  "evidence_summary": {
+    "correctness_policy": "coverage_output_equivalence",
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "repeat_count": 3,
+    "total_sample_count": 6,
+    "targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "shapes": [
+      "64x1"
+    ],
+    "summary_report": "reports/filelist_broader_policy_repeat_median_summary.json",
+    "review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json",
+    "measurement_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_measurement_gate.json",
+    "state_parallel_wall_ratio_range_median": [
+      139.77687626774846,
+      145.7001090512541
+    ],
+    "state_parallel_kernel_ratio_range_median": [
+      144.56481605800215,
+      150.49087190023067
+    ],
+    "timing_reports": [
+      {
+        "target": "filelist_paged_attention_kv_score",
+        "shape": "64x1",
+        "interpretation": "policy-selected state-parallel attention-score filelist-derived template",
+        "cpu_elapsed_ms_median": 133.607,
+        "hybrid_wall_ms_median": 0.917,
+        "hybrid_gpu_kernel_total_ms_median": 0.887808,
+        "cpu_to_hybrid_wall_ratio_median": 145.7001090512541,
+        "cpu_to_hybrid_kernel_ratio_median": 150.49087190023067,
+        "coverage_output_mismatch_count": 0,
+        "median_report": "reports/filelist_broader_policy_repeat_filelist_paged_attention_kv_score_64x1_median.json"
+      },
+      {
+        "target": "filelist_known_template_pulp_ita_mha",
+        "shape": "64x1",
+        "interpretation": "policy-selected state-parallel full ITA/MHA filelist-derived template",
+        "cpu_elapsed_ms_median": 137.82,
+        "hybrid_wall_ms_median": 0.986,
+        "hybrid_gpu_kernel_total_ms_median": 0.953344,
+        "cpu_to_hybrid_wall_ratio_median": 139.77687626774846,
+        "cpu_to_hybrid_kernel_ratio_median": 144.56481605800215,
+        "coverage_output_mismatch_count": 0,
+        "median_report": "reports/filelist_broader_policy_repeat_filelist_known_template_pulp_ita_mha_64x1_median.json"
+      }
+    ],
+    "excluded_public_pack_evidence": [
+      "per-sample hybrid stdout .txt reports may contain local paths",
+      "raw state dumps and artifacts remain generated output only"
+    ]
+  },
+  "refresh_scope": [
+    "keep docs/results.md aligned with the reviewed policy-selected filelist repeat-median evidence",
+    "keep README.md, docs/status.md, docs/roadmap.md, and config/selection.json aligned",
+    "include the boundary, workflow, dry-run review, measurement, review, and refresh definition gates in the public-pack manifest",
+    "reference reports/filelist_broader_policy_repeat_median_summary.json and the two median reports as generated evidence only",
+    "exclude per-sample stdout reports from public-pack evidence because they can contain local absolute paths",
+    "keep repeat-count 3 as a scoped stability check rather than paper-grade statistics",
+    "keep the measurement scoped to the exact two policy-selected filelist-derived targets and 64x1 shape",
+    "do not add a new measurement",
+    "do not change runtime or ABI behavior",
+    "do not derive automatic GPU allocation policy from this gate alone"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "public_pack_archive_dry_run_required": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "per_sample_stdout_reports_claim_allowed_by_this_gate": false,
+    "repeat_count": 3,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "contract_tests_required": true
+  },
+  "next_task": "run_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not broad speedup evidence",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not production LLM-serving throughput",
+    "not public-pack evidence for per-sample stdout reports with local paths",
+    "not raw full-state equality",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

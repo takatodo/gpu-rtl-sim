@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate",
+  "status": "selected_native_verilator_option_prototype_boundary_next",
+  "objective": "Select the next measured workstream after closing the policy-selected filelist repeat-median public-pack externalization boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json",
+  "current_priority": "define_verilator_native_option_prototype_boundary_gate",
+  "decision": {
+    "selected_next_workstream": "verilator_native_option_prototype_boundary",
+    "selected_first_gate": "define_verilator_native_option_prototype_boundary_gate",
+    "reason": "The sidecar workflow now has scoped filelist-derived correctness, timing, policy-selected 64x1 repeat-median evidence, and public-pack closure. The next useful gap is defining the smallest native-Verilator-option prototype boundary that can reuse this sidecar evidence without claiming arbitrary RTL support, hidden dependency inference, or automatic optimal GPU allocation."
+  },
+  "accepted_evidence": {
+    "source_policy_measurement_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_measurement_gate.json",
+    "source_policy_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json",
+    "source_public_pack_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json",
+    "reviewed_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "selected_shape": "64x1",
+    "fallback_shape": "32x1",
+    "fallback_executed": false,
+    "single_state_repeated_shape_measured": false,
+    "repeat_count": 3,
+    "total_sample_count": 6,
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "max_coverage_output_mismatch_count": 0,
+    "state_parallel_wall_ratio_range_median": [
+      139.77687626774846,
+      145.7001090512541
+    ],
+    "raw_full_state_equality_required": false
+  },
+  "candidate_review": [
+    {
+      "candidate": "verilator_native_option_prototype_boundary",
+      "decision": "selected",
+      "reason": "It directly addresses the operator goal of making hybrid execution as simple as a Verilator option while keeping the first prototype explicitly scoped to reviewed sidecar inputs."
+    },
+    {
+      "candidate": "automatic_gpu_allocation_policy_broadening",
+      "decision": "defer",
+      "reason": "The policy-selected repeat-median result covers two reviewed filelist-derived targets at 64x1; it is not enough to claim automatic optimum selection for arbitrary filelists."
+    },
+    {
+      "candidate": "filelist_dependency_inference_policy",
+      "decision": "defer",
+      "reason": "Dependency inference is an input-closure problem and should not be hidden behind a native-option prototype."
+    },
+    {
+      "candidate": "resident_execution_optimization",
+      "decision": "defer",
+      "reason": "Resident execution targets repeated-step weakness, while the selected policy evidence is state-parallel 64x1."
+    },
+    {
+      "candidate": "gem_comparison_boundary",
+      "decision": "defer",
+      "reason": "GEM comparison should wait until the user-facing option boundary is explicit enough to compare fairly."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_verilator_native_option_prototype_boundary_gate",
+    "must_pin": [
+      "the minimal CLI spelling to prototype, such as a Verilator-facing --sim-accel option form",
+      "which parts remain sidecar-generated versus Verilator-native",
+      "the reviewed filelist-derived targets and explicit 64x1 policy-selected shape",
+      "the required explicit inputs that cannot yet be inferred from arbitrary filelists",
+      "how the prototype reuses existing run_hybrid_benchmark.py and verilator_sidecar_shim.py evidence",
+      "dry-run and plan-only behavior before execution",
+      "coverage_output_equivalence as the later correctness policy",
+      "generated reports and artifacts remain non-canonical",
+      "runtime and ABI non-change policy unless a later implementation gate explicitly changes it",
+      "explicit non-claims for arbitrary RTL, automatic optimal GPU allocation, and production LLM serving"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "raw_full_state_equality_required": false,
+    "repeat_median_claim_carried_from_review": true,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_verilator_native_option_prototype_boundary_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not new execution evidence",
+    "not broad speedup evidence beyond the scoped repeat-count-3 result",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support yet",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not production LLM-serving throughput",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

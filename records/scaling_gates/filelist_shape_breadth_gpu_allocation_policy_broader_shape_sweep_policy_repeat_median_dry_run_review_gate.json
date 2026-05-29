@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_dry_run_review_gate",
+  "status": "accepted_policy_selected_filelist_repeat_median_dry_run",
+  "objective": "Review and accept the dry-run for the policy-selected broader filelist repeat-median workflow before non-dry-run measurement.",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_timing_gate.json",
+  "source_workflow_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_workflow_gate.json",
+  "source_result_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_dry_run_result_gate.json",
+  "current_priority": "run_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_timing_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The dry-run expands exactly two policy-selected 64x1 filelist workloads into three samples each, emits six compare commands, contains no 1x64 commands, writes no files, and uses repo-relative paths.",
+    "accepted_scope": "dry-run plan for two broader-policy-selected 64x1 filelist repeat-median workloads",
+    "weakest_point": "The gate proves only the public workflow plan. It does not execute the samples, produce timing, or establish a repeat-median result."
+  },
+  "accepted_result": {
+    "command": "python3 src/tools/run_results_reproduction.py --filelist-broader-policy-repeat-median 3 --dry-run",
+    "exit_code": 0,
+    "target_count": 2,
+    "shape": "64x1",
+    "repeat_count": 3,
+    "total_sample_count": 6,
+    "compare_command_count": 6,
+    "state_parallel_command_count": 6,
+    "single_state_repeated_command_count": 0,
+    "writes_files": false,
+    "summary_report": "reports/filelist_broader_policy_repeat_median_summary.json"
+  },
+  "required_next_gate": {
+    "name": "filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_measurement_gate",
+    "must_pin": [
+      "the same two filelist-derived targets",
+      "64x1 as the only measured shape",
+      "repeat count 3 and total sample count 6",
+      "coverage_output_equivalence for every sample",
+      "raw full-state equality remains diagnostic only",
+      "reports and artifacts remain generated evidence rather than source of truth",
+      "no native Verilator option, arbitrary RTL, arbitrary dependency inference, automatic optimal allocation, GEM, or production-serving claims"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_family_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_measurement": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "repeat_median_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_timing_gate",
+  "non_claims": [
+    "not a measurement result",
+    "not new execution evidence",
+    "not repeat-median timing evidence yet",
+    "not broad speedup evidence",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload family",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

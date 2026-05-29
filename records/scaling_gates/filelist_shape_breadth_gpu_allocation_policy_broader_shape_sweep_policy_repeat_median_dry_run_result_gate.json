@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_dry_run_result_gate",
+  "status": "passed_policy_selected_filelist_repeat_median_dry_run",
+  "objective": "Record the dry-run output for the policy-selected broader filelist repeat-median workflow.",
+  "source_workflow_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_workflow_gate.json",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_timing_gate.json",
+  "current_priority": "review_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_dry_run_gate",
+  "executed_command": {
+    "command": "python3 src/tools/run_results_reproduction.py --filelist-broader-policy-repeat-median 3 --dry-run",
+    "exit_code": 0,
+    "stdout_line_count": 21,
+    "local_absolute_paths_in_stdout": false,
+    "writes_files": false
+  },
+  "observed_dry_run_contract": {
+    "target_count": 2,
+    "shape": "64x1",
+    "repeat_count": 3,
+    "total_sample_count": 6,
+    "compare_command_count": 6,
+    "state_parallel_command_count": 6,
+    "single_state_repeated_command_count": 0,
+    "summary_write_plan_present": true,
+    "summary_report": "reports/filelist_broader_policy_repeat_median_summary.json",
+    "median_reports": [
+      "reports/filelist_broader_policy_repeat_filelist_paged_attention_kv_score_64x1_median.json",
+      "reports/filelist_broader_policy_repeat_filelist_known_template_pulp_ita_mha_64x1_median.json"
+    ],
+    "planned_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "forbidden_shape_absent": "1x64"
+  },
+  "acceptance_policy": {
+    "dry_run_only": true,
+    "command_exit_zero": true,
+    "generated_reports_or_artifacts_written": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_family_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_result": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "repeat_median_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_dry_run_gate",
+  "non_claims": [
+    "not a measurement result",
+    "not new execution evidence",
+    "not repeat-median timing evidence yet",
+    "not broad speedup evidence",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload family",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

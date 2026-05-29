@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "gate": "public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate",
+  "status": "complete_public_benchmark_pack_externalization_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median",
+  "objective": "Close the public benchmark pack externalization boundary after the policy-selected filelist repeat-median timing refresh.",
+  "completed_priority": "define_public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate",
+  "source_refresh_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json",
+  "source_refresh_result_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_result_gate.json",
+  "source_refresh_review_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json",
+  "source_boundary_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_timing_gate.json",
+  "source_workflow_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_workflow_gate.json",
+  "source_dry_run_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_dry_run_review_gate.json",
+  "source_measurement_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_measurement_gate.json",
+  "source_measurement_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json",
+  "decision": {
+    "externalization_boundary_complete": true,
+    "reason": "The public-pack dry-run and review include the policy-selected repeat-median boundary, workflow, dry-run review, measurement, review, public refresh records, source-of-truth docs, compact selection pointers, verification command pointer, and generated aggregate/median report paths while keeping reports and artifacts non-canonical."
+  },
+  "closed_scope": {
+    "targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "shapes": [
+      "64x1"
+    ],
+    "selected_policy_shape": "64x1",
+    "fallback_shape": "32x1",
+    "fallback_executed": false,
+    "single_state_repeated_shape_measured": false,
+    "shape_count": 1,
+    "repeat_count": 3,
+    "total_sample_count": 6,
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "max_coverage_output_mismatch_count": 0,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "state_parallel_wall_ratio_range_median": [
+      139.77687626774846,
+      145.7001090512541
+    ],
+    "state_parallel_kernel_ratio_range_median": [
+      144.56481605800215,
+      150.49087190023067
+    ],
+    "raw_full_state_equality_required": false,
+    "summary_report": "reports/filelist_broader_policy_repeat_median_summary.json",
+    "median_reports": [
+      "reports/filelist_broader_policy_repeat_filelist_paged_attention_kv_score_64x1_median.json",
+      "reports/filelist_broader_policy_repeat_filelist_known_template_pulp_ita_mha_64x1_median.json"
+    ],
+    "excluded_public_pack_evidence": [
+      "per-sample stdout reports can contain local paths",
+      "raw state dumps and artifacts remain generated output only"
+    ],
+    "public_pack_refresh_review": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json"
+  },
+  "acceptance_policy": {
+    "completion_only": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "per_sample_stdout_reports_claim_allowed_by_this_gate": false,
+    "raw_full_state_equality_required": false,
+    "repeat_median_claim_carried_from_review": true,
+    "repeat_count": 3,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "select_next_measurement_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh",
+  "candidate_next_measurement_options": [
+    "native_verilator_option_prototype_boundary",
+    "automatic_gpu_allocation_policy_broadening",
+    "filelist_dependency_inference_policy",
+    "resident_execution_optimization",
+    "gem_comparison_boundary",
+    "publish_results_pack_cleanup"
+  ],
+  "non_claims": [
+    "not a new measurement result",
+    "not new execution evidence beyond the reviewed policy-selected repeat-median result",
+    "not broad speedup evidence beyond the scoped repeat-count-3 result",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not production LLM-serving throughput",
+    "not public-pack evidence for per-sample stdout reports with local paths",
+    "not model-level Transformer inference",
+    "not raw full-state equality",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

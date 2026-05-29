@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_workflow_gate",
+  "status": "added_policy_selected_filelist_repeat_median_workflow_pending_dry_run",
+  "objective": "Add the public repeat-median workflow for exactly the two broader-policy-selected 64x1 filelist commands.",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_timing_gate.json",
+  "current_priority": "run_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_dry_run_gate",
+  "public_interface": {
+    "cli": "src/tools/run_results_reproduction.py",
+    "dry_run_command": "python3 src/tools/run_results_reproduction.py --filelist-broader-policy-repeat-median 3 --dry-run",
+    "measurement_command": "python3 src/tools/run_results_reproduction.py --filelist-broader-policy-repeat-median 3",
+    "dry_run_writes_files": false,
+    "non_dry_run_writes_reports_and_artifacts": true,
+    "summary_report": "reports/filelist_broader_policy_repeat_median_summary.json"
+  },
+  "workflow_scope": {
+    "target_count": 2,
+    "shape": "64x1",
+    "repeat_count": 3,
+    "total_sample_count": 6,
+    "selected_policy_shape": "64x1",
+    "fallback_shape": "32x1",
+    "fallback_executed": false,
+    "correctness_policy": "coverage_output_equivalence",
+    "raw_full_state_equality_required": false,
+    "targets": [
+      {
+        "target": "filelist_paged_attention_kv_score",
+        "template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+        "shape": "64x1",
+        "median_report": "reports/filelist_broader_policy_repeat_filelist_paged_attention_kv_score_64x1_median.json"
+      },
+      {
+        "target": "filelist_known_template_pulp_ita_mha",
+        "template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+        "shape": "64x1",
+        "median_report": "reports/filelist_broader_policy_repeat_filelist_known_template_pulp_ita_mha_64x1_median.json"
+      }
+    ]
+  },
+  "implementation": {
+    "cli_argument": "--filelist-broader-policy-repeat-median",
+    "shared_dispatch": "src/tools/results_reproduction_median_dispatch.py",
+    "workload_definition": "src/tools/results_reproduction_workloads.py:filelist_broader_policy_repeat_median_workloads",
+    "keeps_cli_thin": true,
+    "uses_existing_repeat_median_core": true,
+    "does_not_add_one_off_script": true
+  },
+  "acceptance_policy": {
+    "workflow_change_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_family_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_result": true,
+    "all_repeat_samples_must_pass_coverage_output_equivalence": true,
+    "repeat_count_required_for_later_measurement": 3,
+    "required_target_count": 2,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "repeat_median_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_dry_run_gate",
+  "non_claims": [
+    "not a measurement result",
+    "not new execution evidence",
+    "not repeat-median timing evidence yet",
+    "not broad speedup evidence",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload family",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

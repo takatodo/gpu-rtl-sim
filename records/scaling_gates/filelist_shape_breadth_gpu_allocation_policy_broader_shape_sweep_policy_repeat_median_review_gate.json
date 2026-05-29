@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate",
+  "objective": "Review policy-selected 64x1 filelist repeat-median timing before refreshing the public results pack.",
+  "status": "reviewed_policy_selected_filelist_repeat_median_select_public_pack_refresh",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_timing_gate.json",
+  "source_workflow_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_workflow_gate.json",
+  "source_dry_run_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_dry_run_review_gate.json",
+  "source_measurement_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_measurement_gate.json",
+  "reviewed_summary_report": "reports/filelist_broader_policy_repeat_median_summary.json",
+  "current_priority": "define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate",
+  "review_result": {
+    "decision": "accept_measurement_for_scoped_result_pack",
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "repeat_count": 3,
+    "total_sample_count": 6,
+    "targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "shapes": [
+      "64x1"
+    ],
+    "state_parallel_wall_ratio_range_median": [
+      139.77687626774846,
+      145.7001090512541
+    ],
+    "state_parallel_kernel_ratio_range_median": [
+      144.56481605800215,
+      150.49087190023067
+    ],
+    "interpretation": "The accepted scope is exactly the two broader-policy-selected filelist-derived 64x1 workloads. The result supports packaging that scoped repeat-median evidence, but it does not prove automatic GPU allocation for arbitrary filelists."
+  },
+  "weak_points": [
+    "repeat-count 3 is a stability check, not paper-grade statistics",
+    "only two reviewed filelist-derived targets are covered",
+    "only the policy-selected 64x1 shape is measured here; the non-selected 1x64 contrast is available only in earlier broader-shape evidence",
+    "the result does not infer an optimal allocation policy for arbitrary RTL or arbitrary filelists",
+    "per-sample hybrid stdout .txt reports can contain local paths, so public-pack evidence must stay limited to aggregate and median JSON reports",
+    "generated reports are evidence only, not source of truth"
+  ],
+  "options_reviewed": [
+    {
+      "option": "public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median",
+      "decision": "select_next",
+      "reason": "The scoped policy-selected repeat-median measurement is complete and should be closed into the public pack before deriving broader allocation claims."
+    },
+    {
+      "option": "automatic_gpu_allocation_policy",
+      "decision": "defer",
+      "reason": "The measurement supports only the scoped policy-selected 64x1 result, not an arbitrary-filelist optimal policy."
+    },
+    {
+      "option": "native_verilator_option_surface",
+      "decision": "defer",
+      "reason": "The evidence uses the existing sidecar-style workflow and does not implement a native Verilator option."
+    },
+    {
+      "option": "additional_targets_or_shapes",
+      "decision": "defer",
+      "reason": "Adding scope now would postpone packaging of the accepted policy-selected repeat-median result."
+    }
+  ],
+  "selected_next_workstream": {
+    "name": "public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median",
+    "next_gate": "public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate",
+    "next_task": "define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate"
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "per_sample_stdout_reports_claim_allowed_by_this_gate": false,
+    "repeat_median_claim_allowed_for_exact_scope": true,
+    "broad_speedup_claim_allowed_by_this_gate": false,
+    "native_verilator_option_claim_allowed_by_this_gate": false,
+    "arbitrary_rtl_support_claim_allowed_by_this_gate": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_this_gate": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_this_gate": false,
+    "gem_comparison_claim_allowed_by_this_gate": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "public_pack_refresh_required_before_next_measurement": true
+  },
+  "next_task": "define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not broad speedup evidence",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not production LLM-serving throughput",
+    "not public-pack evidence for per-sample stdout reports with local paths",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
