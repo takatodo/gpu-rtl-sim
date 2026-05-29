@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_boundary_gate",
+  "status": "accepted_verilator_native_option_parser_boundary_definition",
+  "objective": "Review the native Verilator option-parser boundary definition before allowing any non-executing dry-run check or parser implementation work.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_boundary_gate.json",
+  "current_priority": "run_verilator_native_option_parser_boundary_dry_run_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The definition keeps the native boundary parser-only and no-execution, uses the expanded Verilator-facing spelling as the minimum, leaves wrapper/shim convenience behavior outside the native parser, and preserves coverage_output_equivalence as the later correctness policy.",
+    "weakest_point": "There is still no Verilator source tree or parser patch in this repository. Current support is wrapper/shim planning plus two static tracked filelist-template registry targets, so the next gate may only dry-run the handoff contract and must not claim native Verilator parser support."
+  },
+  "accepted_scope": {
+    "selected_surface": "native_verilator_option_parser_to_sidecar_plan_contract",
+    "native_minimum_options": [
+      "--sim-accel sidecar-gpu",
+      "--sim-accel-states <N>",
+      "--sim-accel-steps <S>"
+    ],
+    "optional_estimate_option": "--sim-accel-estimate-efficiency",
+    "wrapper_compatibility_only": [
+      "--sim-accel-shape <NxS>",
+      "--target",
+      "--stage",
+      "--emit-command",
+      "--emit-verilator-command",
+      "--print-verilator-command",
+      "--print-verilator-estimate-command",
+      "--print-efficiency-estimate",
+      "--print-operator-plan",
+      "--operator-plan-json",
+      "--sidecar-gpu"
+    ],
+    "ready_static_filelist_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "required_handoff_fields_accepted": [
+      "Verilator mdir",
+      "top module",
+      "source files or explicit filelist inputs",
+      "Verilator args and defines",
+      "coverage overlay or coverage top boundary",
+      "coverage manifest scope and compared output words",
+      "host-probe build metadata",
+      "init state path",
+      "reference state path",
+      "candidate state path",
+      "compare report path or deterministic naming rule",
+      "correctness policy set to coverage_output_equivalence"
+    ],
+    "native_verilator_parser_status": "not_implemented",
+    "parser_infers_handoff_fields": false,
+    "runtime_or_abi_changed": false,
+    "new_measurement_added": false,
+    "new_execution_added": false
+  },
+  "validated_definition_decisions": {
+    "parser_only_boundary": true,
+    "no_execution_until_review": true,
+    "expanded_spelling_is_native_minimum": true,
+    "compact_shape_spelling_stays_wrapper_compatibility": true,
+    "wrapper_print_modes_stay_out_of_native_parser": true,
+    "resident_modes_stay_out_of_direct_native_handoff": true,
+    "dataset_backed_flows_stay_out_of_direct_native_handoff": true,
+    "arbitrary_filelist_dependency_inference_stays_out_of_scope": true,
+    "automatic_optimal_gpu_allocation_stays_out_of_scope": true
+  },
+  "required_next_gate": {
+    "name": "run_verilator_native_option_parser_boundary_dry_run_gate",
+    "must_record": [
+      "non-executing dry-run or preview commands only",
+      "the expanded future-Verilator spelling normalizes to shape 64x1 for the two static tracked filelist-derived targets",
+      "the synthesized command keeps ordinary Verilator build inputs visible and appends --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1",
+      "the estimate command keeps --sim-accel-estimate-efficiency separate from the command-only preview",
+      "the handoff contract exposes mdir, top module, source boundary, state files, compare report path, and coverage_output_equivalence",
+      "invalid accelerator names, missing states/steps halves, non-positive counts, and mixed shape spellings are rejected by the shared compatibility mapper",
+      "resident modes and dataset-backed targets remain not-ready for the direct native-parser handoff",
+      "no generated report or artifact is treated as source of truth",
+      "no native Verilator parser support, arbitrary RTL support, dependency inference, automatic optimal GPU allocation, or timing claim is made"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "definition_accepted": true,
+    "non_executing_dry_run_allowed_next": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "native_verilator_parser_implementation_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_verilator_native_option_parser_boundary_dry_run_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not a Verilator source patch",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not parser inference of coverage manifests, host-probe metadata, source closure, state paths, or report paths",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not a new public CLI or workflow",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

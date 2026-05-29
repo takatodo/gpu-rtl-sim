@@ -3,7 +3,7 @@
   "objective": "LLM serving に近い RTL workload を、Verilator に近い簡単さで hybrid 実行し、正しさ・速度傾向・再現手順を公開可能な benchmark pack として維持する",
   "status": "complete_public_benchmark_pack_current_revision",
   "source_packaging_gate": "config/scaling_gates/public_results_packaging_gate.json",
-  "current_priority": "review_verilator_native_option_parser_boundary_gate",
+  "current_priority": "run_verilator_native_option_parser_boundary_dry_run_gate",
   "success_criteria": [
     "LLM-serving-like RTL workloads are represented by MHA, paged-attention KV-score, paged KV-cache, resident decode, resident batch-decode, file-boundary state reuse, process-scoped persistent resident ABI evidence, and MobileViT CPU-kick ImageNet limit-128 hybrid control-boundary evidence",
     "hybrid execution is exposed through Verilator-like public entrypoints and generated-template flows",
@@ -278,7 +278,7 @@
     "achieved": true,
     "reason": "The current revision has a public results document, reproduction entrypoints, public dry-run smoke commands, public release checklist, public archive dry-run plan, correctness policy, speed evidence, persistent resident ABI evidence, MobileViT limit-128 CPU-kick plus hybrid control-boundary evidence, wrapper summary schema publication, public pack manifest and prerequisites, local absolute path sanitization for wrapper summaries, non-claims, source-of-truth alignment, and contract-test coverage for the benchmark pack objective."
   },
-  "next_task": "review_verilator_native_option_parser_boundary_gate",
-  "source_packaging_gate_status": "defined_verilator_native_option_parser_boundary_select_review",
-  "current_priority_source_artifact": "config/scaling_gates/define_verilator_native_option_parser_boundary_gate.json"
+  "next_task": "run_verilator_native_option_parser_boundary_dry_run_gate",
+  "source_packaging_gate_status": "accepted_verilator_native_option_parser_boundary_definition",
+  "current_priority_source_artifact": "config/scaling_gates/review_verilator_native_option_parser_boundary_gate.json"
 }

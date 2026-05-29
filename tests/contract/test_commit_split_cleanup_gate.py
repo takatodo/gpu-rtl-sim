@@ -12,6 +12,9 @@ COMPLETION_GATE = REPO_ROOT / "config" / "scaling_gates" / "execute_commit_split
 PARSER_BOUNDARY_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "define_verilator_native_option_parser_boundary_gate.json"
 )
+PARSER_BOUNDARY_REVIEW_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "review_verilator_native_option_parser_boundary_gate.json"
+)
 SELECTION = REPO_ROOT / "config" / "selection.json"
 TOOLS = REPO_ROOT / "src" / "tools"
 REGISTRY_NEXT_SELECTION_GATE = (
@@ -37,6 +40,9 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
 
     def read_parser_boundary_gate(self) -> dict[str, object]:
         return json.loads(PARSER_BOUNDARY_GATE.read_text(encoding="utf-8"))
+
+    def read_parser_boundary_review_gate(self) -> dict[str, object]:
+        return json.loads(PARSER_BOUNDARY_REVIEW_GATE.read_text(encoding="utf-8"))
 
     def test_registry_next_selection_gate_chooses_commit_split_cleanup(self) -> None:
         selection = json.loads(REGISTRY_NEXT_SELECTION_GATE.read_text(encoding="utf-8"))
@@ -146,12 +152,12 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         self.assertFalse(completion["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
         self.assertFalse(completion["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
         self.assertFalse(completion["acceptance_policy"]["new_execution_allowed_by_this_gate"])
-        self.assertEqual(selection["current_priority"], "review_verilator_native_option_parser_boundary_gate")
+        self.assertEqual(selection["current_priority"], "run_verilator_native_option_parser_boundary_dry_run_gate")
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/define_verilator_native_option_parser_boundary_gate.json",
+            "config/scaling_gates/review_verilator_native_option_parser_boundary_gate.json",
         )
-        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 804)
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 805)
 
     def test_parser_boundary_definition_keeps_native_scope_parser_only(self) -> None:
         gate = self.read_parser_boundary_gate()
@@ -178,6 +184,29 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         self.assertFalse(gate["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
         self.assertEqual(gate["required_next_gate"]["name"], "review_verilator_native_option_parser_boundary_gate")
 
+    def test_parser_boundary_review_accepts_no_execution_definition(self) -> None:
+        review = self.read_parser_boundary_review_gate()
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_boundary_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("no Verilator source tree", review["review_decision"]["weakest_point"])
+        self.assertEqual(review["current_priority"], "run_verilator_native_option_parser_boundary_dry_run_gate")
+        self.assertEqual(review["required_next_gate"]["name"], "run_verilator_native_option_parser_boundary_dry_run_gate")
+        self.assertTrue(review["validated_definition_decisions"]["parser_only_boundary"])
+        self.assertTrue(review["validated_definition_decisions"]["expanded_spelling_is_native_minimum"])
+        self.assertTrue(review["validated_definition_decisions"]["compact_shape_spelling_stays_wrapper_compatibility"])
+        self.assertFalse(review["accepted_scope"]["parser_infers_handoff_fields"])
+        self.assertFalse(review["accepted_scope"]["runtime_or_abi_changed"])
+        self.assertFalse(review["accepted_scope"]["new_execution_added"])
+        self.assertFalse(review["accepted_scope"]["new_measurement_added"])
+        self.assertIn("not parser inference of coverage manifests, host-probe metadata, source closure, state paths, or report paths", review["non_claims"])
+        self.assertFalse(review["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
+        self.assertFalse(review["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+        self.assertFalse(review["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
+
     def test_public_pack_manifest_includes_definition_gate(self) -> None:
         sys.path.insert(0, str(TOOLS))
         try:
@@ -203,6 +232,10 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         )
         self.assertIn(
             "records/scaling_gates/define_verilator_native_option_parser_boundary_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/review_verilator_native_option_parser_boundary_gate.json",
             PUBLIC_PACK_ARCHIVE_PATHS,
         )
 
