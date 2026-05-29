@@ -88,6 +88,45 @@ class HybridSimAccelShapeCliTest(HybridCliTestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("use --print-verilator-estimate-command", result.stderr)
 
+    def test_shim_rejects_nonpositive_state_count_through_shared_mapper(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "filelist_paged_attention_kv_score",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "0",
+            "--sim-accel-steps",
+            "1",
+            "--emit-verilator-command",
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 1)
+        payload = json.loads(result.stderr)
+        self.assertEqual(payload["status"], "error")
+        self.assertIn("--sim-accel-states must be a positive integer", payload["error"])
+
+    def test_shim_invalid_accelerator_name_is_argparse_choice_rejection(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/verilator_sidecar_shim.py",
+            "--target",
+            "filelist_paged_attention_kv_score",
+            "--sim-accel",
+            "cuda",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+            "--emit-verilator-command",
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("invalid choice", result.stderr)
+        self.assertEqual(result.stdout, "")
+
     def test_summary_records_sim_accel_shape_as_compat_entrypoint(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             summary_path = Path(tmpdir) / "summary.json"

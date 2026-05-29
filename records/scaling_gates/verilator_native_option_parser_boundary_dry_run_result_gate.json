@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_native_option_parser_boundary_dry_run_result_gate",
+  "status": "passed_verilator_native_option_parser_boundary_dry_run",
+  "objective": "Record the non-executing dry-run result for the reviewed native Verilator option parser boundary without claiming native Verilator parser support, arbitrary RTL support, dependency inference, automatic allocation, execution, or measurement evidence.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_boundary_gate.json",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_boundary_gate.json",
+  "current_priority": "review_verilator_native_option_parser_boundary_dry_run_gate",
+  "shape": "64x1",
+  "nstates": 64,
+  "steps": 1,
+  "command_count": 12,
+  "expected_exit_code_summary": {
+    "zero_exit_preview_commands": 6,
+    "compatibility_mapper_error_commands": 3,
+    "parser_or_not_ready_rejection_commands": 3,
+    "all_commands_matched_expected_exit_codes": true
+  },
+  "dry_run_scope": {
+    "ready_static_filelist_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "ready_json_preview_command_count": 2,
+    "operator_plan_json_command_count": 2,
+    "command_only_preview_command_count": 2,
+    "invalid_input_rejection_command_count": 4,
+    "not_ready_rejection_command_count": 2,
+    "correctness_policy": "coverage_output_equivalence",
+    "generated_reports_or_artifacts_written": false,
+    "filelist_targets_directly_supported_by_shim": true,
+    "native_verilator_parser_status": "not_implemented",
+    "native_verilator_source_patch_status": "absent",
+    "runtime_or_abi_changed": false,
+    "new_measurement_added": false,
+    "new_execution_added": false
+  },
+  "commands": [
+    {
+      "label": "shim_filelist_paged_attention_kv_score_emit",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target filelist_paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --emit-verilator-command",
+      "exit_code": 0,
+      "status": "ready_for_verilator_option_shim",
+      "target": "filelist_paged_attention_kv_score",
+      "observed_shape": "64x1",
+      "observed_verilator_command_contains": [
+        "verilator --cc --timing",
+        "--sim-accel sidecar-gpu",
+        "--sim-accel-states 64",
+        "--sim-accel-steps 1"
+      ],
+      "observed_verilator_command_excludes": [
+        "--sim-accel-estimate-efficiency"
+      ],
+      "handoff_contract_keys": [
+        "compare",
+        "generated_reports",
+        "non_claims",
+        "nstates",
+        "schema_version",
+        "shape",
+        "state_authority",
+        "state_files",
+        "steps"
+      ],
+      "correctness_policy": "coverage_output_equivalence",
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "shim_filelist_known_template_pulp_ita_mha_emit",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target filelist_known_template_pulp_ita_mha --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --emit-verilator-command",
+      "exit_code": 0,
+      "status": "ready_for_verilator_option_shim",
+      "target": "filelist_known_template_pulp_ita_mha",
+      "observed_shape": "64x1",
+      "observed_verilator_command_contains": [
+        "verilator --cc --timing",
+        "--sim-accel sidecar-gpu",
+        "--sim-accel-states 64",
+        "--sim-accel-steps 1"
+      ],
+      "observed_verilator_command_excludes": [
+        "--sim-accel-estimate-efficiency"
+      ],
+      "handoff_contract_keys": [
+        "compare",
+        "generated_reports",
+        "non_claims",
+        "nstates",
+        "schema_version",
+        "shape",
+        "state_authority",
+        "state_files",
+        "steps"
+      ],
+      "correctness_policy": "coverage_output_equivalence",
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "benchmark_filelist_paged_attention_kv_score_operator_plan_json",
+      "command": "python3 src/tools/run_hybrid_benchmark.py filelist_paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json",
+      "exit_code": 0,
+      "status": "planned",
+      "target": "filelist_paged_attention_kv_score",
+      "observed_verilator_command_contains": [
+        "verilator --cc --timing",
+        "--sim-accel sidecar-gpu",
+        "--sim-accel-states 64",
+        "--sim-accel-steps 1"
+      ],
+      "handoff_contract_keys": [
+        "compare",
+        "generated_reports",
+        "non_claims",
+        "nstates",
+        "schema_version",
+        "shape",
+        "state_authority",
+        "state_files",
+        "steps"
+      ],
+      "correctness_policy": "coverage_output_equivalence",
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "benchmark_filelist_known_template_pulp_ita_mha_operator_plan_json",
+      "command": "python3 src/tools/run_hybrid_benchmark.py filelist_known_template_pulp_ita_mha --sim-accel-shape 64x1 --operator-plan-json",
+      "exit_code": 0,
+      "status": "planned",
+      "target": "filelist_known_template_pulp_ita_mha",
+      "observed_verilator_command_contains": [
+        "verilator --cc --timing",
+        "--sim-accel sidecar-gpu",
+        "--sim-accel-states 64",
+        "--sim-accel-steps 1"
+      ],
+      "handoff_contract_keys": [
+        "compare",
+        "generated_reports",
+        "non_claims",
+        "nstates",
+        "schema_version",
+        "shape",
+        "state_authority",
+        "state_files",
+        "steps"
+      ],
+      "correctness_policy": "coverage_output_equivalence",
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "shim_filelist_paged_attention_kv_score_print_verilator_command",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target filelist_paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command",
+      "exit_code": 0,
+      "observed_verilator_command_contains": [
+        "verilator --cc --timing",
+        "--sim-accel sidecar-gpu",
+        "--sim-accel-states 64",
+        "--sim-accel-steps 1"
+      ],
+      "observed_verilator_command_excludes": [
+        "--sim-accel-estimate-efficiency"
+      ],
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "shim_filelist_paged_attention_kv_score_print_estimate_command",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target filelist_paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-estimate-command",
+      "exit_code": 0,
+      "observed_verilator_command_contains": [
+        "verilator --cc --timing",
+        "--sim-accel sidecar-gpu",
+        "--sim-accel-states 64",
+        "--sim-accel-steps 1",
+        "--sim-accel-estimate-efficiency"
+      ],
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "reject_missing_steps",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target filelist_paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --emit-verilator-command",
+      "exit_code": 1,
+      "status": "error",
+      "observed_error": "--sim-accel-states and --sim-accel-steps must be provided together",
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "reject_mixed_shape_spelling",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target filelist_paged_attention_kv_score --sim-accel-shape 64x1 --sim-accel-states 64 --sim-accel-steps 1 --emit-verilator-command",
+      "exit_code": 1,
+      "status": "error",
+      "observed_error": "use only one shape spelling: --shape, --sim-accel-shape, or --sim-accel-states/--sim-accel-steps",
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "reject_nonpositive_states",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target filelist_paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 0 --sim-accel-steps 1 --emit-verilator-command",
+      "exit_code": 1,
+      "status": "error",
+      "observed_error": "--sim-accel-states must be a positive integer",
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "reject_unknown_accelerator",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target filelist_paged_attention_kv_score --sim-accel cuda --sim-accel-states 64 --sim-accel-steps 1 --emit-verilator-command",
+      "exit_code": 2,
+      "status": "argparse_error",
+      "observed_error_contains": "invalid choice",
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "reject_mobile_vit_dataset_backed_target_not_ready",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target mobile_vit --limit 128 --sim-accel-shape 64x1 --emit-verilator-command",
+      "exit_code": 2,
+      "status": "not_ready_for_verilator_option_shim",
+      "target": "mobile_vit",
+      "observed_shape": "64x1",
+      "missing": [
+        "direct_verilator_rtl_sidecar_handoff"
+      ],
+      "reason": "host preprocessing is separated, but this dataset-backed target still needs a direct RTL sidecar handoff before the Verilator option shim can be ready",
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "reject_resident_mode_not_ready",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target pulp_ita_mha --mode resident-state-reuse --sim-accel-shape 1x64 --emit-verilator-command",
+      "exit_code": 2,
+      "status": "not_ready_for_verilator_option_shim",
+      "target": "pulp_ita_mha",
+      "observed_shape": "1x64",
+      "missing": [
+        "direct_verilator_resident_sidecar_handoff"
+      ],
+      "reason": "resident modes are higher-level workflows; the supported fallback is exposed, but a direct Verilator resident sidecar handoff is not ready",
+      "writes_generated_outputs": false
+    }
+  ],
+  "observed_summary": {
+    "expanded_future_verilator_spelling_observed": true,
+    "primary_shape_spelling_observed": "--sim-accel-states 64 --sim-accel-steps 1",
+    "compact_shape_spelling_used_only_for_wrapper_compatibility": true,
+    "estimate_flag_kept_separate_from_command_only_preview": true,
+    "handoff_contract_visible": true,
+    "correctness_policy_visible": true,
+    "invalid_missing_steps_rejected": true,
+    "invalid_mixed_shape_spelling_rejected": true,
+    "invalid_nonpositive_count_rejected": true,
+    "invalid_accelerator_name_rejected": true,
+    "invalid_accelerator_rejection_layer": "argparse_choices",
+    "shared_mapper_rejections_observed": [
+      "missing_states_or_steps_pair",
+      "mixed_shape_spelling",
+      "nonpositive_state_count"
+    ],
+    "resident_modes_remain_not_ready_for_direct_native_handoff": true,
+    "dataset_backed_targets_remain_not_ready_for_direct_native_handoff": true,
+    "generated_reports_or_artifacts_written": false,
+    "native_verilator_parser_status": "not_implemented"
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_boundary_dry_run_gate",
+    "must_decide": [
+      "whether the dry-run result satisfies the accepted parser-only boundary without overclaiming native Verilator parser support",
+      "whether the two static filelist-derived targets are enough for this boundary and do not imply arbitrary filelist support",
+      "whether the expanded future-Verilator spelling normalizes to 64x1 and keeps --sim-accel-estimate-efficiency separate",
+      "whether the visible handoff contract is sufficient for mdir, top module, source boundary, state files, generated report path, and coverage_output_equivalence at this boundary",
+      "whether the invalid input and not-ready rejections are enough to proceed to a native parser stub definition gate",
+      "whether invalid accelerator rejection being argparse-based instead of shared-mapper-based is acceptable for this dry-run or should be moved in a later parser stub boundary",
+      "whether no generated report or artifact became source of truth",
+      "whether no execution, measurement, runtime/ABI change, dependency inference, automatic allocation, GEM comparison, raw full-state equality, or production-serving claim is introduced"
+    ]
+  },
+  "acceptance_policy": {
+    "dry_run_only": true,
+    "plan_only_boundary": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "native_verilator_parser_implementation_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_verilator_native_option_parser_boundary_dry_run_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not a Verilator source patch",
+    "not a new measurement result",
+    "not non-dry-run execution evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not parser inference of coverage manifests, host-probe metadata, source closure, state paths, or report paths",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not a new public CLI or workflow",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

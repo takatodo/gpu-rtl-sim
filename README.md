@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`run_verilator_native_option_parser_boundary_dry_run_gate`
+`review_verilator_native_option_parser_boundary_dry_run_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/review_verilator_native_option_parser_boundary_gate.json`
+`config/scaling_gates/verilator_native_option_parser_boundary_dry_run_result_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -119,6 +119,7 @@ Commit cadence: keep commits small enough to review by one gate or one workflow 
 - Commit split index rewrite completed: `config/scaling_gates/execute_commit_split_index_rewrite_gate.json` records that the payload landed as eight hook-sized commits after the staged-only hook prerequisite. The largest payload commit touched `76` files, below the documented `100`-file guard, the worktree was clean, and `make simple && make check` passed with `221` contract tests. The next task is `define_verilator_native_option_parser_boundary_gate`; this adds no parser implementation, measurement, runtime/ABI change, arbitrary filelist support, dependency inference, automatic allocation, GEM comparison, production-serving claim, or raw full-state equality claim.
 - Verilator native option parser boundary defined: `config/scaling_gates/define_verilator_native_option_parser_boundary_gate.json` defines the first native parser boundary as `verilator --cc --timing ... --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` handing off to the existing sidecar plan contract. `--sim-accel-shape <NxS>`, target-first registry lookup, print modes, JSON operator-plan output, resident modes, and dataset-backed flows remain wrapper/shim compatibility for now. The next task is `review_verilator_native_option_parser_boundary_gate`; this adds no Verilator parser implementation, source patch, execution, measurement, runtime/ABI change, arbitrary filelist support, dependency inference, automatic allocation, GEM comparison, production-serving claim, or raw full-state equality claim.
 - Verilator native option parser boundary review accepted: `config/scaling_gates/review_verilator_native_option_parser_boundary_gate.json` accepts the parser-only/no-execution definition and records the weakest point: this repository still has no Verilator source tree or parser patch. The parser boundary also does not infer coverage manifests, host-probe metadata, source closure, state paths, or report paths. The next task is `run_verilator_native_option_parser_boundary_dry_run_gate`, limited to non-executing preview checks of the sidecar handoff contract.
+- Verilator native option parser boundary dry-run passed: `config/scaling_gates/verilator_native_option_parser_boundary_dry_run_result_gate.json` records 12 non-executing preview/rejection commands. The two tracked `filelist_*` targets expose `64x1` sidecar handoff commands and `coverage_output_equivalence`; estimate mode remains a separate command. Missing shape halves, mixed shape spelling, and non-positive counts reject through the shared mapper, while unknown accelerators currently reject at argparse choices. The next task is `review_verilator_native_option_parser_boundary_dry_run_gate`; this adds no parser implementation, source patch, execution, measurement, runtime/ABI change, arbitrary filelist support, dependency inference, automatic allocation, GEM comparison, production-serving claim, or raw full-state equality claim.
 
 ## Source Of Truth
 
@@ -655,6 +656,7 @@ The paged-attention/KV-cache repeat-median public-pack boundary is complete. The
 - Commit split index rewrite completed: `config/scaling_gates/execute_commit_split_index_rewrite_gate.json` advances the current task to `define_verilator_native_option_parser_boundary_gate`.
 - Verilator native option parser boundary defined: `config/scaling_gates/define_verilator_native_option_parser_boundary_gate.json` advances the current task to `review_verilator_native_option_parser_boundary_gate`.
 - Verilator native option parser boundary review accepted: `config/scaling_gates/review_verilator_native_option_parser_boundary_gate.json` advances the current task to `run_verilator_native_option_parser_boundary_dry_run_gate`.
+- Verilator native option parser boundary dry-run passed: `config/scaling_gates/verilator_native_option_parser_boundary_dry_run_result_gate.json` advances the current task to `review_verilator_native_option_parser_boundary_dry_run_gate`.
 - config-generation validation breadth execution and subsequent candidate measurement/publication gates are summarized by `config/selection.json`, `docs/status.md`, and the tracked public-pack manifest instead of being listed here one gate file at a time
 - local candidate gate files under `records/scaling_gates/` are not public-pack source of truth until they are intentionally tracked and included by `python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run`
 - previous paged-attention/KV-cache dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`
