@@ -45,6 +45,12 @@ OVERLAY_PATCH_DESCRIPTOR_IMPLEMENTATION_GATE = (
     / "scaling_gates"
     / "implement_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json"
 )
+OVERLAY_PATCH_DESCRIPTOR_IMPLEMENTATION_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_implementation_gate.json"
+)
 OVERLAY_DESCRIPTOR_FILE = (
     REPO_ROOT
     / "overlays"
@@ -458,6 +464,35 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(
             gate["next_task"],
             "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_implementation_gate",
+        )
+
+    def test_overlay_patch_descriptor_apply_check_implementation_review_selects_build_only_validation(self) -> None:
+        review = json.loads(OVERLAY_PATCH_DESCRIPTOR_IMPLEMENTATION_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_implementation_gate"],
+            "config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_overlay_patch_build_only_validation_gate",
+        )
+        self.assertEqual(
+            review["reviewed_payload"]["descriptor_path"],
+            "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+        )
+        self.assertEqual(
+            review["reviewed_patch_scope"]["touched_upstream_files"],
+            ["src/V3Options.h", "src/V3Options.cpp"],
+        )
+        self.assertIn("std::atoi", review["reviewed_patch_scope"]["known_validation_caveat"])
+        self.assertEqual(review["reviewed_verification"]["apply_check_exit_code"], 0)
+        self.assertFalse(review["acceptance_policy"]["verilator_build_success_claim_allowed_by_gate_alone"])
+        self.assertFalse(review["acceptance_policy"]["native_verilator_parser_support_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            review["next_task"],
+            "define_verilator_native_option_parser_overlay_patch_build_only_validation_gate",
         )
 
 
