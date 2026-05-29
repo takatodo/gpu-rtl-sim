@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`execute_commit_split_index_rewrite_gate`
+`define_verilator_native_option_parser_boundary_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/resolve_commit_split_line_guard_risks_gate.json`
+`config/scaling_gates/execute_commit_split_index_rewrite_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -116,6 +116,7 @@ Commit cadence: keep commits small enough to review by one gate or one workflow 
 - Commit split and public-pack cleanup boundary defined: `config/scaling_gates/define_commit_split_and_public_pack_cleanup_gate.json` pins eight review-sized commit groups with estimated file counts `15`, `26`, `71`, `30`, `24`, `59`, `28`, and `25`, all below the documented `100`-file hook limit. It also records the remaining per-file line guard risks for `src/tools/results_reproduction_gpu_allocation_policy.py`, `tests/contract/test_hybrid_verilator_like_cli.py`, and `tests/contract/test_public_pack_repeat_median_refresh_gates.py`. This is definition-only; it does not rewrite the index, commit changes, add measurement, change runtime/ABI, or claim native parser, arbitrary filelist, dependency inference, automatic allocation, resident optimization, GEM, production-serving, or raw full-state equality support.
 - Commit split and public-pack cleanup review accepted: `config/scaling_gates/review_commit_split_and_public_pack_cleanup_gate.json` accepts the eight file-count groups as the operational split boundary but keeps index rewrite and commits blocked until the three per-file line guard risks are resolved or explicitly reviewed.
 - Commit split line guard risks resolved: `config/scaling_gates/resolve_commit_split_line_guard_risks_gate.json` records that the guarded script and contract-test line limits pass under `python3 src/tools/check_staged_large_files.py --max-files 999`. The remaining blocker is file count, so the next task is rewriting the index into the accepted eight groups without using `git add -A`.
+- Commit split index rewrite completed: `config/scaling_gates/execute_commit_split_index_rewrite_gate.json` records that the payload landed as eight hook-sized commits after the staged-only hook prerequisite. The largest payload commit touched `76` files, below the documented `100`-file guard, the worktree was clean, and `make simple && make check` passed with `221` contract tests. The next task is `define_verilator_native_option_parser_boundary_gate`; this adds no parser implementation, measurement, runtime/ABI change, arbitrary filelist support, dependency inference, automatic allocation, GEM comparison, production-serving claim, or raw full-state equality claim.
 
 ## Source Of Truth
 
@@ -649,6 +650,7 @@ The paged-attention/KV-cache repeat-median public-pack boundary is complete. The
 - Commit split and public-pack cleanup boundary defined: `config/scaling_gates/define_commit_split_and_public_pack_cleanup_gate.json` advances the current task to `review_commit_split_and_public_pack_cleanup_gate`.
 - Commit split and public-pack cleanup review accepted: `config/scaling_gates/review_commit_split_and_public_pack_cleanup_gate.json` advances the current task to `resolve_commit_split_line_guard_risks_gate`.
 - Commit split line guard risks resolved: `config/scaling_gates/resolve_commit_split_line_guard_risks_gate.json` advances the current task to `execute_commit_split_index_rewrite_gate`.
+- Commit split index rewrite completed: `config/scaling_gates/execute_commit_split_index_rewrite_gate.json` advances the current task to `define_verilator_native_option_parser_boundary_gate`.
 - config-generation validation breadth execution and subsequent candidate measurement/publication gates are summarized by `config/selection.json`, `docs/status.md`, and the tracked public-pack manifest instead of being listed here one gate file at a time
 - local candidate gate files under `records/scaling_gates/` are not public-pack source of truth until they are intentionally tracked and included by `python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run`
 - previous paged-attention/KV-cache dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`

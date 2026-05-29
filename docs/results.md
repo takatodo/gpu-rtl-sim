@@ -139,6 +139,8 @@ Filelist broader shape timing public-pack externalization completion:
 
 `config/scaling_gates/resolve_commit_split_line_guard_risks_gate.json` records that the per-file script and contract-test guards are now clean under `python3 src/tools/check_staged_large_files.py --max-files 999`. The remaining blocker is the staged file-count guard, so the next step is an index rewrite into the accepted eight groups.
 
+`config/scaling_gates/execute_commit_split_index_rewrite_gate.json` records that the index rewrite completed as eight payload commits after a staged-only hook prerequisite. The largest payload commit touched `76` files, the worktree was clean afterward, and `make simple && make check` passed with `221` contract tests. This completion advances to `define_verilator_native_option_parser_boundary_gate` and still does not claim a native parser implementation, new measurement, runtime/ABI change, arbitrary filelist support, dependency inference, automatic allocation, GEM comparison, production-serving throughput, or raw full-state equality.
+
 Public archive dry-run:
 
 This section is the scoped `public_pack_archive_ready` task inside the current public benchmark pack externalization objective.

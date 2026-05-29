@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The line guard risks are resolved; the weak point is now rewriting the large staged set into the accepted eight hook-sized groups.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The commit split is complete; the weak point is now defining the real Verilator native-option parser boundary without confusing it with the existing sidecar shim, tracked-template registry, arbitrary filelist planning, dependency inference, or automatic allocation.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is executing the accepted eight-group commit split before parser, planner, dependency inference, allocation, resident optimization, or GEM work resumes.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is defining the next native Verilator option parser boundary now that the accepted eight-group commit split has been executed and verified.
 
 Current priority:
 
-`execute_commit_split_index_rewrite_gate`
+`define_verilator_native_option_parser_boundary_gate`
 
 Current gate:
 
-`config/scaling_gates/resolve_commit_split_line_guard_risks_gate.json`
+`config/scaling_gates/execute_commit_split_index_rewrite_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Commit split index rewrite**: Rewrite the index into the accepted eight hook-sized groups without using `git add -A`.
+1. **Native option parser boundary**: Define what must move from sidecar/shim into Verilator option parsing, and what stays explicitly out of scope.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,7 +79,19 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Select the next workstream after closing the tracked-template filelist registry public-pack boundary.
+Define the native Verilator option parser boundary after closing the commit split.
+
+Parser boundary definition:
+
+- source gate: `config/scaling_gates/execute_commit_split_index_rewrite_gate.json`
+- selected next gate: `define_verilator_native_option_parser_boundary_gate`
+- scope: parser/option boundary definition only, not implementation
+- must distinguish: Verilator-native option spelling, sidecar compatibility behavior, tracked-template registry support, and future arbitrary filelist planning
+- non-claim: this does not add parser implementation, execution, measurement, runtime/ABI support, arbitrary RTL dependency inference, automatic optimal GPU allocation, GEM comparison, raw full-state equality, or production-serving throughput
+
+Historical completed stage:
+
+The accepted commit split was executed as eight payload commits plus one staged-only hook prerequisite. The largest payload commit touched `76` files, below the documented `100`-file commit guard, and `make simple && make check` passed with `221` contract tests.
 
 Broader-shape GPU allocation policy dry-run:
 
@@ -307,7 +319,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
-- current next task: `execute_commit_split_index_rewrite_gate`
+- current next task: `define_verilator_native_option_parser_boundary_gate`
 - reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
@@ -479,7 +491,7 @@ Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
 - active `config/` file count: `143`
-- tracked gate JSON records under `records/scaling_gates/`: `802`
+- tracked gate JSON records under `records/scaling_gates/`: `803`
 - compatibility link: `config/scaling_gates -> ../records/scaling_gates`
 - generated files under `reports/` and `artifacts/`: reproducible evidence only, never source of truth
 
@@ -649,19 +661,17 @@ Tracked evidence:
 
 Recommended next gate:
 
-`execute_commit_split_index_rewrite_gate`
+`define_verilator_native_option_parser_boundary_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/resolve_commit_split_line_guard_risks_gate.json` as the source artifact
-- keep the accepted group counts `15`, `26`, `71`, `30`, `24`, `59`, `28`, and `25` below the documented `100`-file commit guard limit
-- rewrite the index into those groups without touching unrelated unstaged changes
-- check that shared docs, tests, and manifest files stay coherent when staged into the first group
-- confirm unrelated or pre-existing unstaged changes remain untouched
+- use `config/scaling_gates/execute_commit_split_index_rewrite_gate.json` as the source artifact
+- define the exact native Verilator option spelling and parser touch points to evaluate
+- identify which existing sidecar wrapper behavior remains the compatibility baseline
+- identify which tracked-template registry evidence may be reused
 - keep generated reports and artifacts non-canonical
-- add no measurement, runtime/ABI, arbitrary RTL, automatic allocation, GEM, production-serving, or raw full-state equality claim
-- keep native parser, arbitrary filelist planning, dependency inference, automatic allocation, resident optimization, and GEM comparison as deferred workstreams
-- approve the verification commands to rerun after each split before any index rewrite
+- add no parser implementation, measurement, runtime/ABI, arbitrary RTL, automatic allocation, GEM, production-serving, or raw full-state equality claim
+- keep arbitrary filelist planning, dependency inference, automatic allocation, resident optimization, and GEM comparison as deferred workstreams
 
 Deferred technical workstreams:
 

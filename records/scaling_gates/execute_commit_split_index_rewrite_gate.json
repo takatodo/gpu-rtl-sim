@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "gate": "execute_commit_split_index_rewrite_gate",
+  "status": "completed_commit_split_index_rewrite_select_verilator_native_option_parser_boundary",
+  "objective": "Record that the accepted commit-split index rewrite was executed with hook-sized commits, then advance to the next deferred technical boundary.",
+  "source_resolution_gate": "config/scaling_gates/resolve_commit_split_line_guard_risks_gate.json",
+  "current_priority": "define_verilator_native_option_parser_boundary_gate",
+  "completion_decision": {
+    "achieved": true,
+    "reason": "The payload changes were committed as eight hook-sized groups after a small staged-only hook prerequisite, the worktree is clean, and the full project check passed."
+  },
+  "observed_state": {
+    "documented_commit_guard_staged_file_limit": 100,
+    "payload_commit_count": 8,
+    "prerequisite_commit_count": 1,
+    "max_payload_commit_file_count": 76,
+    "worktree_clean_after_split": true,
+    "records_scaling_gate_json_count_after_completion_gate": 803,
+    "full_check_command": "make simple && make check",
+    "full_check_exit_code": 0,
+    "contract_test_count": 221
+  },
+  "prerequisite_commits": [
+    {
+      "sha": "caf3bd1",
+      "subject": "Keep pre-commit limited to staged file guard",
+      "reason": "Keep partial split groups from being blocked by broad active-tree checks while preserving staged guard enforcement."
+    }
+  ],
+  "payload_commits": [
+    {
+      "sha": "2436879",
+      "subject": "Add Verilator option registry gate records",
+      "file_count": 26
+    },
+    {
+      "sha": "0641968",
+      "subject": "Add source closure materialization gate records",
+      "file_count": 58
+    },
+    {
+      "sha": "2b36bc1",
+      "subject": "Add config generation validation gate records",
+      "file_count": 24
+    },
+    {
+      "sha": "2ade014",
+      "subject": "Add filelist shape allocation gate records",
+      "file_count": 76
+    },
+    {
+      "sha": "e456d75",
+      "subject": "Add policy repeat median gate records",
+      "file_count": 11
+    },
+    {
+      "sha": "e4af9b0",
+      "subject": "Add remaining minimal suite gate records",
+      "file_count": 39
+    },
+    {
+      "sha": "12a656a",
+      "subject": "Add filelist hybrid benchmark implementation",
+      "file_count": 48
+    },
+    {
+      "sha": "ee9d1e0",
+      "subject": "Update project status for commit split cleanup",
+      "file_count": 8
+    }
+  ],
+  "selected_next_workstream": {
+    "name": "verilator_native_option_parser_boundary",
+    "first_gate": "define_verilator_native_option_parser_boundary_gate",
+    "reason": "The public-pack registry and commit hygiene blockers are now closed. The next narrow gap is defining what a real Verilator parser/option integration would mean, distinct from the existing sidecar shim and tracked-template registry support."
+  },
+  "required_next_gate": {
+    "name": "define_verilator_native_option_parser_boundary_gate",
+    "must_pin": [
+      "the exact native Verilator option spelling and parser touch points to evaluate",
+      "which existing sidecar wrapper behavior remains the compatibility baseline",
+      "which tracked-template registry evidence may be reused",
+      "which work remains outside scope: arbitrary filelist planning, dependency inference, automatic allocation, resident optimization, GEM comparison, runtime or ABI changes, and production LLM serving",
+      "a no-execution policy until the parser boundary is reviewed"
+    ]
+  },
+  "acceptance_policy": {
+    "commit_split_complete": true,
+    "line_guard_resolution_complete": true,
+    "file_count_split_complete": true,
+    "worktree_clean_required": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "define_verilator_native_option_parser_boundary_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not arbitrary filelist or RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

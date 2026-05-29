@@ -8,6 +8,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 GATE = REPO_ROOT / "config" / "scaling_gates" / "define_commit_split_and_public_pack_cleanup_gate.json"
 REVIEW_GATE = REPO_ROOT / "config" / "scaling_gates" / "review_commit_split_and_public_pack_cleanup_gate.json"
 RESOLUTION_GATE = REPO_ROOT / "config" / "scaling_gates" / "resolve_commit_split_line_guard_risks_gate.json"
+COMPLETION_GATE = REPO_ROOT / "config" / "scaling_gates" / "execute_commit_split_index_rewrite_gate.json"
 SELECTION = REPO_ROOT / "config" / "selection.json"
 TOOLS = REPO_ROOT / "src" / "tools"
 REGISTRY_NEXT_SELECTION_GATE = (
@@ -27,6 +28,9 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
 
     def read_resolution_gate(self) -> dict[str, object]:
         return json.loads(RESOLUTION_GATE.read_text(encoding="utf-8"))
+
+    def read_completion_gate(self) -> dict[str, object]:
+        return json.loads(COMPLETION_GATE.read_text(encoding="utf-8"))
 
     def test_registry_next_selection_gate_chooses_commit_split_cleanup(self) -> None:
         selection = json.loads(REGISTRY_NEXT_SELECTION_GATE.read_text(encoding="utf-8"))
@@ -95,8 +99,6 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
 
     def test_resolution_gate_closes_line_guard_risks_and_selects_index_rewrite(self) -> None:
         resolution = self.read_resolution_gate()
-        selection = json.loads(SELECTION.read_text(encoding="utf-8"))
-
         self.assertEqual(resolution["current_priority"], "execute_commit_split_index_rewrite_gate")
         self.assertEqual(resolution["source_review_gate"], "config/scaling_gates/review_commit_split_and_public_pack_cleanup_gate.json")
         self.assertTrue(resolution["acceptance_policy"]["line_guard_resolution_complete"])
@@ -111,12 +113,39 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         self.assertIn("src/tools/results_reproduction_gpu_allocation_policy_data.py", resolved_paths)
         self.assertIn("tests/contract/test_filelist_gpu_allocation_policy_cli.py", resolved_paths)
         self.assertIn("tests/contract/test_filelist_public_pack_manifest_paths.py", resolved_paths)
-        self.assertEqual(selection["current_priority"], "execute_commit_split_index_rewrite_gate")
+
+    def test_completion_gate_closes_index_rewrite_and_selects_parser_boundary(self) -> None:
+        completion = self.read_completion_gate()
+        selection = json.loads(SELECTION.read_text(encoding="utf-8"))
+
+        self.assertEqual(completion["current_priority"], "define_verilator_native_option_parser_boundary_gate")
         self.assertEqual(
-            selection["current_priority_source_artifact"],
+            completion["source_resolution_gate"],
             "config/scaling_gates/resolve_commit_split_line_guard_risks_gate.json",
         )
-        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 802)
+        self.assertTrue(completion["completion_decision"]["achieved"])
+        self.assertTrue(completion["acceptance_policy"]["commit_split_complete"])
+        self.assertEqual(completion["observed_state"]["payload_commit_count"], 8)
+        self.assertEqual(completion["observed_state"]["prerequisite_commit_count"], 1)
+        self.assertLessEqual(
+            completion["observed_state"]["max_payload_commit_file_count"],
+            completion["observed_state"]["documented_commit_guard_staged_file_limit"],
+        )
+        self.assertEqual(completion["observed_state"]["full_check_exit_code"], 0)
+        self.assertEqual(completion["observed_state"]["contract_test_count"], 221)
+        self.assertEqual(
+            completion["selected_next_workstream"]["first_gate"],
+            "define_verilator_native_option_parser_boundary_gate",
+        )
+        self.assertFalse(completion["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
+        self.assertFalse(completion["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(completion["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+        self.assertEqual(selection["current_priority"], "define_verilator_native_option_parser_boundary_gate")
+        self.assertEqual(
+            selection["current_priority_source_artifact"],
+            "config/scaling_gates/execute_commit_split_index_rewrite_gate.json",
+        )
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 803)
 
     def test_public_pack_manifest_includes_definition_gate(self) -> None:
         sys.path.insert(0, str(TOOLS))
@@ -135,6 +164,10 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         )
         self.assertIn(
             "records/scaling_gates/resolve_commit_split_line_guard_risks_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/execute_commit_split_index_rewrite_gate.json",
             PUBLIC_PACK_ARCHIVE_PATHS,
         )
 
