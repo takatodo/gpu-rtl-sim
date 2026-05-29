@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_verilator_like_hybrid_entrypoint_option_surface_public_pack_refresh_gate",
+  "status": "selected_filelist_to_verilator_like_hybrid_plan_boundary_next",
+  "objective": "Select the next validation goal after closing the Verilator-like operator-surface public-pack boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_verilator_like_hybrid_entrypoint_option_surface_execution_gate.json",
+  "current_priority": "define_filelist_to_verilator_like_hybrid_plan_boundary_gate",
+  "decision": {
+    "selected_next_workstream": "filelist_to_verilator_like_hybrid_plan_boundary",
+    "selected_first_gate": "define_filelist_to_verilator_like_hybrid_plan_boundary_gate",
+    "reason": "The target-name plus --sim-accel-shape operator surface now has dry-run, execution, review, and public-pack evidence. The next useful gap is moving one step closer to the user goal: accepting a Verilator-like filelist-facing input and producing an explicit hybrid plan, while still avoiding hidden top/clock/reset/overlay/coverage-manifest inference and avoiding a universal automatic GPU-allocation claim."
+  },
+  "candidate_review": [
+    {
+      "name": "filelist_to_verilator_like_hybrid_plan_boundary",
+      "decision": "selected",
+      "reason": "It directly addresses the desired operator model of passing design files and receiving a hybrid plan without making the larger native Verilator or arbitrary RTL support claim yet."
+    },
+    {
+      "name": "verilator_native_option_prototype_boundary",
+      "decision": "deferred",
+      "reason": "Native Verilator integration should wait until the filelist-facing handoff contract is explicit and testable."
+    },
+    {
+      "name": "automatic_shape_policy_calibration",
+      "decision": "deferred",
+      "reason": "Shape policy calibration needs a stable input contract first; otherwise optimization hides unresolved design-discovery assumptions."
+    },
+    {
+      "name": "larger_operator_surface_timing_repeat_median",
+      "decision": "deferred",
+      "reason": "More timing evidence would not resolve the current usability gap."
+    },
+    {
+      "name": "resident_execution_optimization",
+      "decision": "deferred",
+      "reason": "Runtime tuning should remain separate from defining the filelist-facing operator boundary."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_filelist_to_verilator_like_hybrid_plan_boundary_gate",
+    "must_pin": [
+      "the minimal accepted filelist-facing input shape",
+      "which fields still must be explicit rather than inferred",
+      "how a filelist maps to an existing tracked target/template or refuses planning",
+      "how the plan reports top module, clock/reset, overlay, coverage manifest, shape recommendation, and compare report path",
+      "dry-run/plan-only behavior before execution",
+      "coverage_output_equivalence as the later correctness policy",
+      "generated reports and artifacts remain non-canonical",
+      "runtime and ABI non-change policy",
+      "explicit non-claim that arbitrary RTL, optimal GPU allocation, or native Verilator support is implemented"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_filelist_to_verilator_like_hybrid_plan_boundary_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a new runtime or ABI change",
+    "not a new workload promotion",
+    "not approval to import untracked candidate overlays",
+    "not universal validation for arbitrary RTL",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "not raw filelist execution",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_review_gate",
+  "status": "accepted_public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry",
+  "objective": "Review the packaging-only dry-run for the tracked filelist registry public refresh and select the externalization completion boundary.",
+  "source_definition_gate": "config/scaling_gates/public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_gate.json",
+  "source_result_gate": "config/scaling_gates/public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_result_gate.json",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The public-pack archive dry-run exited zero, included the tracked filelist registry definition/result/review chain plus the refresh definition gate, and preserved generated-output exclusions.",
+    "weakest_point": "The accepted evidence remains packaging-only for two static tracked filelist targets. It still does not demonstrate native Verilator parser support, arbitrary filelist ingestion, automatic dependency inference, automatic optimal GPU allocation, or new timing."
+  },
+  "accepted_scope": {
+    "include_count": 546,
+    "exclude_count": 2,
+    "registered_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "new_measurement_added": false,
+    "new_execution_added": false,
+    "runtime_or_abi_changed": false,
+    "archive_created": false
+  },
+  "acceptance_policy": {
+    "public_pack_refresh_accepted": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "current_priority": "define_public_benchmark_pack_externalization_completion_after_verilator_native_option_prototype_filelist_registry_gate",
+  "next_task": "define_public_benchmark_pack_externalization_completion_after_verilator_native_option_prototype_filelist_registry_gate",
+  "non_claims": [
+    "not archive creation",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not a runtime or ABI change",
+    "not a native Verilator implementation",
+    "not a native Verilator parser change",
+    "not arbitrary filelist or RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

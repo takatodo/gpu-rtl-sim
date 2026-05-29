@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_native_option_prototype_boundary_dry_run_review_gate",
+  "status": "accepted_verilator_native_option_prototype_boundary_dry_run",
+  "objective": "Review the native-Verilator-option prototype boundary dry-run and select the next technical decision without overstating native or filelist support.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_prototype_boundary_gate.json",
+  "source_result_gate": "config/scaling_gates/verilator_native_option_prototype_boundary_dry_run_result_gate.json",
+  "current_priority": "define_verilator_native_option_prototype_filelist_target_resolution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "All four pinned dry-run or preview commands exited zero and exposed the intended sidecar option, shape, filelist-template plan, and coverage-output compare policy while writing no canonical output.",
+    "weakest_point": "The current shim registry supports registered targets such as paged_attention_kv_score and pulp_ita_mha, but it does not directly support filelist_* target names."
+  },
+  "accepted_scope": {
+    "registered_shim_targets": [
+      "paged_attention_kv_score",
+      "pulp_ita_mha"
+    ],
+    "filelist_template_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "shape": "64x1",
+    "nstates": 64,
+    "steps": 1,
+    "correctness_policy": "coverage_output_equivalence",
+    "generated_reports_or_artifacts_written": false,
+    "native_verilator_parser_status": "not_implemented",
+    "filelist_targets_directly_supported_by_shim": false
+  },
+  "required_next_gate": {
+    "name": "define_verilator_native_option_prototype_filelist_target_resolution_gate",
+    "must_decide": [
+      "whether to register filelist_* targets directly in the sidecar target registry",
+      "or define a separate filelist-to-shim planner that emits the same native-option preview fields",
+      "how the chosen path preserves target, top module, template or source boundary, mdir, correctness policy, and report paths",
+      "how the chosen path avoids hidden dependency inference and local machine assumptions",
+      "how later execution evidence will keep coverage_output_equivalence separate from raw full-state equality"
+    ],
+    "must_not_claim": [
+      "native Verilator parser support",
+      "arbitrary RTL support",
+      "arbitrary RTL dependency inference",
+      "automatic optimal GPU allocation",
+      "new execution or timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "dry_run_result_accepted": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_verilator_native_option_prototype_filelist_target_resolution_gate",
+  "non_claims": [
+    "not a native Verilator implementation",
+    "not direct filelist target support in the current shim",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not new execution or measurement evidence",
+    "not a runtime or ABI change",
+    "not a new public CLI or workflow",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput"
+  ]
+}

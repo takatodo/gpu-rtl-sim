@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_verilator_native_option_prototype_filelist_registry_public_pack_refresh_gate",
+  "status": "selected_commit_split_and_public_pack_cleanup_next",
+  "objective": "Select the next workstream after closing the tracked filelist registry public-pack boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_verilator_native_option_prototype_filelist_registry_gate.json",
+  "current_priority": "define_commit_split_and_public_pack_cleanup_gate",
+  "decision": {
+    "selected_next_workstream": "commit_split_and_public_pack_cleanup",
+    "selected_first_gate": "define_commit_split_and_public_pack_cleanup_gate",
+    "reason": "The tracked filelist registry boundary is now public-pack closed, but the staged set is above the documented 100-file commit guard. Before adding native parser, arbitrary filelist planning, dependency inference, allocation broadening, resident optimization, or GEM comparison work, split and clean the public-pack change set so review and hooks remain tractable."
+  },
+  "accepted_evidence": {
+    "source_public_pack_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_verilator_native_option_prototype_filelist_registry_gate.json",
+    "registered_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "shape": "64x1",
+    "target_count": 2,
+    "preview_and_plan_command_count": 5,
+    "public_pack_include_count_at_refresh_result": 546,
+    "public_pack_exclude_count_at_refresh_result": 2,
+    "documented_commit_guard_staged_file_limit": 100,
+    "observed_staged_file_count_before_selection": 262,
+    "raw_full_state_equality_required": false,
+    "new_measurement_added": false,
+    "new_execution_added": false,
+    "runtime_or_abi_changed": false
+  },
+  "candidate_review": [
+    {
+      "candidate": "commit_split_and_public_pack_cleanup",
+      "decision": "selected",
+      "reason": "The current staged set is larger than the documented hook limit, so cleanup and split planning is the smallest useful next gate before adding more technical surface."
+    },
+    {
+      "candidate": "native_verilator_parser_boundary",
+      "decision": "defer",
+      "reason": "A parser boundary would add new user-facing implementation scope before the existing public-pack chain is review-sized."
+    },
+    {
+      "candidate": "arbitrary_filelist_to_sidecar_planner_boundary",
+      "decision": "defer",
+      "reason": "This remains the most direct technical follow-up for filelist-to-GPU automation, but it should start after the current staged chain is split and committed cleanly."
+    },
+    {
+      "candidate": "filelist_dependency_inference_policy",
+      "decision": "defer",
+      "reason": "Dependency inference is a broader input-closure problem and should not be mixed into the current tracked-template registry publication."
+    },
+    {
+      "candidate": "automatic_gpu_allocation_policy_broadening",
+      "decision": "defer",
+      "reason": "Automatic allocation broadening needs additional evidence and should not be stacked on top of the current large staged set."
+    },
+    {
+      "candidate": "resident_execution_optimization",
+      "decision": "defer",
+      "reason": "Resident optimization targets repeated-launch weakness and is not the immediate blocker for publishing the current Verilator-like filelist registry chain."
+    },
+    {
+      "candidate": "gem_comparison_boundary",
+      "decision": "defer",
+      "reason": "GEM comparison should wait until the reviewed public-pack boundary and commit history are small enough to compare and explain cleanly."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_commit_split_and_public_pack_cleanup_gate",
+    "must_pin": [
+      "the staged file count before split",
+      "the documented commit guard limit for staged non-submodule file changes",
+      "which files belong to the Verilator native option filelist registry and public-pack chain",
+      "which unrelated or pre-existing staged changes must stay separate",
+      "which generated reports or artifacts remain non-canonical",
+      "the intended commit groups and the verification commands to rerun after each split",
+      "that no new measurement, execution, runtime/ABI, parser, planner, dependency inference, allocation, or GEM claim is introduced"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "raw_full_state_equality_required": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_commit_split_and_public_pack_cleanup_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not new execution evidence",
+    "not a runtime or ABI change",
+    "not a native Verilator implementation",
+    "not a native Verilator parser change",
+    "not arbitrary filelist or RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

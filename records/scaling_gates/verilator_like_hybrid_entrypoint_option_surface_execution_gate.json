@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_like_hybrid_entrypoint_option_surface_execution_gate",
+  "status": "defined_verilator_like_hybrid_entrypoint_option_surface_execution",
+  "objective": "Define the first non-dry-run execution boundary for the Verilator-like target-name plus --sim-accel-shape operator surface after preview review.",
+  "source_definition_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_gate.json",
+  "source_dry_run_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_dry_run_gate.json",
+  "source_review_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_dry_run_review_gate.json",
+  "current_priority": "run_verilator_like_hybrid_entrypoint_option_surface_execution_gate",
+  "execution_scope": {
+    "name": "paged_attention_kv_score_target_name_sim_accel_shape_64x1_build_run_compare",
+    "decision": "execute_the_reviewed_target_name_plus_sim_accel_shape_path_once",
+    "reason": "The accepted dry-run boundary proved only the operator surface and handoff contract. Executing the same target-name plus --sim-accel-shape path resolves the immediate weakness without adding raw filelist ingestion, a native Verilator option implementation, or a new workload.",
+    "operator_surface": "target_name_plus_sim_accel_shape",
+    "target": "paged_attention_kv_score",
+    "shape": "64x1",
+    "reproducible_input_contract": "tracked_slice_launch_template_resolved_from_target_name",
+    "tracked_template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+    "commands": [
+      {
+        "purpose": "execute_operator_entrypoint_build_run_compare",
+        "command": "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --summary-out reports/hybrid_benchmark_paged_attention_kv_score_sim_accel_64x1.json",
+        "expected_compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+        "expected_summary_report": "reports/hybrid_benchmark_paged_attention_kv_score_sim_accel_64x1.json",
+        "coverage_output_gate": "config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+        "coverage_output_target": "pulp_paged_attention_kv_score",
+        "correctness_policy": "coverage_output_equivalence",
+        "expected_output_words": 29,
+        "expected_output_bytes": 116
+      }
+    ]
+  },
+  "execution_requirements": [
+    "the command must complete Verilator build through the resolved tracked template",
+    "the command must build the generic host probe through src/tools/build_host_probe.py",
+    "the command must build the GPU cubin",
+    "the command must run CPU and hybrid paths",
+    "the command must write the expected compare report under reports/",
+    "the compare report must pass coverage_output_equivalence with mismatch count 0",
+    "the compare report must compare 29 words / 116 bytes per state",
+    "the command may write the expected summary report under reports/",
+    "raw full-state equality is not required",
+    "generated reports and artifacts remain non-canonical"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "execute_reviewed_operator_entrypoint_next": true,
+    "target_name_first_operator_surface_required": true,
+    "sim_accel_shape_required": true,
+    "raw_filelist_input_allowed": false,
+    "generic_host_probe_builder_required": true,
+    "coverage_output_equivalence_required_for_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "fresh_timing_claim_allowed_by_gate_alone": false,
+    "optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_verilator_like_hybrid_entrypoint_option_surface_execution_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not fresh build/run/compare execution",
+    "not timing or speedup evidence",
+    "not a runtime or ABI change",
+    "not raw filelist ingestion",
+    "not automatic optimal GPU assignment for arbitrary designs",
+    "not a Verilator-native option implementation",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

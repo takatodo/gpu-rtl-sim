@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_prototype_boundary_gate",
+  "status": "defined_verilator_native_option_prototype_boundary",
+  "objective": "Define the smallest native-Verilator-option prototype boundary that can reuse the reviewed sidecar and filelist-derived evidence without claiming native Verilator implementation yet.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json",
+  "source_operator_surface_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_gate.json",
+  "source_operator_execution_review_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_review_gate.json",
+  "source_filelist_plan_boundary_gate": "config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_gate.json",
+  "source_policy_repeat_median_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json",
+  "source_public_pack_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json",
+  "current_priority": "run_verilator_native_option_prototype_boundary_dry_run_gate",
+  "prototype_boundary": {
+    "selected_surface": "verilator_native_option_prototype_plan_only",
+    "operator_goal": "A user should be able to start from a Verilator-style source/filelist invocation and ask for GPU hybrid execution with one compact acceleration option.",
+    "future_verilator_facing_spelling": {
+      "primary_command_form": "verilator --cc --timing <normal Verilator build inputs> --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>",
+      "minimal_option": "--sim-accel sidecar-gpu",
+      "primary_shape_form": "--sim-accel-states <N> --sim-accel-steps <S>",
+      "wrapper_compatibility_shape_form": "--sim-accel-shape <NxS>",
+      "first_reviewed_shape": "64x1",
+      "reviewed_fallback_shape": "32x1"
+    },
+    "current_implementation_surface": {
+      "status": "sidecar_shim_and_template_runner_only",
+      "operator_preview_command": "python3 src/tools/verilator_sidecar_shim.py --target <target> --sim-accel-shape 64x1 --print-verilator-command",
+      "json_plan_command": "python3 src/tools/run_hybrid_benchmark.py <target> --sim-accel-shape 64x1 --operator-plan-json",
+      "filelist_plan_command": "python3 src/tools/gen_hybrid_config.py --target <logical-target> --top-module <top> --source <rtl.sv> --overlay <coverage_tb.sv> --dry-run",
+      "native_verilator_parser_status": "not_implemented_by_this_gate",
+      "runtime_or_abi_status": "unchanged_by_this_gate"
+    },
+    "first_scoped_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "accepted_evidence_carried_forward": {
+      "repeat_count": 3,
+      "total_sample_count": 6,
+      "shape": "64x1",
+      "coverage_output_equivalence_passed": true,
+      "max_coverage_output_mismatch_count": 0,
+      "median_cpu_to_hybrid_wall_ratio_range": [
+        139.77687626774846,
+        145.7001090512541
+      ],
+      "raw_full_state_equality_required": false
+    },
+    "required_explicit_inputs_not_inferred": [
+      "source filelist or tracked template",
+      "top module",
+      "clock/reset names and reset polarity when defaults are not correct",
+      "coverage overlay or existing coverage top",
+      "coverage manifest scope and output words",
+      "verilator args and defines",
+      "Verilator mdir",
+      "host-probe builder",
+      "init state path",
+      "reference state path",
+      "candidate state path",
+      "compare report path or deterministic naming rule",
+      "selected correctness policy",
+      "shape policy"
+    ],
+    "known_gap_before_native_or_filelist_direct_claim": {
+      "gap": "filelist-derived target names are not currently registered in the run_hybrid_benchmark.py sidecar target registry",
+      "current_registered_equivalent_targets": [
+        "paged_attention_kv_score",
+        "pulp_ita_mha"
+      ],
+      "required_later_resolution": [
+        "register filelist-derived targets with contract tests",
+        "or define a separate filelist-to-shim planner that emits the same native-option preview fields"
+      ],
+      "claim_limit": "This gate carries filelist repeat-median evidence as scoped input evidence, but it does not claim the current shim can directly run filelist_* target names."
+    },
+    "sidecar_generated_vs_native_split": {
+      "sidecar_generated_now": [
+        "coverage manifest draft",
+        "slice launch template draft",
+        "scaling gate draft",
+        "Verilator build/run command plan",
+        "host-probe build metadata",
+        "GPU cubin command plan",
+        "coverage_output_equivalence compare plan"
+      ],
+      "native_verilator_later": [
+        "parse the compact acceleration option directly in the Verilator-facing invocation",
+        "emit or call the same explicit sidecar plan without hidden local assumptions",
+        "keep plan preview inspectable before execution",
+        "preserve the same correctness policy and report paths"
+      ]
+    }
+  },
+  "dry_run_commands": [
+    "python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command",
+    "python3 src/tools/verilator_sidecar_shim.py --target pulp_ita_mha --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 64x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 64x1 --dry-run"
+  ],
+  "required_next_gate": {
+    "name": "run_verilator_native_option_prototype_boundary_dry_run_gate",
+    "must_record": [
+      "all prototype preview commands exit 0",
+      "the printed Verilator-facing command contains --sim-accel sidecar-gpu, --sim-accel-states 64, and --sim-accel-steps 1",
+      "the current shim previews use registered target names while filelist-derived templates use run_hybrid_template dry-run until filelist_* targets are registered or a filelist-to-shim planner exists",
+      "the plan exposes target, shape, template or source boundary, delegated stage commands, correctness policy, and generated report paths",
+      "the result stays plan-only and writes no canonical files",
+      "the result does not claim Verilator has native option support",
+      "the result does not infer arbitrary filelist dependencies or automatic optimal GPU allocation"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "plan_only_boundary": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "repeat_median_claim_carried_from_review": true,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_verilator_native_option_prototype_boundary_dry_run_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not new execution evidence",
+    "not a native Verilator implementation",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not a new public CLI or workflow",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

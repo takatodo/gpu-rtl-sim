@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_to_verilator_like_hybrid_plan_boundary_materialization_review_gate",
+  "status": "accepted_filelist_to_verilator_like_hybrid_plan_boundary_materialization",
+  "objective": "Review and accept the filelist-facing materialized manifest, launch template, and scaling-gate payloads.",
+  "source_materialization_gate": "config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_materialization_gate.json",
+  "source_result_gate": "config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_materialization_result_gate.json",
+  "current_priority": "define_filelist_materialized_template_dry_run_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The materialization command exited 0, wrote exactly the three allowed JSON files, avoided overwriting existing files, and produced a template/gate pair with explicit source/overlay metadata, generic host-probe metadata, no Makefile host-probe target, and coverage_output_equivalence planning.",
+    "accepted_scope": "materialized filelist_paged_attention_kv_score manifest/template/gate source files",
+    "known_weaknesses": [
+      "materialization is not Verilator build/run/compare evidence",
+      "the generated coverage manifest is synthetic and must be validated by later dry-run/execution gates",
+      "the generated target is a new derived target and does not replace the existing pulp_paged_attention_kv_score target",
+      "filelist-facing input still requires explicit top/overlay/clock/reset metadata",
+      "native Verilator option and optimal GPU allocation remain unimplemented"
+    ]
+  },
+  "accepted_files": [
+    "overlays/generated/tests/filelist_paged_attention_kv_score_coverage_regions.json",
+    "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+    "records/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json"
+  ],
+  "required_next_gate": {
+    "name": "define_filelist_materialized_template_dry_run_gate",
+    "must_pin": [
+      "the exact run_hybrid_template.py dry-run command for the materialized template",
+      "shape for the first command-plan validation, preferably 1x1",
+      "expected Verilator build command inputs from the materialized template",
+      "generic host-probe builder use",
+      "coverage_output_equivalence compare plan",
+      "that this next dry-run still does not execute build/run/compare",
+      "that arbitrary RTL support, optimal GPU allocation, and native Verilator support remain non-claims"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_execution_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_filelist_materialized_template_dry_run_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic clock/reset/coverage inference",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}

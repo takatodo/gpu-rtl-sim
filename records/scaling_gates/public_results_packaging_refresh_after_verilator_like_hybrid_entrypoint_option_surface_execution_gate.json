@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_verilator_like_hybrid_entrypoint_option_surface_execution_gate",
+  "objective": "Refresh the public results packaging after the Verilator-like target-name plus --sim-accel-shape execution review.",
+  "status": "defined_public_results_packaging_refresh_after_verilator_like_hybrid_entrypoint_option_surface_execution",
+  "source_review_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_review_gate.json",
+  "source_result_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_result_gate.json",
+  "source_execution_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_gate.json",
+  "selected_workstream": "public_results_packaging_refresh_after_verilator_like_hybrid_entrypoint_option_surface_execution",
+  "results_doc": "docs/results.md",
+  "entrypoint_execution_evidence": {
+    "operator_surface": "target_name_plus_sim_accel_shape",
+    "target": "paged_attention_kv_score",
+    "shape": "64x1",
+    "command_count": 1,
+    "all_commands_exited_zero": true,
+    "correctness_policy": "coverage_output_equivalence",
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "raw_full_state_all_matched": false,
+    "raw_full_state_equality_required": false,
+    "normalized_final_state_all_passed": true,
+    "review_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_review_gate.json",
+    "result_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_result_gate.json",
+    "compare_reports": [
+      "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json"
+    ],
+    "summary_reports": [
+      "reports/hybrid_benchmark_paged_attention_kv_score_sim_accel_64x1.json"
+    ]
+  },
+  "refresh_scope": [
+    "keep docs/results.md aligned with the reviewed target-name plus --sim-accel-shape execution",
+    "keep README.md, docs/status.md, docs/roadmap.md, and config/selection.json aligned",
+    "include the surface definition, dry-run review, execution result, review record, and this refresh record in the public pack manifest",
+    "include the generated compare report and wrapper summary as evidence snapshots only",
+    "call out that raw strict final-state equality remains false",
+    "describe the result as one target/shape operator-surface integration evidence, not universal target support",
+    "do not add a new measurement beyond the reviewed execution",
+    "do not change runtime or ABI behavior",
+    "do not claim a Verilator-native option is implemented by this gate",
+    "do not claim raw filelist ingestion or automatic optimal GPU allocation"
+  ],
+  "acceptance_policy": {
+    "documentation_refresh_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "fresh_timing_claim_allowed_by_gate_alone": false,
+    "optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false,
+    "contract_tests_required": true
+  },
+  "review_boundary": [
+    "README.md",
+    "config/selection.json",
+    "config/selection_extensions.json",
+    "docs/status.md",
+    "docs/roadmap.md",
+    "docs/results.md",
+    "src/tools/results_reproduction_manifest.py",
+    "records/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_result_gate.json",
+    "records/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_review_gate.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_verilator_like_hybrid_entrypoint_option_surface_execution_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+    "tests/contract/test_resident_runtime_contract.py"
+  ],
+  "next_task": "public_benchmark_pack_externalization_completion_after_verilator_like_hybrid_entrypoint_option_surface_execution",
+  "non_claims": [
+    "not a new measurement result beyond the reviewed operator-surface execution",
+    "not fresh timing or speedup evidence",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not universal target/template support",
+    "not raw full-state equality",
+    "not raw filelist ingestion",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

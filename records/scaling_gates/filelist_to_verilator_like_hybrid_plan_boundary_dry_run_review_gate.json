@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_to_verilator_like_hybrid_plan_boundary_dry_run_review_gate",
+  "status": "accepted_filelist_to_verilator_like_hybrid_plan_boundary_dry_run",
+  "objective": "Review and accept the filelist-facing plan-only dry-run and refusal checks.",
+  "source_definition_gate": "config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_gate.json",
+  "source_dry_run_gate": "config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_dry_run_gate.json",
+  "current_priority": "define_filelist_to_verilator_like_hybrid_plan_boundary_materialization_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The accepted dry-run command exited 0 and emitted coverage manifest, slice launch template, and scaling gate drafts using explicit source/top/overlay metadata, generic host-probe metadata, no Makefile host-probe target, and coverage_output_equivalence planning. The missing source/overlay command exited 1 with an explicit error.",
+    "accepted_scope": "plan-only filelist-facing config generation for one tracked PULP ITA source plus tracked coverage overlay",
+    "known_weaknesses": [
+      "the accepted case still requires explicit target, top module, overlay, and clock/reset defaults",
+      "the command is dry-run only and does not build Verilator output",
+      "the generated payloads are printed text and are not source of truth",
+      "only the source/overlay missing refusal was exercised",
+      "the case validates one known source/overlay pair, not arbitrary RTL"
+    ]
+  },
+  "accepted_result": {
+    "accepted_command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv --dry-run",
+    "refusal_command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --dry-run",
+    "accepted_command_exit_code": 0,
+    "refusal_command_exit_code": 1,
+    "planned_correctness_policy": "coverage_output_equivalence",
+    "generated_payloads_written": false
+  },
+  "required_next_gate": {
+    "name": "define_filelist_to_verilator_like_hybrid_plan_boundary_materialization_gate",
+    "must_pin": [
+      "whether generated manifest/template/gate drafts may be written as tracked source",
+      "which generated paths would become source of truth if materialized",
+      "how to avoid overwriting existing hand-authored templates or gates",
+      "which additional refusal cases must be tested before materialization",
+      "that materialization still does not claim Verilator build/run/compare correctness",
+      "that arbitrary RTL support, optimal GPU allocation, and native Verilator option support remain non-claims"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_filelist_to_verilator_like_hybrid_plan_boundary_materialization_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic clock/reset/coverage inference",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "generated payloads are dry-run text, not source of truth"
+  ]
+}

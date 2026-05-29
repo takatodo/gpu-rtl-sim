@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_to_verilator_like_hybrid_plan_boundary_materialization_gate",
+  "status": "defined_filelist_to_verilator_like_hybrid_plan_boundary_materialization",
+  "objective": "Define when the reviewed filelist-facing dry-run payloads may be materialized as tracked source files.",
+  "source_definition_gate": "config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_gate.json",
+  "source_dry_run_gate": "config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_dry_run_gate.json",
+  "source_review_gate": "config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_dry_run_review_gate.json",
+  "current_priority": "run_filelist_to_verilator_like_hybrid_plan_boundary_materialization_gate",
+  "materialization_scope": {
+    "decision": "allow_exact_three_new_source_files_from_the_reviewed_dry_run_payload",
+    "reason": "The reviewed dry-run proved that explicit source/top/overlay metadata can produce a manifest, launch template, and scaling gate draft without writing. Materializing exactly those three draft paths creates a tracked review surface for later template dry-run and execution gates without claiming build/run/compare correctness yet.",
+    "allowed_paths": [
+      {
+        "path": "overlays/generated/tests/filelist_paged_attention_kv_score_coverage_regions.json",
+        "role": "coverage_manifest",
+        "must_not_exist_before_materialization": true,
+        "becomes_source_of_truth_if_tracked": true
+      },
+      {
+        "path": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+        "role": "slice_launch_template",
+        "must_not_exist_before_materialization": true,
+        "becomes_source_of_truth_if_tracked": true
+      },
+      {
+        "path": "records/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+        "role": "candidate_scaling_gate_record",
+        "must_not_exist_before_materialization": true,
+        "becomes_source_of_truth_if_tracked": true
+      }
+    ],
+    "materialization_command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv",
+    "expected_followup_checks": [
+      "all three allowed paths exist after materialization",
+      "all three allowed paths are valid JSON",
+      "no existing hand-authored template, manifest, or gate is overwritten",
+      "the generated launch template records the explicit source file and overlay paths",
+      "the generated launch template uses src/tools/build_host_probe.py",
+      "the generated gate requires coverage_output_equivalence",
+      "the generated gate does not claim speedup, arbitrary RTL support, or native Verilator support"
+    ]
+  },
+  "refusal_conditions": [
+    "any allowed path already exists before materialization",
+    "the generator would write outside the three allowed paths",
+    "the generator would overwrite an existing hand-authored source file",
+    "the generated template omits source_files or planned_overlay metadata",
+    "the generated template does not use src/tools/build_host_probe.py",
+    "the generated gate omits coverage_output_equivalence",
+    "the generated payload embeds local absolute paths",
+    "materialization is treated as build/run/compare evidence",
+    "materialization is treated as arbitrary RTL support or native Verilator option support"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "materialization_allowed_next": true,
+    "allowed_new_file_count": 3,
+    "overwrite_allowed": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_execution_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_to_verilator_like_hybrid_plan_boundary_materialization_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic clock/reset/coverage inference",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_to_verilator_like_hybrid_plan_boundary_dry_run_gate",
+  "status": "passed_filelist_to_verilator_like_hybrid_plan_boundary_dry_run",
+  "objective": "Run the filelist-facing plan-only dry-run and refusal checks defined by the filelist-to-hybrid-plan boundary.",
+  "source_definition_gate": "config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_gate.json",
+  "current_priority": "review_filelist_to_verilator_like_hybrid_plan_boundary_dry_run_gate",
+  "executed_commands": [
+    {
+      "purpose": "generate_plan_from_filelist_like_sources_without_writing",
+      "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv --dry-run",
+      "exit_code": 0,
+      "stdout_capture": "/tmp/filelist_plan_dry_run.txt",
+      "stdout_line_count": 184,
+      "observed": {
+        "coverage_manifest_draft": "overlays/generated/tests/filelist_paged_attention_kv_score_coverage_regions.json",
+        "slice_launch_template_draft": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+        "scaling_gate_draft": "config/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+        "target": "PULP_ITA.filelist_paged_attention_kv_score",
+        "top_module": "pulp_paged_attention_kv_score_gpu_cov_tb",
+        "source_files": [
+          "third_party/ITA/src/ita.sv",
+          "overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv"
+        ],
+        "host_probe_builder": "src/tools/build_host_probe.py",
+        "makefile": "not_required_for_generated_template",
+        "clock_field": "pulp_paged_attention_kv_score_gpu_cov_tb__DOT__clk_i",
+        "reset_field": "pulp_paged_attention_kv_score_gpu_cov_tb__DOT__reset_like_w",
+        "acceptance_policy": "coverage_output_equivalence"
+      }
+    },
+    {
+      "purpose": "reject_missing_filelist_or_overlay",
+      "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --dry-run",
+      "exit_code": 1,
+      "stderr_capture": "/tmp/filelist_plan_refusal_stderr.txt",
+      "observed_stderr": "error: at least one --source or --overlay is required",
+      "stdout_line_count": 0,
+      "stderr_line_count": 1
+    }
+  ],
+  "non_write_checks": {
+    "config/slice_launch_templates/filelist_paged_attention_kv_score.json": "not_written",
+    "overlays/generated/tests/filelist_paged_attention_kv_score_coverage_regions.json": "not_written",
+    "records/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json": "not_written"
+  },
+  "acceptance_policy": {
+    "dry_run_only": true,
+    "accepted_command_exit_zero": true,
+    "refusal_command_exit_nonzero": true,
+    "coverage_output_equivalence_planned": true,
+    "generated_payloads_are_source_of_truth": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_filelist_to_verilator_like_hybrid_plan_boundary_dry_run_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic clock/reset/coverage inference",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "generated payloads are dry-run text, not source of truth"
+  ]
+}

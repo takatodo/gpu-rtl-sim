@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_like_hybrid_entrypoint_option_surface_dry_run_gate",
+  "status": "passed_verilator_like_hybrid_entrypoint_option_surface_dry_run",
+  "objective": "Record dry-run and preview validation for the target-name plus --sim-accel-shape operator surface.",
+  "source_definition_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_gate.json",
+  "current_priority": "review_verilator_like_hybrid_entrypoint_option_surface_dry_run_gate",
+  "dry_run_result": {
+    "target": "paged_attention_kv_score",
+    "shape": "64x1",
+    "command_count": 6,
+    "all_commands_exited_zero": true,
+    "operator_surface": "target_name_plus_sim_accel_shape",
+    "operator_entrypoint_surface": "sim_accel_compat",
+    "operator_entrypoint_shape_source": "sim_accel_shape",
+    "effective_sim_accel": "sidecar-gpu",
+    "correctness_policy": "coverage_output_equivalence",
+    "generated_compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+    "tracked_template_resolved": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+    "synthesized_verilator_command_emitted": true,
+    "synthesized_verilator_estimate_command_emitted": true,
+    "handoff_contract_emitted": true,
+    "dry_run_executed_measurement": false,
+    "verilator_native_option_implemented": false
+  },
+  "commands": [
+    {
+      "command": "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --dry-run",
+      "exit_code": 0,
+      "observed": [
+        "verilator_option_preview",
+        "delegated run_hybrid_template command",
+        "coverage_output_equivalence",
+        "efficiency_estimate from existing reports"
+      ]
+    },
+    {
+      "command": "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-operator-plan",
+      "exit_code": 0,
+      "observed": [
+        "synthesized Verilator command",
+        "synthesized Verilator estimate command",
+        "requested compatibility entrypoint",
+        "coverage_output_equivalence",
+        "operator-plan non-claims"
+      ]
+    },
+    {
+      "command": "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json",
+      "exit_code": 0,
+      "observed_json": {
+        "schema_version": 1,
+        "tool": "src/tools/run_hybrid_benchmark.py",
+        "status": "planned",
+        "schema_role": "target_first_operator_plan",
+        "operator_entrypoint_surface": "sim_accel_compat",
+        "operator_entrypoint_shape_source": "sim_accel_shape",
+        "effective_sim_accel": "sidecar-gpu",
+        "handoff_shape": "64x1",
+        "handoff_nstates": 64,
+        "handoff_steps": 1,
+        "correctness_policy": "coverage_output_equivalence",
+        "coverage_output_target": "pulp_paged_attention_kv_score",
+        "generated_compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+        "recommended_entrypoint": "--sim-accel-shape <NxS>",
+        "recommended_shape": "64x1",
+        "recommended_shape_matches_request": true
+      }
+    },
+    {
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel-shape 64x1 --print-operator-plan",
+      "exit_code": 0,
+      "observed": [
+        "synthesized Verilator command",
+        "synthesized Verilator estimate command",
+        "requested compatibility entrypoint",
+        "coverage_output_equivalence",
+        "operator-plan non-claims"
+      ]
+    },
+    {
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel-shape 64x1 --print-verilator-command",
+      "exit_code": 0,
+      "observed_command": "verilator --cc --timing -Mdir artifacts/pulp_paged_attention_kv_score_obj_dir --flatten overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv --top-module pulp_paged_attention_kv_score_gpu_cov_tb --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1"
+    },
+    {
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel-shape 64x1 --print-verilator-estimate-command",
+      "exit_code": 0,
+      "observed_command": "verilator --cc --timing -Mdir artifacts/pulp_paged_attention_kv_score_obj_dir --flatten overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv --top-module pulp_paged_attention_kv_score_gpu_cov_tb --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --sim-accel-estimate-efficiency"
+    }
+  ],
+  "acceptance_policy": {
+    "dry_run_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "operator_first_class_input_is_target_name": true,
+    "reproducible_input_contract_is_tracked_template": true,
+    "filelist_first_class_input_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "automatic_optimal_shape_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_verilator_like_hybrid_entrypoint_option_surface_dry_run_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not execution evidence",
+    "not correctness evidence",
+    "not timing or speedup evidence",
+    "not a runtime or ABI change",
+    "not raw filelist ingestion",
+    "not automatic optimal GPU assignment for arbitrary designs",
+    "not a Verilator-native option implementation",
+    "not production LLM serving throughput"
+  ]
+}

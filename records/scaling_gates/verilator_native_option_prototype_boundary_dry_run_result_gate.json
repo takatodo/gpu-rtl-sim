@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_native_option_prototype_boundary_dry_run_result_gate",
+  "status": "passed_verilator_native_option_prototype_boundary_dry_run",
+  "objective": "Record the dry-run result for the smallest native-Verilator-option prototype boundary without claiming native parser support, arbitrary RTL support, dependency inference, automatic allocation, execution, or measurement evidence.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_prototype_boundary_gate.json",
+  "current_priority": "review_verilator_native_option_prototype_boundary_dry_run_gate",
+  "shape": "64x1",
+  "nstates": 64,
+  "steps": 1,
+  "command_count": 4,
+  "exit_code": 0,
+  "all_commands_exited_zero": true,
+  "dry_run_scope": {
+    "shim_preview_command_count": 2,
+    "filelist_template_dry_run_command_count": 2,
+    "registered_shim_targets": [
+      "paged_attention_kv_score",
+      "pulp_ita_mha"
+    ],
+    "filelist_template_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "correctness_policy": "coverage_output_equivalence",
+    "generated_reports_or_artifacts_written": false,
+    "filelist_targets_directly_supported_by_shim": false,
+    "native_verilator_parser_status": "not_implemented"
+  },
+  "commands": [
+    {
+      "label": "shim_preview_paged_attention_kv_score",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command",
+      "exit_code": 0,
+      "target": "paged_attention_kv_score",
+      "mode": "registered_shim_target_preview",
+      "observed_verilator_command_contains": [
+        "verilator --cc --timing",
+        "--sim-accel sidecar-gpu",
+        "--sim-accel-states 64",
+        "--sim-accel-steps 1"
+      ],
+      "top_module": "pulp_paged_attention_kv_score_gpu_cov_tb",
+      "mdir": "artifacts/pulp_paged_attention_kv_score_obj_dir",
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "shim_preview_pulp_ita_mha",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target pulp_ita_mha --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command",
+      "exit_code": 0,
+      "target": "pulp_ita_mha",
+      "mode": "registered_shim_target_preview",
+      "observed_verilator_command_contains": [
+        "verilator --cc --timing",
+        "--sim-accel sidecar-gpu",
+        "--sim-accel-states 64",
+        "--sim-accel-steps 1"
+      ],
+      "top_module": "pulp_ita_mha_gpu_cov_tb",
+      "mdir": "artifacts/pulp_ita_mha_obj_dir",
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "filelist_template_dry_run_paged_attention_kv_score",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 64x1 --dry-run",
+      "exit_code": 0,
+      "target": "filelist_paged_attention_kv_score",
+      "mode": "filelist_template_plan_only",
+      "planned_command_count": 7,
+      "top_module": "pulp_paged_attention_kv_score_gpu_cov_tb",
+      "mdir": "artifacts/filelist_paged_attention_kv_score_obj_dir",
+      "compare_report_path": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+      "coverage_output_gate": "records/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+      "coverage_output_target": "filelist_paged_attention_kv_score",
+      "correctness_policy": "coverage_output_equivalence",
+      "writes_generated_outputs": false
+    },
+    {
+      "label": "filelist_template_dry_run_known_template_pulp_ita_mha",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 64x1 --dry-run",
+      "exit_code": 0,
+      "target": "filelist_known_template_pulp_ita_mha",
+      "mode": "filelist_template_plan_only",
+      "planned_command_count": 7,
+      "top_module": "pulp_ita_mha_gpu_cov_tb",
+      "mdir": "artifacts/filelist_known_template_pulp_ita_mha_obj_dir",
+      "compare_report_path": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+      "coverage_output_gate": "records/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json",
+      "coverage_output_target": "filelist_known_template_pulp_ita_mha",
+      "correctness_policy": "coverage_output_equivalence",
+      "writes_generated_outputs": false
+    }
+  ],
+  "observed_summary": {
+    "future_verilator_option_present": true,
+    "primary_shape_spelling_observed": "--sim-accel-states 64 --sim-accel-steps 1",
+    "wrapper_shape_spelling_used_by_this_gate": false,
+    "correctness_policy_visible_in_template_plans": true,
+    "planned_template_command_count_per_target": 7,
+    "filelist_targets_directly_supported_by_shim": false,
+    "generated_reports_or_artifacts_written": false,
+    "native_verilator_parser_status": "not_implemented"
+  },
+  "acceptance_policy": {
+    "dry_run_only": true,
+    "plan_only_boundary": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_verilator_native_option_prototype_boundary_dry_run_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not non-dry-run execution evidence",
+    "not a native Verilator implementation",
+    "not direct filelist target support in the current shim",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not a new public CLI or workflow",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality"
+  ]
+}

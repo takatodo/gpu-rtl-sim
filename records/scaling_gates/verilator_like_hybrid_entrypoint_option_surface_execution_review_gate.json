@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_like_hybrid_entrypoint_option_surface_execution_review_gate",
+  "status": "accepted_verilator_like_hybrid_entrypoint_option_surface_execution",
+  "objective": "Review and accept the first non-dry-run target-name plus --sim-accel-shape operator-surface execution result.",
+  "source_execution_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_gate.json",
+  "source_result_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_result_gate.json",
+  "current_priority": "define_public_results_packaging_refresh_after_verilator_like_hybrid_entrypoint_option_surface_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The selected non-dry-run operator command exited 0, resolved the target name to the tracked paged-attention template, completed build/run/compare, and passed coverage_output_equivalence with mismatch count 0 over 29 words / 116 bytes per state.",
+    "accepted_scope": "paged_attention_kv_score 64x1 target-name plus --sim-accel-shape execution",
+    "known_weaknesses": [
+      "raw strict final-state equality remains false",
+      "the efficiency estimate in the summary is read from existing reports and is not fresh timing evidence",
+      "the command still delegates to tracked template machinery rather than a native Verilator option implementation",
+      "raw filelist-only ingestion remains deferred",
+      "this validates one target and shape, not universal target support"
+    ]
+  },
+  "accepted_result": {
+    "operator_entrypoint": "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --summary-out reports/hybrid_benchmark_paged_attention_kv_score_sim_accel_64x1.json",
+    "tracked_template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+    "correctness_policy": "coverage_output_equivalence",
+    "compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+    "summary_report": "reports/hybrid_benchmark_paged_attention_kv_score_sim_accel_64x1.json",
+    "mismatch_count": 0,
+    "strict_output_words_per_state": 29,
+    "strict_output_bytes_per_state": 116
+  },
+  "required_next_gate": {
+    "name": "define_public_results_packaging_refresh_after_verilator_like_hybrid_entrypoint_option_surface_execution_gate",
+    "must_pin": [
+      "whether this operator-surface execution result enters the public pack",
+      "generated reports remain reproducible evidence and not source of truth",
+      "coverage_output_equivalence is the accepted correctness policy",
+      "no Verilator-native option implementation claim",
+      "no raw filelist ingestion claim",
+      "no fresh timing or optimal GPU allocation claim"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "automatic_optimal_shape_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_public_results_packaging_refresh_after_verilator_like_hybrid_entrypoint_option_surface_execution_gate",
+  "non_claims": [
+    "not raw full-state equality",
+    "not fresh timing or speedup evidence",
+    "not automatic optimal GPU allocation for arbitrary designs",
+    "not raw filelist ingestion",
+    "not a Verilator-native option implementation",
+    "not universal target/template support",
+    "not production LLM serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

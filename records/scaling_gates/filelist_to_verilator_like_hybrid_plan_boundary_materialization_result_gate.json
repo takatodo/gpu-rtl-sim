@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_to_verilator_like_hybrid_plan_boundary_materialization_result_gate",
+  "status": "passed_filelist_to_verilator_like_hybrid_plan_boundary_materialization",
+  "objective": "Record materialization of the reviewed filelist-facing manifest, launch template, and scaling-gate payloads.",
+  "source_materialization_gate": "config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_materialization_gate.json",
+  "current_priority": "review_filelist_to_verilator_like_hybrid_plan_boundary_materialization_gate",
+  "executed_command": {
+    "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv",
+    "exit_code": 0,
+    "stdout_lines": [
+      "write: overlays/generated/tests/filelist_paged_attention_kv_score_coverage_regions.json",
+      "write: config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "write: config/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json"
+    ]
+  },
+  "materialized_files": [
+    {
+      "path": "overlays/generated/tests/filelist_paged_attention_kv_score_coverage_regions.json",
+      "role": "coverage_manifest",
+      "valid_json": true,
+      "target": "PULP_ITA.filelist_paged_attention_kv_score",
+      "top_module": "pulp_paged_attention_kv_score_gpu_cov_tb",
+      "coverage_domain": "toggle_real_subset_bitmap",
+      "region_count": 3
+    },
+    {
+      "path": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "role": "slice_launch_template",
+      "valid_json": true,
+      "target": "PULP_ITA.filelist_paged_attention_kv_score",
+      "top_module": "pulp_paged_attention_kv_score_gpu_cov_tb",
+      "source_gate": "config/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+      "source_files": [
+        "third_party/ITA/src/ita.sv",
+        "overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv"
+      ],
+      "host_probe_builder": "src/tools/build_host_probe.py",
+      "clock_field": "pulp_paged_attention_kv_score_gpu_cov_tb__DOT__clk_i",
+      "reset_field": "pulp_paged_attention_kv_score_gpu_cov_tb__DOT__reset_like_w",
+      "makefile": "not_required_for_generated_template",
+      "coverage_manifest_path": "overlays/generated/tests/filelist_paged_attention_kv_score_coverage_regions.json"
+    },
+    {
+      "path": "records/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+      "role": "candidate_scaling_gate_record",
+      "valid_json": true,
+      "gate": "filelist_paged_attention_kv_score_first_hybrid_benchmark_gate",
+      "status": "defined_from_generated_hybrid_config",
+      "target": "filelist_paged_attention_kv_score",
+      "coverage_output_equivalence_required": true,
+      "strict_output_words_per_state": 29,
+      "strict_output_bytes_per_state": 116,
+      "makefile_target_required": false,
+      "speedup_claim_allowed_by_gate_alone": false
+    }
+  ],
+  "scope_checks": {
+    "allowed_file_count": 3,
+    "materialized_file_count": 3,
+    "only_allowed_paths_written": true,
+    "overwrite_detected": false,
+    "local_absolute_paths_detected": false,
+    "generated_reports_or_artifacts_written": false
+  },
+  "acceptance_policy": {
+    "materialization_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "build_run_compare_claim_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_filelist_to_verilator_like_hybrid_plan_boundary_materialization_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic clock/reset/coverage inference",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}

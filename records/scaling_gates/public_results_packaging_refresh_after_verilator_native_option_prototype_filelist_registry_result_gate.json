@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_result_gate",
+  "status": "public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_dry_run_passed",
+  "objective": "Record the public-pack archive dry-run after adding the tracked filelist registry refresh definition gate.",
+  "source_definition_gate": "config/scaling_gates/public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_gate.json",
+  "command": "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+  "exit_code": 0,
+  "archive_created": false,
+  "observed_output_summary": {
+    "header": "public_pack_archive_ready",
+    "include_count": 546,
+    "exclude_count": 2,
+    "included_definition_gate": true,
+    "included_target_resolution_gate": true,
+    "included_registry_result_gate": true,
+    "included_registry_review_gate": true,
+    "excluded_artifacts": true,
+    "excluded_unlisted_reports": true,
+    "archive_command_not_executed": true
+  },
+  "included_records_checked": [
+    "records/scaling_gates/define_verilator_native_option_prototype_filelist_target_resolution_gate.json",
+    "records/scaling_gates/verilator_native_option_prototype_filelist_registry_result_gate.json",
+    "records/scaling_gates/verilator_native_option_prototype_filelist_registry_review_gate.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_gate.json"
+  ],
+  "current_priority": "review_public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_gate",
+  "next_task": "review_public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_gate",
+  "non_claims": [
+    "not archive creation",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not a runtime or ABI change",
+    "not a native Verilator implementation",
+    "not a native Verilator parser change",
+    "not arbitrary filelist or RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

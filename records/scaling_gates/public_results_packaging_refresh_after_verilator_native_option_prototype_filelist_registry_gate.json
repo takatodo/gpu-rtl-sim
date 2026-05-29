@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_gate",
+  "objective": "Refresh the public results packaging after accepting static sidecar registry support for the two tracked filelist-derived templates.",
+  "status": "defined_public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry",
+  "source_review_gate": "config/scaling_gates/verilator_native_option_prototype_filelist_registry_review_gate.json",
+  "source_result_gate": "config/scaling_gates/verilator_native_option_prototype_filelist_registry_result_gate.json",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_prototype_filelist_target_resolution_gate.json",
+  "selected_workstream": "public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry",
+  "current_priority": "run_public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_gate",
+  "results_doc": "docs/results.md",
+  "evidence_summary": {
+    "accepted_scope": "tracked_template_static_sidecar_registry_support",
+    "shape": "64x1",
+    "command_count": 5,
+    "registered_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "template_paths": [
+      "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json"
+    ],
+    "correctness_policy_for_later_execution": "coverage_output_equivalence",
+    "preview_and_plan_commands_exited_zero": true,
+    "new_planner_added": false,
+    "new_measurement_added": false,
+    "new_execution_added": false,
+    "runtime_or_abi_changed": false,
+    "public_pack_records_to_include": [
+      "records/scaling_gates/define_verilator_native_option_prototype_filelist_target_resolution_gate.json",
+      "records/scaling_gates/verilator_native_option_prototype_filelist_registry_result_gate.json",
+      "records/scaling_gates/verilator_native_option_prototype_filelist_registry_review_gate.json",
+      "records/scaling_gates/public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_gate.json"
+    ]
+  },
+  "refresh_scope": [
+    "keep docs/results.md aligned with the accepted tracked-template registry support",
+    "keep README.md, docs/status.md, docs/roadmap.md, and config/selection.json aligned",
+    "include the filelist target-resolution definition, registry result, registry review, and this refresh definition gate in the public-pack manifest",
+    "keep sidecar discovery and shim preview tests as the public workflow coverage for this gate",
+    "do not include per-command stdout reports as canonical evidence",
+    "do not add a new measurement or execution result",
+    "do not change runtime or ABI behavior",
+    "do not claim arbitrary filelist parsing, native Verilator parser support, dependency inference, or automatic optimal GPU allocation"
+  ],
+  "required_result_gate": {
+    "name": "run_public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_gate",
+    "must_validate": [
+      "public-pack manifest includes this refresh definition gate",
+      "public-pack manifest includes the target-resolution definition gate",
+      "public-pack manifest includes the registry result and review gates",
+      "public-pack manifest keeps generated reports and artifacts non-canonical",
+      "public-pack dry-run exits zero"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "public_pack_archive_dry_run_required": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "contract_tests_required": true
+  },
+  "review_boundary": [
+    "README.md",
+    "docs/status.md",
+    "docs/roadmap.md",
+    "docs/results.md",
+    "docs/verilator_sidecar_option.md",
+    "config/selection.json",
+    "config/selection_extensions.json",
+    "src/tools/results_reproduction_manifest.py",
+    "src/tools/hybrid_benchmark_specs.py",
+    "records/scaling_gates/define_verilator_native_option_prototype_filelist_target_resolution_gate.json",
+    "records/scaling_gates/verilator_native_option_prototype_filelist_registry_result_gate.json",
+    "records/scaling_gates/verilator_native_option_prototype_filelist_registry_review_gate.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_gate.json",
+    "tests/contract/test_hybrid_benchmark_discovery_cli.py",
+    "tests/contract/test_hybrid_verilator_sidecar_shim_examples_cli.py",
+    "tests/contract/test_public_pack_repeat_median_refresh_gates.py",
+    "tests/contract/test_hybrid_verilator_like_cli.py"
+  ],
+  "next_task": "run_public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry_gate",
+  "non_claims": [
+    "not a native Verilator implementation",
+    "not a native Verilator parser change",
+    "not arbitrary filelist or RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not new execution or measurement evidence",
+    "not a runtime or ABI change",
+    "not a new public CLI or workflow",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

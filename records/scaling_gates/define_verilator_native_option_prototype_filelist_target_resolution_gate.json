@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_prototype_filelist_target_resolution_gate",
+  "status": "defined_static_registry_resolution_for_tracked_filelist_targets",
+  "objective": "Decide how the native-Verilator-option prototype should expose reviewed filelist-derived targets without adding an arbitrary filelist planner or claiming native Verilator parser support.",
+  "source_review_gate": "config/scaling_gates/verilator_native_option_prototype_boundary_dry_run_review_gate.json",
+  "current_priority": "add_verilator_native_option_prototype_filelist_targets_to_sidecar_registry_gate",
+  "decision": {
+    "selected_resolution": "static_registry_entries_for_tracked_filelist_templates",
+    "rejected_resolution": "new_filelist_to_shim_planner_for_this_step",
+    "reason": "The existing sidecar shim already plans static BenchmarkSpec slice-template targets. The two reviewed filelist-derived templates have explicit source files, top modules, mdir paths, host-probe metadata, and coverage-output compare paths. Adding only those tracked templates to the existing registry keeps the active surface smaller than introducing a new planner interface."
+  },
+  "selected_targets": [
+    {
+      "target": "filelist_paged_attention_kv_score",
+      "template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "top_module": "pulp_paged_attention_kv_score_gpu_cov_tb",
+      "coverage_output_gate": "config/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+      "coverage_output_target": "filelist_paged_attention_kv_score",
+      "source_closure_status": "complete",
+      "registry_kind": "slice_template",
+      "supported_modes": [
+        "template"
+      ]
+    },
+    {
+      "target": "filelist_known_template_pulp_ita_mha",
+      "template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+      "top_module": "pulp_ita_mha_gpu_cov_tb",
+      "coverage_output_gate": "config/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json",
+      "coverage_output_target": "filelist_known_template_pulp_ita_mha",
+      "source_closure_status": "complete",
+      "registry_kind": "slice_template",
+      "supported_modes": [
+        "template"
+      ]
+    }
+  ],
+  "implementation_boundary": {
+    "files_expected_to_change_next": [
+      "src/tools/hybrid_benchmark_specs.py",
+      "tests/contract/test_hybrid_verilator_like_cli.py",
+      "tests/contract/test_hybrid_verilator_sidecar_shim_examples_cli.py",
+      "docs/verilator_sidecar_option.md",
+      "README.md",
+      "docs/status.md",
+      "docs/roadmap.md",
+      "docs/results.md"
+    ],
+    "public_cli_added": false,
+    "new_planner_added": false,
+    "new_runtime_or_abi_added": false,
+    "new_measurement_added": false,
+    "operator_surface": "existing run_hybrid_benchmark.py and verilator_sidecar_shim.py target registry",
+    "shape_policy": "caller must still provide --sim-accel-states/--sim-accel-steps, --sim-accel-shape, or --shape",
+    "correctness_policy": "coverage_output_equivalence"
+  },
+  "required_next_gate": {
+    "name": "add_verilator_native_option_prototype_filelist_targets_to_sidecar_registry_gate",
+    "must_do": [
+      "add exactly the two selected filelist targets to the static BenchmarkSpec registry",
+      "keep both targets template-only until separate evidence supports resident or dataset-backed modes",
+      "verify --print-verilator-command exits zero for both filelist target names at 64x1",
+      "verify --operator-plan-json exposes template, top module, mdir, stage plan, coverage_output_equivalence, and report paths for both filelist target names",
+      "verify --list-targets includes both filelist names without changing existing canonical targets",
+      "document that this is tracked-template support, not arbitrary filelist parsing"
+    ],
+    "must_not_do": [
+      "add a new public CLI",
+      "add a separate filelist-to-shim planner in this step",
+      "infer arbitrary RTL dependencies",
+      "claim native Verilator parser support",
+      "claim automatic optimal GPU allocation",
+      "run new non-dry-run measurements"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "static_registry_resolution_selected": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_filelist_planner_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "add_verilator_native_option_prototype_filelist_targets_to_sidecar_registry_gate",
+  "non_claims": [
+    "not a native Verilator implementation",
+    "not a native Verilator parser change",
+    "not arbitrary filelist or RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not new execution or measurement evidence",
+    "not a runtime or ABI change",
+    "not a new public CLI or workflow",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput"
+  ]
+}

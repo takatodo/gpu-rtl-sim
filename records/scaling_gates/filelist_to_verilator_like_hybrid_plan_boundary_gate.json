@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_to_verilator_like_hybrid_plan_boundary_gate",
+  "status": "defined_filelist_to_verilator_like_hybrid_plan_boundary",
+  "objective": "Define the minimal filelist-facing boundary that can produce a Verilator-like hybrid plan without claiming arbitrary RTL support.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_verilator_like_hybrid_entrypoint_option_surface_public_pack_refresh_gate.json",
+  "current_priority": "run_filelist_to_verilator_like_hybrid_plan_boundary_dry_run_gate",
+  "boundary_decision": {
+    "selected_surface": "filelist_facing_plan_only",
+    "first_existing_entrypoint": "python3 src/tools/gen_hybrid_config.py",
+    "reason": "The target-name plus --sim-accel-shape path is now validated through one non-dry-run execution. The next usability gap is accepting RTL source-file inputs and producing an explicit hybrid plan while still keeping unresolved design-discovery assumptions visible."
+  },
+  "input_contract": {
+    "accepted_first_form": {
+      "description": "Repeatable --source file list plus explicit design metadata, dry-run only.",
+      "example_command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv --dry-run",
+      "source_files": "one_or_more_tracked_repo_paths_or_canonical_submodule_rtl_source_paths_or_a_tracked_overlay",
+      "target": "explicit logical target name",
+      "top_module": "explicit top module",
+      "overlay": "explicit coverage top overlay when the source filelist is not directly the coverage top",
+      "source_gate": "explicit gate or planned gate that defines the coverage-output contract",
+      "coverage_manifest_path": "explicit manifest path or generated manifest draft path",
+      "coverage_output_target": "explicit compare target name for coverage_output_equivalence",
+      "clock_reset": "explicit fields when defaults <top>__DOT__clk_i and <top>__DOT__reset_like_w are not correct",
+      "shape": "not inferred by this boundary; later execution must still choose a shape such as 64x1",
+      "report_naming": "explicit compare-report path or documented naming rule before execution"
+    },
+    "plan_outputs": [
+      "coverage manifest draft",
+      "slice launch template draft",
+      "scaling gate draft",
+      "Verilator build inputs: mdir, top module, source files, defines, args",
+      "generic host-probe build metadata",
+      "coverage_output_equivalence compare policy"
+    ],
+    "required_explicit_fields": [
+      "target",
+      "top_module",
+      "source_files_or_overlay",
+      "coverage_overlay_or_existing_coverage_top",
+      "source_gate_or_planned_source_gate",
+      "coverage_manifest_scope",
+      "coverage_output_target",
+      "clock_field_or_default_acceptance",
+      "reset_field_or_default_acceptance",
+      "reset_asserted_value",
+      "reset_deasserted_value",
+      "host_probe_builder",
+      "mdir",
+      "shape_or_default_shape_policy",
+      "compare_report_path_or_naming_rule"
+    ]
+  },
+  "refusal_cases": [
+    "no source file and no overlay is provided",
+    "source or overlay path is untracked or outside the repository boundary",
+    "top module is omitted",
+    "clock/reset fields cannot be made explicit or defaulted",
+    "coverage output words or manifest scope are unknown",
+    "the filelist cannot be mapped to a tracked template/gate draft without hidden local assumptions",
+    "the operator expects execution rather than plan-only dry-run evidence",
+    "the operator expects automatic optimal GPU allocation from this boundary"
+  ],
+  "selected_dry_run_validation": {
+    "next_gate": "run_filelist_to_verilator_like_hybrid_plan_boundary_dry_run_gate",
+    "commands": [
+      {
+        "purpose": "generate_plan_from_filelist_like_sources_without_writing",
+        "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv --dry-run",
+        "expected": [
+          "prints coverage manifest draft",
+          "prints slice launch template draft",
+          "prints scaling gate draft",
+          "includes source_files",
+          "includes top_module",
+          "includes host_probe_builder",
+          "includes coverage_output_equivalence",
+          "does not write source-of-truth files"
+        ]
+      },
+      {
+        "purpose": "reject_missing_filelist_or_overlay",
+        "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --dry-run",
+        "expected_exit_code": 1,
+        "expected_stderr": "error: at least one --source or --overlay is required"
+      }
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "plan_only_boundary": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_to_verilator_like_hybrid_plan_boundary_dry_run_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not execution evidence",
+    "not arbitrary RTL support",
+    "not raw filelist execution",
+    "not automatic top/clock/reset/overlay inference",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_native_option_prototype_filelist_registry_result_gate",
+  "status": "passed_tracked_filelist_targets_static_registry_addition",
+  "objective": "Record that the two reviewed filelist-derived templates are exposed through the existing sidecar target registry without adding a new planner, native Verilator parser support, arbitrary filelist parsing, or new measurement evidence.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_prototype_filelist_target_resolution_gate.json",
+  "current_priority": "review_verilator_native_option_prototype_filelist_registry_gate",
+  "implementation": {
+    "registry_file": "src/tools/hybrid_benchmark_specs.py",
+    "selected_resolution": "static_registry_entries_for_tracked_filelist_templates",
+    "new_registry_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "new_planner_added": false,
+    "new_public_cli_added": false,
+    "runtime_or_abi_changed": false,
+    "native_verilator_parser_changed": false
+  },
+  "commands": [
+    {
+      "label": "filelist_paged_attention_kv_score_print_verilator_command",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target filelist_paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command",
+      "exit_code": 0,
+      "observed_command_contains": [
+        "verilator --cc --timing",
+        "artifacts/filelist_paged_attention_kv_score_obj_dir",
+        "--top-module pulp_paged_attention_kv_score_gpu_cov_tb",
+        "--sim-accel sidecar-gpu",
+        "--sim-accel-states 64",
+        "--sim-accel-steps 1"
+      ]
+    },
+    {
+      "label": "filelist_known_template_pulp_ita_mha_print_verilator_command",
+      "command": "python3 src/tools/verilator_sidecar_shim.py --target filelist_known_template_pulp_ita_mha --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command",
+      "exit_code": 0,
+      "observed_command_contains": [
+        "verilator --cc --timing",
+        "artifacts/filelist_known_template_pulp_ita_mha_obj_dir",
+        "--top-module pulp_ita_mha_gpu_cov_tb",
+        "--sim-accel sidecar-gpu",
+        "--sim-accel-states 64",
+        "--sim-accel-steps 1"
+      ]
+    },
+    {
+      "label": "filelist_paged_attention_kv_score_operator_plan_json",
+      "command": "python3 src/tools/run_hybrid_benchmark.py filelist_paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json",
+      "exit_code": 0,
+      "observed_plan": {
+        "status": "planned",
+        "target": "filelist_paged_attention_kv_score",
+        "shape": "64x1",
+        "correctness_policy": "coverage_output_equivalence",
+        "coverage_output_target": "filelist_paged_attention_kv_score",
+        "compare_report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json"
+      }
+    },
+    {
+      "label": "filelist_known_template_pulp_ita_mha_operator_plan_json",
+      "command": "python3 src/tools/run_hybrid_benchmark.py filelist_known_template_pulp_ita_mha --sim-accel-shape 64x1 --operator-plan-json",
+      "exit_code": 0,
+      "observed_plan": {
+        "status": "planned",
+        "target": "filelist_known_template_pulp_ita_mha",
+        "shape": "64x1",
+        "correctness_policy": "coverage_output_equivalence",
+        "coverage_output_target": "filelist_known_template_pulp_ita_mha",
+        "compare_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json"
+      }
+    },
+    {
+      "label": "sidecar_gpu_target_discovery",
+      "command": "python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu",
+      "exit_code": 0,
+      "observed_target_names_include": [
+        "filelist_paged_attention_kv_score",
+        "filelist_known_template_pulp_ita_mha"
+      ]
+    }
+  ],
+  "acceptance_policy": {
+    "registry_addition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_filelist_planner_added": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_verilator_native_option_prototype_filelist_registry_gate",
+  "non_claims": [
+    "not a native Verilator implementation",
+    "not a native Verilator parser change",
+    "not arbitrary filelist or RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not new execution or measurement evidence",
+    "not a runtime or ABI change",
+    "not a new public CLI or workflow",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput"
+  ]
+}

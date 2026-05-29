@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_like_hybrid_entrypoint_option_surface_gate",
+  "status": "defined_verilator_like_hybrid_entrypoint_option_surface",
+  "objective": "Define the smallest user-facing hybrid entrypoint surface that moves the existing sidecar flow toward a future Verilator-like option without claiming Verilator-native implementation.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_tlul_template_schema_metadata_invariant_public_pack_refresh_gate.json",
+  "current_priority": "run_verilator_like_hybrid_entrypoint_option_surface_dry_run_gate",
+  "surface_definition": {
+    "selected_operator_first_class_input": "target_name",
+    "selected_reproducible_input_contract": "tracked_slice_launch_template",
+    "selected_operator_first_class_entrypoint": "python3 src/tools/run_hybrid_benchmark.py <target> --sim-accel-shape <NxS>",
+    "selected_inspection_entrypoint": "python3 src/tools/verilator_sidecar_shim.py --target <target> --sim-accel-shape <NxS> --print-operator-plan",
+    "selected_json_inspection_entrypoint": "python3 src/tools/run_hybrid_benchmark.py <target> --sim-accel-shape <NxS> --operator-plan-json",
+    "supported_first_scope": {
+      "target_kind": "slice_template",
+      "mode": "template",
+      "representative_ready_targets": [
+        "paged_attention_kv_score",
+        "pulp_ita_mha",
+        "pulp_paged_kv_cache_large"
+      ],
+      "shape_spelling": "--sim-accel-shape <NxS>",
+      "fallback_shape_spelling": "--shape <NxS>",
+      "expanded_compatibility_spelling": "--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>"
+    },
+    "deferred_inputs": [
+      {
+        "input": "filelist",
+        "status": "deferred",
+        "reason": "The current reproducible source boundary is still tracked slice-launch templates generated from target/top/overlay metadata. A raw filelist can become a first-class operator input only after a later gate defines how top module, clock/reset, overlay, coverage manifest, acceptance policy, and output report paths are derived without hidden local assumptions."
+      },
+      {
+        "input": "raw_template_path",
+        "status": "supported_lower_level_reproducible_input_contract",
+        "entrypoint": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/<target>.json --shape <NxS>",
+        "reason": "Template paths remain the reproducible source-of-truth execution form. Target names are the shortest operator-facing Verilator-like surface and must resolve to tracked templates before execution."
+      }
+    ]
+  },
+  "automatic_policy_boundary": {
+    "automatic_gpu_assignment_status": "policy_visible_preview_only",
+    "shape_policy": {
+      "status": "operator_selected_or_catalog_recommended",
+      "current_recommended_starting_shape": "64x1",
+      "reason": "Existing evidence consistently favors many-state single-launch shapes over single-state repeated-step shapes, but automatic optimum selection is not yet proven for arbitrary designs."
+    },
+    "required_visibility": [
+      "dry-run must print the delegated command plan before execution",
+      "preflight and operator-plan JSON must expose target, shape, template, stage commands, correctness policy, and non-claims",
+      "efficiency estimates must remain estimates separate from correctness",
+      "coverage_output_equivalence remains the accepted CPU-vs-hybrid comparison policy"
+    ],
+    "not_yet_automatic": [
+      "raw filelist to top/clock/reset/manifest inference",
+      "arbitrary design GPU partitioning",
+      "globally optimal shape selection",
+      "resident execution handoff through a direct Verilator option"
+    ]
+  },
+  "dry_run_commands": [
+    "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --dry-run",
+    "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-operator-plan",
+    "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json",
+    "python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel-shape 64x1 --print-operator-plan",
+    "python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel-shape 64x1 --print-verilator-command",
+    "python3 src/tools/verilator_sidecar_shim.py --target paged_attention_kv_score --sim-accel-shape 64x1 --print-verilator-estimate-command"
+  ],
+  "required_next_gate": {
+    "name": "run_verilator_like_hybrid_entrypoint_option_surface_dry_run_gate",
+    "must_record": [
+      "all dry-run and inspection commands exit 0",
+      "operator-facing commands use target name plus --sim-accel-shape",
+      "operator-plan JSON exposes the delegated stage plan",
+      "printed Verilator command remains a synthesized handoff preview",
+      "the preview includes coverage_output_equivalence and generated report paths",
+      "the result does not claim Verilator has a native --sim-accel implementation"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "operator_first_class_input_is_target_name": true,
+    "reproducible_input_contract_is_tracked_template": true,
+    "filelist_first_class_input_allowed_by_this_gate": false,
+    "dry_run_required_next": true,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "automatic_optimal_shape_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_verilator_like_hybrid_entrypoint_option_surface_dry_run_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a runtime or ABI change",
+    "not a new workload promotion",
+    "not a raw filelist ingestion implementation",
+    "not arbitrary RTL support",
+    "not automatic optimal GPU assignment for any design",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not production LLM serving throughput"
+  ]
+}

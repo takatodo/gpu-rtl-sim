@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_like_hybrid_entrypoint_option_surface_execution_result_gate",
+  "status": "passed_verilator_like_hybrid_entrypoint_option_surface_execution",
+  "objective": "Record the first non-dry-run execution result for the Verilator-like target-name plus --sim-accel-shape operator surface.",
+  "source_execution_gate": "config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_gate.json",
+  "current_priority": "review_verilator_like_hybrid_entrypoint_option_surface_execution_result_gate",
+  "executed_command": {
+    "command": "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --summary-out reports/hybrid_benchmark_paged_attention_kv_score_sim_accel_64x1.json",
+    "exit_code": 0,
+    "target": "paged_attention_kv_score",
+    "shape": "64x1",
+    "operator_surface": "target_name_plus_sim_accel_shape",
+    "execution_mode": "executed",
+    "effective_sim_accel": "sidecar-gpu",
+    "shape_source": "sim_accel_shape",
+    "tracked_template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json"
+  },
+  "generated_evidence": {
+    "compare_report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+    "summary_report": "reports/hybrid_benchmark_paged_attention_kv_score_sim_accel_64x1.json",
+    "artifacts_dir": "artifacts/pulp_paged_attention_kv_score_obj_dir",
+    "canonical": false
+  },
+  "observed_compare_result": {
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "selected_acceptance_policy_passed": true,
+    "coverage_output_mismatch_count": 0,
+    "strict_output_words_per_state": 29,
+    "strict_output_bytes_per_state": 116,
+    "compared_word_count": 1856,
+    "compared_byte_count": 7424,
+    "normalized_final_state_equivalence_passed": true,
+    "raw_strict_final_state_match": false,
+    "strict_final_state_policy_passed": false
+  },
+  "observed_summary_result": {
+    "execution_mode": "executed",
+    "operator_entrypoint_surface": "sim_accel_compat",
+    "operator_entrypoint_effective_sim_accel": "sidecar-gpu",
+    "operator_entrypoint_shape_source": "sim_accel_shape",
+    "efficiency_estimate_status": "observed_from_existing_reports",
+    "efficiency_estimate_is_fresh_timing": false
+  },
+  "acceptance_policy": {
+    "accepted_correctness_policy": "coverage_output_equivalence",
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "fresh_timing_claim_allowed_by_this_result": false,
+    "optimal_gpu_allocation_claim_allowed_by_this_result": false,
+    "verilator_native_option_claim_allowed_by_this_result": false,
+    "raw_filelist_input_claim_allowed_by_this_result": false
+  },
+  "next_task": "review_verilator_like_hybrid_entrypoint_option_surface_execution_result_gate",
+  "non_claims": [
+    "not raw full-state equality",
+    "not fresh timing or speedup evidence",
+    "not automatic optimal GPU allocation for arbitrary designs",
+    "not raw filelist ingestion",
+    "not a Verilator-native option implementation",
+    "not universal target/template support",
+    "not production LLM serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
