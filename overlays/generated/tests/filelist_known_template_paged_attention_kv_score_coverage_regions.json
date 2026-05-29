@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "target": "PULP_ITA.filelist_known_template_paged_attention_kv_score",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "top_module": "pulp_paged_attention_kv_score_gpu_cov_tb",
+  "regions": [
+    {
+      "name": "filelist_known_template_paged_attention_kv_score_counts",
+      "words": [
+        "real_toggle_subset_word0_o",
+        "real_toggle_subset_word1_o",
+        "real_toggle_subset_word2_o",
+        "real_toggle_subset_word3_o",
+        "real_toggle_subset_word4_o",
+        "real_toggle_subset_word5_o",
+        "real_toggle_subset_word6_o",
+        "real_toggle_subset_word7_o"
+      ]
+    },
+    {
+      "name": "filelist_known_template_paged_attention_kv_score_signatures",
+      "words": [
+        "real_toggle_subset_word8_o",
+        "real_toggle_subset_word9_o",
+        "real_toggle_subset_word10_o",
+        "real_toggle_subset_word11_o",
+        "real_toggle_subset_word12_o",
+        "real_toggle_subset_word13_o"
+      ]
+    },
+    {
+      "name": "filelist_known_template_paged_attention_kv_score_samples",
+      "words": [
+        "real_toggle_subset_word14_o",
+        "real_toggle_subset_word15_o",
+        "real_toggle_subset_word16_o",
+        "real_toggle_subset_word17_o"
+      ]
+    }
+  ],
+  "non_claims": [
+    "not correctness equivalence beyond scoped output words",
+    "not raw full-state equality"
+  ]
+}

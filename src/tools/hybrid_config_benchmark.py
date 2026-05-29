@@ -65,6 +65,14 @@ def benchmark_gate(spec: HybridConfigSpec, *, manifest_path: str, template_path:
             "makefile": "not_required_for_generated_template",
         },
         "coverage_domain": "toggle_real_subset_bitmap",
+        "source_closure_policy": {
+            "explicit_source_closure_required_for_execution": True,
+            "known_template_source_closure_copy_allowed": True,
+            "operator_supplied_complete_source_list_allowed": True,
+            "automatic_dependency_inference_for_arbitrary_rtl_implemented": False,
+            "native_verilator_option_implemented": False,
+            "automatic_optimal_gpu_allocation_implemented": False,
+        },
         "target_scope": _benchmark_target_scope(
             spec,
             manifest_path=manifest_path,

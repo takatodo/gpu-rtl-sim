@@ -52,6 +52,9 @@ class HybridBenchmarkDiscoveryCliTest(HybridCliTestCase):
             for target in payload["targets"]
             if target["sidecar_gpu"]["option_shim_status"] == "ready_for_template_shape"
         ]
+        ready_names = {target["name"] for target in ready_targets}
+        self.assertIn("filelist_paged_attention_kv_score", ready_names)
+        self.assertIn("filelist_known_template_pulp_ita_mha", ready_names)
         self.assertGreater(len(ready_targets), 0)
         for target in ready_targets:
             sidecar = target["sidecar_gpu"]

@@ -22,9 +22,16 @@ from results_reproduction_basic import (
     run_public_pack_archive_plan as _run_public_pack_archive_plan_impl,
     run_reproduction_plan as _run_reproduction_plan_impl,
 )
+from results_reproduction_gpu_allocation_policy import (
+    run_filelist_broader_shape_gpu_allocation_policy_dry_run as _run_filelist_broader_shape_gpu_allocation_policy_dry_run_impl,
+    run_filelist_shape_breadth_gpu_allocation_policy_dry_run as _run_filelist_shape_breadth_gpu_allocation_policy_dry_run_impl,
+)
 from results_reproduction_mobile_vit import mobile_vit_imagenet_128_plan
 from results_reproduction_manifest import PUBLIC_PACK_ARCHIVE_PATHS
 from results_reproduction_median_dispatch import (
+    run_filelist_broader_policy_repeat_median_impl,
+    run_filelist_broader_shape_repeat_median_impl,
+    run_filelist_shape_breadth_repeat_median_impl,
     run_median_measurements_impl,
     run_paged_attention_kv_cache_continuation_repeat_median_impl,
     run_paged_attention_kv_cache_next_shapes_repeat_median_impl,
@@ -151,3 +158,35 @@ def run_paged_attention_kv_cache_next_shapes_repeat_median(*, repeat_count: int,
         dry_run=dry_run,
         run_median_workload_set=_run_median_workload_set,
     )
+
+
+def run_filelist_shape_breadth_repeat_median(*, repeat_count: int, dry_run: bool) -> list[dict[str, object]]:
+    return run_filelist_shape_breadth_repeat_median_impl(
+        repeat_count=repeat_count,
+        dry_run=dry_run,
+        run_median_workload_set=_run_median_workload_set,
+    )
+
+
+def run_filelist_broader_shape_repeat_median(*, repeat_count: int, dry_run: bool) -> list[dict[str, object]]:
+    return run_filelist_broader_shape_repeat_median_impl(
+        repeat_count=repeat_count,
+        dry_run=dry_run,
+        run_median_workload_set=_run_median_workload_set,
+    )
+
+
+def run_filelist_broader_policy_repeat_median(*, repeat_count: int, dry_run: bool) -> list[dict[str, object]]:
+    return run_filelist_broader_policy_repeat_median_impl(
+        repeat_count=repeat_count,
+        dry_run=dry_run,
+        run_median_workload_set=_run_median_workload_set,
+    )
+
+
+def run_filelist_shape_breadth_gpu_allocation_policy_dry_run(*, dry_run: bool) -> dict[str, object]:
+    return _run_filelist_shape_breadth_gpu_allocation_policy_dry_run_impl(dry_run=dry_run)
+
+
+def run_filelist_broader_shape_gpu_allocation_policy_dry_run(*, dry_run: bool) -> dict[str, object]:
+    return _run_filelist_broader_shape_gpu_allocation_policy_dry_run_impl(dry_run=dry_run)

@@ -6,6 +6,9 @@ from collections.abc import Callable
 
 from results_reproduction_types import MedianWorkload
 from results_reproduction_workloads import (
+    filelist_broader_policy_repeat_median_workloads,
+    filelist_broader_shape_repeat_median_workloads,
+    filelist_shape_breadth_repeat_median_workloads,
     median_workloads,
     paged_attention_kv_cache_continuation_repeat_median_workloads,
     paged_attention_kv_cache_next_shapes_repeat_median_workloads,
@@ -84,4 +87,52 @@ def run_paged_attention_kv_cache_next_shapes_repeat_median_impl(
         workloads=paged_attention_kv_cache_next_shapes_repeat_median_workloads(),
         aggregate_status="measured_paged_attention_kv_cache_scale_up_next_shapes_repeat_median",
         aggregate_report="paged_attention_kv_cache_scale_up_next_shapes_repeat_median_summary.json",
+    )
+
+
+def run_filelist_shape_breadth_repeat_median_impl(
+    *,
+    repeat_count: int,
+    dry_run: bool,
+    run_median_workload_set: RunMedianWorkloadSet,
+) -> list[dict[str, object]]:
+    _require_positive_repeat_count(repeat_count, "--filelist-shape-breadth-repeat-median")
+    return run_median_workload_set(
+        repeat_count=repeat_count,
+        dry_run=dry_run,
+        workloads=filelist_shape_breadth_repeat_median_workloads(),
+        aggregate_status="measured_filelist_shape_breadth_repeat_median",
+        aggregate_report="filelist_shape_breadth_repeat_median_summary.json",
+    )
+
+
+def run_filelist_broader_shape_repeat_median_impl(
+    *,
+    repeat_count: int,
+    dry_run: bool,
+    run_median_workload_set: RunMedianWorkloadSet,
+) -> list[dict[str, object]]:
+    _require_positive_repeat_count(repeat_count, "--filelist-broader-shape-repeat-median")
+    return run_median_workload_set(
+        repeat_count=repeat_count,
+        dry_run=dry_run,
+        workloads=filelist_broader_shape_repeat_median_workloads(),
+        aggregate_status="measured_filelist_broader_shape_repeat_median",
+        aggregate_report="filelist_broader_shape_repeat_median_summary.json",
+    )
+
+
+def run_filelist_broader_policy_repeat_median_impl(
+    *,
+    repeat_count: int,
+    dry_run: bool,
+    run_median_workload_set: RunMedianWorkloadSet,
+) -> list[dict[str, object]]:
+    _require_positive_repeat_count(repeat_count, "--filelist-broader-policy-repeat-median")
+    return run_median_workload_set(
+        repeat_count=repeat_count,
+        dry_run=dry_run,
+        workloads=filelist_broader_policy_repeat_median_workloads(),
+        aggregate_status="measured_filelist_broader_policy_repeat_median",
+        aggregate_report="filelist_broader_policy_repeat_median_summary.json",
     )

@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "status": "promoted_full_ita_mha_dependency_template_boundary",
-  "target": "PULP_ITA.pulp_ita_mha",
-  "source_gate": "config/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
+  "status": "candidate",
+  "target": "PULP_ITA.filelist_known_template_pulp_ita_mha",
+  "source_gate": "config/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json",
   "top_module": "pulp_ita_mha_gpu_cov_tb",
   "build": {
-    "mdir": "artifacts/pulp_ita_mha_obj_dir",
-    "work_dir": "work/slice_pilots/pulp_ita_mha",
-    "host_probe_target": "pulp_ita_mha_host_probe",
+    "mdir": "artifacts/filelist_known_template_pulp_ita_mha_obj_dir",
+    "work_dir": "work/slice_pilots/filelist_known_template_pulp_ita_mha",
+    "host_probe_target": "filelist_known_template_pulp_ita_mha_host_probe",
     "host_probe_builder": "src/tools/build_host_probe.py",
     "host_probe": {
       "output": "tlul_slice_host_probe",
@@ -56,7 +56,7 @@
   ],
   "source_closure": {
     "status": "complete",
-    "provenance": "independent_tracked_template_promotion",
+    "provenance": "copied_from_known_tracked_template",
     "promotion_gate": "config/scaling_gates/known_template_source_closure_independent_reference_promotion_gate.json",
     "source_file_count": 29,
     "source_files_sha256": "073d53d91f23bf47eb907188096c21672b36801ed6fd7f8d218130c913322b89",
@@ -72,7 +72,9 @@
       "not native Verilator option support",
       "not automatic optimal GPU allocation",
       "not proof that this closure applies to arbitrary ITA or filelist targets"
-    ]
+    ],
+    "reference_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "copied_from_template": "config/slice_launch_templates/pulp_ita_mha.json"
   },
   "verilator_args": [
     "--flatten",
@@ -89,24 +91,22 @@
   ],
   "planned_overlay": {
     "coverage_tb_path": "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
-    "coverage_manifest_path": "overlays/ITA/tests/pulp_ita_mha_coverage_regions.json",
-    "launch_template_path": "config/slice_launch_templates/pulp_ita_mha.json",
-    "host_probe_target": "pulp_ita_mha_host_probe",
+    "coverage_manifest_path": "overlays/generated/tests/filelist_known_template_pulp_ita_mha_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+    "host_probe_target": "filelist_known_template_pulp_ita_mha_host_probe",
     "host_probe_builder": "src/tools/build_host_probe.py",
-    "makefile": "fallback_only",
+    "makefile": "not_required_for_generated_template",
     "status": "implemented"
   },
   "acceptance": {
-    "candidate_only_until_first_cpu_vs_hybrid_benchmark": false,
+    "candidate_only_until_first_cpu_vs_hybrid_benchmark": true,
     "next_gate_must_build_cpu_reference": true,
     "next_gate_must_build_gpu_cubin": true,
     "next_gate_must_compare_cpu_vs_hybrid": true,
     "speedup_claim_allowed_by_template_alone": false
   },
   "non_claims": [
-    "not full production ITA/MHA integration",
-    "not model-level Transformer inference",
-    "not production memory hierarchy",
-    "not broad modern-NN speedup"
+    "not raw full-state equality",
+    "not broad speedup"
   ]
 }

@@ -52,6 +52,18 @@ BENCHMARKS: dict[str, BenchmarkSpec] = {
         template="config/slice_launch_templates/pulp_paged_attention_kv_score.json",
         requires=("--shape",),
     ),
+    "filelist_paged_attention_kv_score": BenchmarkSpec(
+        target="filelist_paged_attention_kv_score",
+        kind=KIND_SLICE_TEMPLATE,
+        template="config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+        requires=("--shape",),
+    ),
+    "filelist_known_template_pulp_ita_mha": BenchmarkSpec(
+        target="filelist_known_template_pulp_ita_mha",
+        kind=KIND_SLICE_TEMPLATE,
+        template="config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+        requires=("--shape",),
+    ),
     "pulp_paged_kv_cache_large": BenchmarkSpec(
         target="pulp_paged_kv_cache_large",
         kind=KIND_SLICE_TEMPLATE,

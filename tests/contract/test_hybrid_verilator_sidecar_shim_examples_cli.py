@@ -89,6 +89,27 @@ class HybridVerilatorSidecarShimExamplesCliTest(HybridCliTestCase):
             compact_payload["operator_plan"]["requested_compatibility_entrypoint"],
         )
 
+    def test_tracked_filelist_targets_emit_verilator_commands(self) -> None:
+        for target in ("filelist_paged_attention_kv_score", "filelist_known_template_pulp_ita_mha"):
+            with self.subTest(target=target):
+                result = self.run_python_tool(
+                    "src/tools/verilator_sidecar_shim.py",
+                    "--target",
+                    target,
+                    "--sim-accel",
+                    "sidecar-gpu",
+                    "--sim-accel-states",
+                    "64",
+                    "--sim-accel-steps",
+                    "1",
+                    "--print-verilator-command",
+                )
+                self.assertIn("verilator --cc --timing", result.stdout)
+                self.assertIn("--sim-accel sidecar-gpu", result.stdout)
+                self.assertIn("--sim-accel-states 64", result.stdout)
+                self.assertIn("--sim-accel-steps 1", result.stdout)
+                self.assertIn(f"artifacts/{target}_obj_dir", result.stdout)
+
     def test_accepts_verilator_style_efficiency_alias(self) -> None:
         result = self.run_python_tool(
             "src/tools/verilator_sidecar_shim.py",

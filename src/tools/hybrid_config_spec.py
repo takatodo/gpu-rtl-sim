@@ -26,6 +26,7 @@ class HybridConfigSpec:
     host_reset_control: bool = False
     probe_syms_state: bool = False
     status: str = "candidate"
+    copy_source_closure_from_template: str | None = None
 
     @property
     def target_name(self) -> str:

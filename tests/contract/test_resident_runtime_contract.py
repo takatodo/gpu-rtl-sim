@@ -32,7 +32,10 @@ class ReducedActiveSurfaceContractTest(ResidentRuntimeContractHelpers, unittest.
             text=True,
         )
         self.assertEqual(completed.returncode, 0, msg=completed.stderr)
-        self.assertIn("run_config_generation_validation_breadth_execution_gate", completed.stdout)
+        self.assertIn(
+            "execute_commit_split_index_rewrite_gate",
+            completed.stdout,
+        )
 
     def test_selection_is_compact_current_state(self) -> None:
         raw = json.loads(SELECTION.read_text(encoding="utf-8"))
@@ -51,11 +54,11 @@ class ReducedActiveSurfaceContractTest(ResidentRuntimeContractHelpers, unittest.
         self.assertEqual(selection["top_level_goal"], "modern_llm_serving_rtl_hybrid_conditions")
         self.assertEqual(
             selection["current_priority"],
-            "run_config_generation_validation_breadth_execution_gate",
+            "execute_commit_split_index_rewrite_gate",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/config_generation_validation_breadth_execution_gate.json",
+            "config/scaling_gates/resolve_commit_split_line_guard_risks_gate.json",
         )
         self._assert_selection_evidence_paths(selection)
         self.assertEqual(selection["candidate_targets"], [])

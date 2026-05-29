@@ -742,16 +742,10 @@ class HybridVerilatorLikeCliTest(HybridCliTestCase):
     def test_results_reproduction_format_command_sanitizes_local_absolute_paths(self) -> None:
         self.add_tools_to_path()
         from results_reproduction import ReproductionCommand, format_command
-
-        command = ReproductionCommand(
-            ["python3", "/home/example/private/run.py", "--out", "/tmp/private/out.json"],
-            stdout=Path("/var/private/stdout.txt"),
-        )
-
+        command = ReproductionCommand(["python3", "/home/example/private/run.py", "--out", "/tmp/private/out.json"], stdout=Path("/var/private/stdout.txt"))
         rendered = format_command(command)
-        self.assertNotIn("/home/example", rendered)
-        self.assertNotIn("/tmp/private", rendered)
-        self.assertNotIn("/var/private", rendered)
+        for path_fragment in ("/home/example", "/tmp/private", "/var/private"):
+            self.assertNotIn(path_fragment, rendered)
         self.assertIn("<local-absolute-path>", rendered)
 if __name__ == "__main__":
     unittest.main()

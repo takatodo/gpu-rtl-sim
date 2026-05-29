@@ -10,6 +10,8 @@ def build_parser() -> argparse.ArgumentParser:
         epilog="""examples:
   python3 src/tools/run_hybrid_benchmark.py --list-targets
   python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu
+  python3 src/tools/run_hybrid_benchmark.py --minimal-bench-suite
+  python3 src/tools/run_hybrid_benchmark.py --run-minimal-bench-suite
   python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --sidecar-gpu --dry-run
   python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --sidecar-gpu --preflight
   python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --sim-accel-estimate-efficiency --dry-run
@@ -120,5 +122,15 @@ notes:
         "--list-targets",
         action="store_true",
         help="Print supported benchmark targets and exit. Optional view: sidecar_gpu.",
+    )
+    parser.add_argument(
+        "--minimal-bench-suite",
+        action="store_true",
+        help="Print the minimal JSON suite for judging GPU-hybrid automation and shape fit.",
+    )
+    parser.add_argument(
+        "--run-minimal-bench-suite",
+        action="store_true",
+        help="Run the non-destructive minimal suite checks and validate existing execution evidence.",
     )
     return parser

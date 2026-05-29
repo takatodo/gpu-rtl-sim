@@ -41,9 +41,167 @@ class HybridVerilatorLikeConfigGenerationTest(HybridCliTestCase):
         self.assertEqual(template["build"]["host_probe"]["clock_field"], "demo_cov_tb__DOT__clk_i")
         self.assertEqual(template["build"]["host_probe"]["reset_field"], "demo_cov_tb__DOT__reset_like_w")
         self.assertEqual(template["build"]["mdir"], "artifacts/demo_cov_obj_dir")
+        self.assertEqual(template["source_closure"]["status"], "unknown")
+        self.assertEqual(template["source_closure"]["provenance"], "refused_or_unknown")
         self.assertEqual(gate["coverage_output_contract"]["total_words_per_state"], 29)
+        self.assertFalse(gate["source_closure_policy"]["automatic_dependency_inference_for_arbitrary_rtl_implemented"])
         self.assertTrue(gate["acceptance_policy"]["host_probe_glue_generated_from_template"])
         self.assertFalse(gate["acceptance_policy"]["makefile_target_required"])
+
+    def test_generated_payload_can_copy_known_template_source_closure(self) -> None:
+        self.add_tools_to_path()
+        from hybrid_config_generator import HybridConfigSpec, generated_payloads
+
+        reference_template = "config/slice_launch_templates/filelist_paged_attention_kv_score.json"
+        spec = HybridConfigSpec(
+            target="PULP_ITA.demo_cov",
+            top_module="demo_cov_tb",
+            source_files=[],
+            overlay="overlays/demo/src/demo_cov_tb.sv",
+            gate_name="demo_cov_gate",
+            host_probe_target=None,
+            mdir=None,
+            work_dir=None,
+            verilator_args=["--flatten"],
+            copy_source_closure_from_template=reference_template,
+        )
+        template = generated_payloads(spec)["config/slice_launch_templates/demo_cov.json"]
+        source_closure = template["source_closure"]
+
+        self.assertGreater(template["source_files"].index("third_party/ITA/src/ita_package.sv"), -1)
+        self.assertIn("overlays/demo/src/demo_cov_tb.sv", template["source_files"])
+        self.assertEqual(source_closure["status"], "complete")
+        self.assertEqual(source_closure["provenance"], "copied_from_known_tracked_template")
+        self.assertEqual(source_closure["reference_template"], reference_template)
+        self.assertEqual(source_closure["copied_from_template"], reference_template)
+        self.assertEqual(source_closure["source_file_count"], 29)
+        self.assertRegex(source_closure["source_files_sha256"], r"^[0-9a-f]{64}$")
+        self.assertFalse(
+            source_closure["policy"]["automatic_dependency_inference_for_arbitrary_rtl_implemented"]
+        )
+
+    def test_generated_payload_copies_known_template_verilator_args(self) -> None:
+        self.add_tools_to_path()
+        from hybrid_config_generator import HybridConfigSpec, generated_payloads
+
+        reference_template = "config/slice_launch_templates/pulp_ita_mha.json"
+        spec = HybridConfigSpec(
+            target="PULP_ITA.demo_cov",
+            top_module="demo_cov_tb",
+            source_files=[],
+            overlay="overlays/demo/src/demo_cov_tb.sv",
+            gate_name="demo_cov_gate",
+            host_probe_target=None,
+            mdir=None,
+            work_dir=None,
+            verilator_args=["--flatten"],
+            copy_source_closure_from_template=reference_template,
+        )
+        template = generated_payloads(spec)["config/slice_launch_templates/demo_cov.json"]
+
+        self.assertIn("-Wno-WIDTHEXPAND", template["verilator_args"])
+        self.assertIn("-Wno-WIDTHTRUNC", template["verilator_args"])
+        self.assertIn("-Wno-COMBDLY", template["verilator_args"])
+        self.assertIn("+define+ITA_M=16", template["verilator_args"])
+        self.assertEqual(template["verilator_args"].count("--flatten"), 1)
+
+    def test_generated_payload_refuses_unknown_template_source_closure_copy(self) -> None:
+        self.add_tools_to_path()
+        from hybrid_config_generator import HybridConfigSpec, generated_payloads
+
+        spec = HybridConfigSpec(
+            target="PULP_ITA.demo_cov",
+            top_module="demo_cov_tb",
+            source_files=[],
+            overlay="overlays/demo/src/demo_cov_tb.sv",
+            gate_name="demo_cov_gate",
+            host_probe_target=None,
+            mdir=None,
+            work_dir=None,
+            verilator_args=["--flatten"],
+            copy_source_closure_from_template="config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+        )
+
+        with self.assertRaisesRegex(ValueError, "source_closure.status=complete"):
+            generated_payloads(spec)
+
+    def test_generated_payload_refuses_requested_source_missing_from_copied_closure(self) -> None:
+        self.add_tools_to_path()
+        from hybrid_config_generator import HybridConfigSpec, generated_payloads
+
+        spec = HybridConfigSpec(
+            target="PULP_ITA.demo_cov",
+            top_module="demo_cov_tb",
+            source_files=["third_party/ITA/src/not_in_known_closure.sv"],
+            overlay="overlays/demo/src/demo_cov_tb.sv",
+            gate_name="demo_cov_gate",
+            host_probe_target=None,
+            mdir=None,
+            work_dir=None,
+            verilator_args=["--flatten"],
+            copy_source_closure_from_template="config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+        )
+
+        with self.assertRaisesRegex(ValueError, "requested --source entries"):
+            generated_payloads(spec)
+
+    def test_gen_hybrid_config_cli_copies_known_template_source_closure_in_dry_run(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/gen_hybrid_config.py",
+            "--target",
+            "PULP_ITA.demo_cov",
+            "--top-module",
+            "demo_cov_tb",
+            "--overlay",
+            "overlays/demo/src/demo_cov_tb.sv",
+            "--source",
+            "third_party/ITA/src/ita.sv",
+            "--source-closure-from-template",
+            "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+            "--dry-run",
+        )
+
+        self.assertIn('"status": "complete"', result.stdout)
+        self.assertIn('"provenance": "copied_from_known_tracked_template"', result.stdout)
+        self.assertIn('"reference_template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json"', result.stdout)
+
+    def test_gen_hybrid_config_refuses_to_overwrite_existing_source_files(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/gen_hybrid_config.py",
+            "--target",
+            "PULP_ITA.filelist_paged_attention_kv_score",
+            "--top-module",
+            "pulp_paged_attention_kv_score_gpu_cov_tb",
+            "--overlay",
+            "overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv",
+            "--source-closure-from-template",
+            "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("refusing to overwrite existing source-of-truth file", result.stderr)
+
+    def test_materialized_known_template_copy_runs_hybrid_template_dry_run_plan(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_template.py",
+            "config/slice_launch_templates/filelist_known_template_paged_attention_kv_score.json",
+            "--shape",
+            "1x1",
+            "--dry-run",
+        )
+        lines = [line for line in result.stdout.splitlines() if line.startswith("+ ")]
+
+        self.assertEqual(len(lines), 7)
+        self.assertIn("verilator --cc", lines[0])
+        self.assertIn("python3 src/tools/build_host_probe.py", result.stdout)
+        self.assertIn("python3 src/tools/build_vl_gpu.py", result.stdout)
+        self.assertIn("python3 src/tools/run_vl_hybrid.py", result.stdout)
+        self.assertIn("--acceptance-policy coverage_output_equivalence", result.stdout)
+        self.assertIn(
+            "--coverage-output-gate records/scaling_gates/filelist_known_template_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+            result.stdout,
+        )
 
     def test_generated_template_uses_host_probe_builder_without_makefile_glue(self) -> None:
         self.add_tools_to_path()

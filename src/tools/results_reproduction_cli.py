@@ -7,6 +7,11 @@ import argparse
 from results_reproduction import (
     parse_resident_batch_states,
     parse_shape,
+    run_filelist_broader_policy_repeat_median,
+    run_filelist_broader_shape_gpu_allocation_policy_dry_run,
+    run_filelist_broader_shape_repeat_median,
+    run_filelist_shape_breadth_gpu_allocation_policy_dry_run,
+    run_filelist_shape_breadth_repeat_median,
     run_median_measurements,
     run_mobile_vit_imagenet_128_reproduction,
     run_paged_attention_kv_cache_continuation_repeat_median,
@@ -44,6 +49,16 @@ def dispatch(args: argparse.Namespace) -> None:
         run_paged_kv_continuation_repeat_median(args)
     elif args.paged_kv_next_shapes_repeat_median is not None:
         run_paged_kv_next_shapes_repeat_median(args)
+    elif args.filelist_shape_breadth_repeat_median is not None:
+        run_filelist_shape_breadth_repeat_median_cli(args)
+    elif args.filelist_broader_shape_repeat_median is not None:
+        run_filelist_broader_shape_repeat_median_cli(args)
+    elif args.filelist_broader_policy_repeat_median is not None:
+        run_filelist_broader_policy_repeat_median_cli(args)
+    elif args.filelist_shape_breadth_gpu_allocation_policy:
+        run_filelist_shape_breadth_gpu_allocation_policy_dry_run(dry_run=args.dry_run)
+    elif args.filelist_broader_shape_gpu_allocation_policy:
+        run_filelist_broader_shape_gpu_allocation_policy_dry_run(dry_run=args.dry_run)
     elif args.repeat_median is not None:
         run_median_measurements(repeat_count=args.repeat_median, dry_run=args.dry_run)
     else:
@@ -99,6 +114,27 @@ def run_paged_kv_continuation_repeat_median(args: argparse.Namespace) -> None:
 def run_paged_kv_next_shapes_repeat_median(args: argparse.Namespace) -> None:
     run_paged_attention_kv_cache_next_shapes_repeat_median(
         repeat_count=args.paged_kv_next_shapes_repeat_median,
+        dry_run=args.dry_run,
+    )
+
+
+def run_filelist_shape_breadth_repeat_median_cli(args: argparse.Namespace) -> None:
+    run_filelist_shape_breadth_repeat_median(
+        repeat_count=args.filelist_shape_breadth_repeat_median,
+        dry_run=args.dry_run,
+    )
+
+
+def run_filelist_broader_shape_repeat_median_cli(args: argparse.Namespace) -> None:
+    run_filelist_broader_shape_repeat_median(
+        repeat_count=args.filelist_broader_shape_repeat_median,
+        dry_run=args.dry_run,
+    )
+
+
+def run_filelist_broader_policy_repeat_median_cli(args: argparse.Namespace) -> None:
+    run_filelist_broader_policy_repeat_median(
+        repeat_count=args.filelist_broader_policy_repeat_median,
         dry_run=args.dry_run,
     )
 

@@ -8,7 +8,7 @@ class FullItaMhaLargerPagedKvNextShimTest(unittest.TestCase):
     def test_shim_points_at_tracked_shared_contract(self) -> None:
         self.assertEqual(
             _shared.CURRENT_PRIORITY,
-            "run_config_generation_validation_breadth_execution_gate",
+            "execute_commit_split_index_rewrite_gate",
         )
 
 

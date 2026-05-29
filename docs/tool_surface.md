@@ -9,7 +9,7 @@ This page defines the small operator-facing tool surface. The repository may kee
 | `src/tools/run_hybrid_benchmark.py` | Verilator-like target/shape wrapper for supported benchmark workloads. Start here for routine dry-runs, summaries, and supported target discovery. |
 | `src/tools/verilator_sidecar_shim.py` | Non-executing JSON shim for the planned `verilator --sim-accel sidecar-gpu` option. Use to inspect readiness, stage details, and efficiency estimate with stable exit codes. |
 | `src/tools/run_hybrid_template.py` | Lower-level slice-template runner. Use when working directly from `config/slice_launch_templates/*.json`. |
-| `src/tools/run_results_reproduction.py` | Public-pack reproduction and aggregate measurement workflows. Use for documented result refreshes and dry-run smoke checks. |
+| `src/tools/run_results_reproduction.py` | Public-pack reproduction, aggregate measurement workflows, and scoped policy dry-runs such as `--filelist-shape-breadth-gpu-allocation-policy --dry-run` and `--filelist-broader-shape-gpu-allocation-policy --dry-run`. |
 | `src/tools/gen_hybrid_config.py` | Generate a new slice template, coverage-region file, and scaling-gate draft from a target/top/overlay description. |
 
 ## Runtime Building Blocks

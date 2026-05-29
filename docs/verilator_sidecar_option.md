@@ -8,6 +8,8 @@ Canonical option prefix: `verilator --sim-accel sidecar-gpu --sim-accel-states <
 
 Use `python3 src/tools/run_hybrid_benchmark.py --list-targets` to inspect which targets currently expose a `sidecar_gpu` option-shim discovery block. Use `python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu` for the focused sidecar discovery view referenced by operator-plan JSON discovery hints. Slice-template targets are marked `ready_for_template_shape` and list their ready stage names; dataset-backed targets remain not-ready for the direct Verilator option, but `mobile_vit --limit 128` now exposes non-executing `host_preprocess` and `rtl_sidecar_proxy_eval` stage names so the host/RTL boundary is visible from discovery.
 
+The sidecar registry includes two tracked filelist-derived template targets, `filelist_paged_attention_kv_score` and `filelist_known_template_pulp_ita_mha`. They are static registry entries backed by reviewed launch templates and explicit source closure metadata. This is not arbitrary filelist parsing, not dependency inference for unknown RTL, and not native Verilator parser support.
+
 ```bash
 verilator --cc --timing \
   --sim-accel sidecar-gpu \

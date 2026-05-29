@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 from hybrid_template_efficiency import format_template_efficiency_report, template_efficiency_report
-from hybrid_template_runner import load_template_plan, run_plan
+from hybrid_template_runner import load_template_plan, run_plan, validate_source_closure_for_execution
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -53,6 +53,8 @@ def main(argv: list[str] | None = None) -> int:
             cfg_drain_cycles=args.cfg_drain_cycles,
             cfg_seed=args.cfg_seed,
         )
+        if not args.dry_run:
+            validate_source_closure_for_execution(plan)
         run_plan(plan, dry_run=args.dry_run)
         if args.estimate_efficiency or args.estimate_efficiency_json:
             report = template_efficiency_report(plan)

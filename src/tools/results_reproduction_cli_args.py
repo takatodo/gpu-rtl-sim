@@ -58,6 +58,49 @@ def add_repeat_median_options(parser: argparse.ArgumentParser) -> None:
             "and write reports/paged_attention_kv_cache_scale_up_next_shapes_repeat_median_summary.json."
         ),
     )
+    parser.add_argument(
+        "--filelist-shape-breadth-repeat-median",
+        type=int,
+        metavar="N",
+        help=(
+            "Repeat the filelist-derived shape-breadth four-shape workload set N times "
+            "and write reports/filelist_shape_breadth_repeat_median_summary.json."
+        ),
+    )
+    parser.add_argument(
+        "--filelist-broader-shape-repeat-median",
+        type=int,
+        metavar="N",
+        help=(
+            "Repeat the filelist-derived broader-shape four-shape workload set N times "
+            "and write reports/filelist_broader_shape_repeat_median_summary.json."
+        ),
+    )
+    parser.add_argument(
+        "--filelist-broader-policy-repeat-median",
+        type=int,
+        metavar="N",
+        help=(
+            "Repeat exactly the two broader-policy-selected 64x1 filelist workloads N times "
+            "and write reports/filelist_broader_policy_repeat_median_summary.json."
+        ),
+    )
+    parser.add_argument(
+        "--filelist-shape-breadth-gpu-allocation-policy",
+        action="store_true",
+        help=(
+            "Print the scoped filelist shape-breadth GPU allocation policy. "
+            "Dry-run only; writes no reports or artifacts."
+        ),
+    )
+    parser.add_argument(
+        "--filelist-broader-shape-gpu-allocation-policy",
+        action="store_true",
+        help=(
+            "Print the scoped broader filelist GPU allocation policy. "
+            "Dry-run only; writes no reports or artifacts."
+        ),
+    )
 
 
 def add_resident_options(parser: argparse.ArgumentParser) -> None:

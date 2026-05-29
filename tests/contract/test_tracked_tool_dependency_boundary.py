@@ -26,6 +26,7 @@ PUBLIC_PACK_TOOL_ROOTS = (
     "run_vl_hybrid",
     "run_hybrid_benchmark",
     "run_hybrid_template",
+    "gen_hybrid_config",
     "build_host_probe",
     "build_vl_gpu",
     "mobile_vit_hybrid_imagenet_cli",
@@ -36,7 +37,6 @@ PUBLIC_PACK_TOOL_ROOTS = (
 TRACKED_TOOL_ROOTS = (
     *PUBLIC_PACK_TOOL_ROOTS,
     "check_staged_large_files",
-    "gen_hybrid_config",
     "gen_vl_gpu_kernel",
     "llvm_stub_gen",
     "named_patch_lowering",

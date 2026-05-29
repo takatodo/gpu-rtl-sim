@@ -12,6 +12,37 @@ from hybrid_template_types import HybridTemplatePlan, parse_shape
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
+
+
+def source_closure_execution_error(plan: HybridTemplatePlan) -> str | None:
+    closure = plan.source_closure or {}
+    status = str(closure.get("status") or "unknown")
+    if status not in {"incomplete", "refused"}:
+        return None
+    missing = closure.get("missing_required_sources") or []
+    missing_text = ""
+    if missing:
+        missing_text = "; missing_required_sources=" + ",".join(str(item) for item in missing)
+    risk = closure.get("risk")
+    risk_text = f"; risk={risk}" if risk else ""
+    return (
+        f"template source_closure.status={status} refuses non-dry-run execution: "
+        f"{_display_path(plan.template_path)}"
+        f"{missing_text}{risk_text}"
+    )
+
+
+def validate_source_closure_for_execution(plan: HybridTemplatePlan) -> None:
+    error = source_closure_execution_error(plan)
+    if error is not None:
+        raise ValueError(error)
+
+
 def _repo_path(raw: str | Path) -> Path:
     path = Path(raw)
     if path.is_absolute():
@@ -51,6 +82,11 @@ def load_template_plan(
     source_gate = payload.get("source_gate")
     source_gate_path = _repo_path(str(source_gate)) if source_gate else None
     shape_tag = f"{nstates}x{steps}"
+    source_closure = payload.get("source_closure") or {
+        "status": "unknown",
+        "provenance": "refused_or_unknown",
+        "risk": "template does not declare source_closure metadata",
+    }
     return HybridTemplatePlan(
         template_path=template_path,
         target=target,
@@ -60,6 +96,7 @@ def load_template_plan(
         host_probe_target=host_probe_target,
         source_gate=source_gate_path,
         source_files=source_files,
+        source_closure=source_closure,
         verilator_defines=[str(item) for item in payload.get("verilator_defines") or []],
         verilator_args=[str(item) for item in payload.get("verilator_args") or []],
         cpu_init_state=mdir / f"{target_name}_cpu_repeat_1x1.bin",

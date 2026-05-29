@@ -28,6 +28,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="RTL source file. Repeat for multiple sources.",
     )
     parser.add_argument(
+        "--copy-source-closure-from-template",
+        "--source-closure-from-template",
+        dest="copy_source_closure_from_template",
+        help=(
+            "Copy source_files/source_closure from a tracked config/slice_launch_templates/*.json "
+            "template that already declares source_closure.status=complete."
+        ),
+    )
+    parser.add_argument(
         "--overlay",
         help="Coverage top overlay path. Added to source_files when not already listed.",
     )
@@ -78,6 +87,7 @@ def spec_from_args(args: argparse.Namespace) -> HybridConfigSpec:
         reset_deasserted_value=args.reset_deasserted_value,
         host_reset_control=args.host_reset_control,
         probe_syms_state=args.probe_syms_state,
+        copy_source_closure_from_template=args.copy_source_closure_from_template,
     )
 
 
@@ -85,12 +95,19 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    if not args.source and not args.overlay:
-        print("error: at least one --source or --overlay is required", file=sys.stderr)
+    if not args.source and not args.overlay and not args.copy_source_closure_from_template:
+        print(
+            "error: at least one --source, --overlay, or --copy-source-closure-from-template is required",
+            file=sys.stderr,
+        )
         return 1
 
-    spec = spec_from_args(args)
-    write_payloads(generated_payloads(spec), dry_run=args.dry_run)
+    try:
+        spec = spec_from_args(args)
+        write_payloads(generated_payloads(spec), dry_run=args.dry_run)
+    except (FileExistsError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 

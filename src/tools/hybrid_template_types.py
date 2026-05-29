@@ -14,6 +14,7 @@ class HybridTemplatePlan:
     host_probe_target: str
     source_gate: Path | None
     source_files: list[Path]
+    source_closure: dict[str, object]
     verilator_defines: list[str]
     verilator_args: list[str]
     cpu_init_state: Path

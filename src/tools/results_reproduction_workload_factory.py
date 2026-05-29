@@ -12,16 +12,22 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 PULP_ITA_MHA_GATE = "config/scaling_gates/neural_network_rtl_full_ita_mha_first_hybrid_benchmark_gate.json"
 PAGED_KV_CACHE_GATE = "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json"
 PAGED_ATTENTION_GATE = "config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json"
+FILELIST_PAGED_ATTENTION_GATE = "config/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json"
+FILELIST_KNOWN_TEMPLATE_MHA_GATE = "config/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json"
 
 TARGET_OBJ_DIRS = {
     "pulp_ita_mha": REPO_ROOT / "artifacts" / "pulp_ita_mha_obj_dir",
     "pulp_paged_kv_cache_large": REPO_ROOT / "artifacts" / "pulp_paged_kv_cache_large_obj_dir",
     "pulp_paged_attention_kv_score": REPO_ROOT / "artifacts" / "pulp_paged_attention_kv_score_obj_dir",
+    "filelist_paged_attention_kv_score": REPO_ROOT / "artifacts" / "filelist_paged_attention_kv_score_obj_dir",
+    "filelist_known_template_pulp_ita_mha": REPO_ROOT / "artifacts" / "filelist_known_template_pulp_ita_mha_obj_dir",
 }
 TARGET_GATES = {
     "pulp_ita_mha": PULP_ITA_MHA_GATE,
     "pulp_paged_kv_cache_large": PAGED_KV_CACHE_GATE,
     "pulp_paged_attention_kv_score": PAGED_ATTENTION_GATE,
+    "filelist_paged_attention_kv_score": FILELIST_PAGED_ATTENTION_GATE,
+    "filelist_known_template_pulp_ita_mha": FILELIST_KNOWN_TEMPLATE_MHA_GATE,
 }
 
 

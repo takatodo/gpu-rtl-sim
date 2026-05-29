@@ -6,6 +6,53 @@ from tests.contract.hybrid_cli_helpers import HybridCliTestCase
 
 
 class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
+    def test_run_hybrid_benchmark_prints_minimal_bench_suite(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "--minimal-bench-suite",
+        )
+
+        payload = json.loads(result.stdout)
+        self.assertEqual(
+            payload["schema_role"],
+            "verilator_compatible_gpu_hybrid_minimal_bench_suite",
+        )
+        self.assertEqual(payload["correctness_policy"], "coverage_output_equivalence")
+        commands = [item["command"] for item in payload["benchmarks"]]
+        self.assertTrue(any("--sim-accel-shape 64x1 --operator-plan-json" in item for item in commands))
+        self.assertTrue(any("--sim-accel-shape 1x64" in item for item in commands))
+        self.assertTrue(any("filelist_known_template_pulp_ita_mha.json --shape 1x1" in item for item in commands))
+        self.assertIn("not arbitrary RTL support", payload["non_claims"])
+        self.assertIn("not timing or speedup evidence by itself", payload["non_claims"])
+
+    def test_run_hybrid_benchmark_runs_minimal_bench_suite_checks(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_benchmark.py",
+            "--run-minimal-bench-suite",
+        )
+
+        payload = json.loads(result.stdout)
+        self.assertEqual(
+            payload["schema_role"],
+            "verilator_compatible_gpu_hybrid_minimal_bench_suite_run",
+        )
+        self.assertEqual(payload["status"], "passed")
+        self.assertEqual(payload["benchmark_count"], 5)
+        self.assertTrue(payload["summary"]["automation_preview_passed"])
+        self.assertTrue(payload["summary"]["shape_classes_distinguishable"])
+        self.assertTrue(payload["summary"]["filelist_execution_evidence_validated"])
+        names = [item["name"] for item in payload["results"]]
+        self.assertEqual(
+            names,
+            [
+                "operator_plan_preview",
+                "state_parallel_dry_run_estimate",
+                "single_state_repeated_step_dry_run_estimate",
+                "resident_decode_like_dry_run",
+                "filelist_materialized_mha_copy_execution_evidence",
+            ],
+        )
+
     def test_run_hybrid_benchmark_dry_run_dispatches_template_targets(self) -> None:
         result = self.run_python_tool(
             "src/tools/run_hybrid_benchmark.py",

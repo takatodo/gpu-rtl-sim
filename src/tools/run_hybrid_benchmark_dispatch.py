@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 from hybrid_benchmark import (
@@ -12,6 +13,7 @@ from hybrid_benchmark import (
     write_summary,
 )
 from hybrid_benchmark_specs import BENCHMARKS, KIND_SLICE_TEMPLATE
+from hybrid_benchmark_minimal_suite import minimal_bench_suite_report, run_minimal_bench_suite
 from run_hybrid_benchmark_print_modes import run_print_only_mode
 from verilator_sidecar_options import normalize_benchmark_sidecar_options, operator_entrypoint_metadata
 
@@ -152,6 +154,15 @@ def run_benchmark_mode(args: argparse.Namespace) -> None:
 
 
 def run_with_args(args: argparse.Namespace) -> None:
+    if args.minimal_bench_suite:
+        print(json.dumps(minimal_bench_suite_report(), indent=2))
+        return
+    if args.run_minimal_bench_suite:
+        report = run_minimal_bench_suite()
+        print(json.dumps(report, indent=2))
+        if report.get("status") != "passed":
+            raise ValueError("minimal bench suite failed")
+        return
     if args.list_targets:
         print_target_list(view=args.target)
         return

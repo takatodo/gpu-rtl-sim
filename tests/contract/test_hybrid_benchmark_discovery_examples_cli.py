@@ -19,6 +19,8 @@ class HybridBenchmarkDiscoveryExamplesCliTest(HybridCliTestCase):
             [
                 "python3 src/tools/run_hybrid_benchmark.py --list-targets",
                 "python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu",
+                "python3 src/tools/run_hybrid_benchmark.py --minimal-bench-suite",
+                "python3 src/tools/run_hybrid_benchmark.py --run-minimal-bench-suite",
                 "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --sidecar-gpu --dry-run",
                 "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --sidecar-gpu --preflight",
                 (
@@ -43,6 +45,16 @@ class HybridBenchmarkDiscoveryExamplesCliTest(HybridCliTestCase):
 
                 if "--list-targets" in command:
                     self._assert_list_targets_example(command, command_result.stdout)
+                elif "--minimal-bench-suite" in command:
+                    self.assertEqual(
+                        json.loads(command_result.stdout)["schema_role"],
+                        "verilator_compatible_gpu_hybrid_minimal_bench_suite",
+                    )
+                elif "--run-minimal-bench-suite" in command:
+                    self.assertEqual(
+                        json.loads(command_result.stdout)["schema_role"],
+                        "verilator_compatible_gpu_hybrid_minimal_bench_suite_run",
+                    )
                 elif "--preflight" in command:
                     self._assert_preflight_example(command_result.stdout)
                 elif "--dry-run" in command:
