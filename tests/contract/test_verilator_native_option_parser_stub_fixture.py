@@ -69,6 +69,12 @@ OVERLAY_PATCH_BUILD_ONLY_VALIDATION_RUN_GATE = (
     / "scaling_gates"
     / "run_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json"
 )
+OVERLAY_PATCH_COMPILE_FIX_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "define_verilator_native_option_parser_overlay_patch_compile_fix_gate.json"
+)
 OVERLAY_DESCRIPTOR_FILE = (
     REPO_ROOT
     / "overlays"
@@ -600,6 +606,44 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(
             gate["next_task"],
             "define_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+        )
+
+    def test_overlay_patch_compile_fix_gate_defines_contextual_patch_repair(self) -> None:
+        gate = json.loads(OVERLAY_PATCH_COMPILE_FIX_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+        )
+        self.assertEqual(gate["definition_decision"]["selected_fix_strategy"], "fix_existing_overlay_patch_in_place")
+        self.assertFalse(gate["definition_decision"]["replacement_descriptor_required"])
+        self.assertIn("zero-context", gate["definition_decision"]["weakest_point"])
+        failure = gate["observed_failure"]
+        self.assertEqual(failure["make_verilator_bin_exit_code"], 2)
+        self.assertIn("V3Options.cpp", failure["cpp_failure"])
+        shape = gate["required_patch_shape"]
+        self.assertTrue(shape["must_use_contextual_hunks"])
+        self.assertTrue(shape["must_not_use_zero_context_hunks"])
+        self.assertIn("m_verilateJobs", shape["v3options_h_private_count_fields_anchor"]["insert_after"])
+        self.assertIn("m_protectKey", shape["v3options_h_private_string_field_anchor"]["insert_after"])
+        self.assertIn("verilateJobs()", shape["v3options_h_public_count_accessors_anchor"]["insert_after"])
+        self.assertIn("protectKeyDefaulted()", shape["v3options_h_public_string_accessor_anchor"]["insert_after"])
+        self.assertIn("V3Options::notify()", shape["v3options_cpp_notify_anchor"]["required_context"])
+        self.assertIn("V3Options::parseOptsList()", shape["v3options_cpp_option_registration_anchor"]["required_context"])
+        self.assertTrue(gate["rerun_boundary_after_fix"]["requires_fail_fast_wrapper"])
+        self.assertFalse(gate["acceptance_policy"]["patch_modified_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["verilator_build_success_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            gate["required_next_gate"]["name"],
+            "review_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+        )
+        self.assertEqual(
+            gate["next_task"],
+            "review_verilator_native_option_parser_overlay_patch_compile_fix_gate",
         )
 
 
