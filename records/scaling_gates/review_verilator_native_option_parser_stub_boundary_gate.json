@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_stub_boundary_gate",
+  "status": "accepted_verilator_native_option_parser_stub_boundary_definition",
+  "objective": "Review the native Verilator parser-stub validation and handoff boundary before defining a non-executing parser-stub fixture.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_stub_boundary_gate.json",
+  "source_dry_run_review_gate": "config/scaling_gates/review_verilator_native_option_parser_boundary_dry_run_gate.json",
+  "current_priority": "define_verilator_native_option_parser_stub_fixture_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The definition assigns unknown accelerator validation to the parser-stub validation contract, keeps current Python argparse choices as wrapper compatibility only, pins the structured sidecar handoff fields, and keeps execution, target registry lookup, source closure, coverage manifest selection, host-probe metadata, state materialization, and comparison outside the native parser stub.",
+    "weakest_point": "This is still contract-only. The repository still has no Verilator source tree or parser patch, and today's observable unknown-accelerator rejection still happens through wrapper argparse choices rather than a parser-stub validation fixture. The next gate must define a non-executing fixture that makes this contract testable before any native parser support claim."
+  },
+  "accepted_scope": {
+    "selected_surface": "native_verilator_parser_stub_validation_to_sidecar_handoff_contract",
+    "canonical_unknown_accelerator_owner": "native_parser_stub_validation_contract",
+    "allowed_accelerators": [
+      "sidecar-gpu"
+    ],
+    "wrapper_argparse_choices_status": "compatibility_wrapper_behavior_only_not_canonical_stub_validation",
+    "structured_handoff_fields_accepted": true,
+    "structured_handoff_field_count": 18,
+    "sidecar_responsibilities_excluded_from_stub": [
+      "target-first registry lookup and aliases",
+      "tracked-template source closure metadata",
+      "coverage manifest selection",
+      "coverage output word selection",
+      "host-probe builder selection",
+      "state file materialization",
+      "GPU artifact build orchestration",
+      "hybrid sidecar execution",
+      "coverage_output_equivalence comparison execution",
+      "human efficiency estimate formatting",
+      "resident workflow orchestration",
+      "dataset-backed host preprocessing"
+    ],
+    "native_verilator_parser_status": "not_implemented",
+    "native_verilator_source_tree_available": false,
+    "runtime_or_abi_changed": false,
+    "new_measurement_added": false,
+    "new_execution_added": false,
+    "new_workload_added": false
+  },
+  "validated_definition_decisions": {
+    "validation_owner_assigned_to_parser_stub_contract": true,
+    "argparse_choices_not_native_parser_evidence": true,
+    "wrapper_shape_form_excluded_from_native_minimum": true,
+    "structured_handoff_fields_sufficient_for_fixture_definition": true,
+    "sidecar_responsibilities_kept_out_of_stub": true,
+    "arbitrary_filelist_dependency_inference_stays_out_of_scope": true,
+    "automatic_optimal_gpu_allocation_stays_out_of_scope": true,
+    "resident_modes_stay_out_of_direct_native_handoff": true,
+    "dataset_backed_flows_stay_out_of_direct_native_handoff": true
+  },
+  "required_next_gate": {
+    "name": "define_verilator_native_option_parser_stub_fixture_gate",
+    "must_define": [
+      "a non-executing parser-stub fixture input and output contract",
+      "a fixture case that accepts --sim-accel sidecar-gpu with --sim-accel-states 64 and --sim-accel-steps 1",
+      "a fixture case that rejects an unknown accelerator through the parser-stub validation contract, not wrapper argparse choices",
+      "fixture cases that reject missing shape halves, non-positive counts, and mixed native shape spellings through the stub contract or a shared sidecar option mapper",
+      "preservation of ordinary Verilator inputs such as --cc, --timing, -Mdir, --top-module, source files, filelists, defines, include directories, warning flags, and other Verilator arguments",
+      "the serialized handoff fields for accelerator mode, state count, step count, preserved Verilator args, source boundary references, state/report naming rules, correctness policy, and non-claims",
+      "how the fixture remains independent of an actual Verilator source tree",
+      "why the fixture adds no execution, measurement, runtime/ABI change, parser implementation, arbitrary filelist support, dependency inference, or automatic allocation claim"
+    ],
+    "must_not_claim": [
+      "native Verilator parser implementation",
+      "Verilator source patch landed in this repository",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "arbitrary RTL dependency inference",
+      "automatic optimal GPU allocation",
+      "new execution or timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "definition_accepted": true,
+    "non_executing_fixture_definition_allowed_next": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "native_verilator_parser_implementation_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_verilator_native_option_parser_stub_fixture_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not a Verilator source patch",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not parser inference of coverage manifests, host-probe metadata, source closure, state paths, or report paths",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not a new public CLI or workflow",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
