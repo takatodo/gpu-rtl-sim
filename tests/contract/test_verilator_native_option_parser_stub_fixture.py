@@ -15,6 +15,12 @@ REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_stub_fixture_implementation_gate.json"
 )
+SOURCE_PATCH_BOUNDARY_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "define_verilator_native_option_parser_source_patch_boundary_gate.json"
+)
 
 
 sys.path.insert(0, str(TOOLS))
@@ -216,6 +222,25 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertTrue(decisions["filelists_are_preserved_not_expanded"])
         self.assertFalse(review["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
         self.assertEqual(review["next_task"], "define_verilator_native_option_parser_source_patch_boundary_gate")
+
+    def test_source_patch_boundary_defines_overlay_descriptor_without_implementation(self) -> None:
+        gate = json.loads(SOURCE_PATCH_BOUNDARY_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(gate["source_review_gate"], "config/scaling_gates/review_verilator_native_option_parser_stub_fixture_implementation_gate.json")
+        self.assertEqual(gate["current_priority"], "review_verilator_native_option_parser_source_patch_boundary_gate")
+        patch_boundary = gate["patch_boundary"]
+        self.assertEqual(patch_boundary["selected_representation"], "repo_overlay_patch_boundary_without_vendored_verilator_source")
+        self.assertEqual(patch_boundary["future_patch_root"], "overlays/verilator/patches/")
+        self.assertEqual(patch_boundary["future_patch_artifact_status"], "not_added_by_this_gate")
+        self.assertEqual(patch_boundary["vendored_verilator_source_status"], "not_allowed_by_this_gate")
+        self.assertEqual(gate["native_parser_option_surface"]["accepted_accelerators"], ["sidecar-gpu"])
+        validation = gate["validation_mapping"]["invalid_sim_accel"]
+        self.assertTrue(validation["must_preserve_unsupported_value"])
+        self.assertFalse(validation["argparse_choices_success_evidence_allowed"])
+        self.assertIn("source closure inference", gate["handoff_boundary"]["parser_must_not_perform"])
+        self.assertEqual(gate["required_next_gate"]["name"], "review_verilator_native_option_parser_source_patch_boundary_gate")
+        self.assertFalse(gate["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
+        self.assertFalse(gate["acceptance_policy"]["patch_file_added_by_this_gate"])
 
 
 if __name__ == "__main__":

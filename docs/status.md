@@ -2,7 +2,7 @@
 
 ## Weakest Point
 
-The commit-split cleanup is complete, and the first Verilator native-option parser stub fixture implementation review is accepted. The current weak point is now defining a real source-patch boundary without overstating it: existing execution evidence still comes through sidecar/shim entrypoints and tracked-template registry support rather than a real Verilator parser, no Verilator source tree or parser patch exists in this repository, and the helper is parser-stub evidence only.
+The commit-split cleanup is complete, and the first Verilator native-option source-patch boundary is defined. The current weak point is now reviewing that boundary without overstating it: existing execution evidence still comes through sidecar/shim entrypoints and tracked-template registry support rather than a real Verilator parser, no Verilator source tree or parser patch exists in this repository, and the source-patch boundary adds no implementation.
 
 Current cleanup policy: keep `config/selection.json` compact (core pointer and operational fields), park bulky historical maps in `config/selection_extensions.json`, keep historical gate records under `records/scaling_gates/` with `config/scaling_gates` as a compatibility link, and keep generated evidence reproducible under `reports/` and `artifacts/` without retaining it as source of truth.
 
@@ -52,15 +52,15 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`define_verilator_native_option_parser_source_patch_boundary_gate`
+`review_verilator_native_option_parser_source_patch_boundary_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/review_verilator_native_option_parser_stub_fixture_implementation_gate.json`
+`config/scaling_gates/define_verilator_native_option_parser_source_patch_boundary_gate.json`
 
 ## 追跡タスク
 
-- `define_verilator_native_option_parser_source_patch_boundary_gate` で、実際の Verilator source/overlay patch 境界を定義する。
+- `review_verilator_native_option_parser_source_patch_boundary_gate` で、Verilator source/overlay patch 境界が小さく正しいかをレビューする。
 - `docs/migration_notes.md` の「シンプル検証からの乖離」節を、前提変更時に見直す。
 - 新規ゲート完了時は `config/selection_extensions.json` の `completed_goal_evidence` / `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json` の整合を取る。
 - ゲート JSON に残る履歴表記の例: `next_task: select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`（正の源泉は常に `config/selection.json` の `current_priority` を優先）。マージ後の全体像が必要なら `src/tools/selection_state.py` の `load_selection` を参照。
@@ -186,6 +186,8 @@ Verilator native option parser stub fixture review: `config/scaling_gates/review
 Verilator native option parser stub fixture implementation: `config/scaling_gates/implement_verilator_native_option_parser_stub_fixture_gate.json` records `src/tools/verilator_native_option_parser_stub_fixture.py` and `parse_verilator_native_option_stub`. The helper accepts the expanded native minimum `--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1`, rejects unknown accelerators through parser-stub validation while preserving the unsupported value, rejects compact and mixed compact shape spelling outside the native parser-stub minimum, preserves ordinary Verilator build arguments, and serializes the 18 parser-only handoff fields with `coverage_output_equivalence`. The next task is review; this implementation adds no public CLI, Verilator source patch, native parser, execution, measurement, runtime/ABI change, source-closure inference, arbitrary RTL/filelist support, automatic allocation, GEM comparison, production-serving claim, or raw full-state equality claim.
 
 Verilator native option parser stub fixture implementation review: `config/scaling_gates/review_verilator_native_option_parser_stub_fixture_implementation_gate.json` accepts the helper narrowly and advances to `define_verilator_native_option_parser_source_patch_boundary_gate`. The review keeps the weak point explicit: the helper is still a Python fixture rather than real Verilator parser integration, and shallow source/filelist classification is acceptable only because ordinary Verilator args are preserved and `source_boundary_status` remains `preserved_only_not_resolved`. The next gate must define the smallest real source/overlay patch boundary before any native parser implementation claim.
+
+Verilator native option parser source-patch boundary definition: `config/scaling_gates/define_verilator_native_option_parser_source_patch_boundary_gate.json` defines the first source-patch representation as a future repo-owned overlay patch descriptor under `overlays/verilator/patches/`, not vendored Verilator source or a new Verilator submodule. The native minimum remains expanded-only `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`, validation errors map to the accepted parser-stub contract, and the parser-only handoff preserves ordinary Verilator inputs while leaving source closure inference, filelist expansion, coverage manifest selection, execution, comparison, and automatic allocation to later sidecar layers. The next task is review; this definition adds no patch file, native parser implementation, execution, measurement, runtime/ABI change, arbitrary RTL/filelist support, GEM comparison, production-serving claim, or raw full-state equality claim.
 
 Public benchmark pack externalization readiness state: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for handing the refreshed pack to an external reader. The status is `ready_for_external_review`; this is a packaging/readiness audit only, not a new measurement result or stronger performance claim.
 
