@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The commit split is complete and the parser-stub fixture helper is implemented; the weak point is now reviewing that implementation without confusing it with the existing sidecar shim, tracked-template registry, arbitrary filelist planning, dependency inference, automatic allocation, or a real Verilator parser patch.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The commit split is complete and the parser-stub fixture implementation review is accepted; the weak point is now defining a source-patch boundary without confusing the fixture with the existing sidecar shim, tracked-template registry, arbitrary filelist planning, dependency inference, automatic allocation, or a real Verilator parser patch.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the smallest non-executing importable parser-stub fixture before any native Verilator parser implementation claim.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is defining the smallest Verilator source-patch boundary before any native parser implementation claim.
 
 Current priority:
 
-`review_verilator_native_option_parser_stub_fixture_implementation_gate`
+`define_verilator_native_option_parser_source_patch_boundary_gate`
 
 Current gate:
 
-`config/scaling_gates/implement_verilator_native_option_parser_stub_fixture_gate.json`
+`config/scaling_gates/review_verilator_native_option_parser_stub_fixture_implementation_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native option parser stub fixture implementation review**: Review the non-executing parser-stub helper, especially unknown accelerator rejection outside wrapper argparse choices, and keep public CLI, parser implementation, execution, and measurement out of scope.
+1. **Native option parser source patch boundary**: Define the smallest source/overlay patch boundary that could carry the accepted parser-stub behavior into real Verilator parser work without adding execution or measurement claims.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,13 +79,13 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Review the native Verilator option parser stub fixture implementation after adding the importable helper.
+Define the native Verilator option parser source-patch boundary after accepting the parser-stub fixture implementation.
 
 Parser boundary definition:
 
-- source gate: `config/scaling_gates/implement_verilator_native_option_parser_stub_fixture_gate.json`
-- selected next gate: `review_verilator_native_option_parser_stub_fixture_implementation_gate`
-- scope: implementation review only, not public CLI, native parser implementation, or execution
+- source gate: `config/scaling_gates/review_verilator_native_option_parser_stub_fixture_implementation_gate.json`
+- selected next gate: `define_verilator_native_option_parser_source_patch_boundary_gate`
+- scope: source-patch boundary definition only, not public CLI, native parser implementation, or execution
 - defined native minimum: `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`
 - wrapper/shim compatibility kept out of native minimum: `--sim-accel-shape <NxS>`, target-first registry lookup, print modes, JSON operator plans, resident modes, and dataset-backed flows
 - parser non-inference: coverage manifests, host-probe metadata, source closure, state paths, and report paths are sidecar handoff-contract fields, not parser-discovered fields
@@ -96,6 +96,7 @@ Parser boundary definition:
 - fixture must make unknown accelerator rejection, paired positive state/step validation, compact-shape rejection outside the native minimum, ordinary Verilator arg preservation, and structured handoff fields testable without a Verilator source tree
 - fixture contract is defined as an importable helper contract, not a public CLI, and it must not call target registry lookup, source closure inference, coverage manifest selection, host-probe metadata, execution, compare, or allocation logic
 - implementation adds `src/tools/verilator_native_option_parser_stub_fixture.py` and `parse_verilator_native_option_stub`, bypassing wrapper argparse choices rather than counting current CLI rejection behavior as success
+- implementation review accepts the helper narrowly and requires the next gate to define the source/overlay patch boundary before any native parser claim
 - structured handoff fields are pinned before any native parser support claim
 - non-claim: this does not add parser implementation, execution, measurement, runtime/ABI support, arbitrary RTL dependency inference, automatic optimal GPU allocation, GEM comparison, raw full-state equality, or production-serving throughput
 
@@ -329,7 +330,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
-- current next task: `implement_verilator_native_option_parser_stub_fixture_gate`
+- current next task: `define_verilator_native_option_parser_source_patch_boundary_gate`
 - reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
@@ -671,13 +672,13 @@ Tracked evidence:
 
 Recommended next gate:
 
-`implement_verilator_native_option_parser_stub_fixture_gate`
+`define_verilator_native_option_parser_source_patch_boundary_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/review_verilator_native_option_parser_stub_fixture_gate.json` as the source artifact
-- add an importable non-executing helper, not a public CLI
-- test accepted `sidecar-gpu` `64x1`, unknown accelerator rejection, missing/non-positive shape input rejection, compact `--sim-accel-shape` rejection, and ordinary Verilator arg preservation
+- use `config/scaling_gates/review_verilator_native_option_parser_stub_fixture_implementation_gate.json` as the source artifact
+- define whether the first real parser work is an external patch, vendored source boundary, or source-overlay boundary
+- keep execution, measurement, source closure inference, automatic allocation, and arbitrary RTL/filelist support out of scope
 - emit or return the accepted parser-only handoff fields with `coverage_output_equivalence`
 - preserve the two tracked `filelist_*` targets as evidence only, without claiming arbitrary filelist support
 - keep generated reports and artifacts non-canonical

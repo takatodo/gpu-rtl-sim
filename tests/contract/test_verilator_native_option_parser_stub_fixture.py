@@ -9,6 +9,12 @@ TOOLS = REPO_ROOT / "src" / "tools"
 IMPLEMENTATION_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "implement_verilator_native_option_parser_stub_fixture_gate.json"
 )
+REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_stub_fixture_implementation_gate.json"
+)
 
 
 sys.path.insert(0, str(TOOLS))
@@ -192,6 +198,24 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertFalse(gate["acceptance_policy"]["new_public_cli_allowed_by_this_gate"])
         self.assertFalse(gate["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
         self.assertEqual(gate["next_task"], "review_verilator_native_option_parser_stub_fixture_implementation_gate")
+
+    def test_review_gate_accepts_helper_and_selects_source_patch_boundary(self) -> None:
+        review = json.loads(REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(review["source_implementation_gate"], "config/scaling_gates/implement_verilator_native_option_parser_stub_fixture_gate.json")
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("not a Verilator source patch", review["review_decision"]["weakest_point"])
+        self.assertEqual(review["current_priority"], "define_verilator_native_option_parser_source_patch_boundary_gate")
+        self.assertEqual(review["required_next_gate"]["name"], "define_verilator_native_option_parser_source_patch_boundary_gate")
+        accepted = review["accepted_scope"]
+        self.assertEqual(accepted["unknown_accelerator_rejection_layer"], "parser_stub_validation_contract")
+        self.assertTrue(accepted["unknown_accelerator_preserves_unsupported_value"])
+        self.assertEqual(accepted["serialized_handoff_field_count"], 18)
+        decisions = review["validated_implementation_decisions"]
+        self.assertTrue(decisions["argparse_choices_are_not_used_as_success_evidence"])
+        self.assertTrue(decisions["filelists_are_preserved_not_expanded"])
+        self.assertFalse(review["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
+        self.assertEqual(review["next_task"], "define_verilator_native_option_parser_source_patch_boundary_gate")
 
 
 if __name__ == "__main__":
