@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_compatible_gpu_hybrid_minimal_bench_suite_completion_audit",
+  "status": "complete",
+  "objective": "Verilator互換の入力から、GPU hybrid 実行をどれだけ自動化・高速化できるかを測る最小ベンチ基盤を完成させる。",
+  "source_review_gate": "config/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite_run_review_gate.json",
+  "completion_audit": [
+    {
+      "requirement": "Verilator-compatible input surface exists",
+      "status": "satisfied",
+      "evidence": [
+        "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json",
+        "operator plan emits a command containing --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1"
+      ]
+    },
+    {
+      "requirement": "filelist-derived input path is represented",
+      "status": "satisfied",
+      "evidence": [
+        "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+        "config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_result_gate.json",
+        "source_closure_status=complete",
+        "reference_template=config/slice_launch_templates/pulp_ita_mha.json"
+      ]
+    },
+    {
+      "requirement": "automation can be measured from one public command",
+      "status": "satisfied",
+      "evidence": [
+        "python3 src/tools/run_hybrid_benchmark.py --minimal-bench-suite",
+        "python3 src/tools/run_hybrid_benchmark.py --run-minimal-bench-suite"
+      ]
+    },
+    {
+      "requirement": "speed tendency can be measured or classified",
+      "status": "satisfied",
+      "evidence": [
+        "state_parallel_cpu_to_hybrid_wall_speedup=157.72521551724137 for paged_attention_kv_score 64x1 from existing reports",
+        "single_state_repeated_step_cpu_to_hybrid_wall_speedup=2.1637400722021662 for paged_attention_kv_score 1x64 from existing reports",
+        "shape_classes_distinguishable=true"
+      ]
+    },
+    {
+      "requirement": "correctness policy is explicit",
+      "status": "satisfied",
+      "evidence": [
+        "correctness_policy=coverage_output_equivalence",
+        "filelist_coverage_output_mismatch_count=0",
+        "filelist_compared_words=29",
+        "filelist_compared_bytes=116"
+      ]
+    },
+    {
+      "requirement": "public workflow has tests and docs",
+      "status": "satisfied",
+      "evidence": [
+        "tests/contract/test_hybrid_benchmark_and_config_cli.py",
+        "tests/contract/test_hybrid_benchmark_discovery_examples_cli.py",
+        "README.md",
+        "docs/status.md",
+        "docs/roadmap.md",
+        "docs/results.md"
+      ]
+    }
+  ],
+  "accepted_commands": [
+    "python3 src/tools/run_hybrid_benchmark.py --minimal-bench-suite",
+    "python3 src/tools/run_hybrid_benchmark.py --run-minimal-bench-suite",
+    "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+    "python3 -m unittest tests.contract.test_hybrid_benchmark_and_config_cli tests.contract.test_hybrid_benchmark_discovery_examples_cli tests.contract.test_tracked_tool_dependency_boundary tests.contract.test_resident_runtime_contract tests.contract.test_full_ita_mha_larger_paged_kv_next -q",
+    "make check"
+  ],
+  "acceptance_policy": {
+    "goal_completion_audit": true,
+    "new_full_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "select_next_measured_benchmark_after_verilator_compatible_gpu_hybrid_minimal_bench_suite_completion",
+  "non_claims": [
+    "not arbitrary RTL support",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "not a broad speedup claim beyond the listed targets, shapes, and reports"
+  ]
+}

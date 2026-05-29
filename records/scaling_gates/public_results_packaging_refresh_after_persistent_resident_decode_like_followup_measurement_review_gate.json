@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_review_gate",
+  "status": "accepted_public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement",
+  "objective": "Review and accept the public-pack refresh dry-run after the persistent resident decode-like follow-up measurement result.",
+  "source_definition_gate": "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_gate.json",
+  "source_result_gate": "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_result_gate.json",
+  "current_priority": "define_public_benchmark_pack_externalization_completion_after_persistent_resident_decode_like_followup_measurement_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The public-pack archive dry-run exits 0 and includes the persistent resident decode-like selection, definition, result, review, public-refresh definition, source-of-truth docs, compact selection pointer, and optional generated summary report when present.",
+    "accepted_scope": "packaging refresh evidence for the scoped pulp_ita_mha persistent resident ABI repeat-median follow-up",
+    "known_weaknesses": [
+      "the result is a packaging dry-run and creates no archive",
+      "the included measurement remains scoped to pulp_ita_mha 16x64, four phases, repeat 3, and the existing persistent resident ABI path",
+      "reports and artifacts remain optional generated evidence, not source of truth",
+      "direct Verilator option support, arbitrary RTL support, automatic optimal GPU allocation, and production LLM-serving throughput remain unclaimed"
+    ]
+  },
+  "required_next_gate": {
+    "name": "define_public_benchmark_pack_externalization_completion_after_persistent_resident_decode_like_followup_measurement_gate",
+    "must_pin": [
+      "public pack completion boundary after this refresh",
+      "all required manifest paths are tracked or explicitly optional generated reports",
+      "the packaging-only scope and non-claims remain visible",
+      "generated reports and artifacts remain non-canonical"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "direct_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_public_benchmark_pack_externalization_completion_after_persistent_resident_decode_like_followup_measurement_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not direct Verilator-native option support",
+    "not arbitrary RTL support",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not production LLM-serving throughput",
+    "not raw full-state equality"
+  ]
+}

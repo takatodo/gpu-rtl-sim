@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_filelist_source_closure_refusal_result_gate",
+  "status": "passed_public_results_packaging_refresh_after_filelist_source_closure_refusal",
+  "objective": "Record the public-pack manifest refresh for the source-closure refusal guard.",
+  "source_definition_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_source_closure_refusal_gate.json",
+  "current_priority": "review_public_results_packaging_refresh_after_filelist_source_closure_refusal_gate",
+  "manifest_updates": {
+    "record_manifest": "src/tools/results_reproduction_manifest.py",
+    "source_manifest": "src/tools/results_reproduction_manifest_sources.py",
+    "added_record_paths": [
+      "records/scaling_gates/filelist_source_closure_dependency_policy_gate.json",
+      "records/scaling_gates/filelist_source_closure_dependency_policy_dry_run_result_gate.json",
+      "records/scaling_gates/filelist_source_closure_dependency_policy_dry_run_review_gate.json",
+      "records/scaling_gates/filelist_source_closure_non_dry_run_refusal_gate.json",
+      "records/scaling_gates/filelist_source_closure_non_dry_run_refusal_result_gate.json",
+      "records/scaling_gates/filelist_source_closure_non_dry_run_refusal_review_gate.json",
+      "records/scaling_gates/public_results_packaging_refresh_after_filelist_source_closure_refusal_gate.json",
+      "records/scaling_gates/public_results_packaging_refresh_after_filelist_source_closure_refusal_result_gate.json",
+      "records/scaling_gates/public_results_packaging_refresh_after_filelist_source_closure_refusal_review_gate.json"
+    ],
+    "added_source_paths": [
+      "tests/contract/test_hybrid_config_template_cli.py",
+      "tests/contract/test_hybrid_verilator_like_config_generation.py"
+    ],
+    "already_included_source_paths": [
+      "src/tools/run_hybrid_template.py",
+      "src/tools/hybrid_template_runner.py",
+      "src/tools/hybrid_template_types.py",
+      "config/slice_launch_templates/filelist_paged_attention_kv_score.json"
+    ]
+  },
+  "validation": {
+    "archive_dry_run_command": "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+    "archive_dry_run_exit_code": 0,
+    "contract_test_command": "python3 -m unittest tests.contract.test_tracked_tool_dependency_boundary -q",
+    "contract_test_exit_code": 0
+  },
+  "acceptance_policy": {
+    "packaging_refresh_result": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed": false,
+    "automatic_optimal_gpu_allocation_claim_allowed": false,
+    "verilator_native_option_claim_allowed": false
+  },
+  "next_task": "review_public_results_packaging_refresh_after_filelist_source_closure_refusal_gate",
+  "non_claims": [
+    "not a new measurement",
+    "not Verilator build evidence",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}

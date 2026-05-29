@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_filelist_source_closure_refusal_gate",
+  "status": "defined_public_results_packaging_refresh_after_filelist_source_closure_refusal",
+  "objective": "Define the public-pack refresh after accepting the source-closure non-dry-run refusal guard.",
+  "source_review_gate": "config/scaling_gates/filelist_source_closure_non_dry_run_refusal_review_gate.json",
+  "current_priority": "run_public_results_packaging_refresh_after_filelist_source_closure_refusal_gate",
+  "refresh_scope": {
+    "include_gate_records": [
+      "records/scaling_gates/filelist_source_closure_dependency_policy_gate.json",
+      "records/scaling_gates/filelist_source_closure_dependency_policy_dry_run_result_gate.json",
+      "records/scaling_gates/filelist_source_closure_dependency_policy_dry_run_review_gate.json",
+      "records/scaling_gates/filelist_source_closure_non_dry_run_refusal_gate.json",
+      "records/scaling_gates/filelist_source_closure_non_dry_run_refusal_result_gate.json",
+      "records/scaling_gates/filelist_source_closure_non_dry_run_refusal_review_gate.json"
+    ],
+    "include_source_paths": [
+      "src/tools/run_hybrid_template.py",
+      "src/tools/hybrid_template_runner.py",
+      "src/tools/hybrid_template_types.py",
+      "tests/contract/test_hybrid_config_template_cli.py",
+      "tests/contract/test_hybrid_verilator_like_config_generation.py",
+      "config/slice_launch_templates/filelist_paged_attention_kv_score.json"
+    ],
+    "include_generated_reports": [],
+    "packaging_only": true
+  },
+  "required_result_gate": {
+    "name": "public_results_packaging_refresh_after_filelist_source_closure_refusal_result_gate",
+    "must_validate": [
+      "public-pack manifest includes source-closure policy/dry-run/refusal gate records",
+      "public-pack source manifest includes the contract tests covering source-closure metadata and non-dry-run refusal",
+      "public-pack source manifest already includes run_hybrid_template.py, hybrid_template_runner.py, and hybrid_template_types.py",
+      "archive dry-run can print the include/exclude plan without creating an archive",
+      "no new execution, timing, speedup, arbitrary RTL dependency inference, native Verilator option, or automatic GPU allocation claim is added"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_public_results_packaging_refresh_after_filelist_source_closure_refusal_gate",
+  "non_claims": [
+    "not a new measurement",
+    "not Verilator build evidence",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}

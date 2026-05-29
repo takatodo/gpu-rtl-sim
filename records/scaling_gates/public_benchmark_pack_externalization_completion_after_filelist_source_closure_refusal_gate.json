@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "gate": "public_benchmark_pack_externalization_completion_after_filelist_source_closure_refusal_gate",
+  "status": "complete_public_benchmark_pack_externalization_after_filelist_source_closure_refusal",
+  "objective": "Close the public-pack externalization boundary after the source-closure refusal guard refresh.",
+  "source_refresh_review_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_source_closure_refusal_review_gate.json",
+  "current_priority": "select_next_measurement_after_filelist_source_closure_refusal_public_pack_refresh",
+  "completion_decision": {
+    "closed": true,
+    "reason": "The public-pack manifest includes the source-closure policy/dry-run/refusal gate chain and the contract tests that pin source-closure metadata plus known incomplete non-dry-run refusal.",
+    "accepted_scope": "public-pack metadata and contract evidence for source-closure refusal guard",
+    "no_new_reports_or_artifacts": true
+  },
+  "accepted_manifest_boundary": {
+    "record_manifest": "src/tools/results_reproduction_manifest.py",
+    "source_manifest": "src/tools/results_reproduction_manifest_sources.py",
+    "archive_dry_run": "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+    "included_contract_tests": [
+      "tests/contract/test_hybrid_config_template_cli.py",
+      "tests/contract/test_hybrid_verilator_like_config_generation.py"
+    ]
+  },
+  "required_next_gate": {
+    "name": "next_measurement_selection_after_filelist_source_closure_refusal_public_pack_refresh",
+    "must_select": [
+      "one next workstream",
+      "the remaining evidence or usability gap",
+      "whether the next work is definition, dry-run, or measurement",
+      "non-claims for arbitrary RTL dependency inference, native Verilator option support, and automatic optimal GPU allocation"
+    ]
+  },
+  "acceptance_policy": {
+    "completion_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed": false,
+    "automatic_optimal_gpu_allocation_claim_allowed": false,
+    "verilator_native_option_claim_allowed": false
+  },
+  "next_task": "select_next_measurement_after_filelist_source_closure_refusal_public_pack_refresh",
+  "non_claims": [
+    "not a new measurement",
+    "not Verilator build evidence",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}

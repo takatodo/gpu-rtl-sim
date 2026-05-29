@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_template_schema_metadata_invariant_execution_gate",
+  "status": "defined_tlul_template_schema_metadata_invariant_execution",
+  "objective": "Define the real build/run/compare execution boundary for the six representative template metadata-invariant commands after dry-run command-plan review.",
+  "source_definition_gate": "config/scaling_gates/tlul_template_schema_metadata_invariant_review_gate.json",
+  "source_dry_run_gate": "config/scaling_gates/tlul_template_schema_metadata_invariant_review_dry_run_gate.json",
+  "source_review_gate": "config/scaling_gates/tlul_template_schema_metadata_invariant_review_dry_run_review_gate.json",
+  "current_priority": "run_tlul_template_schema_metadata_invariant_execution_gate",
+  "execution_scope": {
+    "name": "six_representative_template_metadata_invariant_1x1_build_run_compare",
+    "decision": "execute_all_six_reviewed_template_metadata_invariant_commands",
+    "reason": "The accepted dry-run boundary covered the representative legacy TL-UL, primitive, NVDLA, full ITA/MHA, and paged KV-cache template metadata forms. Executing all six resolves the dry-run weakness for this scope: no Verilator build, generic host-probe compile, GPU cubin build, CPU/hybrid run, or compare evidence has yet been recorded for this exact metadata-invariant set.",
+    "shape": "1x1",
+    "templates": [
+      {
+        "target": "OpenTitan.tlul_fifo_sync",
+        "metadata_form": "legacy_template_normalized_by_tooling",
+        "template": "config/slice_launch_templates/tlul_fifo_sync.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_fifo_sync.json --shape 1x1",
+        "expected_compare_report": "reports/tlul_fifo_sync_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "coverage_output_gate": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+        "coverage_output_target": "tlul_fifo_sync"
+      },
+      {
+        "target": "OpenTitan.tlul_socket_m1",
+        "metadata_form": "legacy_template_with_target_specific_root_clock_reset_override",
+        "template": "config/slice_launch_templates/tlul_socket_m1.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_socket_m1.json --shape 1x1",
+        "expected_compare_report": "reports/tlul_socket_m1_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "coverage_output_gate": "config/scaling_gates/tlul_coverage_output_equivalence.json",
+        "coverage_output_target": "tlul_socket_m1"
+      },
+      {
+        "target": "OpenTitan.prim_count",
+        "metadata_form": "explicit_build_host_probe_metadata",
+        "template": "config/slice_launch_templates/prim_count.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/prim_count.json --shape 1x1",
+        "expected_compare_report": "reports/prim_count_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "coverage_output_gate": "config/scaling_gates/prim_count_source_gate.json",
+        "coverage_output_target": "prim_count"
+      },
+      {
+        "target": "NVDLA.nvdla_cmac_a2cacc",
+        "metadata_form": "explicit_non_default_clock_reset_metadata",
+        "template": "config/slice_launch_templates/nvdla_cmac_a2cacc.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_a2cacc.json --shape 1x1",
+        "expected_compare_report": "reports/nvdla_cmac_a2cacc_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "coverage_output_gate": "config/scaling_gates/neural_network_rtl_nvdla_cmac_a2cacc_first_hybrid_benchmark_gate.json",
+        "coverage_output_target": "nvdla_cmac_a2cacc"
+      },
+      {
+        "target": "PULP_ITA.pulp_ita_mha",
+        "metadata_form": "explicit_modern_nn_template_metadata",
+        "template": "config/slice_launch_templates/pulp_ita_mha.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1",
+        "expected_compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "coverage_output_gate": "config/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
+        "coverage_output_target": "pulp_ita_mha"
+      },
+      {
+        "target": "PULP_ITA.pulp_paged_kv_cache_large",
+        "metadata_form": "explicit_llm_serving_like_template_metadata",
+        "template": "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x1",
+        "expected_compare_report": "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "coverage_output_gate": "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+        "coverage_output_target": "pulp_paged_kv_cache_large",
+        "noted_template_exception": "source_files is empty because the overlay coverage testbench is the Verilator input for this harness"
+      }
+    ]
+  },
+  "execution_requirements": [
+    "each command must complete Verilator build",
+    "each command must build the generic host probe through src/tools/build_host_probe.py",
+    "each command must build the GPU cubin",
+    "each command must run CPU and hybrid paths",
+    "each command must write the expected compare report under reports/",
+    "each compare report must pass coverage_output_equivalence with mismatch count 0",
+    "raw full-state equality is not required",
+    "generated reports and artifacts remain non-canonical"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "execute_all_six_reviewed_template_metadata_invariant_commands_next": true,
+    "generic_host_probe_builder_required": true,
+    "makefile_host_probe_target_allowed": false,
+    "coverage_output_equivalence_required_for_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_tlul_template_schema_metadata_invariant_execution_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not fresh build/run/compare execution",
+    "not coverage-output equivalence evidence for the six-template metadata-invariant set",
+    "not a runtime or ABI change",
+    "not a new workload promotion",
+    "not universal validation for every historical template or target",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

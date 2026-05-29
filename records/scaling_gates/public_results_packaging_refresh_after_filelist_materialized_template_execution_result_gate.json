@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_filelist_materialized_template_execution_result_gate",
+  "status": "completed_public_results_packaging_refresh_after_filelist_materialized_template_execution",
+  "objective": "Record the public-pack manifest and docs refresh after the filelist materialized-template execution review.",
+  "source_definition_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_materialized_template_execution_gate.json",
+  "current_priority": "review_public_results_packaging_refresh_after_filelist_materialized_template_execution_gate",
+  "refreshed_files": [
+    "docs/results.md",
+    "src/tools/results_reproduction_manifest.py",
+    "src/tools/results_reproduction_manifest_sources.py"
+  ],
+  "refresh_result": {
+    "record_paths_added_to_public_manifest": 16,
+    "source_paths_added_to_public_manifest": 6,
+    "optional_report_added_to_public_manifest": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "docs_results_mentions_execution_review": true,
+    "source_closure_weakness_preserved": true,
+    "non_claims_preserved": true
+  },
+  "acceptance_policy": {
+    "refresh_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_public_results_packaging_refresh_after_filelist_materialized_template_execution_gate",
+  "non_claims": [
+    "not new execution evidence",
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}

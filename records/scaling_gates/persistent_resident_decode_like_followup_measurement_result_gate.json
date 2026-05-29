@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "gate": "persistent_resident_decode_like_followup_measurement_result_gate",
+  "status": "measured_persistent_resident_decode_like_followup",
+  "source_definition_gate": "config/scaling_gates/define_persistent_resident_decode_like_followup_measurement_gate.json",
+  "objective": "Record the persistent resident decode-like follow-up measurement selected after the minimal bench suite completion.",
+  "command": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3",
+  "exit_code": 0,
+  "summary_report": "reports/persistent_resident_state_abi_repeat_median_summary.json",
+  "sample_reports": [
+    "reports/persistent_resident_state_abi_repeat_median_sample_1.json",
+    "reports/persistent_resident_state_abi_repeat_median_sample_2.json",
+    "reports/persistent_resident_state_abi_repeat_median_sample_3.json"
+  ],
+  "measured_result": {
+    "target": "pulp_ita_mha",
+    "mode": "persistent-resident-state-abi",
+    "shape": "16x64",
+    "phases": 4,
+    "repeat_count": 3,
+    "state_authority": "in_process_gpu_d_storage_after_phase_1",
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "gpu_kernel_total_ms": {
+      "samples": [
+        5.84704,
+        5.606752,
+        5.705824
+      ],
+      "min": 5.606752,
+      "median": 5.705824,
+      "max": 5.84704
+    },
+    "hybrid_wall_ms": {
+      "samples": [
+        5.861,
+        5.606,
+        5.692
+      ],
+      "min": 5.606,
+      "median": 5.692,
+      "max": 5.861
+    },
+    "gpu_kernel_total_ms_per_final_state_step": {
+      "min": 0.0013688359375,
+      "median": 0.0013930234375,
+      "max": 0.0014275
+    },
+    "hybrid_wall_ms_per_final_state_step": {
+      "min": 0.00136865234375,
+      "median": 0.0013896484375,
+      "max": 0.001430908203125
+    }
+  },
+  "acceptance_policy": {
+    "coverage_output_equivalence_required": true,
+    "all_samples_must_pass_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "generated_reports_are_source_of_truth": false,
+    "direct_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_claim_allowed_by_gate_alone": false,
+    "automatic_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "non_claims": [
+    "not direct Verilator-native option support",
+    "not arbitrary RTL support",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not a single-request 1x64 resident improvement claim",
+    "not production LLM serving throughput",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "not raw full-state equality"
+  ],
+  "next_task": "review_persistent_resident_decode_like_followup_measurement_result_gate"
+}

@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "gate": "review_commit_split_and_public_pack_cleanup_gate",
+  "status": "accepted_commit_split_plan_select_line_guard_resolution",
+  "objective": "Review the defined commit-split/public-pack cleanup plan before rewriting the index or committing the staged change set.",
+  "source_definition_gate": "config/scaling_gates/define_commit_split_and_public_pack_cleanup_gate.json",
+  "current_priority": "resolve_commit_split_line_guard_risks_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The eight planned groups are review-sized and each stays below the documented 100-file commit guard. The split can be used as the operational boundary, but normal commits are still blocked by per-file line guard risks.",
+    "weakest_point": "The file-count split is coherent, but three files still need hunk staging, refactoring, or an explicit reviewed override before ordinary hook-clean commits are possible."
+  },
+  "reviewed_state": {
+    "documented_commit_guard_staged_file_limit": 100,
+    "documented_script_added_line_limit": 250,
+    "documented_contract_test_added_line_limit": 250,
+    "staged_file_count_before_review_gate": 265,
+    "projected_staged_file_count_after_review_gate": 266,
+    "records_scaling_gate_json_count_before_review_gate": 800,
+    "projected_records_scaling_gate_json_count_after_review_gate": 801,
+    "source_definition_projected_staged_file_count": 265
+  },
+  "accepted_split_plan": {
+    "commit_group_count": 8,
+    "estimated_file_counts": [
+      15,
+      26,
+      71,
+      30,
+      24,
+      59,
+      28,
+      25
+    ],
+    "max_estimated_file_count": 71,
+    "all_groups_below_file_limit": true,
+    "index_rewrite_allowed_by_this_gate": false,
+    "commit_allowed_by_this_gate": false
+  },
+  "unresolved_line_guard_risks": [
+    {
+      "path": "src/tools/results_reproduction_gpu_allocation_policy.py",
+      "added_lines": 300,
+      "limit": 250,
+      "required_resolution": "hunk-stage, split reusable helpers into existing modules, or use an explicit reviewed override"
+    },
+    {
+      "path": "tests/contract/test_hybrid_verilator_like_cli.py",
+      "added_lines": 443,
+      "limit": 250,
+      "required_resolution": "move assertions into smaller focused tests or split staged hunks before committing without overrides"
+    },
+    {
+      "path": "tests/contract/test_public_pack_repeat_median_refresh_gates.py",
+      "added_lines": 264,
+      "limit": 250,
+      "required_resolution": "split the test surface or use a reviewed override for this commit only"
+    }
+  ],
+  "required_next_gate": {
+    "name": "resolve_commit_split_line_guard_risks_gate",
+    "must_pin": [
+      "the selected resolution for each of the three line guard risks",
+      "whether each risk is resolved by hunk staging, refactoring, or an explicit reviewed override",
+      "that the eight accepted file-count groups remain below the 100-file hook limit",
+      "that shared docs, manifest entries, tests, and source-of-truth pointers remain coherent after any hunk staging",
+      "that unrelated unstaged changes remain untouched",
+      "that generated reports and artifacts remain non-canonical"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "split_plan_accepted": true,
+    "line_guard_resolution_complete": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "raw_full_state_equality_required": false
+  },
+  "next_task": "resolve_commit_split_line_guard_risks_gate",
+  "non_claims": [
+    "not an index rewrite",
+    "not a commit execution gate",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not a runtime or ABI change",
+    "not a native Verilator parser change",
+    "not arbitrary filelist or RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

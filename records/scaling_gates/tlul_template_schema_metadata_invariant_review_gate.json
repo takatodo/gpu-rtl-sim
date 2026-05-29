@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_template_schema_metadata_invariant_review_gate",
+  "status": "defined_tlul_template_schema_metadata_invariant_review_boundary",
+  "objective": "Define the metadata-invariant review boundary for generating a generic host-probe and coverage-output equivalence plan from tracked launch templates.",
+  "source_followup_gate": "config/scaling_gates/config_generation_validation_followup_gate.json",
+  "current_priority": "run_tlul_template_schema_metadata_invariant_review_dry_run_gate",
+  "review_scope": {
+    "name": "template_metadata_invariants_for_verilator_like_hybrid_entry",
+    "reason": "Generated-config correctness breadth is now sufficient for the current branch. The next sharper risk is whether the template metadata required for Verilator-like hybrid operation is explicit and machine-checkable instead of being carried by per-target assumptions.",
+    "representative_templates": [
+      {
+        "template": "config/slice_launch_templates/tlul_fifo_sync.json",
+        "target": "OpenTitan.tlul_fifo_sync",
+        "metadata_form": "legacy_template_normalized_by_tooling",
+        "reason": "Checks that legacy TL-UL templates still normalize into the generic host-probe and coverage-output plan."
+      },
+      {
+        "template": "config/slice_launch_templates/tlul_socket_m1.json",
+        "target": "OpenTitan.tlul_socket_m1",
+        "metadata_form": "legacy_template_with_target_specific_root_clock_reset_override",
+        "reason": "Checks legacy TL-UL root clock/reset field handling."
+      },
+      {
+        "template": "config/slice_launch_templates/prim_count.json",
+        "target": "OpenTitan.prim_count",
+        "metadata_form": "explicit_build_host_probe_metadata",
+        "reason": "Checks explicit primitive template metadata with package/include source ordering."
+      },
+      {
+        "template": "config/slice_launch_templates/nvdla_cmac_a2cacc.json",
+        "target": "NVDLA.nvdla_cmac_a2cacc",
+        "metadata_form": "explicit_non_default_clock_reset_metadata",
+        "reason": "Checks non-default clock/reset names and reset polarity without adding a new NVDLA claim."
+      },
+      {
+        "template": "config/slice_launch_templates/pulp_ita_mha.json",
+        "target": "PULP_ITA.pulp_ita_mha",
+        "metadata_form": "explicit_modern_nn_template_metadata",
+        "reason": "Checks full ITA/MHA style source, overlay, and coverage-output metadata."
+      },
+      {
+        "template": "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+        "target": "PULP_ITA.pulp_paged_kv_cache_large",
+        "metadata_form": "explicit_llm_serving_like_template_metadata",
+        "reason": "Checks paged KV-cache serving-like template metadata without adding timing or workload claims."
+      }
+    ]
+  },
+  "required_metadata_invariants": [
+    "template path is tracked by git",
+    "source_gate is present for explicit generated-config templates or legacy source evidence is traceable through the template and gate chain",
+    "top_module is present or derivable from the coverage testbench path",
+    "source_files are tracked and ordered for Verilator",
+    "verilator_args are explicit when include directories or warning policy are required",
+    "planned_overlay.coverage_tb_path is tracked or the legacy runner_args_template coverage_tb_path is tracked",
+    "planned_overlay.coverage_manifest_path is tracked or the legacy runner_args_template coverage_manifest_path is tracked",
+    "build.host_probe_builder is src/tools/build_host_probe.py for explicit templates or normalizes to that builder for legacy templates",
+    "build.host_probe.clock_field and build.host_probe.reset_field are explicit after normalization",
+    "build.host_probe.clock_report_name and build.host_probe.reset_report_name are explicit after normalization",
+    "build.host_probe.reset_asserted_value and reset_deasserted_value are explicit after normalization",
+    "build.host_probe.host_clock_control and host_reset_control are explicit after normalization",
+    "build.host_probe.probe_syms_state is explicit after normalization when syms-state probing is required or intentionally disabled",
+    "dry-run output uses python3 src/tools/build_host_probe.py and does not require a Makefile host-probe target",
+    "dry-run output includes --acceptance-policy coverage_output_equivalence",
+    "dry-run output includes --coverage-output-gate and --coverage-output-target for explicit compare plans",
+    "--coverage-output-target matches the expected target basename for the coverage manifest",
+    "expected compare report path follows reports/<target>_cpu_vs_hybrid_<shape>_coverage_output_compare.json",
+    "reports and artifacts remain generated evidence only"
+  ],
+  "dry_run_commands": [
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_fifo_sync.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_socket_m1.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/prim_count.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_a2cacc.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x1 --dry-run"
+  ],
+  "required_next_gate": {
+    "name": "run_tlul_template_schema_metadata_invariant_review_dry_run_gate",
+    "must_record": [
+      "all dry-run commands exit 0",
+      "all dry-run plans use src/tools/build_host_probe.py",
+      "no dry-run plan requires make -C src/hybrid for a target-specific host-probe",
+      "all dry-run plans include coverage_output_equivalence",
+      "all explicit compare plans include coverage-output gate and target arguments",
+      "all displayed paths are repository-relative",
+      "any legacy-normalized clock/reset metadata differences are explicitly reported"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "dry_run_required_next": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "generic_host_probe_builder_required": true,
+    "makefile_host_probe_target_allowed": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_tlul_template_schema_metadata_invariant_review_dry_run_gate",
+  "non_claims": [
+    "not a dry-run result",
+    "not a build/run/compare result",
+    "not proof that every future template passes build/run/compare",
+    "not universal validation for every historical template",
+    "not timing or speedup evidence",
+    "not a runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput"
+  ]
+}

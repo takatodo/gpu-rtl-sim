@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_compatible_gpu_hybrid_minimal_bench_suite_run_result_gate",
+  "status": "passed",
+  "objective": "Record the first non-destructive run of the minimal GPU-hybrid benchmark suite checks.",
+  "source_definition_gate": "config/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite_gate.json",
+  "source_descriptor_result_gate": "config/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite_result_gate.json",
+  "command": "python3 src/tools/run_hybrid_benchmark.py --run-minimal-bench-suite",
+  "exit_code": 0,
+  "observed": {
+    "schema_role": "verilator_compatible_gpu_hybrid_minimal_bench_suite_run",
+    "correctness_policy": "coverage_output_equivalence",
+    "benchmark_count": 5,
+    "automation_preview_passed": true,
+    "operator_plan_status": "planned",
+    "operator_plan_command_has_sim_accel": true,
+    "state_parallel_speedup_class": "high",
+    "state_parallel_speedup_source": "existing_reports",
+    "state_parallel_cpu_to_hybrid_wall_speedup": 157.72521551724137,
+    "state_parallel_reports": {
+      "cpu_report": "reports/pulp_paged_attention_kv_score_cpu_repeat_64x1.json",
+      "hybrid_report": "reports/pulp_paged_attention_kv_score_hybrid_64x1.txt"
+    },
+    "single_state_repeated_step_speedup_class": "low",
+    "single_state_repeated_step_speedup_source": "existing_reports",
+    "single_state_repeated_step_cpu_to_hybrid_wall_speedup": 2.1637400722021662,
+    "single_state_repeated_step_reports": {
+      "cpu_report": "reports/pulp_paged_attention_kv_score_cpu_repeat_1x64.json",
+      "hybrid_report": "reports/pulp_paged_attention_kv_score_hybrid_1x64.txt"
+    },
+    "shape_classes_distinguishable": true,
+    "resident_decode_like_dry_run_passed": true,
+    "resident_decode_like_speedup_class": "medium",
+    "filelist_execution_evidence_validated": true,
+    "filelist_execution_evidence_gate": "config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_result_gate.json",
+    "filelist_coverage_output_mismatch_count": 0,
+    "filelist_compared_words": 29,
+    "filelist_compared_bytes": 116,
+    "filelist_source_closure_status": "complete",
+    "filelist_reference_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "filelist_source_files_sha256": "073d53d91f23bf47eb907188096c21672b36801ed6fd7f8d218130c913322b89"
+  },
+  "acceptance_policy": {
+    "command_exited_zero": true,
+    "non_destructive_suite_checks": true,
+    "existing_reports_may_supply_observed_speedup": true,
+    "explicit_source_closure_metadata_validated": true,
+    "new_full_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_verilator_compatible_gpu_hybrid_minimal_bench_suite_run_gate",
+  "non_claims": [
+    "not a broad speedup claim for arbitrary RTL",
+    "not a fresh full benchmark execution of every suite command",
+    "not arbitrary RTL support",
+    "not raw full-state equality",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation",
+    "not production LLM-serving throughput"
+  ]
+}

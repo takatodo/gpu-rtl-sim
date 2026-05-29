@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_tlul_template_schema_metadata_invariant_public_pack_refresh_gate",
+  "status": "selected_verilator_like_hybrid_entrypoint_option_surface_next",
+  "objective": "Select the next validation goal after closing the TL-UL/template metadata-invariant public-pack boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_tlul_template_schema_metadata_invariant_execution_gate.json",
+  "current_priority": "define_verilator_like_hybrid_entrypoint_option_surface_gate",
+  "decision": {
+    "selected_next_workstream": "verilator_like_hybrid_entrypoint_option_surface",
+    "selected_first_gate": "define_verilator_like_hybrid_entrypoint_option_surface_gate",
+    "reason": "The generated-config path now has breadth, shape breadth, additional targets, and representative metadata-invariant execution evidence. The next useful gap is not another correctness run; it is to define the smallest user-facing surface that moves from template-driven sidecar operation toward a Verilator-like hybrid entrypoint without claiming a Verilator-native option or changing runtime/ABI behavior yet."
+  },
+  "candidate_review": [
+    {
+      "name": "verilator_like_hybrid_entrypoint_option_surface",
+      "decision": "selected",
+      "reason": "It directly addresses the project goal of making hybrid execution as simple as a normal Verilator invocation while preserving the small active surface."
+    },
+    {
+      "name": "more_template_metadata_invariant_breadth",
+      "decision": "deferred",
+      "reason": "More representative templates can add confidence, but the current six-template set already covers the main metadata forms and further breadth would mostly increase evidence volume."
+    },
+    {
+      "name": "resident_execution_optimization",
+      "decision": "deferred",
+      "reason": "Runtime tuning should wait until the user-facing entrypoint boundary is explicit."
+    },
+    {
+      "name": "quantized_kv_cache_boundary",
+      "decision": "deferred",
+      "reason": "Quantized KV-cache remains a later workload boundary, not the next usability gap."
+    },
+    {
+      "name": "larger_shape_or_repeat_median_timing",
+      "decision": "deferred",
+      "reason": "Timing evidence should not be mixed into the current packaging and entrypoint-surface transition."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_verilator_like_hybrid_entrypoint_option_surface_gate",
+    "must_pin": [
+      "which CLI surface is the intended bridge toward a future Verilator option",
+      "whether the input is a filelist/template/target name at this stage",
+      "how automatic GPU allocation shape selection is represented without hiding the policy",
+      "which existing templates are allowed as the first supported surface",
+      "dry-run/preflight behavior before execution",
+      "coverage_output_equivalence policy for CPU-vs-hybrid comparisons",
+      "generated reports and artifacts remain non-canonical",
+      "runtime and ABI non-change policy",
+      "explicit non-claim that Verilator itself has a native option in this repository"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_verilator_like_hybrid_entrypoint_option_surface_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a new runtime or ABI change",
+    "not a new workload promotion",
+    "not approval to import untracked candidate overlays",
+    "not universal validation for every historical template",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "not a Verilator-native option implementation",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

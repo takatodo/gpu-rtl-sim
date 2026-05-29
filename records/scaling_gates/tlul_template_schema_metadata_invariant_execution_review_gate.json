@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_template_schema_metadata_invariant_execution_review_gate",
+  "status": "accepted_tlul_template_schema_metadata_invariant_execution",
+  "objective": "Review and accept the six-template metadata-invariant build/run/compare result while keeping claims scoped to coverage-output equivalence.",
+  "source_execution_gate": "config/scaling_gates/tlul_template_schema_metadata_invariant_execution_gate.json",
+  "source_result_gate": "config/scaling_gates/tlul_template_schema_metadata_invariant_execution_result_gate.json",
+  "current_priority": "define_public_results_packaging_refresh_after_tlul_template_schema_metadata_invariant_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "All six representative metadata forms completed the non-dry-run generated-config path and passed the selected coverage_output_equivalence policy with mismatch count 0 over the expected 29 words / 116 bytes per state.",
+    "accepted_scope": "six representative 1x1 template metadata-invariant build/run/compare commands",
+    "primary_evidence": [
+      "all six commands exited 0",
+      "all six expected compare reports were written",
+      "all six selected coverage_output_equivalence",
+      "all six coverage-output comparisons passed with mismatch count 0",
+      "all six normalized final-state equivalence checks passed"
+    ],
+    "known_weaknesses": [
+      "raw strict final-state equality is false for every report",
+      "raw mismatches remain diagnostic Verilator-internal state differences",
+      "the set is representative, not exhaustive",
+      "the paged KV-cache template remains an overlay-only Verilator input exception",
+      "this is single-run correctness evidence, not timing or speedup evidence"
+    ]
+  },
+  "accepted_reports": [
+    "reports/tlul_fifo_sync_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "reports/tlul_socket_m1_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "reports/prim_count_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "reports/nvdla_cmac_a2cacc_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+  ],
+  "acceptance_policy": {
+    "review_record": true,
+    "public_pack_refresh_required_next": true,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_public_results_packaging_refresh_after_tlul_template_schema_metadata_invariant_execution_gate",
+  "non_claims": [
+    "not timing or speedup evidence",
+    "not a runtime or ABI change",
+    "not a new workload promotion",
+    "not universal validation for every template or target",
+    "not raw full-state equality",
+    "not production LLM serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

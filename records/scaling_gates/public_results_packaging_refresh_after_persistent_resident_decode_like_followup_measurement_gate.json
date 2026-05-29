@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_gate",
+  "status": "defined_public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement",
+  "objective": "Define the public-pack refresh boundary after the persistent resident decode-like follow-up measurement was reviewed.",
+  "source_measurement_review_gate": "config/scaling_gates/persistent_resident_decode_like_followup_measurement_review_gate.json",
+  "source_measurement_result_gate": "config/scaling_gates/persistent_resident_decode_like_followup_measurement_result_gate.json",
+  "selected_workstream": "public_pack_refresh_after_persistent_resident_decode_like_followup_measurement",
+  "results_doc": "docs/results.md",
+  "persistent_resident_decode_like_followup_evidence": {
+    "correctness_policy": "coverage_output_equivalence",
+    "all_samples_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "target": "pulp_ita_mha",
+    "mode": "persistent-resident-state-abi",
+    "shape": "16x64",
+    "phases": 4,
+    "repeat_count": 3,
+    "summary_report": "reports/persistent_resident_state_abi_repeat_median_summary.json",
+    "median_hybrid_wall_ms": 5.692,
+    "median_gpu_kernel_total_ms": 5.705824,
+    "median_hybrid_wall_ms_per_final_state_step": 0.0013896484375,
+    "median_gpu_kernel_total_ms_per_final_state_step": 0.0013930234375
+  },
+  "refresh_scope": [
+    "keep docs/results.md aligned with the persistent resident decode-like follow-up measurement",
+    "keep README.md, docs/status.md, docs/roadmap.md, and config/selection.json aligned",
+    "include the selection, definition, result, and review gates in the public-pack manifest",
+    "reference reports/persistent_resident_state_abi_repeat_median_summary.json as generated evidence only",
+    "keep the measurement scoped to pulp_ita_mha 16x64, four phases, repeat 3, and the existing persistent resident ABI path",
+    "do not add a new workload measurement",
+    "do not change runtime, ABI, MobileViT, paged-attention, or KV-cache behavior"
+  ],
+  "prompt_to_artifact_checklist": [
+    {
+      "requirement": "Persistent resident decode-like follow-up evidence appears in public results",
+      "artifact": "docs/results.md",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "The reviewed measurement is machine-readable",
+      "artifact": "records/scaling_gates/persistent_resident_decode_like_followup_measurement_result_gate.json",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Correctness remains coverage-output equivalence",
+      "artifact": "persistent_resident_decode_like_followup_evidence.correctness_policy",
+      "status": "satisfied"
+    },
+    {
+      "requirement": "Generated reports remain non-canonical",
+      "artifact": "acceptance_policy.reports_and_artifacts_are_source_of_truth",
+      "status": "satisfied"
+    }
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "public_pack_archive_dry_run_required": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "direct_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "review_boundary": [
+    "docs/results.md",
+    "docs/roadmap.md",
+    "docs/status.md",
+    "README.md",
+    "config/selection.json",
+    "records/scaling_gates/next_measured_benchmark_selection_after_verilator_compatible_gpu_hybrid_minimal_bench_suite_completion_gate.json",
+    "records/scaling_gates/define_persistent_resident_decode_like_followup_measurement_gate.json",
+    "records/scaling_gates/persistent_resident_decode_like_followup_measurement_result_gate.json",
+    "records/scaling_gates/persistent_resident_decode_like_followup_measurement_review_gate.json",
+    "records/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_gate.json",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+    "tests/contract/test_resident_runtime_contract.py"
+  ],
+  "next_task": "run_public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a new workload",
+    "not a runtime or ABI change",
+    "not direct Verilator-native option support",
+    "not arbitrary RTL support",
+    "not automatic optimal GPU allocation",
+    "not production LLM-serving throughput",
+    "not model-level Transformer inference",
+    "not raw full-state equality",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_compatible_gpu_hybrid_minimal_bench_suite_gate",
+  "status": "defined",
+  "objective": "Define the minimal benchmark suite for judging how simple and how effective GPU hybrid execution is from Verilator-compatible inputs.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_execution_public_pack_refresh_gate.json",
+  "public_cli": "python3 src/tools/run_hybrid_benchmark.py --minimal-bench-suite",
+  "implementation": {
+    "entrypoint": "src/tools/run_hybrid_benchmark.py",
+    "shared_helper": "src/tools/hybrid_benchmark_minimal_suite.py",
+    "tests": [
+      "tests/contract/test_hybrid_benchmark_and_config_cli.py",
+      "tests/contract/test_hybrid_benchmark_discovery_examples_cli.py"
+    ],
+    "doc_mentions": [
+      "README.md",
+      "docs/status.md",
+      "docs/roadmap.md",
+      "docs/results.md"
+    ]
+  },
+  "suite_requirements": [
+    "operator-plan preview for a Verilator-compatible --sim-accel-shape command",
+    "state-parallel dry-run efficiency estimate",
+    "single-state repeated-step dry-run efficiency estimate",
+    "resident decode-like dry-run case",
+    "filelist-derived MHA-copy execution evidence case",
+    "coverage_output_equivalence as the correctness policy",
+    "explicit non-claims for broad speedup, arbitrary RTL support, native Verilator integration, automatic GPU allocation, raw full-state equality, and production serving throughput"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_public_cli_has_test": true,
+    "new_public_cli_has_doc_mention": true,
+    "heavy_logic_is_importable": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "run_verilator_compatible_gpu_hybrid_minimal_bench_suite_gate",
+  "non_claims": [
+    "not execution of the full suite",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation",
+    "not production LLM-serving throughput"
+  ]
+}

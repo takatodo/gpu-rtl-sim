@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_persistent_resident_decode_like_followup_public_pack_refresh_gate",
+  "status": "selected_filelist_shape_breadth_timing_measurement_next",
+  "objective": "Select the next measured benchmark after closing the persistent resident decode-like public-pack externalization boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_persistent_resident_decode_like_followup_measurement_gate.json",
+  "current_priority": "define_filelist_shape_breadth_timing_measurement_gate",
+  "decision": {
+    "selected_next_workstream": "filelist_shape_breadth_timing_measurement",
+    "selected_first_gate": "define_filelist_shape_breadth_timing_measurement_gate",
+    "reason": "The persistent resident decode-like measurement and public-pack refresh are complete. The sharper measured-benchmark gap is filelist-derived execution breadth: existing filelist evidence is correctness-scoped and mostly narrow, while timing and shape breadth remain explicit non-claims."
+  },
+  "deferred_candidates": [
+    {
+      "candidate": "automatic_gpu_allocation_policy",
+      "reason": "Defer until filelist timing and shape behavior make the allocation policy data-backed."
+    },
+    {
+      "candidate": "paged_attention_kv_cache_scale_up",
+      "reason": "Defer because prior paged-attention/KV-cache paths already have tracked correctness, timing, repeat-median, and public-pack evidence."
+    },
+    {
+      "candidate": "native_verilator_option_prototype_boundary",
+      "reason": "Defer because it is not itself the next measured benchmark and should not be confused with upstream Verilator-native option support."
+    },
+    {
+      "candidate": "resident_execution_optimization",
+      "reason": "The resident trend is already represented by the completed persistent resident follow-up; deeper runtime optimization should be gated separately."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_filelist_shape_breadth_timing_measurement_gate",
+    "must_pin": [
+      "the selected filelist-derived targets and shapes",
+      "the complete source-closure basis for each selected filelist target",
+      "the timing fields to compare across shape breadth",
+      "coverage_output_equivalence as the correctness policy",
+      "the operator command surface used for the measurement",
+      "host-only Verilator internal state handling as diagnostic unless declared output words differ",
+      "non-claims for arbitrary RTL dependency inference, native Verilator option support, automatic optimal GPU allocation, runtime/ABI changes, and production serving throughput"
+    ],
+    "should_reuse": [
+      "src/tools/run_hybrid_benchmark.py",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_filelist_shape_breadth_timing_measurement_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a timing or speedup claim",
+    "not production LLM-serving throughput",
+    "not raw full-state equality"
+  ]
+}

@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "gate": "define_commit_split_and_public_pack_cleanup_gate",
+  "status": "defined_commit_split_and_public_pack_cleanup_boundary",
+  "objective": "Define a review-sized commit split for the staged Verilator native option filelist registry and public-pack chain before adding more technical surface.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_verilator_native_option_prototype_filelist_registry_public_pack_refresh_gate.json",
+  "current_priority": "review_commit_split_and_public_pack_cleanup_gate",
+  "observed_state": {
+    "documented_commit_guard_staged_file_limit": 100,
+    "documented_script_added_line_limit": 250,
+    "documented_script_total_line_limit": 300,
+    "documented_contract_test_added_line_limit": 250,
+    "documented_contract_test_total_line_limit": 1200,
+    "staged_file_count_before_definition_gate": 263,
+    "projected_staged_file_count_after_definition_gate": 265,
+    "records_scaling_gate_json_count_before_definition_gate": 799,
+    "projected_records_scaling_gate_json_count_after_definition_gate": 800,
+    "staged_records_scaling_gate_file_count_before_definition_gate": 233,
+    "staged_non_record_file_count_before_definition_gate": 30,
+    "selection_gate_observed_staged_file_count": 262
+  },
+  "line_guard_risks_before_split": [
+    {
+      "path": "src/tools/results_reproduction_gpu_allocation_policy.py",
+      "risk": "guarded script added lines exceed the default limit",
+      "added_lines": 300,
+      "limit": 250,
+      "required_resolution": "split the staged hunks, move reusable behavior into smaller existing modules, or use an explicitly reviewed local override"
+    },
+    {
+      "path": "tests/contract/test_hybrid_verilator_like_cli.py",
+      "risk": "guarded contract test added lines exceed the default limit",
+      "total_lines": 1191,
+      "added_lines": 443,
+      "deleted_lines": 9,
+      "added_line_limit": 250,
+      "total_line_limit": 1200,
+      "required_resolution": "split the staged hunks or move assertions into a smaller focused contract test before committing without overrides"
+    },
+    {
+      "path": "tests/contract/test_public_pack_repeat_median_refresh_gates.py",
+      "risk": "new guarded contract test exceeds the default added-line limit",
+      "total_lines": 264,
+      "added_lines": 264,
+      "added_line_limit": 250,
+      "required_resolution": "split the test surface or use focused test files so each commit remains under the added-line guard"
+    }
+  ],
+  "staged_record_category_counts_before_definition_gate": {
+    "filelist_gpu_policy_and_shape_breadth": 76,
+    "source_closure_reference": 46,
+    "filelist_materialized_planner": 28,
+    "config_generation": 24,
+    "verilator_filelist_registry_public_pack": 19,
+    "baseline_resident_tlul_minimal_suite": 15,
+    "verilator_option_boundary_entrypoint": 12,
+    "public_pack_refresh_selection_other": 8,
+    "misc_records": 5
+  },
+  "split_plan": [
+    {
+      "commit_group": "commit_split_definition_gate_only",
+      "estimated_file_count_after_definition_gate": 15,
+      "include_patterns": [
+        "README.md",
+        "config/selection.json",
+        "config/selection_extensions.json",
+        "config/slice_launch_templates/filelist_*.json",
+        "docs/results.md",
+        "docs/roadmap.md",
+        "docs/status.md",
+        "docs/tool_surface.md",
+        "docs/verilator_sidecar_option.md",
+        "overlays/generated/tests/filelist_*_coverage_regions.json",
+        "src/tools/hybrid_benchmark_minimal_suite.py",
+        "src/tools/hybrid_benchmark_specs.py",
+        "src/tools/results_reproduction*.py",
+        "tests/contract/full_ita_mha_larger_paged_kv_next_constants.py",
+        "tests/contract/test_full_ita_mha_larger_paged_kv_next.py",
+        "tests/contract/test_hybrid_benchmark_discovery_cli.py",
+        "tests/contract/test_hybrid_verilator_like_cli.py",
+        "tests/contract/test_hybrid_verilator_sidecar_shim_examples_cli.py",
+        "tests/contract/test_public_pack_repeat_median_refresh_gates.py",
+        "tests/contract/test_resident_runtime_contract.py",
+        "records/scaling_gates/define_commit_split_and_public_pack_cleanup_gate.json",
+        "records/scaling_gates/config_minimal_surface_completion_audit.json",
+        "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json"
+      ],
+      "staging_policy": "stage only the hunks that define and point at this commit-split gate; avoid git add -A and avoid pulling unrelated worktree edits into this group",
+      "reason": "This isolates the current source-of-truth pointer and split definition so review can approve the index rewrite plan before further staging changes."
+    },
+    {
+      "commit_group": "verilator_option_native_registry_records",
+      "estimated_file_count_after_definition_gate": 26,
+      "include_patterns": [
+        "records/scaling_gates/define_verilator_native_option_prototype*.json",
+        "records/scaling_gates/verilator_native_option_prototype*.json",
+        "records/scaling_gates/verilator_like_hybrid_entrypoint_option_surface*.json",
+        "records/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary*.json",
+        "records/scaling_gates/public_results_packaging_refresh_after_verilator_native_option_prototype_filelist_registry*.json",
+        "records/scaling_gates/public_benchmark_pack_externalization_completion_after_verilator_native_option_prototype_filelist_registry_gate.json",
+        "records/scaling_gates/next_measurement_selection_after_verilator_native_option_prototype_filelist_registry_public_pack_refresh_gate.json"
+      ],
+      "reason": "This keeps the Verilator-style option boundary and tracked filelist registry records together without mixing source-closure or allocation-policy history."
+    },
+    {
+      "commit_group": "filelist_source_closure_and_config_generation_records",
+      "estimated_file_count_after_definition_gate": 71,
+      "include_patterns": [
+        "records/scaling_gates/*known_template_source_closure*.json",
+        "records/scaling_gates/*reference_inventory*.json",
+        "records/scaling_gates/*independent_reference*.json",
+        "records/scaling_gates/filelist_materialized*.json",
+        "records/scaling_gates/filelist_source_closure*.json"
+      ],
+      "reason": "This groups input-closure and materialization history while leaving config-generation validation as its own smaller commit."
+    },
+    {
+      "commit_group": "native_filelist_implementation_docs_templates_tests",
+      "estimated_file_count_after_definition_gate": 30,
+      "include_patterns": [
+        "config/slice_launch_templates/filelist_*.json",
+        "overlays/generated/tests/filelist_*_coverage_regions.json",
+        "src/tools/hybrid_benchmark_minimal_suite.py",
+        "src/tools/hybrid_benchmark_specs.py",
+        "src/tools/results_reproduction*.py",
+        "tests/contract/test_hybrid_benchmark_discovery_cli.py",
+        "tests/contract/test_hybrid_verilator_like_cli.py",
+        "tests/contract/test_hybrid_verilator_sidecar_shim_examples_cli.py",
+        "tests/contract/test_public_pack_repeat_median_refresh_gates.py",
+        "docs/tool_surface.md",
+        "docs/verilator_sidecar_option.md"
+      ],
+      "staging_policy": "hunk-stage or refactor to respect script and contract-test added-line limits before committing without overrides",
+      "reason": "This separates implementation and public documentation from record-only commits, while calling out line-budget risk explicitly."
+    },
+    {
+      "commit_group": "config_generation_records",
+      "estimated_file_count_after_definition_gate": 24,
+      "include_patterns": [
+        "records/scaling_gates/config_generation*.json",
+        "records/scaling_gates/public_results_packaging_refresh_after_config_generation*.json",
+        "records/scaling_gates/public_benchmark_pack_externalization_completion_after_config_generation*.json",
+        "records/scaling_gates/next_measurement_selection_after_config_generation*.json"
+      ],
+      "reason": "This keeps generated-config validation records out of the source-closure and native-registry commits."
+    },
+    {
+      "commit_group": "filelist_shape_allocation_base_and_broader_sweep_records",
+      "estimated_file_count_after_definition_gate": 59,
+      "include_patterns": [
+        "records/scaling_gates/define_filelist_shape_breadth*.json",
+        "records/scaling_gates/filelist_shape_breadth*.json",
+        "records/scaling_gates/next_measurement_selection_after_filelist_shape_breadth*.json",
+        "records/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth*.json",
+        "records/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth*.json"
+      ],
+      "exclude_patterns": [
+        "*broader_shape_sweep_policy_repeat_median*"
+      ],
+      "reason": "This keeps base shape-breadth, allocation policy, and broader sweep records in one review-sized history slice."
+    },
+    {
+      "commit_group": "filelist_broader_policy_repeat_median_records",
+      "estimated_file_count_after_definition_gate": 28,
+      "include_patterns": [
+        "records/scaling_gates/*broader_shape_sweep_policy_repeat_median*.json"
+      ],
+      "reason": "This keeps the scoped policy-selected repeat-median records separate from the broader shape/allocation history."
+    },
+    {
+      "commit_group": "baseline_resident_tlul_minimal_suite_and_other_public_pack_records",
+      "estimated_file_count_after_definition_gate": 25,
+      "include_patterns": [
+        "records/scaling_gates/tlul_template*.json",
+        "records/scaling_gates/define_persistent_resident_decode_like_followup_measurement_gate.json",
+        "records/scaling_gates/persistent_resident_decode_like_followup*.json",
+        "records/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite*.json",
+        "records/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement*.json",
+        "records/scaling_gates/public_benchmark_pack_externalization_completion_after_persistent_resident_decode_like_followup_measurement_gate.json",
+        "records/scaling_gates/public_benchmark_pack_goal_completion_audit.json",
+        "records/scaling_gates/config_minimal_surface_completion_audit.json"
+      ],
+      "reason": "This keeps the remaining baseline, resident, TL-UL, minimal-suite, and public-pack audit records below the commit guard limit."
+    }
+  ],
+  "split_execution_policy": {
+    "definition_only": true,
+    "do_not_restage_or_commit_in_this_gate": true,
+    "requires_review_before_index_rewrite": true,
+    "expected_first_execution_step_after_review": "reset the index, then stage each commit group separately with repo-relative pathspecs or reviewed patch staging",
+    "allow_patch_staging_for_shared_docs_and_manifest_files": true,
+    "keep_unrelated_unstaged_changes_unmodified": true,
+    "do_not_move_generated_outputs_into_source_of_truth": true
+  },
+  "verification_after_each_split": [
+    "jq empty config/selection.json config/selection_extensions.json config/selection_verification_commands.json config/targets.json",
+    "python3 -m py_compile src/tools/results_reproduction_manifest.py tests/contract/test_public_pack_repeat_median_refresh_gates.py tests/contract/test_hybrid_verilator_like_cli.py tests/contract/full_ita_mha_larger_paged_kv_next_constants.py tests/contract/test_full_ita_mha_larger_paged_kv_next.py tests/contract/test_resident_runtime_contract.py",
+    "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+    "python3 -m unittest tests.contract.test_public_pack_repeat_median_refresh_gates tests.contract.test_hybrid_verilator_like_cli tests.contract.test_resident_runtime_contract tests.contract.test_full_ita_mha_larger_paged_kv_next -q",
+    "make simple && make check",
+    "git diff --cached --check && git diff --check"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "raw_full_state_equality_required": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "required_next_gate": {
+    "name": "review_commit_split_and_public_pack_cleanup_gate",
+    "must_check": [
+      "each planned commit group stays below the 100-file hook limit",
+      "the script and contract-test line guard risks are resolved by hunk staging, refactoring, or an explicit reviewed override",
+      "shared docs, tests, and manifest files are not accidentally split into incoherent partial states",
+      "source-of-truth files still agree on current_priority and current_priority_source_artifact",
+      "tracked records count matches config/selection.json and config_minimal_surface_completion_audit.json",
+      "generated reports and artifacts remain non-canonical",
+      "unrelated unstaged changes remain untouched"
+    ]
+  },
+  "next_task": "review_commit_split_and_public_pack_cleanup_gate",
+  "non_claims": [
+    "not an index rewrite",
+    "not a commit execution",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not a runtime or ABI change",
+    "not a native Verilator implementation",
+    "not a native Verilator parser change",
+    "not arbitrary filelist or RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality"
+  ]
+}

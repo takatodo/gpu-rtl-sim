@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "gate": "define_persistent_resident_decode_like_followup_measurement_gate",
+  "status": "defined_existing_persistent_resident_decode_like_followup_measurement",
+  "source_selection_gate": "config/scaling_gates/next_measured_benchmark_selection_after_verilator_compatible_gpu_hybrid_minimal_bench_suite_completion_gate.json",
+  "source_suite_completion_audit": "config/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite_completion_audit.json",
+  "source_existing_measurement_gate": "config/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+  "objective": "Define the persistent resident decode-like follow-up measurement selected after the minimal bench suite completion.",
+  "target": "pulp_ita_mha",
+  "mode": "persistent-resident-state-abi",
+  "shape": "16x64",
+  "phases": 4,
+  "repeat_count": 3,
+  "command": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3",
+  "dry_run_command": "python3 src/tools/run_results_reproduction.py --persistent-resident-state-abi 16x64 --persistent-resident-state-abi-phases 4 --persistent-resident-state-abi-repeat-median 3 --dry-run",
+  "summary_report": "reports/persistent_resident_state_abi_repeat_median_summary.json",
+  "sample_report_pattern": "reports/persistent_resident_state_abi_repeat_median_sample_<N>.json",
+  "measurement_intent": {
+    "turns_suite_resident_dry_run_into_measured_followup": true,
+    "reuses_existing_persistent_resident_abi_path": true,
+    "measures_batched_persistent_decode_like_condition": true,
+    "does_not_remeasure_state_parallel_scaleup": true
+  },
+  "baseline_evidence": {
+    "minimal_suite_resident_status": "resident decode-like path validated as dry-run only",
+    "existing_repeat_median_summary": "reports/persistent_resident_state_abi_repeat_median_summary.json",
+    "existing_repeat_median_gate": "config/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json",
+    "existing_repeat_median_all_coverage_output_passed": true,
+    "existing_repeat_median_max_coverage_output_mismatch_count": 0
+  },
+  "acceptance_policy": {
+    "coverage_output_equivalence_required": true,
+    "all_samples_must_pass_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "generated_reports_are_source_of_truth": false,
+    "direct_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_claim_allowed_by_gate_alone": false,
+    "automatic_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "expected_result_gate": "persistent_resident_decode_like_followup_measurement_result_gate",
+  "non_claims": [
+    "not direct Verilator-native option support",
+    "not arbitrary RTL support",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not a single-request 1x64 resident improvement claim",
+    "not production LLM serving throughput",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "not raw full-state equality"
+  ],
+  "next_task": "run_persistent_resident_decode_like_followup_measurement_gate"
+}

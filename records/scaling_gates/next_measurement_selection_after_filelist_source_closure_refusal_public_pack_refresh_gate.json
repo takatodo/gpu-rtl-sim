@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_filelist_source_closure_refusal_public_pack_refresh_gate",
+  "status": "selected_filelist_known_template_source_closure_copy_gate",
+  "objective": "Select the next workstream after closing the source-closure refusal public-pack boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_source_closure_refusal_gate.json",
+  "current_priority": "define_filelist_known_template_source_closure_copy_gate",
+  "selection": {
+    "selected_next_task": "define_filelist_known_template_source_closure_copy_gate",
+    "selected_workstream": "filelist_known_template_source_closure_copy",
+    "reason": "The filelist-facing flow can now expose and refuse incomplete source closure, but the operator still has to provide a long complete source list manually. The next usability gap is a reviewed way to copy source closure from a known tracked template without claiming arbitrary RTL dependency inference.",
+    "stage": "definition",
+    "primary_operator_gap": "avoid repeating a large complete source list when a reviewed tracked template already carries the closure"
+  },
+  "must_define_next": [
+    "an explicit operator-facing mechanism to copy source_files/source_closure from a known tracked template",
+    "allowed provenance value copied_from_known_tracked_template",
+    "the exact accepted reference template path or target",
+    "dry-run behavior before materialization",
+    "refusal behavior when the reference template is missing, untracked, incomplete, or unknown"
+  ],
+  "deferred_candidates": [
+    "native Verilator option integration",
+    "automatic dependency inference for arbitrary RTL",
+    "automatic optimal GPU allocation",
+    "new timing or speedup measurement",
+    "materialization-time refusal expansion beyond the current guard"
+  ],
+  "acceptance_policy": {
+    "selection_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed": false,
+    "automatic_optimal_gpu_allocation_claim_allowed": false,
+    "verilator_native_option_claim_allowed": false
+  },
+  "next_task": "define_filelist_known_template_source_closure_copy_gate",
+  "non_claims": [
+    "not a new measurement",
+    "not automatic dependency inference for arbitrary RTL",
+    "not arbitrary RTL support",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation",
+    "not timing or speedup evidence",
+    "not proof that unknown source closure is complete"
+  ]
+}

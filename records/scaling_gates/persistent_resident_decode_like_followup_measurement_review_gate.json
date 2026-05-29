@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "gate": "persistent_resident_decode_like_followup_measurement_review_gate",
+  "status": "accepted_persistent_resident_decode_like_followup_measurement",
+  "source_result_gate": "config/scaling_gates/persistent_resident_decode_like_followup_measurement_result_gate.json",
+  "objective": "Review and accept the persistent resident decode-like follow-up measurement before refreshing the public pack.",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The selected command exited 0, all three repeat samples passed coverage-output equivalence, and the maximum coverage-output mismatch count is 0.",
+    "weakness": "The result is still a pulp_ita_mha persistent-resident ABI workflow, not direct Verilator-native option support or arbitrary RTL automatic GPU allocation."
+  },
+  "accepted_evidence": {
+    "summary_report": "reports/persistent_resident_state_abi_repeat_median_summary.json",
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "hybrid_wall_ms_median": 5.692,
+    "gpu_kernel_total_ms_median": 5.705824,
+    "hybrid_wall_ms_per_final_state_step_median": 0.0013896484375,
+    "gpu_kernel_total_ms_per_final_state_step_median": 0.0013930234375
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_referenced_measurement": true,
+    "generated_reports_are_source_of_truth": false,
+    "direct_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_claim_allowed_by_gate_alone": false,
+    "automatic_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "non_claims": [
+    "not a new measurement beyond the referenced result gate",
+    "not direct Verilator-native option support",
+    "not arbitrary RTL support",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not production LLM serving throughput",
+    "not raw full-state equality"
+  ],
+  "next_task": "define_public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_gate"
+}

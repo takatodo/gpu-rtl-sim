@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "gate": "next_measured_benchmark_selection_after_verilator_compatible_gpu_hybrid_minimal_bench_suite_completion_gate",
+  "status": "selected_persistent_resident_decode_like_followup",
+  "source_completion_audit": "config/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite_completion_audit.json",
+  "objective": "Select the first measured benchmark after the Verilator-compatible GPU hybrid minimal bench suite completion.",
+  "long_term_goal": "Make hybrid execution close to Verilator usage while identifying the conditions where LLM-serving-like RTL workloads are correct, fast, and reproducible on the CPU/GPU hybrid runtime.",
+  "multi_agent_review": {
+    "reviewer": "Kepler",
+    "recommendation": "resident_decode_like_persistent_resident_abi",
+    "reason": "The minimal bench suite already distinguishes state-parallel high-fit and single-state repeated-step low-fit cases, while resident decode-like remains only dry-run checked in the suite.",
+    "weakness": "The persistent resident path is still a pulp_ita_mha-specific ABI and workflow; it is not direct Verilator option support, arbitrary RTL support, or a single-request 1x64 resident improvement claim."
+  },
+  "options_reviewed": [
+    {
+      "option": "state_parallel_scale_up",
+      "decision": "defer",
+      "reason": "It is the strongest speed-fit case but already has clear evidence in the minimal suite run.",
+      "weakness": "Easy to overstate as a broad GPU speedup claim."
+    },
+    {
+      "option": "single_state_repeated_step",
+      "decision": "defer",
+      "reason": "It would mostly restate the known weak launch pattern.",
+      "weakness": "Low forward information unless paired with a mitigation path."
+    },
+    {
+      "option": "filelist_mha_copy_shape_breadth",
+      "decision": "defer",
+      "reason": "It is useful for filelist breadth but still depends on copied source closure and reference Verilator args.",
+      "weakness": "Easy to misread as arbitrary dependency inference or automatic GPU allocation."
+    },
+    {
+      "option": "resident_decode_like_persistent_resident_abi",
+      "decision": "select_next",
+      "reason": "It turns the suite's resident decode-like dry-run mitigation into the next concrete measured benchmark using the existing persistent resident ABI path.",
+      "weakness": "Scope is batched/persistent decode-like execution for pulp_ita_mha, not direct Verilator-native option support."
+    }
+  ],
+  "selected_next_goal": {
+    "name": "persistent_resident_decode_like_followup_measurement",
+    "first_gate": "define_persistent_resident_decode_like_followup_measurement_gate",
+    "first_gate_objective": "Define the persistent resident decode-like follow-up measurement command and acceptance policy without changing runtime ABI or adding a new workload.",
+    "target": "pulp_ita_mha",
+    "mode": "persistent-resident-state-abi",
+    "shape": "16x64",
+    "phases": 4,
+    "repeat_count": 3
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_followup": true,
+    "generated_reports_are_source_of_truth": false,
+    "direct_verilator_option_claim_allowed_by_gate_alone": false,
+    "automatic_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "non_claims": [
+    "not a new timing result",
+    "not arbitrary RTL support",
+    "not direct Verilator-native option support",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not production LLM serving throughput",
+    "not raw full-state equality"
+  ],
+  "next_task": "define_persistent_resident_decode_like_followup_measurement_gate"
+}

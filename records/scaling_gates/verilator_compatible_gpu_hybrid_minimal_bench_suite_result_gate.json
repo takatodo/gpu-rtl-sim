@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_compatible_gpu_hybrid_minimal_bench_suite_result_gate",
+  "status": "passed",
+  "objective": "Record the first run of the minimal GPU-hybrid benchmark suite descriptor.",
+  "source_definition_gate": "config/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite_gate.json",
+  "command": "python3 src/tools/run_hybrid_benchmark.py --minimal-bench-suite",
+  "exit_code": 0,
+  "observed": {
+    "schema_role": "verilator_compatible_gpu_hybrid_minimal_bench_suite",
+    "correctness_policy": "coverage_output_equivalence",
+    "benchmark_count": 5,
+    "input_surface_count": 2,
+    "includes_operator_plan_preview": true,
+    "includes_state_parallel_high_estimate": true,
+    "includes_single_state_repeated_step_low_estimate": true,
+    "includes_resident_decode_like_dry_run": true,
+    "includes_filelist_materialized_mha_copy_execution_evidence": true,
+    "filelist_execution_evidence_gate": "config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_result_gate.json"
+  },
+  "acceptance_policy": {
+    "command_exited_zero": true,
+    "suite_descriptor_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_verilator_compatible_gpu_hybrid_minimal_bench_suite_gate",
+  "non_claims": [
+    "not execution of every suite command",
+    "not new timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation",
+    "not production LLM-serving throughput"
+  ]
+}

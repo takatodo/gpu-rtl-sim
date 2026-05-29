@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "gate": "verilator_compatible_gpu_hybrid_minimal_bench_suite_run_review_gate",
+  "status": "accepted",
+  "objective": "Review and accept the first non-destructive run of the Verilator-compatible GPU hybrid minimal bench suite.",
+  "source_result_gate": "config/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite_run_result_gate.json",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The suite run exits 0, validates the operator-plan preview, distinguishes state-parallel and single-state repeated-step shape classes using existing report evidence, confirms the resident decode-like dry-run path, and validates filelist-derived MHA-copy execution evidence including explicit source-closure metadata.",
+    "accepted_scope": "minimal benchmark basis for measuring GPU-hybrid automation and shape-fit from Verilator-compatible inputs"
+  },
+  "accepted_evidence": {
+    "operator_plan_preview_passed": true,
+    "operator_plan_command_has_sim_accel": true,
+    "state_parallel_speedup_class": "high",
+    "state_parallel_cpu_to_hybrid_wall_speedup": 157.72521551724137,
+    "state_parallel_reports": {
+      "cpu_report": "reports/pulp_paged_attention_kv_score_cpu_repeat_64x1.json",
+      "hybrid_report": "reports/pulp_paged_attention_kv_score_hybrid_64x1.txt"
+    },
+    "single_state_repeated_step_speedup_class": "low",
+    "single_state_repeated_step_cpu_to_hybrid_wall_speedup": 2.1637400722021662,
+    "single_state_repeated_step_reports": {
+      "cpu_report": "reports/pulp_paged_attention_kv_score_cpu_repeat_1x64.json",
+      "hybrid_report": "reports/pulp_paged_attention_kv_score_hybrid_1x64.txt"
+    },
+    "shape_classes_distinguishable": true,
+    "resident_decode_like_dry_run_passed": true,
+    "filelist_execution_evidence_validated": true,
+    "filelist_source_closure_status": "complete",
+    "filelist_reference_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "filelist_coverage_output_mismatch_count": 0,
+    "filelist_compared_words": 29,
+    "filelist_compared_bytes": 116
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "minimal_bench_basis_accepted": true,
+    "new_full_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "complete_verilator_compatible_gpu_hybrid_minimal_bench_suite_goal_audit",
+  "non_claims": [
+    "not arbitrary RTL support",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "not a broad speedup claim beyond the listed targets, shapes, and reports"
+  ]
+}

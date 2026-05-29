@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_filelist_materialized_template_public_pack_refresh_gate",
+  "status": "selected_filelist_source_closure_dependency_policy_next",
+  "objective": "Select the next validation goal after closing the filelist materialized-template public-pack boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_materialized_template_execution_gate.json",
+  "current_priority": "define_filelist_source_closure_dependency_policy_gate",
+  "decision": {
+    "selected_next_workstream": "filelist_source_closure_dependency_policy",
+    "selected_first_gate": "define_filelist_source_closure_dependency_policy_gate",
+    "reason": "The filelist-derived template now executes correctly after manual source-closure repair. The next useful gap is making the source-closure requirement explicit and reproducible so future filelist-facing templates fail early or include the needed dependency closure before non-dry-run execution."
+  },
+  "candidate_review": [
+    {
+      "name": "filelist_source_closure_dependency_policy",
+      "decision": "selected",
+      "reason": "It addresses the actual weakness discovered during the first materialized-template execution: the generator accepted an incomplete source list that Verilator could not compile."
+    },
+    {
+      "name": "verilator_native_option_prototype_boundary",
+      "decision": "deferred",
+      "reason": "Native Verilator integration should wait until the filelist dependency-closure contract is explicit."
+    },
+    {
+      "name": "automatic_shape_policy_calibration",
+      "decision": "deferred",
+      "reason": "Shape optimization should not hide unresolved source-discovery assumptions."
+    },
+    {
+      "name": "larger_filelist_materialized_template_shape_breadth",
+      "decision": "deferred",
+      "reason": "More shapes would broaden evidence but would not address why the first non-dry-run initially failed."
+    },
+    {
+      "name": "resident_execution_optimization",
+      "decision": "deferred",
+      "reason": "Runtime optimization remains separate from filelist source-closure correctness."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_filelist_source_closure_dependency_policy_gate",
+    "must_pin": [
+      "whether generated filelist templates must require an explicit complete source closure",
+      "how dry-run output should expose missing dependency-closure risk",
+      "whether source closure can be copied from a known tracked template or must be supplied by the operator",
+      "how non-dry-run execution refuses incomplete filelists before Verilator failure when possible",
+      "generated reports and artifacts remain non-canonical",
+      "runtime and ABI non-change policy",
+      "explicit non-claim that arbitrary RTL dependency inference, optimal GPU allocation, or native Verilator support is implemented"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_filelist_source_closure_dependency_policy_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a new runtime or ABI change",
+    "not a new workload promotion",
+    "not universal validation for arbitrary RTL",
+    "not automatic dependency inference for arbitrary RTL",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "not raw filelist execution",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

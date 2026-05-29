@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate",
+  "target": "filelist_known_template_pulp_ita_mha",
+  "status": "defined_from_generated_hybrid_config",
+  "objective": "Generated first CPU-vs-hybrid coverage-output benchmark gate.",
+  "overlay": {
+    "coverage_tb": "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+    "coverage_manifest": "overlays/generated/tests/filelist_known_template_pulp_ita_mha_coverage_regions.json",
+    "launch_template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+    "host_probe_target": "filelist_known_template_pulp_ita_mha_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "makefile": "not_required_for_generated_template"
+  },
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "source_closure_policy": {
+    "explicit_source_closure_required_for_execution": true,
+    "known_template_source_closure_copy_allowed": true,
+    "operator_supplied_complete_source_list_allowed": true,
+    "automatic_dependency_inference_for_arbitrary_rtl_implemented": false,
+    "native_verilator_option_implemented": false,
+    "automatic_optimal_gpu_allocation_implemented": false
+  },
+  "target_scope": [
+    {
+      "target": "filelist_known_template_pulp_ita_mha",
+      "status": "candidate",
+      "launch_template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+      "coverage_manifest": "overlays/generated/tests/filelist_known_template_pulp_ita_mha_coverage_regions.json",
+      "mdir": "artifacts/filelist_known_template_pulp_ita_mha_obj_dir",
+      "cpu_reference_state": "artifacts/filelist_known_template_pulp_ita_mha_obj_dir/filelist_known_template_pulp_ita_mha_cpu_repeat_1x1.bin",
+      "gpu_candidate_state": "artifacts/filelist_known_template_pulp_ita_mha_obj_dir/filelist_known_template_pulp_ita_mha_gpu_from_cpu_init_1x1.bin"
+    }
+  ],
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "manifest_region_words": {
+      "prefix": "real_toggle_subset_word",
+      "count": 18
+    },
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "planned_shapes": [
+    {
+      "name": "minimum_overhead_probe",
+      "nstates": 1,
+      "steps": 1
+    },
+    {
+      "name": "state_parallel_probe",
+      "nstates": 64,
+      "steps": 1
+    },
+    {
+      "name": "single_state_repeated_probe",
+      "nstates": 1,
+      "steps": 64
+    }
+  ],
+  "acceptance_policy": {
+    "overlay_and_manifest_exist": true,
+    "cpu_reference_built": false,
+    "gpu_cubin_built": false,
+    "cpu_vs_hybrid_compared": false,
+    "coverage_output_equivalence_required": true,
+    "host_probe_glue_generated_from_template": true,
+    "makefile_target_required": false,
+    "speedup_claim_allowed_by_gate_alone": false
+  },
+  "non_claims": [
+    "not raw full-state equality",
+    "not broad speedup",
+    "not correctness equivalence beyond scoped output words"
+  ],
+  "next_task": "run_filelist_known_template_pulp_ita_mha_first_cpu_vs_hybrid_compare"
+}

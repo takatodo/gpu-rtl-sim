@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "gate": "tlul_template_schema_metadata_invariant_review_dry_run_review_gate",
+  "status": "reviewed_tlul_template_schema_metadata_invariant_dry_run_accepts_plan_generation_boundary",
+  "objective": "Review representative template metadata invariant dry-run results and select the next boundary.",
+  "source_dry_run_gate": "config/scaling_gates/tlul_template_schema_metadata_invariant_review_dry_run_gate.json",
+  "source_definition_gate": "config/scaling_gates/tlul_template_schema_metadata_invariant_review_gate.json",
+  "current_priority": "define_tlul_template_schema_metadata_invariant_execution_gate",
+  "review_decision": {
+    "dry_run_boundary_accepted": true,
+    "selected_next_task": "define_tlul_template_schema_metadata_invariant_execution_gate",
+    "reason": "All six representative template dry-run plans exited zero, used src/tools/build_host_probe.py, avoided Makefile host-probe targets, and preserved coverage_output_equivalence compare plans with coverage-output gates and targets. The remaining gap is deciding whether to execute this representative set or convert the invariant checks into a static contract before making stronger metadata-surface claims."
+  },
+  "reviewed_result": {
+    "shape": "1x1",
+    "template_count": 6,
+    "command_count": 6,
+    "all_commands_exited_zero": true,
+    "all_emit_generic_host_probe_builder": true,
+    "makefile_host_probe_target_observed": false,
+    "all_emit_coverage_output_compare_policy": true,
+    "all_emit_coverage_output_gate_and_target": true,
+    "all_outputs_are_command_plans_only": true,
+    "accepted_metadata_forms": [
+      "legacy_template_normalized_by_tooling",
+      "legacy_template_with_target_specific_root_clock_reset_override",
+      "explicit_build_host_probe_metadata",
+      "explicit_non_default_clock_reset_metadata",
+      "explicit_modern_nn_template_metadata",
+      "explicit_llm_serving_like_template_metadata"
+    ]
+  },
+  "weak_points": [
+    "dry-run does not prove Verilator build success",
+    "dry-run does not prove generic host-probe compile success",
+    "dry-run does not produce CPU-vs-hybrid compare reports",
+    "dry-run does not add new correctness evidence",
+    "the set is representative and does not prove every historical or future template",
+    "legacy-normalized templates rely on normalizer behavior, so static contract coverage remains useful"
+  ],
+  "required_next_gate": {
+    "name": "define_tlul_template_schema_metadata_invariant_execution_gate",
+    "must_pin": [
+      "whether the six representative dry-run commands are executed or converted into static contract checks first",
+      "the exact command set or static invariant checks",
+      "coverage-output gates and targets",
+      "expected generated reports if execution is selected",
+      "runtime and ABI non-change policy",
+      "generated reports and artifacts remain non-canonical"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "dry_run_command_plan_accepted": true,
+    "fresh_build_run_compare_claim_allowed": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_tlul_template_schema_metadata_invariant_execution_gate",
+  "non_claims": [
+    "not a build/run/compare result",
+    "not new correctness evidence",
+    "not proof that every future template passes build/run/compare",
+    "not universal validation for every historical template",
+    "not timing or speedup evidence",
+    "not a runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput"
+  ]
+}

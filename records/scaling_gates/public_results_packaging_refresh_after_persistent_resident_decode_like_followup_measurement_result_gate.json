@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_result_gate",
+  "status": "passed",
+  "objective": "Record the public-pack dry-run result after the persistent resident decode-like follow-up measurement review.",
+  "source_definition_gate": "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_gate.json",
+  "command": "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+  "exit_code": 0,
+  "observed_public_pack_includes": {
+    "selection_gate": "records/scaling_gates/next_measured_benchmark_selection_after_verilator_compatible_gpu_hybrid_minimal_bench_suite_completion_gate.json",
+    "measurement_definition_gate": "records/scaling_gates/define_persistent_resident_decode_like_followup_measurement_gate.json",
+    "measurement_result_gate": "records/scaling_gates/persistent_resident_decode_like_followup_measurement_result_gate.json",
+    "measurement_review_gate": "records/scaling_gates/persistent_resident_decode_like_followup_measurement_review_gate.json",
+    "public_refresh_definition_gate": "records/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_gate.json",
+    "summary_report": "reports/persistent_resident_state_abi_repeat_median_summary.json",
+    "public_results_doc": "docs/results.md",
+    "readme": "README.md",
+    "status_doc": "docs/status.md",
+    "roadmap_doc": "docs/roadmap.md",
+    "selection": "config/selection.json"
+  },
+  "acceptance_policy": {
+    "public_pack_archive_dry_run_exited_zero": true,
+    "required_records_included": true,
+    "required_sources_included": true,
+    "summary_report_included_when_present": true,
+    "archive_created": false,
+    "packaging_only": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "direct_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "non_claims": [
+    "not a new measurement result",
+    "not new execution evidence",
+    "not a runtime or ABI change",
+    "not direct Verilator-native option support",
+    "not arbitrary RTL support",
+    "not automatic optimal GPU allocation",
+    "not production LLM-serving throughput",
+    "not raw full-state equality"
+  ],
+  "next_task": "review_public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_gate"
+}

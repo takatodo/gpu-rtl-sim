@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "gate": "resolve_commit_split_line_guard_risks_gate",
+  "status": "resolved_line_guard_risks_select_commit_split_index_rewrite",
+  "objective": "Resolve per-file line guard risks before rewriting the staged index into hook-sized commit groups.",
+  "source_review_gate": "config/scaling_gates/review_commit_split_and_public_pack_cleanup_gate.json",
+  "current_priority": "execute_commit_split_index_rewrite_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The staged set now passes the guarded script and contract-test line limits when the file-count guard is relaxed for inspection. The only remaining hook blocker is the known staged file count above 100.",
+    "weakest_point": "The staged set still has more than 100 files, so normal commits remain blocked until the index is rewritten into the accepted review-sized groups."
+  },
+  "observed_state": {
+    "documented_commit_guard_staged_file_limit": 100,
+    "documented_script_added_line_limit": 250,
+    "documented_script_total_line_limit": 300,
+    "documented_contract_test_added_line_limit": 250,
+    "documented_contract_test_total_line_limit": 1200,
+    "staged_file_count_after_line_guard_resolution": 272,
+    "projected_staged_file_count_after_resolution_gate": 273,
+    "records_scaling_gate_json_count_before_resolution_gate": 801,
+    "projected_records_scaling_gate_json_count_after_resolution_gate": 802,
+    "line_guard_check_command": "python3 src/tools/check_staged_large_files.py --max-files 999",
+    "line_guard_check_exit_code": 0,
+    "default_file_count_guard_still_expected_to_fail": true
+  },
+  "resolved_risks": [
+    {
+      "original_path": "src/tools/results_reproduction_gpu_allocation_policy.py",
+      "original_added_lines": 300,
+      "resolution": "split static evidence data into a small helper module and keep payload construction in the original module",
+      "resolved_files": [
+        {
+          "path": "src/tools/results_reproduction_gpu_allocation_policy.py",
+          "added_lines": 216
+        },
+        {
+          "path": "src/tools/results_reproduction_gpu_allocation_policy_data.py",
+          "added_lines": 102
+        }
+      ]
+    },
+    {
+      "original_path": "tests/contract/test_hybrid_verilator_like_cli.py",
+      "original_added_lines": 443,
+      "resolution": "move filelist repeat-median, policy, broader-shape, and manifest assertions into focused contract tests",
+      "resolved_files": [
+        {
+          "path": "tests/contract/test_hybrid_verilator_like_cli.py",
+          "added_lines": 3,
+          "deleted_lines": 9
+        },
+        {
+          "path": "tests/contract/test_filelist_repeat_median_cli.py",
+          "added_lines": 118
+        },
+        {
+          "path": "tests/contract/test_filelist_gpu_allocation_policy_cli.py",
+          "added_lines": 160
+        },
+        {
+          "path": "tests/contract/test_filelist_broader_shape_sweep_gates.py",
+          "added_lines": 101
+        },
+        {
+          "path": "tests/contract/test_filelist_public_pack_manifest_paths.py",
+          "added_lines": 87
+        }
+      ]
+    },
+    {
+      "original_path": "tests/contract/test_public_pack_repeat_median_refresh_gates.py",
+      "original_added_lines": 264,
+      "resolution": "move the commit-split next-selection assertion into the focused commit-split cleanup contract",
+      "resolved_files": [
+        {
+          "path": "tests/contract/test_public_pack_repeat_median_refresh_gates.py",
+          "added_lines": 247
+        },
+        {
+          "path": "tests/contract/test_commit_split_cleanup_gate.py",
+          "added_lines": 117
+        }
+      ]
+    }
+  ],
+  "required_next_gate": {
+    "name": "execute_commit_split_index_rewrite_gate",
+    "must_do": [
+      "rewrite the index into the accepted eight review-sized groups without using git add -A",
+      "keep each commit group below the 100-file hook limit",
+      "run the line guard and focused contracts for each group",
+      "keep source-of-truth docs, manifests, and tests coherent in the first group",
+      "leave unrelated unstaged changes untouched"
+    ]
+  },
+  "acceptance_policy": {
+    "line_guard_resolution_complete": true,
+    "file_count_split_still_required": true,
+    "index_rewrite_allowed_next": true,
+    "commit_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "raw_full_state_equality_required": false
+  },
+  "next_task": "execute_commit_split_index_rewrite_gate",
+  "non_claims": [
+    "not an index rewrite",
+    "not a commit execution gate",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not a runtime or ABI change",
+    "not native Verilator parser support",
+    "not arbitrary filelist or RTL support",
+    "not automatic optimal GPU allocation",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

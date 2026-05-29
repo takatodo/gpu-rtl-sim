@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "gate": "public_benchmark_pack_externalization_completion_after_persistent_resident_decode_like_followup_measurement_gate",
+  "status": "complete_public_benchmark_pack_externalization_after_persistent_resident_decode_like_followup_measurement",
+  "objective": "Close the public benchmark pack externalization boundary after the persistent resident decode-like follow-up measurement refresh.",
+  "completed_priority": "define_public_benchmark_pack_externalization_completion_after_persistent_resident_decode_like_followup_measurement_gate",
+  "source_refresh_gate": "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_gate.json",
+  "source_refresh_result_gate": "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_result_gate.json",
+  "source_refresh_review_gate": "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_review_gate.json",
+  "source_measurement_result_gate": "config/scaling_gates/persistent_resident_decode_like_followup_measurement_result_gate.json",
+  "source_measurement_review_gate": "config/scaling_gates/persistent_resident_decode_like_followup_measurement_review_gate.json",
+  "decision": {
+    "externalization_boundary_complete": true,
+    "reason": "The public-pack dry-run and review include the scoped persistent resident decode-like measurement selection, definition, result, review, public refresh records, source-of-truth docs, compact selection pointer, and optional generated summary report while keeping reports and artifacts non-canonical."
+  },
+  "closed_scope": {
+    "target": "pulp_ita_mha",
+    "mode": "persistent-resident-state-abi",
+    "shape": "16x64",
+    "phases": 4,
+    "repeat_count": 3,
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_mismatch_count": 0,
+    "median_hybrid_wall_ms": 5.692,
+    "median_gpu_kernel_total_ms": 5.705824,
+    "summary_report": "reports/persistent_resident_state_abi_repeat_median_summary.json",
+    "public_pack_refresh_review": "config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_review_gate.json"
+  },
+  "acceptance_policy": {
+    "completion_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "raw_full_state_equality_required": false,
+    "direct_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "select_next_measurement_after_persistent_resident_decode_like_followup_public_pack_refresh",
+  "candidate_next_measurement_options": [
+    "paged_attention_kv_cache_scale_up",
+    "native_verilator_option_prototype_boundary",
+    "automatic_gpu_allocation_policy",
+    "filelist_shape_breadth_timing_measurement",
+    "resident_execution_optimization"
+  ],
+  "non_claims": [
+    "not a new measurement result",
+    "not a new workload",
+    "not a runtime or ABI change",
+    "not direct Verilator-native option support",
+    "not arbitrary RTL support",
+    "not automatic optimal GPU allocation",
+    "not production LLM-serving throughput",
+    "not model-level Transformer inference",
+    "not raw full-state equality",
+    "not paper-grade statistical confidence beyond repeat-count 3"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_filelist_materialized_template_execution_review_gate",
+  "status": "accepted_public_results_packaging_refresh_after_filelist_materialized_template_execution",
+  "objective": "Review and accept the public-pack refresh after the filelist materialized-template execution result.",
+  "source_definition_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_materialized_template_execution_gate.json",
+  "source_result_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_materialized_template_execution_result_gate.json",
+  "current_priority": "define_public_benchmark_pack_externalization_completion_after_filelist_materialized_template_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The public manifest now includes the scoped filelist plan, materialization, dry-run, execution, and refresh gate chain, the generated filelist template and coverage manifest, the generator helper sources, and the optional compare report. docs/results.md already records the source-closure weakness and narrow non-claims.",
+    "accepted_scope": "public-pack refresh for filelist_paged_attention_kv_score 1x1 materialized-template execution",
+    "known_weaknesses": [
+      "the filelist source closure is explicit rather than inferred automatically",
+      "the evidence is one derived target at 1x1",
+      "reports remain optional generated evidence, not source of truth",
+      "arbitrary RTL, native Verilator option support, timing, speedup, and optimal GPU allocation remain unclaimed"
+    ]
+  },
+  "required_next_gate": {
+    "name": "define_public_benchmark_pack_externalization_completion_after_filelist_materialized_template_execution_gate",
+    "must_pin": [
+      "public pack completion boundary after this refresh",
+      "all added manifest paths are tracked or optional generated reports",
+      "source-closure weakness and non-claims remain visible",
+      "generated reports and artifacts remain non-canonical"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_public_benchmark_pack_externalization_completion_after_filelist_materialized_template_execution_gate",
+  "non_claims": [
+    "not new execution evidence",
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}
