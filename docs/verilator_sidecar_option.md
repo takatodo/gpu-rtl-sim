@@ -71,7 +71,7 @@ python3 src/tools/run_hybrid_benchmark.py <target> \
 
 ## Source Patch Descriptor Boundary
 
-The current native-parser path is still definition-only. The first repo-owned source-patch descriptor is planned under `overlays/verilator/patches/`, pinned to upstream Verilator `v5.048` at commit `d0aa828c217410fffc73d92077b6f4f54830357c`, with `src/V3Options.h` and `src/V3Options.cpp` as the first source touch candidates. The descriptor/apply-check gate defines a future `git apply --check` boundary but does not add a descriptor file, patch file, Verilator parser implementation, execution, measurement, or arbitrary RTL/filelist support.
+The current native-parser path is still overlay-only. The first repo-owned source-patch descriptor is planned under `overlays/verilator/patches/`, pinned to upstream Verilator `v5.048` at peeled commit `d0aa828c217410fffc73d92077b6f4f54830357c`, with `src/V3Options.h` and `src/V3Options.cpp` as the first source touch candidates. The descriptor/apply-check review accepts the boundary and allows the next gate to add only the descriptor and patch files plus source-of-truth/test/doc alignment. It still does not add a Verilator parser implementation, execution, measurement, build success claim, or arbitrary RTL/filelist support.
 
 `src/tools/verilator_sidecar_options.py` is the current shared mapping authority for `--sim-accel-states`, `--sim-accel-steps`, and compact `--sim-accel-shape`. On the wrapper, those `--sim-accel-*` shape spellings are enough to enter the sidecar preview path even if the explicit `--sim-accel sidecar-gpu` selector is omitted. The mapper rejects mixed shape spellings so the eventual Verilator implementation does not inherit ambiguous behavior.
 

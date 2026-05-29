@@ -33,6 +33,12 @@ OVERLAY_PATCH_DESCRIPTOR_GATE = (
     / "scaling_gates"
     / "define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json"
 )
+OVERLAY_PATCH_DESCRIPTOR_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json"
+)
 
 
 sys.path.insert(0, str(TOOLS))
@@ -319,6 +325,59 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(
             gate["next_task"],
             "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
+        )
+
+    def test_overlay_patch_descriptor_review_allows_only_next_descriptor_and_patch(self) -> None:
+        review = json.loads(OVERLAY_PATCH_DESCRIPTOR_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("not proof that a patch applies", review["review_decision"]["weakest_point"])
+        self.assertEqual(
+            review["reviewed_upstream_ref"]["selected_commit_kind"],
+            "peeled_release_tag_commit",
+        )
+        self.assertEqual(
+            review["current_priority"],
+            "implement_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
+        )
+        descriptor = review["accepted_descriptor_boundary"]
+        self.assertEqual(
+            descriptor["future_descriptor_path"],
+            "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+        )
+        self.assertEqual(
+            descriptor["future_patch_file"],
+            "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+        )
+        self.assertFalse(descriptor["descriptor_file_added_by_review_gate"])
+        self.assertFalse(descriptor["patch_file_added_by_review_gate"])
+        patch_scope = review["accepted_patch_scope"]
+        self.assertEqual(
+            patch_scope["allowed_upstream_source_files_for_first_patch"],
+            ["src/V3Options.h", "src/V3Options.cpp"],
+        )
+        self.assertIn("src/V3OptionParser.cpp", patch_scope["not_allowed_without_new_review"])
+        self.assertIn("--sim-accel-shape <NxS>", patch_scope["deferred_from_first_patch"])
+        write_set = review["next_gate_write_set"]
+        self.assertIn(
+            "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+            write_set["may_add"],
+        )
+        self.assertIn(
+            "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+            write_set["may_add"],
+        )
+        self.assertIn("third_party/verilator", write_set["must_not_add"])
+        self.assertTrue(review["acceptance_policy"]["descriptor_file_allowed_by_next_gate"])
+        self.assertTrue(review["acceptance_policy"]["patch_file_allowed_by_next_gate"])
+        self.assertFalse(review["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            review["next_task"],
+            "implement_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
         )
 
 
