@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_materialized_template_execution_gate",
+  "status": "defined_filelist_materialized_template_execution",
+  "objective": "Define the first non-dry-run build/run/compare boundary for the materialized filelist-derived template.",
+  "source_dry_run_review_gate": "config/scaling_gates/filelist_materialized_template_dry_run_review_gate.json",
+  "current_priority": "run_filelist_materialized_template_execution_gate",
+  "execution_scope": {
+    "template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+    "shape": "1x1",
+    "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 1x1",
+    "expected_compare_report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "expected_coverage_output_gate": "records/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+    "expected_coverage_output_target": "filelist_paged_attention_kv_score",
+    "expected_output_words_per_state": 29,
+    "expected_output_bytes_per_state": 116
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "later_execution_must_exit_zero": true,
+    "later_compare_policy": "coverage_output_equivalence",
+    "later_mismatch_count_required": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_materialized_template_execution_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}

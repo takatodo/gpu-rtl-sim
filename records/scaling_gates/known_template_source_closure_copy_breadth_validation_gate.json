@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_copy_breadth_validation_gate",
+  "status": "defined",
+  "objective": "Define a narrow dry-run breadth validation for copying reviewed complete source closures from tracked templates.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_known_template_source_closure_independent_reference_promotion_review_gate.json",
+  "scope": {
+    "validation_mode": "dry_run_first",
+    "materialization_allowed_by_this_gate": false,
+    "execution_allowed_by_this_gate": false,
+    "reviewed_reference_required": true,
+    "generated_outputs_are_source_of_truth": false
+  },
+  "accepted_dry_run_matrix": [
+    {
+      "case": "copied_paged_attention_lineage_regression",
+      "role": "regression check for the existing copied-reference lineage",
+      "reference_template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "expected_reference_hash": "8d2b6044d6c462d7a753d9f660c303f06628228dfe8148e3b7a1d2e9eefc7df7",
+      "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_known_template_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv --source-closure-from-template config/slice_launch_templates/filelist_paged_attention_kv_score.json --gate-name filelist_known_template_paged_attention_kv_score_first_hybrid_benchmark_gate --dry-run"
+    },
+    {
+      "case": "independent_pulp_ita_mha_reference_copy",
+      "role": "first copy dry-run from the independent promoted MHA reference",
+      "reference_template": "config/slice_launch_templates/pulp_ita_mha.json",
+      "expected_reference_hash": "073d53d91f23bf47eb907188096c21672b36801ed6fd7f8d218130c913322b89",
+      "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_known_template_pulp_ita_mha --top-module pulp_ita_mha_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv --source-closure-from-template config/slice_launch_templates/pulp_ita_mha.json --gate-name filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate --dry-run"
+    }
+  ],
+  "required_refusal_case": {
+    "case": "requested_source_absent_from_copied_closure",
+    "reason": "A copied source closure must not silently accept a requested source outside the reviewed reference source list.",
+    "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_known_template_pulp_ita_mha_bad_source --top-module pulp_ita_mha_gpu_cov_tb --source third_party/ITA/src/not_in_closure.sv --overlay overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv --source-closure-from-template config/slice_launch_templates/pulp_ita_mha.json --dry-run",
+    "expected_exit_code": 1
+  },
+  "acceptance_policy": {
+    "each_accepted_case_must_exit_zero": true,
+    "each_accepted_case_must_emit_complete_source_closure": true,
+    "each_accepted_case_must_record_reference_template": true,
+    "each_accepted_case_must_record_expected_source_files_sha256": true,
+    "each_accepted_case_must_use_build_host_probe": true,
+    "refusal_case_must_exit_nonzero": true,
+    "dry_run_must_not_write_files": true,
+    "timing_claim_allowed": false,
+    "speedup_claim_allowed": false,
+    "arbitrary_dependency_inference_claim_allowed": false,
+    "native_verilator_option_claim_allowed": false,
+    "automatic_gpu_allocation_claim_allowed": false
+  },
+  "weak_points": [
+    "Breadth still covers only two reviewed reference families.",
+    "The MHA copy case reuses an MHA-specific closure and does not prove arbitrary RTL support.",
+    "Dry-run payload validation does not add build/run/compare correctness evidence."
+  ],
+  "non_claims": [
+    "not a new execution",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation",
+    "not proof that copied closures apply to arbitrary targets"
+  ],
+  "next_task": "run_known_template_source_closure_copy_breadth_validation_dry_run_gate"
+}

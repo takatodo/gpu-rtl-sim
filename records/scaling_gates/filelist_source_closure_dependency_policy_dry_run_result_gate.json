@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_source_closure_dependency_policy_dry_run_result_gate",
+  "status": "passed_filelist_source_closure_dependency_policy_dry_run",
+  "objective": "Record dry-run source-closure metadata for filelist-derived hybrid config generation.",
+  "source_definition_gate": "config/scaling_gates/filelist_source_closure_dependency_policy_gate.json",
+  "current_priority": "review_filelist_source_closure_dependency_policy_dry_run_gate",
+  "executed_commands": [
+    {
+      "name": "incomplete_ita_leaf_source",
+      "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv --dry-run",
+      "exit_code": 0,
+      "source_closure_status": "incomplete",
+      "source_closure_provenance": "refused_or_unknown",
+      "missing_required_sources": [
+        "third_party/common_cells/src/cf_math_pkg.sv",
+        "third_party/common_cells/src/lzc.sv",
+        "third_party/common_cells/src/fifo_v3.sv",
+        "third_party/ITA/src/ita_package.sv"
+      ],
+      "risk": "third_party/ITA/src/ita.sv imports ita_package/common_cells dependencies that are not in source_files"
+    },
+    {
+      "name": "complete_existing_ita_source_closure",
+      "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --source <all 29 source_files from config/slice_launch_templates/filelist_paged_attention_kv_score.json> --dry-run",
+      "exit_code": 0,
+      "source_closure_status": "complete",
+      "source_closure_provenance": "operator_supplied_complete_source_list",
+      "source_file_count": 29,
+      "missing_required_sources": []
+    }
+  ],
+  "implemented_metadata": {
+    "template_field": "source_closure",
+    "gate_field": "source_closure_policy",
+    "dry_run_writes_files": false,
+    "known_risk_check": "third_party/ITA/src/ita.sv without ita_package/common_cells is marked incomplete",
+    "automatic_dependency_inference_for_arbitrary_rtl_implemented": false,
+    "native_verilator_option_implemented": false,
+    "automatic_optimal_gpu_allocation_implemented": false
+  },
+  "contract_tests": {
+    "command": "python3 -m unittest tests.contract.test_hybrid_config_template_cli tests.contract.test_hybrid_verilator_like_config_generation -q",
+    "exit_code": 0,
+    "test_count": 12
+  },
+  "acceptance_policy": {
+    "dry_run_only": true,
+    "command_exit_zero": true,
+    "source_closure_status_exposed": true,
+    "source_closure_provenance_exposed": true,
+    "incomplete_leaf_case_identified": true,
+    "complete_explicit_closure_case_identified": true,
+    "generated_reports_or_artifacts_written": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "build_run_compare_claim_allowed_by_this_gate": false,
+    "automatic_dependency_inference_claim_allowed": false
+  },
+  "next_task": "review_filelist_source_closure_dependency_policy_dry_run_gate",
+  "non_claims": [
+    "not Verilator build evidence",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL source dependency inference",
+    "not arbitrary RTL support",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence",
+    "not a non-dry-run refusal guard yet"
+  ]
+}

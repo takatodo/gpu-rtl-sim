@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_reference_inventory_review_gate",
+  "status": "accepted",
+  "objective": "Review the known-template source-closure reference inventory and decide whether breadth validation is ready.",
+  "source_result_gate": "config/scaling_gates/known_template_source_closure_reference_inventory_result_gate.json",
+  "accepted": {
+    "complete_templates_listed": true,
+    "independent_and_derivative_templates_separated": true,
+    "independent_complete_reference_count": 0,
+    "breadth_validation_deferred": true,
+    "new_execution_claim_added": false
+  },
+  "weakest_remaining_point": "The source-closure copy path is proven for one copied paged-attention lineage, but no independent complete reference template has been promoted for another target family.",
+  "next_workstream_recommendation": {
+    "selected_next_task": "define_known_template_source_closure_independent_reference_promotion_gate",
+    "reason": "Promoting one independent tracked template to complete source-closure reference status should come before breadth validation; otherwise breadth would mostly re-test one copied lineage."
+  },
+  "non_claims": [
+    "not a new execution",
+    "not timing or speedup evidence",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation",
+    "not proof that copied closure generalizes across target families"
+  ],
+  "next_task": "select_next_measurement_after_known_template_source_closure_reference_inventory_gate"
+}

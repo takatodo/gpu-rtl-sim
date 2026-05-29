@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_materialized_template_execution_result_gate",
+  "status": "passed_filelist_materialized_template_execution_after_source_closure_repair",
+  "objective": "Record the first non-dry-run build/run/compare result for the materialized filelist-derived template.",
+  "source_definition_gate": "config/scaling_gates/filelist_materialized_template_execution_gate.json",
+  "current_priority": "review_filelist_materialized_template_execution_gate",
+  "executed_command": {
+    "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 1x1",
+    "final_exit_code": 0
+  },
+  "initial_failed_attempt": {
+    "exit_code": 1,
+    "failing_stage": "verilator_build",
+    "stderr_summary": "third_party/ITA/src/ita.sv imported ita_package before the generated template listed the required dependency closure",
+    "weakness_found": "the materialized source list was not compile-complete"
+  },
+  "source_closure_repair": {
+    "file": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+    "change": "expanded source_files to include the existing PULP ITA/common_cells dependency closure before third_party/ITA/src/ita.sv",
+    "runtime_or_abi_change": false,
+    "generated_reports_or_artifacts_as_source_of_truth": false
+  },
+  "completed_stages": [
+    "verilator_build",
+    "generic_host_probe_build",
+    "cpu_init_state_dump",
+    "cpu_reference_state_dump",
+    "gpu_cubin_build",
+    "hybrid_run_from_cpu_init",
+    "coverage_output_compare"
+  ],
+  "compare_report": {
+    "path": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "selected_acceptance_policy_passed": true,
+    "coverage_output_mismatch_count": 0,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "coverage_output_gate": "filelist_paged_attention_kv_score_first_hybrid_benchmark_gate",
+    "coverage_output_target": "filelist_paged_attention_kv_score",
+    "manifest_path": "overlays/generated/tests/filelist_paged_attention_kv_score_coverage_regions.json",
+    "manifest_valid": true,
+    "raw_strict_final_state_match": false,
+    "normalized_final_state_equivalence": true,
+    "raw_mismatch_role_summary": {
+      "verilator_internal": {
+        "field_count": 4,
+        "mismatch_bytes": 25
+      }
+    },
+    "design_state_mismatch_bytes": 0,
+    "top_level_io_mismatch_bytes": 0,
+    "other_mismatch_bytes": 0
+  },
+  "acceptance_policy": {
+    "command_exit_zero": true,
+    "coverage_output_equivalence_required": true,
+    "coverage_output_mismatch_count_required": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false
+  },
+  "next_task": "review_filelist_materialized_template_execution_gate",
+  "non_claims": [
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not universal target support",
+    "not replacement of pulp_paged_attention_kv_score"
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_source_closure_non_dry_run_refusal_result_gate",
+  "status": "passed_filelist_source_closure_non_dry_run_refusal",
+  "objective": "Record the implementation result for refusing known incomplete source closure before non-dry-run template execution.",
+  "source_definition_gate": "config/scaling_gates/filelist_source_closure_non_dry_run_refusal_gate.json",
+  "current_priority": "review_filelist_source_closure_non_dry_run_refusal_gate",
+  "implemented_changes": [
+    {
+      "path": "src/tools/hybrid_template_types.py",
+      "change": "HybridTemplatePlan now carries source_closure metadata."
+    },
+    {
+      "path": "src/tools/hybrid_template_runner.py",
+      "change": "load_template_plan reads source_closure metadata and validate_source_closure_for_execution refuses incomplete/refused status values."
+    },
+    {
+      "path": "src/tools/run_hybrid_template.py",
+      "change": "non-dry-run execution validates source closure before command execution; dry-run remains plan-only."
+    },
+    {
+      "path": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "change": "the repaired tracked filelist template records a complete copied source_closure."
+    }
+  ],
+  "observed_behavior": {
+    "known_incomplete_non_dry_run": {
+      "exit_code": 1,
+      "refusal_before_verilator": true,
+      "stderr_contains": [
+        "source_closure.status=incomplete refuses non-dry-run execution",
+        "third_party/ITA/src/ita_package.sv"
+      ]
+    },
+    "known_incomplete_dry_run": {
+      "exit_code": 0,
+      "behavior": "command plan is printed as plan-only evidence"
+    },
+    "complete_tracked_filelist_template": {
+      "source_closure_status": "complete",
+      "provenance": "copied_from_known_tracked_template",
+      "source_file_count": 29
+    }
+  },
+  "contract_tests": {
+    "command": "python3 -m unittest tests.contract.test_hybrid_config_template_cli tests.contract.test_hybrid_verilator_like_config_generation -q",
+    "exit_code": 0,
+    "test_count": 13
+  },
+  "acceptance_policy": {
+    "implementation_result": true,
+    "known_incomplete_refused_before_verilator": true,
+    "dry_run_plan_only_remains_allowed": true,
+    "unknown_source_closure_not_claimed_complete": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "build_run_compare_claim_allowed_by_this_gate": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed": false
+  },
+  "next_task": "review_filelist_source_closure_non_dry_run_refusal_gate",
+  "non_claims": [
+    "not Verilator build evidence",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL dependency inference",
+    "not arbitrary RTL support",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence",
+    "not proof that unknown source closure is complete"
+  ]
+}

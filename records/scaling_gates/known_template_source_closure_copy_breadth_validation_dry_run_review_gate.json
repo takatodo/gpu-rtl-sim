@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_copy_breadth_validation_dry_run_review_gate",
+  "status": "accepted",
+  "objective": "Review and accept the dry-run breadth validation results for copied complete source closures.",
+  "source_result_gate": "config/scaling_gates/known_template_source_closure_copy_breadth_validation_dry_run_result_gate.json",
+  "accepted_scope": {
+    "evidence_type": "dry_run_policy_and_breadth_evidence",
+    "accepted_reference_family_count": 2,
+    "accepted_dry_run_count": 2,
+    "accepted_refusal_count": 1,
+    "materialization_accepted": false,
+    "execution_accepted": false
+  },
+  "review_checks": {
+    "accepted_cases_exit_zero": true,
+    "accepted_cases_have_complete_copied_source_closure": true,
+    "accepted_cases_record_expected_reference_template": true,
+    "accepted_cases_record_expected_source_files_sha256": true,
+    "accepted_cases_use_build_host_probe": true,
+    "accepted_cases_plan_coverage_output_equivalence": true,
+    "refusal_case_exits_nonzero": true,
+    "refusal_case_is_requested_source_absent_policy_error": true,
+    "dry_run_did_not_require_reports_or_artifacts": true
+  },
+  "decision": {
+    "accepted": true,
+    "reason": "The dry-run matrix covers the existing paged-attention copied lineage and the independent PULP ITA MHA reference, and the requested-source-absent refusal prevents silent expansion beyond the reviewed closure.",
+    "next_workstream": "known_template_source_closure_copy_breadth_materialization"
+  },
+  "weak_points": [
+    "Breadth is still limited to two reviewed reference families.",
+    "Dry-run success does not prove materialized target build/run/compare correctness.",
+    "The refusal proves policy enforcement, not automatic dependency inference.",
+    "The PULP ITA MHA closure is specific to that tracked harness and is not a universal closure."
+  ],
+  "non_claims": [
+    "not materialized generated source",
+    "not a new execution",
+    "not CPU-vs-hybrid correctness evidence",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation",
+    "not proof that copied closures apply to arbitrary targets"
+  ],
+  "next_task": "define_known_template_source_closure_copy_breadth_materialization_gate"
+}

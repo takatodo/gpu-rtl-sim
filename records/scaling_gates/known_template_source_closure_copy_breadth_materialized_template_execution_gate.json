@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_copy_breadth_materialized_template_execution_gate",
+  "status": "defined",
+  "objective": "Define the first non-dry-run build/run/compare command for the materialized MHA-copy source-closure template.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_materialized_template_dry_run_review_gate.json",
+  "selected_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 1x1",
+  "selected_template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+  "selected_shape": "1x1",
+  "expected_compare_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+  "expected_coverage_output_gate": "records/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json",
+  "expected_coverage_output_target": "filelist_known_template_pulp_ita_mha",
+  "required_acceptance": {
+    "later_command_must_exit_zero": true,
+    "acceptance_policy": "coverage_output_equivalence",
+    "mismatch_count": 0,
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116
+  },
+  "required_template_metadata": {
+    "source_closure_status": "complete",
+    "source_closure_provenance": "copied_from_known_tracked_template",
+    "reference_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "source_files_sha256": "073d53d91f23bf47eb907188096c21672b36801ed6fd7f8d218130c913322b89",
+    "source_file_count": 29,
+    "host_probe_builder": "src/tools/build_host_probe.py"
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "later_execution_must_exit_zero": true,
+    "later_compare_policy": "coverage_output_equivalence",
+    "later_mismatch_count_required": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "timing_claim_allowed_by_this_gate": false,
+    "speedup_claim_allowed_by_this_gate": false,
+    "shape_breadth_claim_allowed_by_this_gate": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed": false,
+    "native_verilator_option_claim_allowed": false,
+    "automatic_gpu_allocation_claim_allowed": false
+  },
+  "weak_points": [
+    "This gate defines the non-dry-run command but does not execute it.",
+    "The selected shape is only 1x1 and does not validate breadth.",
+    "The copied source closure is target-specific metadata and is not arbitrary RTL dependency inference."
+  ],
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not arbitrary RTL execution beyond the selected materialized template",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "run_known_template_source_closure_copy_breadth_materialized_template_execution_gate"
+}

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "gate": "public_benchmark_pack_externalization_completion_after_filelist_known_template_source_closure_copy_execution_gate",
+  "status": "complete",
+  "objective": "Close the public-pack externalization boundary for known-template source-closure copy execution evidence.",
+  "source_refresh_review_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_known_template_source_closure_copy_execution_review_gate.json",
+  "completion_decision": {
+    "achieved": true,
+    "reason": "The public-pack dry-run includes the known-template source-closure copy gate chain, materialized template and coverage manifest, first benchmark gate, execution review gates, and optional compare report for the selected 1x1 copied-closure template."
+  },
+  "closed_scope": {
+    "selected_template": "config/slice_launch_templates/filelist_known_template_paged_attention_kv_score.json",
+    "selected_shape": "1x1",
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_mismatch_count": 0,
+    "compared_words": 29,
+    "compared_bytes": 116,
+    "public_pack_refresh_review": "config/scaling_gates/public_results_packaging_refresh_after_filelist_known_template_source_closure_copy_execution_review_gate.json"
+  },
+  "non_claims": [
+    "not a new execution",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation",
+    "not proof that known-template copy works across multiple independent reference templates"
+  ],
+  "next_task": "select_next_measurement_after_filelist_known_template_source_closure_copy_execution_public_pack_refresh"
+}

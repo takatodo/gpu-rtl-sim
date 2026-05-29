@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_copy_breadth_materialization_result_gate",
+  "status": "passed",
+  "objective": "Record the tracked-source materialization result for the copied source-closure breadth boundary.",
+  "source_definition_gate": "config/scaling_gates/known_template_source_closure_copy_breadth_materialization_gate.json",
+  "overwrite_refusal_result": {
+    "case": "existing_paged_attention_copied_lineage_materialization_refusal",
+    "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_known_template_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv --source-closure-from-template config/slice_launch_templates/filelist_paged_attention_kv_score.json --gate-name filelist_known_template_paged_attention_kv_score_first_hybrid_benchmark_gate",
+    "exit_code": 1,
+    "error_excerpt": "refusing to overwrite existing source-of-truth file: overlays/generated/tests/filelist_known_template_paged_attention_kv_score_coverage_regions.json"
+  },
+  "materialization_result": {
+    "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_known_template_pulp_ita_mha --top-module pulp_ita_mha_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv --source-closure-from-template config/slice_launch_templates/pulp_ita_mha.json --gate-name filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate",
+    "exit_code": 0,
+    "written_files": [
+      "overlays/generated/tests/filelist_known_template_pulp_ita_mha_coverage_regions.json",
+      "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+      "records/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json"
+    ],
+    "reports_or_artifacts_written": false
+  },
+  "template_checks": {
+    "target": "PULP_ITA.filelist_known_template_pulp_ita_mha",
+    "top_module": "pulp_ita_mha_gpu_cov_tb",
+    "source_closure_status": "complete",
+    "source_closure_provenance": "copied_from_known_tracked_template",
+    "reference_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "source_file_count": 29,
+    "source_files_sha256": "073d53d91f23bf47eb907188096c21672b36801ed6fd7f8d218130c913322b89",
+    "missing_required_sources": [],
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "local_absolute_paths_present": false
+  },
+  "benchmark_gate_checks": {
+    "target": "filelist_known_template_pulp_ita_mha",
+    "coverage_output_equivalence_required": true,
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "speedup_claim_allowed_by_gate_alone": false
+  },
+  "non_claims": [
+    "not a new execution",
+    "not Verilator build success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation",
+    "not proof that copied closures apply to arbitrary targets"
+  ],
+  "next_task": "review_known_template_source_closure_copy_breadth_materialization_gate"
+}

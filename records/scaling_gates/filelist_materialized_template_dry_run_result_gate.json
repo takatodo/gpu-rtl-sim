@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_materialized_template_dry_run_result_gate",
+  "status": "passed_filelist_materialized_template_dry_run",
+  "objective": "Record the first command-plan dry-run for the materialized filelist-derived template.",
+  "source_definition_gate": "config/scaling_gates/filelist_materialized_template_dry_run_gate.json",
+  "current_priority": "review_filelist_materialized_template_dry_run_gate",
+  "executed_command": {
+    "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 1x1 --dry-run",
+    "exit_code": 0,
+    "stdout_capture_policy": "not_retained_as_source_of_truth",
+    "stdout_line_count": 7
+  },
+  "observed_command_plan": {
+    "verilator_build": "verilator --cc --timing -Mdir artifacts/filelist_paged_attention_kv_score_obj_dir --flatten third_party/ITA/src/ita.sv overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv --top-module pulp_paged_attention_kv_score_gpu_cov_tb",
+    "host_probe_build": "python3 src/tools/build_host_probe.py config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+    "cpu_init_state": "artifacts/filelist_paged_attention_kv_score_obj_dir/tlul_slice_host_probe --repeat-states 1 --repeat-eval-steps 1 --set cfg_valid_i=1 --set cfg_batch_length_i=64 --set cfg_reset_cycles_i=2 --set cfg_drain_cycles_i=8 --set cfg_seed_i=1 --repeat-state-out artifacts/filelist_paged_attention_kv_score_obj_dir/filelist_paged_attention_kv_score_cpu_repeat_1x1.bin",
+    "cpu_reference_output": "artifacts/filelist_paged_attention_kv_score_obj_dir/tlul_slice_host_probe --repeat-states 1 --repeat-eval-steps 1 --set cfg_valid_i=1 --set cfg_batch_length_i=64 --set cfg_reset_cycles_i=2 --set cfg_drain_cycles_i=8 --set cfg_seed_i=1 --repeat-state-out artifacts/filelist_paged_attention_kv_score_obj_dir/filelist_paged_attention_kv_score_cpu_repeat_1x1.bin",
+    "gpu_artifact_build": "python3 src/tools/build_vl_gpu.py artifacts/filelist_paged_attention_kv_score_obj_dir --force",
+    "hybrid_sidecar_run": "python3 src/tools/run_vl_hybrid.py --mdir artifacts/filelist_paged_attention_kv_score_obj_dir --nstates 1 --steps 1 --init-state artifacts/filelist_paged_attention_kv_score_obj_dir/filelist_paged_attention_kv_score_cpu_repeat_1x1.bin --sanitize-host-only-internals --dump-state artifacts/filelist_paged_attention_kv_score_obj_dir/filelist_paged_attention_kv_score_gpu_from_cpu_init_1x1.bin",
+    "coverage_output_compare": "python3 src/tools/compare_vl_hybrid_modes.py artifacts/filelist_paged_attention_kv_score_obj_dir --compare-dumps artifacts/filelist_paged_attention_kv_score_obj_dir/filelist_paged_attention_kv_score_cpu_repeat_1x1.bin artifacts/filelist_paged_attention_kv_score_obj_dir/filelist_paged_attention_kv_score_gpu_from_cpu_init_1x1.bin --reference-label cpu_repeat_1x1 --candidate-label hybrid_from_cpu_init_1x1 --acceptance-policy coverage_output_equivalence --json-out reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json --coverage-output-gate records/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json --coverage-output-target filelist_paged_attention_kv_score"
+  },
+  "acceptance_policy": {
+    "dry_run_only": true,
+    "command_exit_zero": true,
+    "expected_stage_count": 7,
+    "coverage_output_equivalence_planned": true,
+    "generated_reports_or_artifacts_written": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "build_run_compare_claim_allowed_by_this_gate": false
+  },
+  "next_task": "review_filelist_materialized_template_dry_run_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}

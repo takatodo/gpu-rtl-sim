@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_known_template_source_closure_copy_breadth_execution_public_pack_refresh_gate",
+  "status": "selected_verilator_compatible_gpu_hybrid_minimal_bench_suite_next",
+  "objective": "Select the next validation goal after closing the known-template source-closure copy breadth execution public-pack boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_known_template_source_closure_copy_breadth_execution_gate.json",
+  "current_priority": "define_verilator_compatible_gpu_hybrid_minimal_bench_suite_gate",
+  "decision": {
+    "selected_next_workstream": "verilator_compatible_gpu_hybrid_minimal_bench_suite",
+    "selected_first_gate": "define_verilator_compatible_gpu_hybrid_minimal_bench_suite_gate",
+    "reason": "The filelist-derived MHA-copy execution evidence is now externalized. The next useful gap is a compact benchmark suite that ties the Verilator-compatible option surface, shape-efficiency estimate, resident decode-like path, and filelist-derived execution evidence into one operator-facing baseline."
+  },
+  "deferred_candidates": [
+    "shape_breadth_timing_measurement",
+    "resident_execution_optimization",
+    "native_verilator_option_prototype_boundary",
+    "automatic_gpu_allocation_policy"
+  ],
+  "required_next_gate": {
+    "name": "define_verilator_compatible_gpu_hybrid_minimal_bench_suite_gate",
+    "must_pin": [
+      "the smallest operator-facing command that emits a Verilator-compatible GPU sidecar plan",
+      "a state-parallel high-efficiency estimate case",
+      "a single-state repeated-step low-efficiency estimate case",
+      "a resident decode-like mitigation case",
+      "a filelist-derived execution evidence case",
+      "coverage_output_equivalence as the correctness policy",
+      "non-claims for arbitrary RTL, native Verilator support, automatic optimal GPU allocation, timing, speedup, and production serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "speedup_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_verilator_compatible_gpu_hybrid_minimal_bench_suite_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not arbitrary RTL support",
+    "not timing or speedup evidence",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation",
+    "not production LLM-serving throughput"
+  ]
+}

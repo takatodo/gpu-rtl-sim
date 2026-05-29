@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_reference_inventory_gate",
+  "status": "defined",
+  "objective": "Define the inventory boundary for tracked templates that may be used as known source-closure references.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_filelist_known_template_source_closure_copy_execution_public_pack_refresh_gate.json",
+  "inventory_scope": {
+    "template_glob": "config/slice_launch_templates/*.json",
+    "tracked_templates_only": true,
+    "reference_status_required": "complete",
+    "new_measurement_allowed_by_this_gate": false
+  },
+  "classification": {
+    "independent_complete_reference": "A tracked template with source_closure.status=complete whose source_files are directly justified for that template and whose metadata records enough provenance to audit the closure without relying on another copied derivative.",
+    "copied_derivative": "A tracked template with source_closure.status=complete and provenance copied_from_known_tracked_template that references another template's closure.",
+    "legacy_complete_without_reference_metadata": "A tracked template with source_closure.status=complete but missing reference_template/source_files_sha256; useful as historical evidence but not enough to claim independent reference breadth."
+  },
+  "acceptance_policy": {
+    "must_list_complete_templates": true,
+    "must_separate_independent_from_copied_derivative": true,
+    "must_decide_next_workstream": true,
+    "timing_claim_allowed": false,
+    "speedup_claim_allowed": false,
+    "arbitrary_dependency_inference_claim_allowed": false
+  },
+  "non_claims": [
+    "not a new execution",
+    "not timing or speedup evidence",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation",
+    "not proof that copied closure generalizes across target families"
+  ],
+  "next_task": "run_known_template_source_closure_reference_inventory_gate"
+}

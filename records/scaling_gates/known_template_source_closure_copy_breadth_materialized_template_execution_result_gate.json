@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_copy_breadth_materialized_template_execution_result_gate",
+  "status": "passed_after_template_verilator_args_repair",
+  "objective": "Record non-dry-run build/run/compare result for the materialized MHA-copy source-closure template.",
+  "source_definition_gate": "config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_gate.json",
+  "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 1x1",
+  "exit_code": 0,
+  "repair_applied_before_success": {
+    "copied_template_verilator_args_inherited_from_reference": true,
+    "reference_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "reason": "The first non-dry-run attempt showed that copying source_files/source_closure without the reference template's ITA Verilator warning suppressions and ITA_* defines leaves the copied MHA template unable to elaborate/build cleanly.",
+    "stale_artifact_cleanup_required": true,
+    "cleaned_artifact_dir": "artifacts/filelist_known_template_pulp_ita_mha_obj_dir"
+  },
+  "stage_result": {
+    "verilator_build_exited_zero": true,
+    "generic_host_probe_build_exited_zero": true,
+    "cpu_reference_state_generation_exited_zero": true,
+    "gpu_cubin_build_exited_zero": true,
+    "hybrid_run_exited_zero": true,
+    "coverage_output_compare_exited_zero": true
+  },
+  "compare_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+  "coverage_output_result": {
+    "acceptance_policy": "coverage_output_equivalence",
+    "passed": true,
+    "mismatch_count": 0,
+    "compared_state_pair_count": 1,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "missing_fields": [],
+    "blocked_reason": null,
+    "manifest_valid": true
+  },
+  "diagnostic_state_result": {
+    "strict_final_state_passed": false,
+    "normalized_final_state_equivalence_passed": true,
+    "raw_mismatch_count": 31,
+    "mismatch_role_summary": {
+      "verilator_internal": {
+        "field_count": 4,
+        "mismatch_bytes": 31
+      }
+    }
+  },
+  "template_metadata": {
+    "source_closure_status": "complete",
+    "source_closure_provenance": "copied_from_known_tracked_template",
+    "reference_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "source_files_sha256": "073d53d91f23bf47eb907188096c21672b36801ed6fd7f8d218130c913322b89",
+    "source_file_count": 29,
+    "verilator_args_inherited_from_reference": true
+  },
+  "non_claims": [
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not shape breadth evidence",
+    "not arbitrary RTL dependency inference",
+    "not arbitrary RTL execution beyond the selected materialized template",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "review_known_template_source_closure_copy_breadth_materialized_template_execution_gate"
+}

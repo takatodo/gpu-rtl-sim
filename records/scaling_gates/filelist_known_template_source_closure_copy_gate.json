@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_known_template_source_closure_copy_gate",
+  "status": "defined",
+  "objective": "Define a reviewed operator-facing way to copy source_files and source_closure from a known tracked template into generated filelist-facing hybrid config.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_filelist_source_closure_refusal_public_pack_refresh_gate.json",
+  "operator_surface": {
+    "cli": "python3 src/tools/gen_hybrid_config.py --source-closure-from-template config/slice_launch_templates/<known>.json --dry-run",
+    "alias": "python3 src/tools/gen_hybrid_config.py --copy-source-closure-from-template config/slice_launch_templates/<known>.json --dry-run",
+    "reference_template_scope": "tracked config/slice_launch_templates/*.json only",
+    "dry_run_first": true,
+    "materialization_deferred": true
+  },
+  "implemented_boundary": {
+    "copies_source_files": true,
+    "copies_source_closure": true,
+    "requires_reference_template_tracked": true,
+    "requires_reference_template_exists": true,
+    "requires_reference_source_closure_complete": true,
+    "requires_reference_source_files_nonempty": true,
+    "requested_source_must_be_present_in_copied_closure": true,
+    "records_reference_template": true,
+    "records_source_files_sha256": true
+  },
+  "accepted_provenance": "copied_from_known_tracked_template",
+  "acceptance_policy": {
+    "dry_run_payload_must_show_complete_source_closure": true,
+    "dry_run_payload_must_show_reference_template": true,
+    "dry_run_payload_must_preserve_arbitrary_dependency_inference_false": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "non_dry_run_execution_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "non_claims": [
+    "not automatic dependency inference for arbitrary RTL",
+    "not arbitrary RTL support",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation",
+    "not timing or speedup evidence",
+    "not build/run/compare evidence",
+    "not proof that copied closure is semantically correct for every target"
+  ],
+  "next_task": "run_filelist_known_template_source_closure_copy_dry_run_gate"
+}

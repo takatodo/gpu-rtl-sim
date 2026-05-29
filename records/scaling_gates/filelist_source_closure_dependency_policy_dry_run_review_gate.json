@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_source_closure_dependency_policy_dry_run_review_gate",
+  "status": "accepted_filelist_source_closure_dependency_policy_dry_run",
+  "objective": "Review and accept the dry-run source-closure metadata boundary for filelist-derived hybrid config generation.",
+  "source_definition_gate": "config/scaling_gates/filelist_source_closure_dependency_policy_gate.json",
+  "source_result_gate": "config/scaling_gates/filelist_source_closure_dependency_policy_dry_run_result_gate.json",
+  "current_priority": "define_filelist_source_closure_non_dry_run_refusal_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "Dry-run output now exposes source_closure status/provenance, marks the known incomplete ITA leaf-source case as incomplete, and marks the existing explicit 29-file ITA/common_cells closure as complete without claiming arbitrary RTL dependency inference.",
+    "accepted_scope": "filelist-derived config dry-run metadata only",
+    "known_weaknesses": [
+      "operator-supplied source lists are not independently proven complete beyond known-risk checks",
+      "no arbitrary RTL import scanning is implemented",
+      "known incomplete closure is not yet refused before non-dry-run execution",
+      "dry-run metadata is not build/run/compare evidence"
+    ]
+  },
+  "accepted_result": {
+    "incomplete_case_status": "incomplete",
+    "complete_case_status": "complete",
+    "source_closure_provenance_values_observed": [
+      "refused_or_unknown",
+      "operator_supplied_complete_source_list"
+    ],
+    "template_metadata_field": "source_closure",
+    "gate_metadata_field": "source_closure_policy",
+    "contract_test_command": "python3 -m unittest tests.contract.test_hybrid_config_template_cli tests.contract.test_hybrid_verilator_like_config_generation -q"
+  },
+  "required_next_gate": {
+    "name": "define_filelist_source_closure_non_dry_run_refusal_gate",
+    "must_pin": [
+      "whether known incomplete source_closure should be refused during materialization, non-dry-run execution, or both",
+      "the exact error text or status for known incomplete source closure",
+      "that unknown closure is classified as source-closure risk rather than complete evidence",
+      "that arbitrary RTL dependency inference remains a non-claim",
+      "that runtime and ABI behavior remain unchanged"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_filelist_source_closure_non_dry_run_refusal_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}

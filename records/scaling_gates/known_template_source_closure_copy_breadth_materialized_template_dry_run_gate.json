@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_copy_breadth_materialized_template_dry_run_gate",
+  "status": "defined",
+  "objective": "Define the dry-run command-plan boundary for the materialized MHA-copy source-closure template.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_materialization_review_gate.json",
+  "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 1x1 --dry-run",
+  "target": "filelist_known_template_pulp_ita_mha",
+  "template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+  "shape": {
+    "states": 1,
+    "steps": 1
+  },
+  "expected_plan": {
+    "exit_code": 0,
+    "stage_count": 7,
+    "verilator_mdir": "artifacts/filelist_known_template_pulp_ita_mha_obj_dir",
+    "verilator_sources_include_copied_mha_closure": true,
+    "verilator_overlay": "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+    "host_probe_builder_command": "python3 src/tools/build_host_probe.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+    "cpu_reference_repeat_states": 1,
+    "cpu_reference_repeat_eval_steps": 1,
+    "gpu_build_command": "python3 src/tools/build_vl_gpu.py artifacts/filelist_known_template_pulp_ita_mha_obj_dir --force",
+    "hybrid_run_nstates": 1,
+    "hybrid_run_steps": 1,
+    "compare_acceptance_policy": "coverage_output_equivalence",
+    "compare_json_out": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "coverage_output_gate": "records/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json",
+    "coverage_output_target": "filelist_known_template_pulp_ita_mha"
+  },
+  "acceptance_policy": {
+    "must_exit_zero": true,
+    "must_emit_expected_stage_count": true,
+    "must_use_materialized_template": true,
+    "must_use_build_host_probe": true,
+    "must_plan_cpu_reference": true,
+    "must_plan_gpu_cubin_build": true,
+    "must_plan_hybrid_run": true,
+    "must_end_in_coverage_output_equivalence_compare": true,
+    "dry_run_must_not_write_reports_or_artifacts": true,
+    "dry_run_must_not_modify_source": true,
+    "execution_allowed_by_this_gate": false,
+    "timing_claim_allowed": false,
+    "speedup_claim_allowed": false,
+    "arbitrary_dependency_inference_claim_allowed": false,
+    "native_verilator_option_claim_allowed": false,
+    "automatic_gpu_allocation_claim_allowed": false
+  },
+  "weak_points": [
+    "This is command-plan evidence only and does not run Verilator, host-probe compilation, GPU cubin build, hybrid execution, or compare.",
+    "The copied MHA source closure is not proof of correctness for arbitrary targets.",
+    "The shape is only 1x1 and does not validate shape breadth."
+  ],
+  "non_claims": [
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "run_known_template_source_closure_copy_breadth_materialized_template_dry_run_gate"
+}

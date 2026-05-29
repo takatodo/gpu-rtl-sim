@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_reference_inventory_result_gate",
+  "status": "passed",
+  "objective": "Record the tracked template source-closure reference inventory.",
+  "source_definition_gate": "config/scaling_gates/known_template_source_closure_reference_inventory_gate.json",
+  "inventory_command": "python3 - <<'PY' ... scan config/slice_launch_templates/*.json for source_closure.status == 'complete' ... PY",
+  "tracked_template_count": 137,
+  "complete_source_closure_template_count": 2,
+  "complete_templates": [
+    {
+      "path": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "target": "PULP_ITA.filelist_paged_attention_kv_score",
+      "source_file_count": 29,
+      "provenance": "copied_from_known_tracked_template",
+      "reference_template": null,
+      "source_files_sha256": null,
+      "classification": "legacy_complete_without_reference_metadata"
+    },
+    {
+      "path": "config/slice_launch_templates/filelist_known_template_paged_attention_kv_score.json",
+      "target": "PULP_ITA.filelist_known_template_paged_attention_kv_score",
+      "source_file_count": 29,
+      "provenance": "copied_from_known_tracked_template",
+      "reference_template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "source_files_sha256": "8d2b6044d6c462d7a753d9f660c303f06628228dfe8148e3b7a1d2e9eefc7df7",
+      "classification": "copied_derivative"
+    }
+  ],
+  "classification_summary": {
+    "independent_complete_reference_count": 0,
+    "legacy_complete_without_reference_metadata_count": 1,
+    "copied_derivative_count": 1
+  },
+  "decision_inputs": {
+    "breadth_validation_ready": false,
+    "reason": "There is no independent complete reference template beyond the paged-attention filelist lineage; breadth validation would overstate the generality of copied source-closure references."
+  },
+  "non_claims": [
+    "not a new execution",
+    "not timing or speedup evidence",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "review_known_template_source_closure_reference_inventory_gate"
+}

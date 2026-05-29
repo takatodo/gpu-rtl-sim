@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_known_template_source_closure_reference_inventory_gate",
+  "status": "selected_independent_reference_promotion_gate",
+  "objective": "Select the next workstream after reviewing the known-template source-closure reference inventory.",
+  "source_review_gate": "config/scaling_gates/known_template_source_closure_reference_inventory_review_gate.json",
+  "current_priority": "define_known_template_source_closure_independent_reference_promotion_gate",
+  "selection": {
+    "selected_next_task": "define_known_template_source_closure_independent_reference_promotion_gate",
+    "selected_workstream": "known_template_source_closure_independent_reference_promotion",
+    "reason": "The inventory found zero independent complete references and only one copied derivative. The next useful step is to promote a second, independent tracked template to complete source-closure reference status before target breadth or shape breadth.",
+    "stage": "definition"
+  },
+  "deferred_candidates": [
+    "known-template copy breadth validation",
+    "materialized known-template execution shape breadth",
+    "closer direct Verilator-like operator surface",
+    "native Verilator option integration",
+    "automatic dependency inference for arbitrary RTL",
+    "automatic optimal GPU allocation"
+  ],
+  "acceptance_policy": {
+    "selection_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed": false
+  },
+  "non_claims": [
+    "not a new measurement",
+    "not automatic dependency inference for arbitrary RTL",
+    "not arbitrary RTL support",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation",
+    "not timing or speedup evidence"
+  ],
+  "next_task": "define_known_template_source_closure_independent_reference_promotion_gate"
+}

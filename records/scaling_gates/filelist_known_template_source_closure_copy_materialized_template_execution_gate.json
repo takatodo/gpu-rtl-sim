@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_known_template_source_closure_copy_materialized_template_execution_gate",
+  "status": "defined",
+  "objective": "Define the first non-dry-run build/run/compare command for the materialized known-template source-closure copy template.",
+  "source_review_gate": "config/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_dry_run_review_gate.json",
+  "selected_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_paged_attention_kv_score.json --shape 1x1",
+  "selected_template": "config/slice_launch_templates/filelist_known_template_paged_attention_kv_score.json",
+  "expected_compare_report": "reports/filelist_known_template_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+  "required_acceptance": {
+    "acceptance_policy": "coverage_output_equivalence",
+    "mismatch_count": 0,
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116
+  },
+  "required_template_metadata": {
+    "source_closure_status": "complete",
+    "source_closure_provenance": "copied_from_known_tracked_template",
+    "reference_template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+    "source_files_sha256_recorded": true
+  },
+  "acceptance_policy": {
+    "non_dry_run_hybrid_execution_allowed_by_this_gate": true,
+    "coverage_output_equivalence_required": true,
+    "timing_claim_allowed_by_this_gate": false,
+    "speedup_claim_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "non_claims": [
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not arbitrary RTL execution beyond the selected materialized template",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "run_filelist_known_template_source_closure_copy_materialized_template_execution_gate"
+}

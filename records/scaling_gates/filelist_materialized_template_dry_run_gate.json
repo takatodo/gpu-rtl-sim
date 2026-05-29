@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_materialized_template_dry_run_gate",
+  "status": "defined_filelist_materialized_template_dry_run",
+  "objective": "Define the first run_hybrid_template.py dry-run boundary for the materialized filelist-derived template.",
+  "source_materialization_review_gate": "config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_materialization_review_gate.json",
+  "current_priority": "run_filelist_materialized_template_dry_run_gate",
+  "dry_run_scope": {
+    "template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+    "shape": "1x1",
+    "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 1x1 --dry-run",
+    "materialized_sources": [
+      "overlays/generated/tests/filelist_paged_attention_kv_score_coverage_regions.json",
+      "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "records/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json"
+    ],
+    "expected_command_plan": [
+      "verilator build uses third_party/ITA/src/ita.sv and overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv",
+      "host probe build uses src/tools/build_host_probe.py",
+      "CPU init state command uses 1x1",
+      "CPU reference output command uses 1x1",
+      "GPU artifact build uses src/tools/build_vl_gpu.py",
+      "hybrid sidecar run uses src/tools/run_vl_hybrid.py with --nstates 1 --steps 1",
+      "compare command uses coverage_output_equivalence with the materialized gate"
+    ],
+    "expected_compare_report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "dry_run_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "build_run_compare_claim_allowed_by_this_gate": false,
+    "coverage_output_equivalence_planned": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_materialized_template_dry_run_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}

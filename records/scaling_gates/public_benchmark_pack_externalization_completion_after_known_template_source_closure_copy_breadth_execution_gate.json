@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "gate": "public_benchmark_pack_externalization_completion_after_known_template_source_closure_copy_breadth_execution_gate",
+  "status": "complete_public_benchmark_pack_externalization_after_known_template_source_closure_copy_breadth_execution",
+  "objective": "Close the public benchmark pack externalization boundary after the known-template source-closure copy breadth execution refresh.",
+  "completed_priority": "define_public_benchmark_pack_externalization_completion_after_known_template_source_closure_copy_breadth_execution_gate",
+  "source_refresh_gate": "config/scaling_gates/public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_gate.json",
+  "source_refresh_result_gate": "config/scaling_gates/public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_result_gate.json",
+  "source_refresh_review_gate": "config/scaling_gates/public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_review_gate.json",
+  "source_execution_result_gate": "config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_result_gate.json",
+  "decision": {
+    "externalization_boundary_complete": true,
+    "reason": "The public-pack dry-run and review include the accepted MHA-copy execution gate/result/review records, materialized template, coverage manifest, first benchmark gate, generator helper source, and optional compare report while keeping generated reports and artifacts non-canonical."
+  },
+  "closed_scope": {
+    "selected_template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+    "selected_shape": "1x1",
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_mismatch_count": 0,
+    "compared_words": 29,
+    "compared_bytes": 116,
+    "public_pack_refresh_review": "config/scaling_gates/public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_review_gate.json"
+  },
+  "acceptance_policy": {
+    "completion_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "fresh_timing_claim_allowed_by_gate_alone": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "select_next_measurement_after_known_template_source_closure_copy_breadth_execution_public_pack_refresh",
+  "candidate_next_measurement_options": [
+    "verilator_compatible_gpu_hybrid_minimal_bench_suite",
+    "shape_breadth_timing_measurement",
+    "resident_execution_optimization",
+    "native_verilator_option_prototype_boundary",
+    "automatic_gpu_allocation_policy"
+  ],
+  "non_claims": [
+    "not new execution evidence",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not raw full-state equality",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation"
+  ]
+}

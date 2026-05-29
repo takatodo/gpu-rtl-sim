@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_known_template_source_closure_copy_materialized_template_dry_run_gate",
+  "status": "defined",
+  "objective": "Define the first run_hybrid_template dry-run command-plan check for the materialized known-template source-closure copy template.",
+  "source_review_gate": "config/scaling_gates/filelist_known_template_source_closure_copy_materialization_review_gate.json",
+  "selected_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_paged_attention_kv_score.json --shape 1x1 --dry-run",
+  "selected_template": "config/slice_launch_templates/filelist_known_template_paged_attention_kv_score.json",
+  "expected_plan_properties": {
+    "verilator_command_present": true,
+    "generic_host_probe_builder_command_present": true,
+    "cpu_reference_commands_present": true,
+    "gpu_cubin_build_command_present": true,
+    "hybrid_run_command_present": true,
+    "coverage_output_equivalence_compare_command_present": true,
+    "expected_command_count": 7
+  },
+  "required_template_metadata": {
+    "source_closure_status": "complete",
+    "source_closure_provenance": "copied_from_known_tracked_template",
+    "reference_template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+    "source_files_sha256_recorded": true
+  },
+  "acceptance_policy": {
+    "dry_run_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "non_dry_run_hybrid_execution_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "non_claims": [
+    "not build/run/compare evidence",
+    "not timing or speedup evidence",
+    "not arbitrary RTL dependency inference",
+    "not arbitrary RTL execution",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "run_filelist_known_template_source_closure_copy_materialized_template_dry_run_gate"
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_materialized_template_dry_run_review_gate",
+  "status": "accepted_filelist_materialized_template_dry_run",
+  "objective": "Review and accept the materialized filelist-derived template dry-run command plan.",
+  "source_definition_gate": "config/scaling_gates/filelist_materialized_template_dry_run_gate.json",
+  "source_result_gate": "config/scaling_gates/filelist_materialized_template_dry_run_result_gate.json",
+  "current_priority": "define_filelist_materialized_template_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The materialized template dry-run exited 0 and emitted the expected seven-stage command plan: Verilator build from explicit filelist sources, generic host-probe build, CPU init/reference outputs, GPU artifact build, hybrid run, and coverage_output_equivalence compare.",
+    "accepted_scope": "filelist_paged_attention_kv_score 1x1 command-plan validation",
+    "known_weaknesses": [
+      "dry-run is not Verilator build/run/compare evidence",
+      "the generated target is a derived target and does not replace pulp_paged_attention_kv_score",
+      "only 1x1 command-plan shape is validated",
+      "arbitrary RTL, native Verilator option support, and optimal GPU allocation remain unimplemented"
+    ]
+  },
+  "accepted_result": {
+    "template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+    "shape": "1x1",
+    "stage_count": 7,
+    "correctness_policy": "coverage_output_equivalence",
+    "expected_compare_report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "coverage_output_gate": "records/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+    "coverage_output_target": "filelist_paged_attention_kv_score"
+  },
+  "required_next_gate": {
+    "name": "define_filelist_materialized_template_execution_gate",
+    "must_pin": [
+      "whether to run the exact materialized template at 1x1 non-dry-run",
+      "expected compare report path",
+      "coverage_output_equivalence mismatch count 0 as the later acceptance criterion",
+      "raw full-state equality remains non-required",
+      "generated reports and artifacts remain non-canonical",
+      "arbitrary RTL support, optimal GPU allocation, and native Verilator support remain non-claims"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_filelist_materialized_template_execution_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}

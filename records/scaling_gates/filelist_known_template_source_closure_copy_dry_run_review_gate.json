@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_known_template_source_closure_copy_dry_run_review_gate",
+  "status": "accepted",
+  "objective": "Review the known-template source-closure copy dry-run boundary.",
+  "source_result_gate": "config/scaling_gates/filelist_known_template_source_closure_copy_dry_run_result_gate.json",
+  "accepted": {
+    "operator_surface_is_minimal": true,
+    "shared_module_contains_reusable_behavior": true,
+    "cli_entrypoint_remains_thin": true,
+    "tracked_reference_template_required": true,
+    "complete_reference_closure_required": true,
+    "requested_source_membership_checked": true,
+    "reference_template_recorded": true,
+    "source_file_hash_recorded": true,
+    "contract_test_added": true
+  },
+  "weakest_remaining_point": "The dry-run copy boundary is now defined and tested, but materializing a generated template with copied closure and refreshing the public pack are still separate gates.",
+  "non_claims": [
+    "not arbitrary RTL dependency inference",
+    "not arbitrary RTL execution",
+    "not native Verilator option support",
+    "not optimal GPU allocation",
+    "not timing or speedup evidence",
+    "not build/run/compare evidence"
+  ],
+  "next_task": "define_filelist_known_template_source_closure_copy_materialization_gate"
+}

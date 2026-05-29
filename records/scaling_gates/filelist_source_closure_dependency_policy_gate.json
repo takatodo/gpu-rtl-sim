@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_source_closure_dependency_policy_gate",
+  "status": "defined_filelist_source_closure_dependency_policy",
+  "objective": "Define how filelist-derived hybrid templates must handle source dependency closure after the first materialized-template execution exposed an incomplete source list.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_filelist_materialized_template_public_pack_refresh_gate.json",
+  "source_failure_evidence_gate": "config/scaling_gates/filelist_materialized_template_execution_result_gate.json",
+  "current_priority": "run_filelist_source_closure_dependency_policy_dry_run_gate",
+  "problem_statement": {
+    "observed_failure": "The first non-dry-run materialized filelist template failed at Verilator build because third_party/ITA/src/ita.sv imported ita_package before the generated template listed ita_package/common_cells dependencies.",
+    "accepted_repair": "The generated template source_files were expanded to include the existing PULP ITA/common_cells source closure before rerunning successfully.",
+    "policy_need": "Future filelist-facing templates must either receive an explicit complete source closure or identify that source-closure completeness has not been proven before non-dry-run execution."
+  },
+  "policy": {
+    "explicit_source_closure_required_for_execution": true,
+    "single_leaf_source_plus_overlay_is_not_compile_complete_by_default": true,
+    "known_template_source_closure_copy_allowed": true,
+    "operator_supplied_complete_source_list_allowed": true,
+    "source_closure_provenance_required": true,
+    "allowed_source_closure_provenance": [
+      "operator_supplied_complete_source_list",
+      "copied_from_known_tracked_template",
+      "refused_or_unknown"
+    ],
+    "dry_run_must_expose_source_closure_status": true,
+    "dry_run_source_closure_status_values": [
+      "complete",
+      "incomplete",
+      "unknown",
+      "refused"
+    ],
+    "non_dry_run_should_refuse_known_incomplete_source_closure_before_verilator_when_possible": true,
+    "non_dry_run_unknown_closure_must_be_classified_as_source_closure_risk": true,
+    "fallback_verilator_failure_remains_diagnostic": true,
+    "automatic_dependency_inference_for_arbitrary_rtl_implemented": false,
+    "native_verilator_option_implemented": false,
+    "automatic_optimal_gpu_allocation_implemented": false
+  },
+  "required_next_gate": {
+    "name": "run_filelist_source_closure_dependency_policy_dry_run_gate",
+    "must_validate": [
+      "dry-run policy text identifies explicit complete source closure as required for execution",
+      "dry-run policy text identifies known-template source closure copy as allowed",
+      "dry-run policy text records source closure provenance",
+      "dry-run policy text records source closure status as complete, incomplete, unknown, or refused",
+      "dry-run policy text keeps arbitrary RTL dependency inference as a non-claim",
+      "the previously failing ITA leaf-source case remains documented as incomplete until closure is supplied",
+      "runtime and ABI remain unchanged",
+      "generated reports and artifacts remain non-canonical"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "source_template_mutation_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_source_closure_dependency_policy_dry_run_gate",
+  "non_claims": [
+    "not an implementation change",
+    "not a new measurement result",
+    "not automatic dependency inference for arbitrary RTL",
+    "not arbitrary RTL support",
+    "not raw filelist execution",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_independent_reference_promotion_review_gate",
+  "status": "accepted",
+  "objective": "Review and accept the first independent complete source-closure reference promotion.",
+  "source_result_gate": "config/scaling_gates/known_template_source_closure_independent_reference_promotion_result_gate.json",
+  "accepted_template": {
+    "target": "PULP_ITA.pulp_ita_mha",
+    "path": "config/slice_launch_templates/pulp_ita_mha.json",
+    "source_closure_status": "complete",
+    "provenance": "independent_tracked_template_promotion",
+    "source_file_count": 29,
+    "source_files_sha256": "073d53d91f23bf47eb907188096c21672b36801ed6fd7f8d218130c913322b89",
+    "copied_reference": false
+  },
+  "review_checks": {
+    "template_json_valid": true,
+    "source_file_count_matches_template": true,
+    "source_files_sha256_matches_ordered_source_files": true,
+    "missing_required_sources_empty": true,
+    "dry_run_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x1 --dry-run",
+    "dry_run_exit_code": 0,
+    "new_reports_or_artifacts_required": false
+  },
+  "decision": {
+    "accepted": true,
+    "reason": "The promoted template is independent of the paged-attention copied-reference lineage, carries an explicit reviewed 29-file source closure, preserves the dry-run operator plan, and already has separate scoped coverage-output equivalence evidence.",
+    "next_workstream": "known_template_source_closure_copy_breadth_validation"
+  },
+  "weak_points": [
+    "The closure is large and specific to the tracked PULP ITA MHA harness.",
+    "The promotion is metadata-only; it is not fresh build/run/compare evidence.",
+    "The source-file hash fixes ordered source_files but does not prove dependency inference correctness."
+  ],
+  "non_claims": [
+    "not a new execution",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation",
+    "not proof that this closure applies to arbitrary ITA or filelist targets"
+  ],
+  "next_task": "define_known_template_source_closure_copy_breadth_validation_gate"
+}

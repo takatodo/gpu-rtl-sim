@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_known_template_source_closure_copy_materialization_result_gate",
+  "status": "passed",
+  "objective": "Record materialization of a generated filelist-facing template that copies source closure from a known tracked template.",
+  "source_definition_gate": "config/scaling_gates/filelist_known_template_source_closure_copy_materialization_gate.json",
+  "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_known_template_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv --source-closure-from-template config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+  "exit_code": 0,
+  "written_paths": [
+    "overlays/generated/tests/filelist_known_template_paged_attention_kv_score_coverage_regions.json",
+    "config/slice_launch_templates/filelist_known_template_paged_attention_kv_score.json",
+    "config/scaling_gates/filelist_known_template_paged_attention_kv_score_first_hybrid_benchmark_gate.json"
+  ],
+  "stdout_lines": [
+    "write: overlays/generated/tests/filelist_known_template_paged_attention_kv_score_coverage_regions.json",
+    "write: config/slice_launch_templates/filelist_known_template_paged_attention_kv_score.json",
+    "write: config/scaling_gates/filelist_known_template_paged_attention_kv_score_first_hybrid_benchmark_gate.json"
+  ],
+  "validation": {
+    "json_payloads_parse": true,
+    "local_absolute_paths_absent": true,
+    "source_closure_status": "complete",
+    "source_closure_provenance": "copied_from_known_tracked_template",
+    "reference_template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+    "source_files_sha256": "8d2b6044d6c462d7a753d9f660c303f06628228dfe8148e3b7a1d2e9eefc7df7",
+    "source_file_count": 29,
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "makefile_target_required": false
+  },
+  "non_claims": [
+    "not build/run/compare evidence",
+    "not timing or speedup evidence",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "review_filelist_known_template_source_closure_copy_materialization_gate"
+}

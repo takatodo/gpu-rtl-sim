@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_filelist_known_template_source_closure_copy_execution_gate",
+  "status": "defined",
+  "objective": "Define the public-pack refresh boundary for the materialized known-template source-closure copy execution evidence.",
+  "source_review_gate": "config/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_execution_review_gate.json",
+  "required_public_pack_includes": [
+    "config/slice_launch_templates/filelist_known_template_paged_attention_kv_score.json",
+    "overlays/generated/tests/filelist_known_template_paged_attention_kv_score_coverage_regions.json",
+    "records/scaling_gates/filelist_known_template_source_closure_copy_gate.json",
+    "records/scaling_gates/filelist_known_template_source_closure_copy_dry_run_result_gate.json",
+    "records/scaling_gates/filelist_known_template_source_closure_copy_dry_run_review_gate.json",
+    "records/scaling_gates/filelist_known_template_source_closure_copy_materialization_gate.json",
+    "records/scaling_gates/filelist_known_template_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+    "records/scaling_gates/filelist_known_template_source_closure_copy_materialization_result_gate.json",
+    "records/scaling_gates/filelist_known_template_source_closure_copy_materialization_review_gate.json",
+    "records/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_dry_run_gate.json",
+    "records/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_dry_run_result_gate.json",
+    "records/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_dry_run_review_gate.json",
+    "records/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_execution_gate.json",
+    "records/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_execution_result_gate.json",
+    "records/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_execution_review_gate.json"
+  ],
+  "optional_public_pack_reports": [
+    "reports/filelist_known_template_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+  ],
+  "acceptance_policy": {
+    "public_pack_archive_dry_run_required": true,
+    "packaging_only": true,
+    "new_execution_allowed_by_this_gate": false,
+    "timing_claim_allowed_by_this_gate": false,
+    "speedup_claim_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "non_claims": [
+    "not new execution evidence",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "run_public_results_packaging_refresh_after_filelist_known_template_source_closure_copy_execution_gate"
+}

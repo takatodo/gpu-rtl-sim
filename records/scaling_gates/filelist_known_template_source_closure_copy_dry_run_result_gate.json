@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_known_template_source_closure_copy_dry_run_result_gate",
+  "status": "passed",
+  "objective": "Record dry-run validation for copying source closure from a reviewed tracked template.",
+  "source_definition_gate": "config/scaling_gates/filelist_known_template_source_closure_copy_gate.json",
+  "accepted_command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.demo_cov --top-module demo_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/demo/src/demo_cov_tb.sv --source-closure-from-template config/slice_launch_templates/filelist_paged_attention_kv_score.json --dry-run",
+  "accepted_result": {
+    "exit_code": 0,
+    "source_closure_status": "complete",
+    "source_closure_provenance": "copied_from_known_tracked_template",
+    "reference_template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+    "source_file_count": 29,
+    "requested_source_present_in_copied_closure": true,
+    "overlay_added_to_generated_source_files": true,
+    "automatic_dependency_inference_for_arbitrary_rtl_implemented": false
+  },
+  "refusal_cases": [
+    {
+      "case": "tracked template without complete source_closure",
+      "reference_template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+      "expected_error_contains": "source_closure.status=complete"
+    },
+    {
+      "case": "requested source missing from copied closure",
+      "expected_error_contains": "requested --source entries are not present in copied source closure"
+    }
+  ],
+  "contract_test": "python3 -m unittest tests.contract.test_hybrid_verilator_like_config_generation -q",
+  "contract_test_result": {
+    "exit_code": 0,
+    "tests_run": 10
+  },
+  "non_claims": [
+    "not automatic dependency inference for arbitrary RTL",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation",
+    "not non-dry-run execution evidence",
+    "not timing or speedup evidence"
+  ],
+  "next_task": "review_filelist_known_template_source_closure_copy_dry_run_gate"
+}

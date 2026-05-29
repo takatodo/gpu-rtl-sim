@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_copy_breadth_materialized_template_dry_run_result_gate",
+  "status": "passed",
+  "objective": "Record the dry-run command-plan result for the materialized MHA-copy source-closure template.",
+  "source_definition_gate": "config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_dry_run_gate.json",
+  "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 1x1 --dry-run",
+  "exit_code": 0,
+  "observed_plan": {
+    "command_count": 7,
+    "verilator_command_present": true,
+    "verilator_mdir": "artifacts/filelist_known_template_pulp_ita_mha_obj_dir",
+    "verilator_sources_include_copied_mha_closure": true,
+    "verilator_overlay": "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+    "generic_host_probe_builder_command": "python3 src/tools/build_host_probe.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+    "cpu_reference_repeat_states": 1,
+    "cpu_reference_repeat_eval_steps": 1,
+    "gpu_cubin_build_command": "python3 src/tools/build_vl_gpu.py artifacts/filelist_known_template_pulp_ita_mha_obj_dir --force",
+    "hybrid_run_nstates": 1,
+    "hybrid_run_steps": 1,
+    "coverage_output_equivalence_compare_command_present": true,
+    "coverage_output_gate": "records/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json",
+    "coverage_output_target": "filelist_known_template_pulp_ita_mha",
+    "compare_json_out": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+  },
+  "template_metadata": {
+    "source_closure_status": "complete",
+    "source_closure_provenance": "copied_from_known_tracked_template",
+    "reference_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "source_files_sha256": "073d53d91f23bf47eb907188096c21672b36801ed6fd7f8d218130c913322b89",
+    "source_file_count": 29
+  },
+  "non_claims": [
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "review_known_template_source_closure_copy_breadth_materialized_template_dry_run_gate"
+}

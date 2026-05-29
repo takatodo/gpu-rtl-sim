@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_known_template_source_closure_copy_materialization_gate",
+  "status": "defined",
+  "objective": "Define when a dry-run known-template source-closure copy may be materialized as tracked generated config source.",
+  "source_review_gate": "config/scaling_gates/filelist_known_template_source_closure_copy_dry_run_review_gate.json",
+  "operator_command_shape": "python3 src/tools/gen_hybrid_config.py --target <domain.target> --top-module <top> --overlay <overlay.sv> --source-closure-from-template config/slice_launch_templates/<known-complete>.json",
+  "allowed_materialized_paths": [
+    "overlays/generated/tests/<target>_coverage_regions.json",
+    "config/slice_launch_templates/<target>.json",
+    "config/scaling_gates/<gate-name>.json"
+  ],
+  "required_payload_properties": {
+    "source_closure_status": "complete",
+    "source_closure_provenance": "copied_from_known_tracked_template",
+    "reference_template_recorded": true,
+    "source_files_sha256_recorded": true,
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "makefile_target_required": false,
+    "coverage_output_equivalence_planned": true
+  },
+  "implemented_guard": {
+    "default_write_refuses_existing_source_of_truth_files": true,
+    "overwrite_requires_reviewed_gate": true,
+    "dry_run_remains_non_writing": true
+  },
+  "acceptance_policy": {
+    "materialization_must_write_only_allowed_paths": true,
+    "materialization_must_not_overwrite_existing_files": true,
+    "json_payloads_must_parse": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "non_dry_run_hybrid_execution_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "non_claims": [
+    "not build/run/compare evidence",
+    "not timing or speedup evidence",
+    "not arbitrary RTL dependency inference",
+    "not arbitrary RTL support",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "run_filelist_known_template_source_closure_copy_materialization_gate"
+}

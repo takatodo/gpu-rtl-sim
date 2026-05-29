@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_materialized_template_execution_review_gate",
+  "status": "accepted_filelist_materialized_template_execution",
+  "objective": "Review and accept the first non-dry-run execution of the materialized filelist-derived template.",
+  "source_definition_gate": "config/scaling_gates/filelist_materialized_template_execution_gate.json",
+  "source_result_gate": "config/scaling_gates/filelist_materialized_template_execution_result_gate.json",
+  "current_priority": "define_public_results_packaging_refresh_after_filelist_materialized_template_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "After repairing the generated template source closure, the selected non-dry-run command completed Verilator build, generic host-probe build, CPU and hybrid state generation, GPU cubin build, and coverage-output compare with mismatch count 0.",
+    "accepted_scope": "filelist_paged_attention_kv_score 1x1 materialized-template execution",
+    "known_weaknesses": [
+      "the first execution attempt exposed an incomplete generated source list",
+      "the accepted result depends on an explicit source closure rather than automatic dependency inference",
+      "raw strict final-state equality remains false due to Verilator-internal diagnostic fields",
+      "the target is a derived materialized-template target and does not replace pulp_paged_attention_kv_score",
+      "arbitrary RTL, native Verilator option support, and optimal GPU allocation remain unimplemented"
+    ]
+  },
+  "accepted_result": {
+    "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 1x1",
+    "compare_report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_mismatch_count": 0,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "raw_strict_final_state_match": false,
+    "normalized_final_state_equivalence": true
+  },
+  "required_next_gate": {
+    "name": "define_public_results_packaging_refresh_after_filelist_materialized_template_execution_gate",
+    "must_pin": [
+      "materialized template execution result is included as scoped public-pack evidence",
+      "source closure weakness remains explicit",
+      "generated reports and artifacts remain non-canonical",
+      "raw full-state equality remains non-required",
+      "timing, speedup, arbitrary RTL, optimal GPU allocation, and native Verilator support remain non-claims"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "coverage_output_equivalence_passed": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_public_results_packaging_refresh_after_filelist_materialized_template_execution_gate",
+  "non_claims": [
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not universal target support",
+    "not replacement of pulp_paged_attention_kv_score"
+  ]
+}

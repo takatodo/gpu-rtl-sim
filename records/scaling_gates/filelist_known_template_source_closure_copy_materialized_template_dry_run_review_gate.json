@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_known_template_source_closure_copy_materialized_template_dry_run_review_gate",
+  "status": "accepted",
+  "objective": "Review the materialized known-template source-closure copy template dry-run plan.",
+  "source_result_gate": "config/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_dry_run_result_gate.json",
+  "accepted": {
+    "dry_run_exited_zero": true,
+    "seven_stage_command_plan_present": true,
+    "generic_host_probe_builder_preserved": true,
+    "coverage_output_equivalence_compare_preserved": true,
+    "copied_source_closure_metadata_preserved": true,
+    "no_execution_claim_added": true
+  },
+  "weakest_remaining_point": "The materialized copied-closure template now has a reviewed dry-run plan, but it has not yet been run through real build/run/compare.",
+  "non_claims": [
+    "not build/run/compare evidence",
+    "not timing or speedup evidence",
+    "not arbitrary RTL dependency inference",
+    "not arbitrary RTL execution",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "define_filelist_known_template_source_closure_copy_materialized_template_execution_gate"
+}

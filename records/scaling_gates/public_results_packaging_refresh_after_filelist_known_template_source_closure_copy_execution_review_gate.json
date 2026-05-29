@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_filelist_known_template_source_closure_copy_execution_review_gate",
+  "status": "accepted",
+  "objective": "Review the public-pack refresh for known-template source-closure copy execution evidence.",
+  "source_result_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_known_template_source_closure_copy_execution_result_gate.json",
+  "accepted": {
+    "known_template_copy_gate_chain_included": true,
+    "materialized_template_included": true,
+    "materialized_coverage_manifest_included": true,
+    "first_benchmark_gate_included": true,
+    "execution_definition_result_review_gates_included": true,
+    "optional_compare_report_included": true,
+    "packaging_only": true
+  },
+  "weakest_remaining_point": "The public-pack refresh is accepted, but the known-template source-closure copy execution chain still needs an explicit externalization completion gate before selecting the next measurement/workflow.",
+  "non_claims": [
+    "not new execution evidence",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "define_public_benchmark_pack_externalization_completion_after_filelist_known_template_source_closure_copy_execution_gate"
+}

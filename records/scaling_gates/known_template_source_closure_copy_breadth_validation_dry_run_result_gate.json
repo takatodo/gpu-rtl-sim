@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_copy_breadth_validation_dry_run_result_gate",
+  "status": "passed",
+  "objective": "Record the dry-run breadth validation results for copied complete source closures.",
+  "source_definition_gate": "config/scaling_gates/known_template_source_closure_copy_breadth_validation_gate.json",
+  "accepted_results": [
+    {
+      "case": "copied_paged_attention_lineage_regression",
+      "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_known_template_paged_attention_kv_score --top-module pulp_paged_attention_kv_score_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_paged_attention_kv_score_gpu_cov_tb.sv --source-closure-from-template config/slice_launch_templates/filelist_paged_attention_kv_score.json --gate-name filelist_known_template_paged_attention_kv_score_first_hybrid_benchmark_gate --dry-run",
+      "exit_code": 0,
+      "target": "PULP_ITA.filelist_known_template_paged_attention_kv_score",
+      "top_module": "pulp_paged_attention_kv_score_gpu_cov_tb",
+      "source_closure_status": "complete",
+      "source_closure_provenance": "copied_from_known_tracked_template",
+      "reference_template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "source_files_sha256": "8d2b6044d6c462d7a753d9f660c303f06628228dfe8148e3b7a1d2e9eefc7df7",
+      "host_probe_builder": "src/tools/build_host_probe.py",
+      "compare_policy_planned": "coverage_output_equivalence"
+    },
+    {
+      "case": "independent_pulp_ita_mha_reference_copy",
+      "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_known_template_pulp_ita_mha --top-module pulp_ita_mha_gpu_cov_tb --source third_party/ITA/src/ita.sv --overlay overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv --source-closure-from-template config/slice_launch_templates/pulp_ita_mha.json --gate-name filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate --dry-run",
+      "exit_code": 0,
+      "target": "PULP_ITA.filelist_known_template_pulp_ita_mha",
+      "top_module": "pulp_ita_mha_gpu_cov_tb",
+      "source_closure_status": "complete",
+      "source_closure_provenance": "copied_from_known_tracked_template",
+      "reference_template": "config/slice_launch_templates/pulp_ita_mha.json",
+      "source_files_sha256": "073d53d91f23bf47eb907188096c21672b36801ed6fd7f8d218130c913322b89",
+      "host_probe_builder": "src/tools/build_host_probe.py",
+      "compare_policy_planned": "coverage_output_equivalence"
+    }
+  ],
+  "refusal_result": {
+    "case": "requested_source_absent_from_copied_closure",
+    "command": "python3 src/tools/gen_hybrid_config.py --target PULP_ITA.filelist_known_template_pulp_ita_mha_bad_source --top-module pulp_ita_mha_gpu_cov_tb --source third_party/ITA/src/not_in_closure.sv --overlay overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv --source-closure-from-template config/slice_launch_templates/pulp_ita_mha.json --dry-run",
+    "exit_code": 1,
+    "expected_exit_code": 1,
+    "error_excerpt": "requested --source entries are not present in copied source closure from config/slice_launch_templates/pulp_ita_mha.json: third_party/ITA/src/not_in_closure.sv"
+  },
+  "dry_run_write_check": {
+    "source_tree_changed_by_commands": false,
+    "reports_or_artifacts_required": false
+  },
+  "non_claims": [
+    "not a new execution",
+    "not materialized generated source",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation",
+    "not proof that copied closures apply to arbitrary targets"
+  ],
+  "next_task": "review_known_template_source_closure_copy_breadth_validation_dry_run_gate"
+}

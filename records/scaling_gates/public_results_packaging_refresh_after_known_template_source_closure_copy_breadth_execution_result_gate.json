@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_result_gate",
+  "status": "passed",
+  "objective": "Record the public-pack dry-run result for the accepted materialized MHA-copy execution evidence.",
+  "source_definition_gate": "config/scaling_gates/public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_gate.json",
+  "command": "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+  "exit_code": 0,
+  "observed_public_pack_includes": {
+    "accepted_execution_definition_gate": "records/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_gate.json",
+    "accepted_execution_result_gate": "records/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_result_gate.json",
+    "accepted_execution_review_gate": "records/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_review_gate.json",
+    "next_selection_gate": "records/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_execution_review_gate.json",
+    "public_refresh_definition_gate": "records/scaling_gates/public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_gate.json",
+    "materialized_template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+    "coverage_manifest": "overlays/generated/tests/filelist_known_template_pulp_ita_mha_coverage_regions.json",
+    "first_benchmark_gate": "records/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json",
+    "generator_helper": "src/tools/hybrid_config_generator.py",
+    "optional_compare_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+  },
+  "acceptance_policy": {
+    "public_pack_archive_dry_run_exited_zero": true,
+    "required_records_included": true,
+    "required_sources_included": true,
+    "optional_compare_report_included_when_present": true,
+    "archive_created": false,
+    "packaging_only": true,
+    "new_execution_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "shape_breadth_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false
+  },
+  "non_claims": [
+    "not new execution evidence",
+    "not timing or speedup evidence",
+    "not shape breadth evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation",
+    "not proof that source-closure copy applies to arbitrary filelists or arbitrary ITA targets"
+  ],
+  "next_task": "review_public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_gate"
+}

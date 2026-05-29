@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_source_closure_non_dry_run_refusal_gate",
+  "status": "defined_filelist_source_closure_non_dry_run_refusal",
+  "objective": "Define the minimal refusal boundary for filelist-derived templates with known incomplete source closure before non-dry-run execution.",
+  "source_review_gate": "config/scaling_gates/filelist_source_closure_dependency_policy_dry_run_review_gate.json",
+  "current_priority": "run_filelist_source_closure_non_dry_run_refusal_gate",
+  "refusal_boundary": {
+    "refusal_point": "run_hybrid_template.py before the first non-dry-run subprocess and before Verilator",
+    "dry_run_behavior": "allowed_as_plan_only",
+    "non_dry_run_refused_status_values": [
+      "incomplete",
+      "refused"
+    ],
+    "unknown_status_behavior": "risk_metadata_only; not treated as complete evidence; not refused by this compatibility-preserving gate",
+    "complete_status_behavior": "allowed_by_this_guard",
+    "materialization_refusal_required_by_this_gate": false
+  },
+  "implementation_scope": {
+    "reusable_helper": "src/tools/hybrid_template_runner.py::validate_source_closure_for_execution",
+    "cli_call_site": "src/tools/run_hybrid_template.py",
+    "plan_metadata": "HybridTemplatePlan.source_closure",
+    "template_metadata_field": "source_closure",
+    "runtime_or_abi_change_allowed": false
+  },
+  "required_result_gate": {
+    "name": "filelist_source_closure_non_dry_run_refusal_result_gate",
+    "must_validate": [
+      "source_closure.status=incomplete exits nonzero before Verilator",
+      "dry-run remains allowed for the same incomplete template as plan-only evidence",
+      "error text includes source_closure.status and missing required sources",
+      "existing complete filelist template remains loadable",
+      "unknown or missing source_closure is not promoted to complete evidence",
+      "runtime and ABI remain unchanged"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_source_closure_non_dry_run_refusal_gate",
+  "non_claims": [
+    "not automatic dependency inference for arbitrary RTL",
+    "not arbitrary RTL support",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation",
+    "not build/run/compare correctness evidence",
+    "not timing or speedup evidence",
+    "not proof that unknown source closure is complete"
+  ]
+}

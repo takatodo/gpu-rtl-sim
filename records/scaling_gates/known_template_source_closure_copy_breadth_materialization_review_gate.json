@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_copy_breadth_materialization_review_gate",
+  "status": "accepted",
+  "objective": "Review and accept the tracked-source materialization result for the copied source-closure breadth boundary.",
+  "source_result_gate": "config/scaling_gates/known_template_source_closure_copy_breadth_materialization_result_gate.json",
+  "accepted_scope": {
+    "evidence_type": "materialized_source_evidence",
+    "accepted_written_file_count": 3,
+    "accepted_overwrite_refusal_count": 1,
+    "execution_accepted": false,
+    "timing_accepted": false
+  },
+  "review_checks": {
+    "paged_attention_existing_outputs_refused_overwrite": true,
+    "mha_copy_materialization_exit_zero": true,
+    "mha_copy_wrote_exactly_three_files": true,
+    "materialized_files_are_valid_json": true,
+    "template_has_complete_copied_source_closure": true,
+    "template_records_expected_reference_template": true,
+    "template_records_expected_source_files_sha256": true,
+    "template_uses_build_host_probe": true,
+    "no_reports_or_artifacts_written": true,
+    "no_local_absolute_paths": true
+  },
+  "decision": {
+    "accepted": true,
+    "reason": "The materialization boundary wrote only the allowed MHA-copy source files, preserved the reviewed copied source-closure metadata, and refused to overwrite the existing paged-attention copied-lineage source files.",
+    "next_workstream": "known_template_source_closure_copy_breadth_materialized_template_dry_run"
+  },
+  "weak_points": [
+    "Materialization is source evidence only and does not prove command-plan, Verilator build, or CPU-vs-hybrid correctness.",
+    "The paged-attention side contributes overwrite-refusal evidence rather than new materialized breadth.",
+    "The copied PULP ITA MHA closure is specific to the reviewed reference and is not arbitrary dependency inference."
+  ],
+  "non_claims": [
+    "not a new execution",
+    "not Verilator build success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation",
+    "not proof that copied closures apply to arbitrary targets"
+  ],
+  "next_task": "define_known_template_source_closure_copy_breadth_materialized_template_dry_run_gate"
+}

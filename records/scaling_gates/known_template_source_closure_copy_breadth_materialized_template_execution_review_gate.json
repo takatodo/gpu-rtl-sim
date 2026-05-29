@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "gate": "known_template_source_closure_copy_breadth_materialized_template_execution_review_gate",
+  "status": "accepted",
+  "objective": "Review non-dry-run execution for the materialized MHA-copy source-closure template.",
+  "source_definition_gate": "config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_gate.json",
+  "source_result_gate": "config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_result_gate.json",
+  "accepted": {
+    "non_dry_run_exited_zero": true,
+    "verilator_args_repair_accepted": true,
+    "coverage_output_equivalence_passed": true,
+    "coverage_output_mismatch_count_zero": true,
+    "coverage_output_compared_word_count": 29,
+    "coverage_output_compared_byte_count": 116,
+    "raw_full_state_equality_not_claimed": true,
+    "timing_and_speedup_not_claimed": true,
+    "shape_breadth_not_claimed": true
+  },
+  "review_decision": {
+    "accepted": true,
+    "reason": "The selected materialized MHA-copy non-dry-run command completed build/run/compare and passed the selected coverage_output_equivalence policy with mismatch count 0. The required repair, inheriting the reference MHA Verilator args, is accepted as part of the copied-template generation policy because source closure alone was insufficient for a reproducible build.",
+    "accepted_scope": "filelist_known_template_pulp_ita_mha 1x1 materialized-template execution",
+    "known_weaknesses": [
+      "the first execution attempt exposed missing copied-template Verilator args",
+      "success depends on a copied reference-specific source closure and Verilator args rather than arbitrary dependency inference",
+      "raw strict final-state equality remains false due to Verilator-internal diagnostic fields",
+      "the selected shape is only 1x1 and does not validate shape breadth",
+      "timing, speedup, native Verilator option support, and automatic optimal GPU allocation remain unimplemented"
+    ]
+  },
+  "accepted_result": {
+    "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 1x1",
+    "compare_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_mismatch_count": 0,
+    "compared_word_count": 29,
+    "compared_byte_count": 116,
+    "raw_strict_final_state_match": false,
+    "normalized_final_state_equivalence": true
+  },
+  "required_next_gate": {
+    "name": "define_public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_gate",
+    "must_pin": [
+      "materialized MHA-copy execution result is included as scoped public-pack evidence",
+      "copied reference Verilator args are included as source-template metadata required for reproducible execution",
+      "generated reports and artifacts remain non-canonical",
+      "raw full-state equality remains non-required",
+      "timing, speedup, shape breadth, arbitrary RTL dependency inference, optimal GPU allocation, and native Verilator support remain non-claims"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "coverage_output_equivalence_passed": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "shape_breadth_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false
+  },
+  "non_claims": [
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not shape breadth evidence",
+    "not arbitrary RTL dependency inference",
+    "not arbitrary RTL execution beyond the selected materialized template",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation"
+  ],
+  "next_task": "define_public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_gate"
+}

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_gate",
+  "status": "defined",
+  "objective": "Define the public-pack refresh boundary for the accepted materialized MHA-copy execution evidence.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_execution_review_gate.json",
+  "source_execution_review_gate": "config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_review_gate.json",
+  "refresh_scope": {
+    "docs_results": "docs/results.md",
+    "public_manifest": [
+      "src/tools/results_reproduction_manifest.py",
+      "src/tools/results_reproduction_manifest_sources.py"
+    ],
+    "included_records": [
+      "records/scaling_gates/known_template_source_closure_reference_inventory_gate.json",
+      "records/scaling_gates/known_template_source_closure_reference_inventory_result_gate.json",
+      "records/scaling_gates/known_template_source_closure_reference_inventory_review_gate.json",
+      "records/scaling_gates/next_measurement_selection_after_known_template_source_closure_reference_inventory_gate.json",
+      "records/scaling_gates/known_template_source_closure_independent_reference_promotion_gate.json",
+      "records/scaling_gates/known_template_source_closure_independent_reference_promotion_result_gate.json",
+      "records/scaling_gates/known_template_source_closure_independent_reference_promotion_review_gate.json",
+      "records/scaling_gates/next_measurement_selection_after_known_template_source_closure_independent_reference_promotion_review_gate.json",
+      "records/scaling_gates/known_template_source_closure_copy_breadth_validation_gate.json",
+      "records/scaling_gates/known_template_source_closure_copy_breadth_validation_dry_run_result_gate.json",
+      "records/scaling_gates/known_template_source_closure_copy_breadth_validation_dry_run_review_gate.json",
+      "records/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_validation_dry_run_review_gate.json",
+      "records/scaling_gates/known_template_source_closure_copy_breadth_materialization_gate.json",
+      "records/scaling_gates/known_template_source_closure_copy_breadth_materialization_result_gate.json",
+      "records/scaling_gates/known_template_source_closure_copy_breadth_materialization_review_gate.json",
+      "records/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_materialization_review_gate.json",
+      "records/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_dry_run_gate.json",
+      "records/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_dry_run_result_gate.json",
+      "records/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_dry_run_review_gate.json",
+      "records/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_materialized_template_dry_run_review_gate.json",
+      "records/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_gate.json",
+      "records/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_result_gate.json",
+      "records/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_review_gate.json",
+      "records/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_execution_review_gate.json",
+      "records/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json"
+    ],
+    "included_sources": [
+      "src/tools/gen_hybrid_config.py",
+      "src/tools/hybrid_config_generator.py",
+      "src/tools/hybrid_config_benchmark.py",
+      "src/tools/hybrid_config_spec.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+      "overlays/generated/tests/filelist_known_template_pulp_ita_mha_coverage_regions.json"
+    ],
+    "included_optional_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "public_pack_archive_dry_run_required": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "shape_breadth_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_gate",
+  "non_claims": [
+    "not new execution evidence",
+    "not timing or speedup evidence",
+    "not shape breadth evidence",
+    "not raw full-state equality",
+    "not arbitrary RTL dependency inference",
+    "not native Verilator option support",
+    "not automatic optimal GPU allocation"
+  ]
+}

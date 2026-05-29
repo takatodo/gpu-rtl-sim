@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_filelist_known_template_source_closure_copy_execution_public_pack_refresh_gate",
+  "status": "selected_known_template_source_closure_reference_inventory_gate",
+  "objective": "Select the next workstream after closing known-template source-closure copy execution public-pack externalization.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_known_template_source_closure_copy_execution_gate.json",
+  "current_priority": "define_known_template_source_closure_reference_inventory_gate",
+  "selection": {
+    "selected_next_task": "define_known_template_source_closure_reference_inventory_gate",
+    "selected_workstream": "known_template_source_closure_reference_inventory",
+    "reason": "The copied-closure operator flow now works for one selected materialized template, but only the paged-attention filelist templates currently declare complete source_closure metadata. Before breadth validation, the project needs a reviewed inventory of which tracked templates can be used as complete source-closure references.",
+    "stage": "definition",
+    "primary_operator_gap": "avoid presenting one copied-closure example as a general solution before the complete-reference inventory is explicit"
+  },
+  "must_define_next": [
+    "the tracked templates that currently declare source_closure.status=complete",
+    "which complete references are independent versus copied derivatives",
+    "the minimum metadata required before a tracked template may become a source-closure reference",
+    "whether the next validation should promote another reference template or run breadth only after another independent complete reference exists"
+  ],
+  "deferred_candidates": [
+    "known-template copy breadth validation",
+    "materialized known-template execution shape breadth",
+    "closer direct Verilator-like operator surface",
+    "native Verilator option integration",
+    "automatic dependency inference for arbitrary RTL",
+    "automatic optimal GPU allocation"
+  ],
+  "acceptance_policy": {
+    "selection_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed": false,
+    "automatic_optimal_gpu_allocation_claim_allowed": false,
+    "verilator_native_option_claim_allowed": false
+  },
+  "non_claims": [
+    "not a new measurement",
+    "not automatic dependency inference for arbitrary RTL",
+    "not arbitrary RTL support",
+    "not a Verilator-native option implementation",
+    "not automatic optimal GPU allocation",
+    "not timing or speedup evidence",
+    "not proof that one copied reference generalizes to multiple target families"
+  ],
+  "next_task": "define_known_template_source_closure_reference_inventory_gate"
+}

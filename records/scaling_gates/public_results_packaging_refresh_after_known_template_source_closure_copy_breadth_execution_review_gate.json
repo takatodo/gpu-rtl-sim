@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_review_gate",
+  "status": "accepted_public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution",
+  "objective": "Review and accept the public-pack refresh dry-run after the known-template source-closure copy breadth execution result.",
+  "source_definition_gate": "config/scaling_gates/public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_gate.json",
+  "source_result_gate": "config/scaling_gates/public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_result_gate.json",
+  "current_priority": "define_public_benchmark_pack_externalization_completion_after_known_template_source_closure_copy_breadth_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The public-pack archive dry-run exits 0 and includes the accepted MHA-copy execution gate/result/review records, the materialized filelist_known_template_pulp_ita_mha template, the generated coverage manifest, the first benchmark gate, the generator helper source, and the optional compare report when present.",
+    "accepted_scope": "packaging refresh evidence for known-template source-closure copy breadth execution",
+    "known_weaknesses": [
+      "the result is a packaging dry-run and creates no archive",
+      "the included execution evidence remains the existing 1x1 MHA-copy run",
+      "reports and artifacts remain optional generated evidence, not source of truth",
+      "arbitrary RTL, native Verilator option support, timing, speedup, and automatic optimal GPU allocation remain unclaimed"
+    ]
+  },
+  "required_next_gate": {
+    "name": "define_public_benchmark_pack_externalization_completion_after_known_template_source_closure_copy_breadth_execution_gate",
+    "must_pin": [
+      "public pack completion boundary after this refresh",
+      "all required manifest paths are tracked or explicitly optional generated reports",
+      "the packaging-only scope and non-claims remain visible",
+      "generated reports and artifacts remain non-canonical"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "verilator_native_option_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_public_benchmark_pack_externalization_completion_after_known_template_source_closure_copy_breadth_execution_gate",
+  "non_claims": [
+    "not new execution evidence",
+    "not arbitrary RTL support",
+    "not raw filelist-only support",
+    "not automatic optimal GPU allocation",
+    "not a Verilator-native option implementation",
+    "not timing or speedup evidence"
+  ]
+}
