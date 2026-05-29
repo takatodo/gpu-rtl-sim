@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_repeat_median_measurement_gate",
+  "objective": "Measure repeat-median timing for the accepted filelist-derived shape-breadth four-shape set.",
+  "status": "measured_filelist_shape_breadth_repeat_median",
+  "source_boundary_gate": "config/scaling_gates/define_filelist_shape_breadth_repeat_median_timing_gate.json",
+  "source_workflow_gate": "config/scaling_gates/filelist_shape_breadth_repeat_median_workflow_gate.json",
+  "command": "python3 src/tools/run_results_reproduction.py --filelist-shape-breadth-repeat-median 3",
+  "dry_run_command": "python3 src/tools/run_results_reproduction.py --filelist-shape-breadth-repeat-median 3 --dry-run",
+  "summary_report": "reports/filelist_shape_breadth_repeat_median_summary.json",
+  "repeat_count": 3,
+  "current_priority": "review_filelist_shape_breadth_repeat_median_timing",
+  "measurement_scope": {
+    "shape_count": 4,
+    "total_sample_count": 12,
+    "correctness_policy": "coverage_output_equivalence",
+    "all_samples_exited_zero": true,
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "runtime_or_abi_change_allowed": false,
+    "new_workload_allowed": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "measured_result": {
+    "summary_report": "reports/filelist_shape_breadth_repeat_median_summary.json",
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "reports": [
+      "reports/filelist_shape_breadth_repeat_filelist_paged_attention_kv_score_32x1_median.json",
+      "reports/filelist_shape_breadth_repeat_filelist_paged_attention_kv_score_1x32_median.json",
+      "reports/filelist_shape_breadth_repeat_filelist_known_template_pulp_ita_mha_32x1_median.json",
+      "reports/filelist_shape_breadth_repeat_filelist_known_template_pulp_ita_mha_1x32_median.json"
+    ],
+    "workloads": [
+      {
+        "name": "filelist_paged_attention_kv_score_32x1",
+        "target": "filelist_paged_attention_kv_score",
+        "shape": "32x1",
+        "nstates": 32,
+        "steps": 1,
+        "interpretation": "state_parallel_attention_score",
+        "cpu_elapsed_ms_median": 76.6105,
+        "hybrid_wall_ms_median": 1.113,
+        "hybrid_gpu_kernel_total_ms_median": 1.101824,
+        "cpu_to_hybrid_wall_ratio_median": 68.83243486073675,
+        "cpu_to_hybrid_kernel_ratio_median": 69.53061468982342,
+        "cpu_ms_per_state_step_median": 2.394078125,
+        "hybrid_wall_ms_per_state_step_median": 0.03478125,
+        "hybrid_kernel_ms_per_state_step_median": 0.034432,
+        "coverage_output_mismatch_count": 0
+      },
+      {
+        "name": "filelist_paged_attention_kv_score_1x32",
+        "target": "filelist_paged_attention_kv_score",
+        "shape": "1x32",
+        "nstates": 1,
+        "steps": 32,
+        "interpretation": "single_state_repeated_attention_score",
+        "cpu_elapsed_ms_median": 2.89261,
+        "hybrid_wall_ms_median": 1.081,
+        "hybrid_gpu_kernel_total_ms_median": 1.07008,
+        "cpu_to_hybrid_wall_ratio_median": 2.67586493987049,
+        "cpu_to_hybrid_kernel_ratio_median": 2.703171725478469,
+        "cpu_ms_per_state_step_median": 0.0903940625,
+        "hybrid_wall_ms_per_state_step_median": 0.03378125,
+        "hybrid_kernel_ms_per_state_step_median": 0.03344,
+        "coverage_output_mismatch_count": 0
+      },
+      {
+        "name": "filelist_known_template_pulp_ita_mha_32x1",
+        "target": "filelist_known_template_pulp_ita_mha",
+        "shape": "32x1",
+        "nstates": 32,
+        "steps": 1,
+        "interpretation": "state_parallel_full_ita_mha",
+        "cpu_elapsed_ms_median": 69.0012,
+        "hybrid_wall_ms_median": 0.907,
+        "hybrid_gpu_kernel_total_ms_median": 0.873472,
+        "cpu_to_hybrid_wall_ratio_median": 76.07629547960308,
+        "cpu_to_hybrid_kernel_ratio_median": 78.9964646834701,
+        "cpu_ms_per_state_step_median": 2.1562875,
+        "hybrid_wall_ms_per_state_step_median": 0.02834375,
+        "hybrid_kernel_ms_per_state_step_median": 0.027296,
+        "coverage_output_mismatch_count": 0
+      },
+      {
+        "name": "filelist_known_template_pulp_ita_mha_1x32",
+        "target": "filelist_known_template_pulp_ita_mha",
+        "shape": "1x32",
+        "nstates": 1,
+        "steps": 32,
+        "interpretation": "single_state_repeated_full_ita_mha",
+        "cpu_elapsed_ms_median": 8.29498,
+        "hybrid_wall_ms_median": 1.237,
+        "hybrid_gpu_kernel_total_ms_median": 1.185792,
+        "cpu_to_hybrid_wall_ratio_median": 6.705723524656427,
+        "cpu_to_hybrid_kernel_ratio_median": 6.995307777417962,
+        "cpu_ms_per_state_step_median": 0.259218125,
+        "hybrid_wall_ms_per_state_step_median": 0.03865625,
+        "hybrid_kernel_ms_per_state_step_median": 0.037056,
+        "coverage_output_mismatch_count": 0
+      }
+    ],
+    "summary": {
+      "state_parallel_wall_ratio_range_median": [
+        68.83243486073675,
+        76.07629547960308
+      ],
+      "single_state_repeated_wall_ratio_range_median": [
+        2.67586493987049,
+        6.705723524656427
+      ],
+      "interpretation": "For these exact filelist-derived templates, the repeat-median result preserves the earlier trend: state-parallel 32x1 remains more favorable than single-state repeated-step 1x32."
+    }
+  },
+  "acceptance_policy": {
+    "coverage_output_equivalence_required": true,
+    "all_samples_must_pass_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "broad_speedup_claim_allowed_by_this_gate": false,
+    "native_verilator_option_claim_allowed_by_this_gate": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_this_gate": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "review_gate_required": true
+  },
+  "next_task": "review_filelist_shape_breadth_repeat_median_timing",
+  "non_claims": [
+    "not broad speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not production LLM-serving throughput",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

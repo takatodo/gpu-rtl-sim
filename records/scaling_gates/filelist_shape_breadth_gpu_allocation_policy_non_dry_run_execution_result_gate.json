@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_result_gate",
+  "status": "passed_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution",
+  "objective": "Record non-dry-run build/run/compare execution for the two reviewed filelist-derived targets selected by the scoped GPU allocation policy.",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate.json",
+  "current_priority": "review_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+  "executed_scope": {
+    "name": "two_policy_selected_filelist_templates_32x1_build_run_compare",
+    "command_count": 2,
+    "shape": "32x1",
+    "templates": [
+      "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json"
+    ],
+    "targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ]
+  },
+  "executed_commands": [
+    {
+      "target": "filelist_paged_attention_kv_score",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 32x1",
+      "exit_code": 0,
+      "expected_compare_report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_32x1_coverage_output_compare.json"
+    },
+    {
+      "target": "filelist_known_template_pulp_ita_mha",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 32x1",
+      "exit_code": 0,
+      "expected_compare_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json"
+    }
+  ],
+  "execution_result": {
+    "all_commands_exited_zero": true,
+    "all_expected_reports_present": true,
+    "all_selected_acceptance_policy_is_coverage_output_equivalence": true,
+    "all_selected_acceptance_policies_passed": true,
+    "all_compare_reports_passed_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "compared_state_pair_count": 32,
+    "compared_word_count_per_report": 928,
+    "compared_byte_count_per_report": 3712,
+    "raw_full_state_equality_required": false,
+    "raw_full_state_all_matched": false,
+    "raw_full_state_match_count": 0,
+    "normalized_final_state_all_passed": true,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "reports": [
+    {
+      "target": "filelist_paged_attention_kv_score",
+      "shape": "32x1",
+      "report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "selected_acceptance_policy": "coverage_output_equivalence",
+      "selected_acceptance_policy_passed": true,
+      "coverage_output_policy_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "strict_output_word_count_per_state": 29,
+      "strict_output_byte_count_per_state": 116,
+      "compared_state_pair_count": 32,
+      "compared_word_count": 928,
+      "compared_byte_count": 3712,
+      "raw_match": false,
+      "raw_mismatch_count": 1392,
+      "normalized_final_state_equivalence": true
+    },
+    {
+      "target": "filelist_known_template_pulp_ita_mha",
+      "shape": "32x1",
+      "report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "selected_acceptance_policy": "coverage_output_equivalence",
+      "selected_acceptance_policy_passed": true,
+      "coverage_output_policy_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "strict_output_word_count_per_state": 29,
+      "strict_output_byte_count_per_state": 116,
+      "compared_state_pair_count": 32,
+      "compared_word_count": 928,
+      "compared_byte_count": 3712,
+      "raw_match": false,
+      "raw_mismatch_count": 1178,
+      "normalized_final_state_equivalence": true
+    }
+  ],
+  "acceptance_policy": {
+    "command_exit_zero_required": true,
+    "expected_compare_reports_required": true,
+    "coverage_output_equivalence_required": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+  "non_claims": [
+    "not timing or speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "gate": "public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_repeat_median_gate",
+  "status": "complete_public_benchmark_pack_externalization_after_filelist_shape_breadth_repeat_median",
+  "objective": "Close the public benchmark pack externalization boundary after the filelist-derived shape-breadth repeat-median timing refresh.",
+  "completed_priority": "define_public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_repeat_median_gate",
+  "source_refresh_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median_gate.json",
+  "source_refresh_result_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median_result_gate.json",
+  "source_refresh_review_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median_review_gate.json",
+  "source_measurement_gate": "config/scaling_gates/filelist_shape_breadth_repeat_median_measurement_gate.json",
+  "source_measurement_review_gate": "config/scaling_gates/filelist_shape_breadth_repeat_median_review_gate.json",
+  "decision": {
+    "externalization_boundary_complete": true,
+    "reason": "The public-pack dry-run and review include the scoped filelist-derived shape-breadth repeat-median boundary, workflow, measurement, review, public refresh records, source-of-truth docs, compact selection pointers, and generated repeat-median report paths while keeping reports and artifacts non-canonical."
+  },
+  "closed_scope": {
+    "targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "shapes": [
+      "32x1",
+      "1x32"
+    ],
+    "shape_count": 4,
+    "repeat_count": 3,
+    "total_sample_count": 12,
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "max_coverage_output_mismatch_count": 0,
+    "state_parallel_wall_ratio_range_median": [
+      68.83243486073675,
+      76.07629547960308
+    ],
+    "single_state_repeated_wall_ratio_range_median": [
+      2.67586493987049,
+      6.705723524656427
+    ],
+    "summary_report": "reports/filelist_shape_breadth_repeat_median_summary.json",
+    "public_pack_refresh_review": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median_review_gate.json"
+  },
+  "acceptance_policy": {
+    "completion_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "raw_full_state_equality_required": false,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "select_next_measurement_after_filelist_shape_breadth_repeat_median_public_pack_refresh",
+  "candidate_next_measurement_options": [
+    "automatic_gpu_allocation_policy",
+    "broader_filelist_shape_sweep",
+    "native_verilator_option_prototype_boundary",
+    "filelist_dependency_inference_policy",
+    "resident_execution_optimization"
+  ],
+  "non_claims": [
+    "not a new measurement result",
+    "not a new workload",
+    "not broad speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not production LLM-serving throughput",
+    "not model-level Transformer inference",
+    "not raw full-state equality",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

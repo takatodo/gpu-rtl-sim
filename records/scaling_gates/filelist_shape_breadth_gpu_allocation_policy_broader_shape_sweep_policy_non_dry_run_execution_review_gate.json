@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_review_gate",
+  "status": "accepted_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution",
+  "objective": "Review and accept the two-command broader policy-selected filelist non-dry-run execution result.",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_gate.json",
+  "source_result_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_result_gate.json",
+  "current_priority": "define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "Both policy-recommended 64x1 non-dry-run build/run/compare commands exited 0, wrote the expected compare reports, and passed coverage_output_equivalence with mismatch count 0.",
+    "accepted_scope": "two policy-selected 64x1 build/run/compare commands for two reviewed filelist-derived targets",
+    "strongest_claim": "The accepted broader filelist GPU allocation policy can be applied to the two reviewed targets at 64x1 while preserving coverage-output equivalence.",
+    "weakest_point": "The result follows an existing static policy and two reviewed targets only; the 64x1 report shape already existed in earlier broader shape evidence, and this review does not prove timing, automatic allocation, arbitrary RTL support, raw full-state equality, or a new workload."
+  },
+  "accepted_result": {
+    "command_count": 2,
+    "targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "shape": "64x1",
+    "fallback_shape": "32x1",
+    "fallback_executed": false,
+    "all_commands_exited_zero": true,
+    "all_reports_written": true,
+    "all_coverage_output_equivalence_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "compared_state_pair_count_per_report": 64,
+    "compared_word_count_per_report": 1856,
+    "compared_byte_count_per_report": 7424,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "raw_full_state_all_matched": false,
+    "normalized_final_state_all_passed": true
+  },
+  "required_next_gate": {
+    "name": "define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_gate",
+    "must_pin": [
+      "the accepted result and review gates",
+      "the two generated 64x1 compare reports as generated evidence",
+      "coverage_output_equivalence mismatch count 0",
+      "the 32x1 fallback remains recorded but was not executed by this gate",
+      "raw full-state equality remains non-required and false",
+      "timing, broad speedup, repeat-median, GEM comparison, native Verilator option support, arbitrary RTL, runtime/ABI, production serving, and automatic optimal allocation remain non-claims"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "fresh_timing_claim_allowed_by_gate_alone": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "repeat_median_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_gate",
+  "non_claims": [
+    "not new execution beyond the accepted two commands",
+    "not timing or speedup evidence",
+    "not repeat-median evidence",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "not a new workload or new target family",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

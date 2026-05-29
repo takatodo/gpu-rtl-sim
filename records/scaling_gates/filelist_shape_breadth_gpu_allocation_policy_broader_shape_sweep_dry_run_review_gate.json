@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_dry_run_review_gate",
+  "status": "accepted_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_dry_run",
+  "objective": "Review and accept dry-run command-plan validation for the broader filelist shape sweep.",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_gate.json",
+  "source_result_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_dry_run_result_gate.json",
+  "current_priority": "define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "All four selected 64x1 and 1x64 dry-run command plans exited 0, stayed on the two reviewed filelist-derived templates, and preserved coverage_output_equivalence as the later correctness policy.",
+    "accepted_scope": "four dry-run command plans for two reviewed filelist-derived targets at 64x1 and 1x64",
+    "weakest_point": "This is still command-plan evidence only; it does not prove Verilator build, host-probe compile, hybrid execution, correctness, timing, GEM comparison, or broader automatic allocation.",
+    "known_weaknesses": [
+      "dry-run does not create compare reports",
+      "dry-run does not prove coverage_output_equivalence mismatch count 0",
+      "dry-run does not produce timing or speedup evidence",
+      "the shape sweep remains limited to two reviewed filelist-derived targets",
+      "GEM comparison remains a deferred design-study candidate rather than benchmark evidence",
+      "native Verilator option integration remains out of scope"
+    ]
+  },
+  "accepted_result": {
+    "command_count": 4,
+    "targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "shapes": [
+      "64x1",
+      "1x64"
+    ],
+    "stage_count_per_command": 7,
+    "accepted_baseline_shape": "32x1",
+    "control_reference_shape": "1x32",
+    "correctness_policy": "coverage_output_equivalence",
+    "generated_reports_or_artifacts_written": false
+  },
+  "required_next_gate": {
+    "name": "define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_gate",
+    "must_pin": [
+      "the exact non-dry-run command list for the four accepted 64x1 and 1x64 plans",
+      "expected compare report paths",
+      "coverage_output_equivalence mismatch count 0 as the later acceptance criterion",
+      "raw full-state equality remains non-required",
+      "generated reports and artifacts remain non-canonical",
+      "GEM comparison remains deferred design context rather than benchmark evidence",
+      "native Verilator option support and arbitrary RTL optimal allocation remain non-claims"
+    ]
+  },
+  "deferred_design_candidates": [
+    {
+      "candidate": "GEM_comparison_design_gate",
+      "reason": "External comparison with NVlabs/GEM is useful after the current filelist shape-breadth weakness is closed; it is not evidence from this dry-run gate."
+    },
+    {
+      "candidate": "direct_non_dry_run_without_definition_gate",
+      "reason": "The dry-run evidence is sufficient to define exact non-dry-run commands, but this repository's gate pattern pins the execution boundary before running build/run/compare."
+    }
+  ],
+  "acceptance_policy": {
+    "review_record": true,
+    "new_correctness_evidence_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_gate",
+  "non_claims": [
+    "not new correctness evidence",
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not timing or speedup evidence",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

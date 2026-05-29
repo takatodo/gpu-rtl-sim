@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_execution_dry_run_review_gate",
+  "status": "accepted_filelist_shape_breadth_gpu_allocation_policy_execution_dry_run",
+  "objective": "Review and accept dry-run command-plan application of the scoped GPU allocation policy.",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_execution_gate.json",
+  "source_result_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_execution_dry_run_result_gate.json",
+  "current_priority": "define_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "Both reviewed filelist-derived targets accepted the policy-selected 32x1 dry-run command plan through the existing tracked-template flow, planned seven stages, and retained coverage_output_equivalence as the later correctness policy.",
+    "accepted_scope": "two tracked filelist-derived templates at policy-selected 32x1 command-plan validation",
+    "weakest_point": "This is still command-plan evidence only; it does not prove Verilator build, host-probe compile, hybrid execution, compare success, or broader automatic allocation.",
+    "known_weaknesses": [
+      "dry-run does not create compare reports",
+      "dry-run does not prove coverage_output_equivalence mismatch count 0",
+      "the execution policy is limited to the two reviewed targets",
+      "source closure must remain complete before any non-dry-run execution",
+      "native Verilator option integration remains out of scope"
+    ]
+  },
+  "accepted_result": {
+    "command_count": 2,
+    "shape": "32x1",
+    "stage_count_per_command": 7,
+    "templates": [
+      "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json"
+    ],
+    "expected_compare_reports": [
+      "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json"
+    ],
+    "correctness_policy": "coverage_output_equivalence",
+    "generated_reports_or_artifacts_written": false
+  },
+  "required_next_gate": {
+    "name": "define_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+    "must_pin": [
+      "whether to run both policy-selected 32x1 commands non-dry-run or keep one as representative first",
+      "the exact non-dry-run command list",
+      "expected compare report paths",
+      "coverage_output_equivalence mismatch count 0 as the later acceptance criterion",
+      "raw full-state equality remains non-required",
+      "generated reports and artifacts remain non-canonical",
+      "native Verilator option support and arbitrary RTL optimal allocation remain non-claims"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not new timing or speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not production LLM-serving throughput"
+  ]
+}

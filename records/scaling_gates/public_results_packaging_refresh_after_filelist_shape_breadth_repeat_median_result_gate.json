@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median_result_gate",
+  "status": "passed",
+  "objective": "Record the public-pack dry-run result after the filelist-derived shape-breadth repeat-median timing review.",
+  "source_definition_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median_gate.json",
+  "command": "python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run",
+  "exit_code": 0,
+  "observed_public_pack_includes": {
+    "measurement_definition_gate": "records/scaling_gates/define_filelist_shape_breadth_repeat_median_timing_gate.json",
+    "workflow_gate": "records/scaling_gates/filelist_shape_breadth_repeat_median_workflow_gate.json",
+    "measurement_gate": "records/scaling_gates/filelist_shape_breadth_repeat_median_measurement_gate.json",
+    "measurement_review_gate": "records/scaling_gates/filelist_shape_breadth_repeat_median_review_gate.json",
+    "public_refresh_definition_gate": "records/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median_gate.json",
+    "public_results_doc": "docs/results.md",
+    "readme": "README.md",
+    "status_doc": "docs/status.md",
+    "roadmap_doc": "docs/roadmap.md",
+    "selection": "config/selection.json",
+    "selection_extensions": "config/selection_extensions.json"
+  },
+  "observed_generated_report_includes": [
+    "reports/filelist_shape_breadth_repeat_median_summary.json",
+    "reports/filelist_shape_breadth_repeat_filelist_paged_attention_kv_score_32x1_median.json",
+    "reports/filelist_shape_breadth_repeat_filelist_paged_attention_kv_score_1x32_median.json",
+    "reports/filelist_shape_breadth_repeat_filelist_known_template_pulp_ita_mha_32x1_median.json",
+    "reports/filelist_shape_breadth_repeat_filelist_known_template_pulp_ita_mha_1x32_median.json"
+  ],
+  "acceptance_policy": {
+    "public_pack_archive_dry_run_exited_zero": true,
+    "required_records_included": true,
+    "required_sources_included": true,
+    "generated_reports_included_when_present": true,
+    "archive_created": false,
+    "packaging_only": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "non_claims": [
+    "not a new measurement result",
+    "not new execution evidence",
+    "not broad speedup evidence",
+    "not a runtime or ABI change",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ],
+  "next_task": "review_public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median_gate"
+}

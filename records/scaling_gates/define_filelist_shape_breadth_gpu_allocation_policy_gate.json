@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "gate": "define_filelist_shape_breadth_gpu_allocation_policy_gate",
+  "status": "defined_filelist_shape_breadth_gpu_allocation_policy_boundary",
+  "objective": "Define a scoped GPU allocation policy boundary from the reviewed filelist-derived shape-breadth repeat-median evidence.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_repeat_median_public_pack_refresh_gate.json",
+  "source_measurement_gate": "config/scaling_gates/filelist_shape_breadth_repeat_median_measurement_gate.json",
+  "source_review_gate": "config/scaling_gates/filelist_shape_breadth_repeat_median_review_gate.json",
+  "source_public_pack_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_repeat_median_gate.json",
+  "current_priority": "run_filelist_shape_breadth_gpu_allocation_policy_dry_run_gate",
+  "policy_boundary": {
+    "selected_policy": "scoped_filelist_shape_breadth_gpu_allocation_policy",
+    "scope": "two reviewed filelist-derived templates at 32x1 and 1x32 with repeat-count 3",
+    "input_evidence": {
+      "targets": [
+        "filelist_paged_attention_kv_score",
+        "filelist_known_template_pulp_ita_mha"
+      ],
+      "shapes": [
+        "32x1",
+        "1x32"
+      ],
+      "repeat_count": 3,
+      "total_sample_count": 12,
+      "correctness_policy": "coverage_output_equivalence",
+      "max_coverage_output_mismatch_count": 0,
+      "state_parallel_wall_ratio_range_median": [
+        68.83243486073675,
+        76.07629547960308
+      ],
+      "single_state_repeated_wall_ratio_range_median": [
+        2.67586493987049,
+        6.705723524656427
+      ],
+      "summary_report": "reports/filelist_shape_breadth_repeat_median_summary.json"
+    },
+    "policy_output_schema": {
+      "target": "tracked filelist-derived target name",
+      "template": "tracked slice launch template path",
+      "recommended_nstates": "integer",
+      "recommended_steps": "integer",
+      "recommended_shape": "NxS string",
+      "confidence": "high | low | refused",
+      "reason": "human-readable evidence-backed rationale",
+      "source_evidence_gate": "config/scaling_gates/filelist_shape_breadth_repeat_median_measurement_gate.json",
+      "fallback": "operator action when the policy cannot recommend GPU sidecar allocation"
+    },
+    "initial_policy_rules": [
+      {
+        "match": {
+          "target": "filelist_paged_attention_kv_score",
+          "source_closure_status": "complete",
+          "timing_evidence": "repeat_median_present"
+        },
+        "recommendation": {
+          "recommended_nstates": 32,
+          "recommended_steps": 1,
+          "recommended_shape": "32x1",
+          "confidence": "high",
+          "reason": "The accepted repeat-median evidence shows 32x1 state-parallel wall ratio 68.83243486073675x versus 1x32 repeated-step wall ratio 2.67586493987049x for this exact filelist-derived target."
+        }
+      },
+      {
+        "match": {
+          "target": "filelist_known_template_pulp_ita_mha",
+          "source_closure_status": "complete",
+          "timing_evidence": "repeat_median_present"
+        },
+        "recommendation": {
+          "recommended_nstates": 32,
+          "recommended_steps": 1,
+          "recommended_shape": "32x1",
+          "confidence": "high",
+          "reason": "The accepted repeat-median evidence shows 32x1 state-parallel wall ratio 76.07629547960308x versus 1x32 repeated-step wall ratio 6.705723524656427x for this exact filelist-derived target."
+        }
+      }
+    ],
+    "low_confidence_or_refusal_cases": [
+      {
+        "case": "target_not_in_reviewed_filelist_set",
+        "policy_result": "refused",
+        "reason": "The current evidence covers only the two reviewed filelist-derived targets."
+      },
+      {
+        "case": "source_closure_not_complete",
+        "policy_result": "refused",
+        "reason": "The filelist execution path still requires explicit or copied complete source closure before execution policy can be applied."
+      },
+      {
+        "case": "missing_repeat_median_timing_evidence",
+        "policy_result": "low",
+        "reason": "The policy is based on repeat-count-3 evidence; single-run timing is not sufficient for this allocation recommendation."
+      },
+      {
+        "case": "operator_requests_single_state_repeated_step_workload",
+        "policy_result": "low",
+        "reason": "The reviewed 1x32 cases remain much weaker than 32x1; recommend state-parallel batching or a resident/runtime mitigation gate instead of presenting 1xN as optimal sidecar use."
+      },
+      {
+        "case": "operator_expects_native_verilator_option_or_arbitrary_rtl_support",
+        "policy_result": "refused",
+        "reason": "This boundary defines wrapper-sidecar policy only; native Verilator option integration and arbitrary RTL support remain non-claims."
+      }
+    ],
+    "fallbacks": [
+      "use explicit --shape 32x1 / --sim-accel-shape 32x1 for the reviewed filelist-derived templates",
+      "run the relevant dry-run/plan command when source closure or template readiness is uncertain",
+      "use resident or persistent-resident workflows for repeated-step dominated cases instead of claiming optimal sidecar allocation",
+      "define a broader shape sweep before applying policy outside the reviewed two-target boundary"
+    ]
+  },
+  "selected_dry_run_validation": {
+    "next_gate": "run_filelist_shape_breadth_gpu_allocation_policy_dry_run_gate",
+    "must_validate": [
+      "the policy emits 32x1 high-confidence recommendations for both reviewed targets",
+      "the policy records source evidence gate paths and repeat-count 3",
+      "the policy refuses targets outside the reviewed filelist-derived set",
+      "the policy refuses incomplete source closure",
+      "the policy marks missing repeat-median evidence as low confidence",
+      "the policy keeps 1xN repeated-step workloads as low-confidence or resident-mitigation candidates",
+      "generated reports and artifacts remain non-canonical",
+      "runtime and ABI remain unchanged"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "source_template_mutation_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_shape_breadth_gpu_allocation_policy_dry_run_gate",
+  "non_claims": [
+    "not an implementation change",
+    "not a new measurement result",
+    "not broad speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not production LLM-serving throughput",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "gate": "define_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+  "status": "defined_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_boundary",
+  "objective": "Define the non-dry-run build/run/compare boundary for applying the scoped GPU allocation policy to the reviewed filelist-derived targets.",
+  "source_policy_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_gate.json",
+  "source_execution_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_execution_gate.json",
+  "source_execution_dry_run_result_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_execution_dry_run_result_gate.json",
+  "source_execution_dry_run_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_execution_dry_run_review_gate.json",
+  "current_priority": "run_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+  "execution_scope": {
+    "name": "two_reviewed_filelist_targets_policy_selected_32x1_build_run_compare",
+    "decision": "execute_both_policy_selected_32x1_commands",
+    "reason": "The accepted execution dry-run validated both reviewed filelist-derived targets at the policy-selected 32x1 shape. Executing only one representative would leave the second reviewed policy application without build/run/compare evidence.",
+    "selected_shape": "32x1",
+    "selected_target_count": 2,
+    "commands": [
+      {
+        "target": "filelist_paged_attention_kv_score",
+        "template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 32x1",
+        "expected_compare_report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+        "expected_coverage_output_gate": "records/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+        "expected_coverage_output_target": "filelist_paged_attention_kv_score",
+        "expected_output_words_per_state": 29,
+        "expected_output_bytes_per_state": 116
+      },
+      {
+        "target": "filelist_known_template_pulp_ita_mha",
+        "template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 32x1",
+        "expected_compare_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+        "expected_coverage_output_gate": "records/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json",
+        "expected_coverage_output_target": "filelist_known_template_pulp_ita_mha",
+        "expected_output_words_per_state": 29,
+        "expected_output_bytes_per_state": 116
+      }
+    ]
+  },
+  "execution_requirements": [
+    "each command must complete Verilator build through the tracked template",
+    "each command must build the generic host probe through src/tools/build_host_probe.py",
+    "each command must build the GPU cubin",
+    "each command must run CPU and hybrid paths",
+    "each command must write the expected compare report under reports/",
+    "each compare report must pass coverage_output_equivalence with mismatch count 0",
+    "each compare report must compare 29 words / 116 bytes per state",
+    "raw full-state equality is not required",
+    "generated reports and artifacts remain non-canonical"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "execute_both_reviewed_policy_selected_commands_next": true,
+    "selected_shape": "32x1",
+    "generic_host_probe_builder_required": true,
+    "coverage_output_equivalence_required_for_execution": true,
+    "later_execution_must_exit_zero": true,
+    "later_mismatch_count_required": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "fresh_timing_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not fresh build/run/compare execution",
+    "not coverage-output equivalence evidence for the selected commands",
+    "not timing or speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not a new workload",
+    "not production LLM-serving throughput",
+    "not raw full-state equality"
+  ]
+}

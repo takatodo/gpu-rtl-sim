@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "gate": "public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+  "status": "complete_public_benchmark_pack_externalization_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution",
+  "objective": "Close the public benchmark pack externalization boundary after the scoped filelist GPU allocation policy non-dry-run execution refresh.",
+  "completed_priority": "define_public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+  "source_refresh_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate.json",
+  "source_refresh_result_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_result_gate.json",
+  "source_refresh_review_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_review_gate.json",
+  "source_execution_result_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_result_gate.json",
+  "source_execution_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_review_gate.json",
+  "decision": {
+    "externalization_boundary_complete": true,
+    "reason": "The public-pack dry-run and review include the scoped non-dry-run execution definition, result, review, public refresh records, source-of-truth docs, compact selection pointers, and optional compare report paths while keeping reports and artifacts non-canonical."
+  },
+  "closed_scope": {
+    "targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "shape": "32x1",
+    "command_count": 2,
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "max_coverage_output_mismatch_count": 0,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "compared_state_pair_count": 32,
+    "compared_word_count_per_report": 928,
+    "compared_byte_count_per_report": 3712,
+    "raw_full_state_equality_required": false,
+    "raw_full_state_all_matched": false,
+    "compare_reports": [
+      "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json"
+    ],
+    "public_pack_refresh_review": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_review_gate.json"
+  },
+  "acceptance_policy": {
+    "completion_only": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "raw_full_state_equality_required": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "select_next_measurement_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_public_pack_refresh",
+  "candidate_next_measurement_options": [
+    "native_verilator_option_prototype_boundary",
+    "broader_filelist_shape_sweep",
+    "automatic_gpu_allocation_policy_broadening",
+    "filelist_dependency_inference_policy",
+    "resident_execution_optimization"
+  ],
+  "non_claims": [
+    "not a new measurement result",
+    "not new execution evidence beyond the reviewed two-command result",
+    "not timing or speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

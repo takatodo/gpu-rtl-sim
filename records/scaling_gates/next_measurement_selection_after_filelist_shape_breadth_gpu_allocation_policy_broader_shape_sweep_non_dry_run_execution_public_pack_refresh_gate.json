@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_public_pack_refresh_gate",
+  "status": "selected_broader_filelist_shape_timing_measurement_next",
+  "objective": "Select the next measured workstream after closing the broader filelist shape-sweep public-pack externalization boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_gate.json",
+  "current_priority": "define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_gate",
+  "decision": {
+    "selected_next_workstream": "broader_filelist_shape_timing_measurement",
+    "selected_first_gate": "define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_gate",
+    "reason": "The accepted broader shape-sweep evidence proves coverage-output equivalence for the same two reviewed filelist-derived targets at 64x1 and 1x64, but explicitly carries no timing, speedup, repeat-median, GEM comparison, native Verilator option, runtime/ABI, arbitrary RTL, or automatic optimal allocation claim. The conservative next step is single-run timing for the same four target/shape pairs before deciding whether repeat-median timing, resident optimization, native-option work, dependency inference, or policy broadening is justified."
+  },
+  "accepted_evidence": {
+    "source_execution_result_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_result_gate.json",
+    "source_execution_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_review_gate.json",
+    "source_public_pack_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_gate.json",
+    "targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "shapes": [
+      "64x1",
+      "1x64"
+    ],
+    "command_count": 4,
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "max_coverage_output_mismatch_count": 0,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "raw_full_state_equality_required": false,
+    "raw_full_state_all_matched": false,
+    "timing_or_speedup_claim_present": false,
+    "repeat_median_claim_present": false
+  },
+  "deferred_candidates": [
+    {
+      "candidate": "native_verilator_option_prototype_boundary",
+      "reason": "A native option boundary is strategically important, but it would shift to integration before the latest broader-shape correctness evidence has any timing basis."
+    },
+    {
+      "candidate": "automatic_gpu_allocation_policy_broadening",
+      "reason": "The broader shape sweep is correctness-only. Policy broadening should wait until timing behavior for the same shapes is at least measured once and preferably repeat-median reviewed."
+    },
+    {
+      "candidate": "filelist_dependency_inference_policy",
+      "reason": "The accepted filelist flows still rely on explicit complete source closure or known-template copied closure. Arbitrary dependency inference is a separate non-claim."
+    },
+    {
+      "candidate": "resident_execution_optimization",
+      "reason": "Resident/runtime work may become the right mitigation if 1x64 timing confirms repeated-step weakness, but it should follow the broader-shape timing measurement rather than precede it."
+    },
+    {
+      "candidate": "broader_filelist_shape_repeat_median",
+      "reason": "Repeat-median is likely the next stability step after single-run timing, but no accepted timing result exists yet for these 64x1 and 1x64 filelist-derived shapes."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_gate",
+    "must_pin": [
+      "the accepted broader shape-sweep result and review gates",
+      "the same two reviewed filelist-derived targets",
+      "the same 64x1 and 1x64 shapes",
+      "the four exact non-dry-run commands to time",
+      "single-run timing fields before any repeat-median claim",
+      "coverage_output_equivalence as the required correctness condition",
+      "raw full-state equality remains diagnostic only",
+      "reports and artifacts remain generated evidence rather than source of truth",
+      "timing does not imply automatic optimal GPU allocation, native Verilator option support, arbitrary RTL support, dependency inference, runtime/ABI change, GEM comparison, or production serving"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "repeat_median_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not new execution evidence",
+    "not timing or speedup evidence",
+    "not repeat-median evidence",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not a new workload or target family",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

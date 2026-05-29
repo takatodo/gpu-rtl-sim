@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "gate": "define_filelist_shape_breadth_timing_measurement_gate",
+  "status": "defined_filelist_shape_breadth_timing_measurement",
+  "objective": "Define the filelist-derived shape-breadth timing measurement boundary after the persistent resident decode-like public-pack refresh.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_persistent_resident_decode_like_followup_public_pack_refresh_gate.json",
+  "current_priority": "run_filelist_shape_breadth_timing_measurement_gate",
+  "measurement_boundary": {
+    "command_count": 4,
+    "repeat_count": 1,
+    "timing_scope": "single-run timing for selected filelist-derived templates and shapes only",
+    "correctness_policy": "coverage_output_equivalence",
+    "raw_full_state_equality_required": false
+  },
+  "selected_filelist_targets": [
+    {
+      "target": "filelist_paged_attention_kv_score",
+      "template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "source_closure_status": "complete",
+      "source_closure_basis": "original_materialized_filelist_path_repaired_to_complete_closure",
+      "source_closure_reference_template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+      "coverage_output_gate": "records/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+      "shapes": [
+        {
+          "shape": "32x1",
+          "interpretation": "state_parallel_attention_score",
+          "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 32x1",
+          "dry_run_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 32x1 --dry-run",
+          "expected_reports": {
+            "cpu_report": "reports/filelist_paged_attention_kv_score_cpu_repeat_32x1.json",
+            "hybrid_report": "reports/filelist_paged_attention_kv_score_hybrid_32x1.txt",
+            "coverage_output_compare_report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_32x1_coverage_output_compare.json"
+          }
+        },
+        {
+          "shape": "1x32",
+          "interpretation": "single_state_repeated_attention_score",
+          "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 1x32",
+          "dry_run_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 1x32 --dry-run",
+          "expected_reports": {
+            "cpu_report": "reports/filelist_paged_attention_kv_score_cpu_repeat_1x32.json",
+            "hybrid_report": "reports/filelist_paged_attention_kv_score_hybrid_1x32.txt",
+            "coverage_output_compare_report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_1x32_coverage_output_compare.json"
+          }
+        }
+      ]
+    },
+    {
+      "target": "filelist_known_template_pulp_ita_mha",
+      "template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+      "source_closure_status": "complete",
+      "source_closure_basis": "copied_from_known_tracked_template",
+      "source_closure_reference_template": "config/slice_launch_templates/pulp_ita_mha.json",
+      "coverage_output_gate": "records/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json",
+      "shapes": [
+        {
+          "shape": "32x1",
+          "interpretation": "state_parallel_full_ita_mha",
+          "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 32x1",
+          "dry_run_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 32x1 --dry-run",
+          "expected_reports": {
+            "cpu_report": "reports/filelist_known_template_pulp_ita_mha_cpu_repeat_32x1.json",
+            "hybrid_report": "reports/filelist_known_template_pulp_ita_mha_hybrid_32x1.txt",
+            "coverage_output_compare_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json"
+          }
+        },
+        {
+          "shape": "1x32",
+          "interpretation": "single_state_repeated_full_ita_mha",
+          "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 1x32",
+          "dry_run_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 1x32 --dry-run",
+          "expected_reports": {
+            "cpu_report": "reports/filelist_known_template_pulp_ita_mha_cpu_repeat_1x32.json",
+            "hybrid_report": "reports/filelist_known_template_pulp_ita_mha_hybrid_1x32.txt",
+            "coverage_output_compare_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json"
+          }
+        }
+      ]
+    }
+  ],
+  "timing_fields_to_record": [
+    "cpu_elapsed_ms",
+    "hybrid_wall_time_ms",
+    "hybrid_gpu_kernel_time_ms_total",
+    "cpu_to_hybrid_wall_speedup_ratio",
+    "cpu_to_gpu_kernel_speedup_ratio",
+    "cpu_ms_per_state_step",
+    "hybrid_wall_ms_per_state_step",
+    "hybrid_kernel_ms_per_state_step",
+    "coverage_output_mismatch_count"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_result": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_shape_breadth_timing_measurement_gate",
+  "non_claims": [
+    "not a measurement result",
+    "not repeat-median timing",
+    "not broad speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not production LLM-serving throughput",
+    "not raw full-state equality"
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_workflow_gate",
+  "status": "added_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_workflow",
+  "objective": "Add a distinct dry-run workflow for the broader scoped filelist GPU allocation policy without changing the earlier 32x1 policy surface.",
+  "source_boundary_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_gate.json",
+  "public_cli": "src/tools/run_results_reproduction.py",
+  "shared_modules": [
+    "src/tools/results_reproduction.py",
+    "src/tools/results_reproduction_cli.py",
+    "src/tools/results_reproduction_cli_args.py",
+    "src/tools/results_reproduction_gpu_allocation_policy.py"
+  ],
+  "current_priority": "run_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_dry_run_gate",
+  "public_interface": {
+    "dry_run_command": "python3 src/tools/run_results_reproduction.py --filelist-broader-shape-gpu-allocation-policy --dry-run",
+    "non_dry_run_refusal_command": "python3 src/tools/run_results_reproduction.py --filelist-broader-shape-gpu-allocation-policy",
+    "dry_run_only": true,
+    "writes_files": false,
+    "payload_mode": "filelist_broader_shape_gpu_allocation_policy_dry_run"
+  },
+  "workflow_scope": {
+    "selected_policy": "scoped_broader_filelist_shape_breadth_gpu_allocation_policy",
+    "reviewed_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "reviewed_templates": [
+      "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json"
+    ],
+    "reviewed_shapes": [
+      "32x1",
+      "1x32",
+      "64x1",
+      "1x64"
+    ],
+    "target_shape_pair_count": 8,
+    "repeat_count": 3,
+    "correctness_policy": "coverage_output_equivalence",
+    "max_coverage_output_mismatch_count": 0,
+    "recommendation_policy": [
+      {
+        "target": "filelist_paged_attention_kv_score",
+        "recommended_shape": "64x1",
+        "recommended_nstates": 64,
+        "recommended_steps": 1,
+        "confidence": "high",
+        "fallback_shape": "32x1"
+      },
+      {
+        "target": "filelist_known_template_pulp_ita_mha",
+        "recommended_shape": "64x1",
+        "recommended_nstates": 64,
+        "recommended_steps": 1,
+        "confidence": "high",
+        "fallback_shape": "32x1"
+      }
+    ],
+    "refusal_or_low_confidence_cases": [
+      "target_not_in_reviewed_filelist_set",
+      "source_closure_not_complete",
+      "missing_repeat_median_timing_evidence",
+      "operator_requests_single_state_repeated_step_workload",
+      "operator_expects_native_verilator_option_or_arbitrary_rtl_support"
+    ],
+    "reports_and_artifacts_are_source_of_truth": false,
+    "runtime_or_abi_change_allowed": false,
+    "new_workload_allowed": false,
+    "raw_full_state_equality_required": false
+  },
+  "source_evidence": {
+    "prior_policy_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_gate.json",
+    "prior_measurement_gate": "config/scaling_gates/filelist_shape_breadth_repeat_median_measurement_gate.json",
+    "prior_review_gate": "config/scaling_gates/filelist_shape_breadth_repeat_median_review_gate.json",
+    "prior_summary_report": "reports/filelist_shape_breadth_repeat_median_summary.json",
+    "broader_measurement_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_measurement_gate.json",
+    "broader_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_review_gate.json",
+    "broader_summary_report": "reports/filelist_broader_shape_repeat_median_summary.json"
+  },
+  "dry_run_result": {
+    "status": "passed",
+    "command": "python3 src/tools/run_results_reproduction.py --filelist-broader-shape-gpu-allocation-policy --dry-run",
+    "json_only_stdout": true,
+    "two_high_confidence_64x1_recommendations": true,
+    "two_medium_confidence_32x1_fallbacks": true,
+    "local_absolute_paths_in_stdout": false,
+    "writes_generated_evidence": false
+  },
+  "acceptance_policy": {
+    "workflow_only": true,
+    "dry_run_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "source_template_mutation_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "public_cli_has_contract_test": true,
+    "docs_mention_required": true,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_dry_run_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not execution evidence",
+    "not broad speedup evidence beyond the scoped repeat-count-3 result",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

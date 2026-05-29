@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_dry_run_result_gate",
+  "status": "passed_filelist_shape_breadth_gpu_allocation_policy_dry_run",
+  "objective": "Record the dry-run output for the scoped filelist shape-breadth GPU allocation policy.",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_gate.json",
+  "current_priority": "review_filelist_shape_breadth_gpu_allocation_policy_dry_run_gate",
+  "executed_commands": [
+    {
+      "name": "scoped_filelist_shape_breadth_gpu_allocation_policy",
+      "command": "python3 src/tools/run_results_reproduction.py --filelist-shape-breadth-gpu-allocation-policy --dry-run",
+      "exit_code": 0,
+      "writes_files": false,
+      "stdout_contract": "JSON only, repo-relative paths only"
+    },
+    {
+      "name": "non_dry_run_refusal",
+      "command": "python3 src/tools/run_results_reproduction.py --filelist-shape-breadth-gpu-allocation-policy",
+      "exit_code": 1,
+      "stderr_contains": "dry-run only"
+    }
+  ],
+  "observed_policy": {
+    "dry_run": true,
+    "writes_files": false,
+    "source_policy_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_gate.json",
+    "source_evidence": {
+      "measurement_gate": "config/scaling_gates/filelist_shape_breadth_repeat_median_measurement_gate.json",
+      "review_gate": "config/scaling_gates/filelist_shape_breadth_repeat_median_review_gate.json",
+      "summary_report": "reports/filelist_shape_breadth_repeat_median_summary.json",
+      "repeat_count": 3,
+      "reviewed_shapes": [
+        "32x1",
+        "1x32"
+      ],
+      "coverage_output_mismatch_count": 0
+    },
+    "recommendations": [
+      {
+        "target": "filelist_paged_attention_kv_score",
+        "template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+        "recommended_nstates": 32,
+        "recommended_steps": 1,
+        "recommended_shape": "32x1",
+        "confidence": "high",
+        "state_parallel_wall_ratio_median": 68.83243486073675,
+        "single_state_repeated_wall_ratio_median": 2.67586493987049
+      },
+      {
+        "target": "filelist_known_template_pulp_ita_mha",
+        "template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+        "recommended_nstates": 32,
+        "recommended_steps": 1,
+        "recommended_shape": "32x1",
+        "confidence": "high",
+        "state_parallel_wall_ratio_median": 76.07629547960308,
+        "single_state_repeated_wall_ratio_median": 6.705723524656427
+      }
+    ],
+    "refusals_or_low_confidence": [
+      {
+        "case": "target_not_in_reviewed_filelist_set",
+        "confidence": "refused"
+      },
+      {
+        "case": "source_closure_not_complete",
+        "confidence": "refused"
+      },
+      {
+        "case": "missing_repeat_median_timing_evidence",
+        "confidence": "low"
+      },
+      {
+        "case": "operator_requests_single_state_repeated_step_workload",
+        "confidence": "low"
+      },
+      {
+        "case": "operator_expects_native_verilator_option_or_arbitrary_rtl_support",
+        "confidence": "refused"
+      }
+    ]
+  },
+  "contract_tests": {
+    "command": "python3 -m unittest tests.contract.test_hybrid_verilator_like_cli -q",
+    "exit_code": 0,
+    "required_checks": [
+      "two reviewed targets emit 32x1 high-confidence recommendations",
+      "unknown targets and incomplete source closure are refused",
+      "missing repeat-median evidence and 1xN repeated-step requests are low confidence",
+      "non-dry-run policy planning is refused",
+      "stdout contains no local absolute paths"
+    ]
+  },
+  "acceptance_policy": {
+    "dry_run_only": true,
+    "command_exit_zero": true,
+    "generated_reports_or_artifacts_written": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "native_verilator_option_claim_allowed": false,
+    "arbitrary_rtl_support_claim_allowed": false,
+    "automatic_optimal_gpu_allocation_claim_allowed": false
+  },
+  "next_task": "review_filelist_shape_breadth_gpu_allocation_policy_dry_run_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not a generated report",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not new timing or speedup evidence",
+    "not production LLM-serving throughput"
+  ]
+}

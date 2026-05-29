@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_result_gate",
+  "status": "passed_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution",
+  "objective": "Record the four-command non-dry-run build/run/compare result for the broader filelist shape sweep.",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_gate.json",
+  "current_priority": "review_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_gate",
+  "command_count": 4,
+  "targets": [
+    "filelist_paged_attention_kv_score",
+    "filelist_known_template_pulp_ita_mha"
+  ],
+  "shapes": [
+    "64x1",
+    "1x64"
+  ],
+  "executed_commands": [
+    {
+      "target": "filelist_paged_attention_kv_score",
+      "shape": "64x1",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 64x1",
+      "exit_code": 0,
+      "expected_compare_report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+      "selected_acceptance_policy": "coverage_output_equivalence",
+      "selected_acceptance_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "compared_state_pair_count": 64,
+      "compared_word_count": 1856,
+      "compared_byte_count": 7424,
+      "strict_output_word_count": 29,
+      "expected_output_words_per_state": 29,
+      "expected_output_bytes_per_state": 116,
+      "raw_full_state_match": false,
+      "raw_full_state_mismatch_count": 2824,
+      "normalized_final_state_passed": true
+    },
+    {
+      "target": "filelist_paged_attention_kv_score",
+      "shape": "1x64",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 1x64",
+      "exit_code": 0,
+      "expected_compare_report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+      "selected_acceptance_policy": "coverage_output_equivalence",
+      "selected_acceptance_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "compared_state_pair_count": 1,
+      "compared_word_count": 29,
+      "compared_byte_count": 116,
+      "strict_output_word_count": 29,
+      "expected_output_words_per_state": 29,
+      "expected_output_bytes_per_state": 116,
+      "raw_full_state_match": false,
+      "raw_full_state_mismatch_count": 35,
+      "normalized_final_state_passed": true
+    },
+    {
+      "target": "filelist_known_template_pulp_ita_mha",
+      "shape": "64x1",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 64x1",
+      "exit_code": 0,
+      "expected_compare_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+      "selected_acceptance_policy": "coverage_output_equivalence",
+      "selected_acceptance_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "compared_state_pair_count": 64,
+      "compared_word_count": 1856,
+      "compared_byte_count": 7424,
+      "strict_output_word_count": 29,
+      "expected_output_words_per_state": 29,
+      "expected_output_bytes_per_state": 116,
+      "raw_full_state_match": false,
+      "raw_full_state_mismatch_count": 2456,
+      "normalized_final_state_passed": true
+    },
+    {
+      "target": "filelist_known_template_pulp_ita_mha",
+      "shape": "1x64",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 1x64",
+      "exit_code": 0,
+      "expected_compare_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+      "selected_acceptance_policy": "coverage_output_equivalence",
+      "selected_acceptance_passed": true,
+      "coverage_output_mismatch_count": 0,
+      "compared_state_pair_count": 1,
+      "compared_word_count": 29,
+      "compared_byte_count": 116,
+      "strict_output_word_count": 29,
+      "expected_output_words_per_state": 29,
+      "expected_output_bytes_per_state": 116,
+      "raw_full_state_match": false,
+      "raw_full_state_mismatch_count": 36,
+      "normalized_final_state_passed": true
+    }
+  ],
+  "result_summary": {
+    "all_commands_exited_zero": true,
+    "all_reports_written": true,
+    "all_selected_acceptance_policies": [
+      "coverage_output_equivalence"
+    ],
+    "all_coverage_output_equivalence_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "shape_summary": {
+      "64x1": {
+        "command_count": 2,
+        "compared_state_pair_count_per_report": 64,
+        "compared_word_count_per_report": 1856,
+        "compared_byte_count_per_report": 7424
+      },
+      "1x64": {
+        "command_count": 2,
+        "compared_state_pair_count_per_report": 1,
+        "compared_word_count_per_report": 29,
+        "compared_byte_count_per_report": 116
+      }
+    },
+    "raw_full_state_all_matched": false,
+    "normalized_final_state_all_passed": true
+  },
+  "generated_reports": [
+    "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+    "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json",
+    "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+    "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_1x64_coverage_output_compare.json"
+  ],
+  "acceptance_policy": {
+    "execution_result": true,
+    "command_exit_zero_required": true,
+    "expected_command_count": 4,
+    "coverage_output_equivalence_required": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "fresh_timing_claim_allowed_by_gate_alone": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "repeat_median_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_gate",
+  "non_claims": [
+    "not timing or speedup evidence",
+    "not repeat-median evidence",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "not a new workload or new target family",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_review_gate",
+  "status": "accepted_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution",
+  "objective": "Review the scoped non-dry-run execution result and select the next source-of-truth step.",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate.json",
+  "source_result_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_result_gate.json",
+  "current_priority": "define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "Both reviewed policy-selected 32x1 tracked-template commands completed non-dry-run build/run/compare, wrote the expected compare reports, selected coverage_output_equivalence, and passed with mismatch count 0.",
+    "accepted_scope": "two reviewed filelist-derived templates at policy-selected 32x1 non-dry-run build/run/compare",
+    "weakest_point": "The result proves only this scoped two-command execution boundary; it is not evidence of native Verilator option support, arbitrary RTL dependency inference, automatic optimal GPU allocation, timing, or broad speedup.",
+    "known_weaknesses": [
+      "raw full-state equality remains false for both reports",
+      "coverage-output equivalence inspects the explicitly selected 29 output words per state, not every byte in the raw Verilated state",
+      "the policy application is limited to the two reviewed filelist-derived targets",
+      "the result contains no timing, repeat-median, or production-serving throughput claim",
+      "generated reports and artifacts remain non-canonical"
+    ]
+  },
+  "accepted_result": {
+    "command_count": 2,
+    "shape": "32x1",
+    "all_commands_exited_zero": true,
+    "all_expected_reports_present": true,
+    "all_compare_reports_passed_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "compared_state_pair_count": 32,
+    "compared_word_count_per_report": 928,
+    "compared_byte_count_per_report": 3712,
+    "raw_full_state_equality_required": false,
+    "raw_full_state_all_matched": false,
+    "normalized_final_state_all_passed": true,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "selected_next_workstream": {
+    "name": "public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution",
+    "required_next_gate": "public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+    "next_task": "define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+    "scope": [
+      "summarize the scoped two-command non-dry-run execution result in public/source-of-truth docs",
+      "include the new result and review records in completed evidence",
+      "keep generated compare reports under reports/ as generated evidence",
+      "preserve coverage_output_equivalence as the accepted correctness policy",
+      "avoid timing, speedup, native Verilator, arbitrary RTL, automatic optimal-allocation, raw-state, runtime/ABI, or production-serving claims"
+    ],
+    "new_measurement_allowed_by_review_gate": false
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate",
+  "non_claims": [
+    "not a new measurement beyond the reviewed two-command execution",
+    "not timing or speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

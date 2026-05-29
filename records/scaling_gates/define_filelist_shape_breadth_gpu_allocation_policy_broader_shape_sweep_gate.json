@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "gate": "define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_gate",
+  "status": "defined_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_boundary",
+  "objective": "Define the first broader explicit shape sweep after the scoped filelist GPU allocation policy non-dry-run result.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_public_pack_refresh_gate.json",
+  "source_execution_result_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_result_gate.json",
+  "source_execution_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_review_gate.json",
+  "source_public_pack_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate.json",
+  "current_priority": "run_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_dry_run_gate",
+  "sweep_boundary": {
+    "selected_workstream": "filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep",
+    "scope": "the same two reviewed filelist-derived targets; no new target family is admitted by this definition",
+    "correctness_policy": "coverage_output_equivalence",
+    "raw_full_state_equality_required": false,
+    "baseline_existing_evidence": {
+      "executed_shape": "32x1",
+      "command_count": 2,
+      "max_coverage_output_mismatch_count": 0,
+      "strict_output_word_count_per_state": 29,
+      "strict_output_byte_count_per_state": 116,
+      "raw_full_state_all_matched": false
+    },
+    "shape_roles": [
+      {
+        "shape": "32x1",
+        "role": "existing_policy_selected_state_parallel_baseline",
+        "new_dry_run_required_by_this_gate": false,
+        "reason": "Already executed for both reviewed filelist-derived targets in the accepted scoped non-dry-run result."
+      },
+      {
+        "shape": "1x32",
+        "role": "existing_repeated_step_control",
+        "new_dry_run_required_by_this_gate": false,
+        "reason": "Already covered by the repeat-median filelist shape-breadth evidence as the weaker single-state repeated-step comparison point."
+      },
+      {
+        "shape": "64x1",
+        "role": "larger_state_parallel_probe",
+        "new_dry_run_required_by_this_gate": true,
+        "reason": "Tests whether the 32x1 state-parallel recommendation can be extended to a larger state batch before broadening the allocation policy."
+      },
+      {
+        "shape": "1x64",
+        "role": "larger_repeated_step_probe",
+        "new_dry_run_required_by_this_gate": true,
+        "reason": "Tests whether the known repeated-step weakness remains visible at a larger step count before deciding whether resident/runtime mitigation should be prioritized."
+      }
+    ],
+    "selected_targets": [
+      {
+        "target": "filelist_paged_attention_kv_score",
+        "template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+        "source_closure_status": "complete",
+        "selected_dry_run_commands": [
+          "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 64x1 --dry-run",
+          "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 1x64 --dry-run"
+        ]
+      },
+      {
+        "target": "filelist_known_template_pulp_ita_mha",
+        "template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+        "source_closure_status": "complete",
+        "selected_dry_run_commands": [
+          "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 64x1 --dry-run",
+          "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 1x64 --dry-run"
+        ]
+      }
+    ],
+    "selected_dry_run_command_count": 4,
+    "later_execution_acceptance": {
+      "all_commands_must_exit_zero": true,
+      "all_compare_reports_must_pass_coverage_output_equivalence": true,
+      "max_coverage_output_mismatch_count": 0,
+      "timing_summary_required_before_speedup_claim": true,
+      "repeat_median_required_before_policy_broadening_claim": true
+    }
+  },
+  "selected_dry_run_validation": {
+    "next_gate": "run_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_dry_run_gate",
+    "must_validate": [
+      "all four selected 64x1 and 1x64 dry-run command plans exit 0",
+      "each dry-run plan preserves coverage_output_equivalence as the later correctness policy",
+      "each dry-run plan uses the existing complete source-closure templates",
+      "the selected shape set does not admit new targets or arbitrary RTL",
+      "reports and artifacts remain non-canonical",
+      "runtime and ABI remain unchanged"
+    ]
+  },
+  "deferred_design_candidates": [
+    {
+      "candidate": "GEM_comparison_design_gate",
+      "reason": "NVlabs/GEM is a useful external comparison topic for GPU-accelerated RTL simulation, but it should be introduced as a design-study gate after this current source-of-truth priority is closed."
+    },
+    {
+      "candidate": "native_verilator_option_prototype_boundary",
+      "reason": "Direct/native option work should wait until the filelist-derived shape and policy evidence is less narrow."
+    },
+    {
+      "candidate": "resident_execution_optimization",
+      "reason": "Resident runtime work should be prioritized only after the larger repeated-step probe confirms that the weakness remains material."
+    }
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "source_template_mutation_allowed_by_this_gate": false,
+    "new_target_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "repeat_median_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_dry_run_gate",
+  "non_claims": [
+    "not an implementation change",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not timing or speedup evidence",
+    "not repeat-median evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload or new target family",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

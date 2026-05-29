@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_filelist_shape_breadth_timing_measurement_public_pack_refresh_gate",
+  "status": "selected_repeat_median_filelist_shape_breadth_timing_next",
+  "objective": "Select the next measured benchmark after closing the filelist shape-breadth timing public-pack externalization boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_timing_measurement_gate.json",
+  "current_priority": "define_filelist_shape_breadth_repeat_median_timing_gate",
+  "decision": {
+    "selected_next_workstream": "repeat_median_filelist_shape_breadth_timing",
+    "selected_first_gate": "define_filelist_shape_breadth_repeat_median_timing_gate",
+    "reason": "The accepted filelist shape-breadth timing result is still single-run evidence across four target/shape pairs. Stabilizing the same filelist-derived 32x1 and 1x32 cases with repeat-median timing is the narrowest next step before deriving automatic GPU allocation policy from the data."
+  },
+  "deferred_candidates": [
+    {
+      "candidate": "automatic_gpu_allocation_policy",
+      "reason": "Defer until filelist timing is repeat-median-backed; the current single-run result is not a strong enough basis for even a scoped allocation policy."
+    },
+    {
+      "candidate": "native_verilator_option_prototype_boundary",
+      "reason": "Defer because the project currently exposes Verilator-like entrypoints and keeps direct native Verilator option support as a non-claim."
+    },
+    {
+      "candidate": "filelist_dependency_inference_policy",
+      "reason": "Defer because current accepted filelist flows rely on explicit source closure and known-template materialization, not arbitrary RTL dependency inference."
+    },
+    {
+      "candidate": "resident_execution_optimization",
+      "reason": "Defer because it broadens back into runtime behavior, while the open weakness is the single-run filelist timing basis."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_filelist_shape_breadth_repeat_median_timing_gate",
+    "must_pin": [
+      "the same filelist-derived targets used by the accepted single-run timing result",
+      "the 32x1 and 1x32 shapes for each selected target",
+      "repeat_count 3 unless the gate explicitly justifies a different count",
+      "CPU elapsed, hybrid wall, GPU kernel total, per-state-step timing, and speedup fields to summarize",
+      "coverage_output_equivalence as the correctness policy for each repeat sample",
+      "raw full-state equality as diagnostic only",
+      "the public command surface used for the repeat-median measurement",
+      "non-claims for native Verilator option support, arbitrary RTL support, arbitrary RTL dependency inference, automatic optimal GPU allocation, runtime/ABI changes, and production LLM-serving throughput"
+    ],
+    "should_reuse": [
+      "src/tools/run_hybrid_benchmark.py",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "raw_full_state_equality_required": false,
+    "repeat_median_claim_allowed_by_gate_alone": false,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "direct_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_filelist_shape_breadth_repeat_median_timing_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not repeat-median timing evidence yet",
+    "not broad speedup evidence",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not direct Verilator-native option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not production LLM-serving throughput",
+    "not raw full-state equality"
+  ]
+}

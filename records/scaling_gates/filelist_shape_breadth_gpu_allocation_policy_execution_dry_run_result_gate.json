@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_execution_dry_run_result_gate",
+  "status": "passed_filelist_shape_breadth_gpu_allocation_policy_execution_dry_run",
+  "objective": "Record dry-run command-plan application of the scoped GPU allocation policy to the two reviewed filelist-derived targets.",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_execution_gate.json",
+  "current_priority": "review_filelist_shape_breadth_gpu_allocation_policy_execution_dry_run_gate",
+  "executed_commands": [
+    {
+      "name": "filelist_paged_attention_kv_score_policy_shape",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 32x1 --dry-run",
+      "exit_code": 0,
+      "shape": "32x1",
+      "stdout_capture_policy": "not_retained_as_source_of_truth",
+      "stdout_stage_count": 7,
+      "expected_compare_report": "reports/filelist_paged_attention_kv_score_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "coverage_output_gate": "records/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+      "coverage_output_target": "filelist_paged_attention_kv_score"
+    },
+    {
+      "name": "filelist_known_template_pulp_ita_mha_policy_shape",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 32x1 --dry-run",
+      "exit_code": 0,
+      "shape": "32x1",
+      "stdout_capture_policy": "not_retained_as_source_of_truth",
+      "stdout_stage_count": 7,
+      "expected_compare_report": "reports/filelist_known_template_pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "coverage_output_gate": "records/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json",
+      "coverage_output_target": "filelist_known_template_pulp_ita_mha"
+    }
+  ],
+  "observed_command_plan": {
+    "selected_shape": "32x1",
+    "selected_target_count": 2,
+    "all_commands_exited_zero": true,
+    "all_stage_counts": [
+      7,
+      7
+    ],
+    "all_use_existing_tracked_templates": true,
+    "all_plan_cpu_reference_32x1": true,
+    "all_plan_hybrid_nstates_32_steps_1": true,
+    "all_plan_coverage_output_equivalence": true,
+    "generated_reports_or_artifacts_written": false
+  },
+  "acceptance_policy": {
+    "dry_run_only": true,
+    "command_exit_zero": true,
+    "expected_command_count": 2,
+    "expected_stage_count_per_command": 7,
+    "coverage_output_equivalence_planned": true,
+    "generated_reports_or_artifacts_written": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "build_run_compare_claim_allowed_by_this_gate": false,
+    "automatic_optimal_gpu_allocation_claim_allowed": false
+  },
+  "next_task": "review_filelist_shape_breadth_gpu_allocation_policy_execution_dry_run_gate",
+  "non_claims": [
+    "not execution evidence",
+    "not Verilator build success",
+    "not host-probe compile success",
+    "not CPU-vs-hybrid correctness evidence",
+    "not new timing or speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not production LLM-serving throughput"
+  ]
+}

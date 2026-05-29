@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_review_gate",
+  "status": "accepted_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement",
+  "objective": "Review and accept the single-run broader filelist shape-sweep timing result before refreshing the public results pack.",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_gate.json",
+  "source_result_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_result_gate.json",
+  "current_priority": "define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "All four selected 64x1 and 1x64 timing commands exited 0, passed coverage_output_equivalence with mismatch count 0, and recorded the required CPU, hybrid wall, GPU-kernel, speedup-ratio, per-state-step, and mismatch-count fields.",
+    "accepted_scope": "single-run timing for two reviewed filelist-derived targets at 64x1 and 1x64",
+    "strongest_claim": "For these exact filelist-derived templates, single-run 64x1 state-parallel shapes remain much stronger than 1x64 single-state repeated-step shapes.",
+    "weakest_point": "The timing evidence is still single-run and limited to two targets and two explicit shapes; it is not repeat-median timing, broad arbitrary RTL support, native Verilator option support, GEM comparison, production-serving throughput, or automatic GPU allocation proof."
+  },
+  "accepted_result": {
+    "command_count": 4,
+    "repeat_count": 1,
+    "targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "shapes": [
+      "64x1",
+      "1x64"
+    ],
+    "all_commands_exited_zero": true,
+    "all_coverage_output_equivalence_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "state_parallel_wall_speedup_range": [
+      127.407767,
+      214.308914
+    ],
+    "single_state_repeated_wall_speedup_range": [
+      1.945839,
+      8.297071
+    ],
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "raw_full_state_all_matched": false,
+    "raw_full_state_equality_required": false,
+    "normalized_final_state_all_passed": true
+  },
+  "required_next_gate": {
+    "name": "define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_gate",
+    "must_pin": [
+      "the timing definition, result, and review gates",
+      "the twelve generated timing and compare reports as generated evidence",
+      "coverage_output_equivalence mismatch count 0",
+      "the result is single-run only, not repeat-median",
+      "raw full-state equality remains non-required and false",
+      "broad speedup, GEM comparison, native Verilator option support, arbitrary RTL, runtime/ABI, production-serving, and automatic optimal allocation remain non-claims"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_referenced_measurement": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "single_run_timing_claim_allowed_by_this_gate": true,
+    "repeat_median_claim_allowed_by_gate_alone": false,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_gate",
+  "non_claims": [
+    "not repeat-median timing",
+    "not broad speedup evidence",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

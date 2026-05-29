@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_repeat_median_review_gate",
+  "objective": "Review repeat-median timing for the filelist-derived shape-breadth four-shape set and select the public-pack refresh next.",
+  "status": "reviewed_filelist_shape_breadth_repeat_median_select_public_pack_refresh",
+  "source_boundary_gate": "config/scaling_gates/define_filelist_shape_breadth_repeat_median_timing_gate.json",
+  "source_workflow_gate": "config/scaling_gates/filelist_shape_breadth_repeat_median_workflow_gate.json",
+  "source_measurement_gate": "config/scaling_gates/filelist_shape_breadth_repeat_median_measurement_gate.json",
+  "reviewed_summary_report": "reports/filelist_shape_breadth_repeat_median_summary.json",
+  "current_priority": "define_public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median",
+  "review_result": {
+    "decision": "accept_measurement_for_scoped_result_pack",
+    "all_coverage_output_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "repeat_count": 3,
+    "total_sample_count": 12,
+    "state_parallel_wall_ratio_range_median": [
+      68.83243486073675,
+      76.07629547960308
+    ],
+    "single_state_repeated_wall_ratio_range_median": [
+      2.67586493987049,
+      6.705723524656427
+    ],
+    "interpretation": "For these exact filelist-derived templates, repeat-median timing preserves the scoped trend that 32x1 state-parallel shapes remain more favorable than 1x32 single-state repeated-step shapes."
+  },
+  "weak_points": [
+    "repeat-count 3 is a stability check, not paper-grade statistics",
+    "the evidence is limited to the two selected filelist-derived targets and two selected shapes",
+    "the 1x32 repeated-step shape still has modest CPU-to-hybrid wall ratios compared with 32x1",
+    "generated reports are evidence only, not source of truth"
+  ],
+  "options_reviewed": [
+    {
+      "option": "public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median",
+      "decision": "select_next",
+      "reason": "The scoped repeat-median measurement is complete and should be closed into the public pack before deriving automatic GPU allocation policy."
+    },
+    {
+      "option": "automatic_gpu_allocation_policy",
+      "decision": "defer",
+      "reason": "The reviewed evidence should first be packaged and externalized; allocation policy should not be derived from an unpackaged local result."
+    },
+    {
+      "option": "additional_filelist_targets_or_shapes",
+      "decision": "defer",
+      "reason": "Adding more targets or shapes would broaden the boundary before the current four-shape result is packaged."
+    }
+  ],
+  "selected_next_workstream": {
+    "name": "public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median",
+    "next_gate": "public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median_gate",
+    "next_task": "define_public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median"
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "broad_speedup_claim_allowed_by_this_gate": false,
+    "native_verilator_option_claim_allowed_by_this_gate": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_this_gate": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_this_gate": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "public_pack_refresh_required_before_next_measurement": true
+  },
+  "next_task": "define_public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median",
+  "non_claims": [
+    "not a new measurement result",
+    "not broad speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not production LLM-serving throughput",
+    "not paper-grade statistical confidence beyond repeat-count 3",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

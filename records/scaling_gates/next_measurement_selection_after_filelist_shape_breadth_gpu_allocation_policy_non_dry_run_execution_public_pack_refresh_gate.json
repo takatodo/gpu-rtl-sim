@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_public_pack_refresh_gate",
+  "status": "selected_broader_filelist_shape_sweep_next",
+  "objective": "Select the next workstream after closing the scoped filelist GPU allocation policy non-dry-run public-pack externalization boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate.json",
+  "current_priority": "define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_gate",
+  "decision": {
+    "selected_next_workstream": "broader_filelist_shape_sweep",
+    "selected_first_gate": "define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_gate",
+    "reason": "The accepted non-dry-run evidence is still narrow: two reviewed filelist-derived targets, one policy-selected 32x1 shape, and coverage-output equivalence only. Before broadening automatic allocation or moving toward a direct/native Verilator option boundary, the next conservative step is to define a broader shape sweep that can test whether the 32x1 policy remains correct and useful across additional explicit shapes without implying arbitrary RTL support."
+  },
+  "accepted_evidence": {
+    "source_execution_result_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_result_gate.json",
+    "source_execution_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_review_gate.json",
+    "source_public_pack_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate.json",
+    "targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "executed_shape": "32x1",
+    "command_count": 2,
+    "selected_acceptance_policy": "coverage_output_equivalence",
+    "max_coverage_output_mismatch_count": 0,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "compared_state_pair_count": 32,
+    "compared_word_count_per_report": 928,
+    "compared_byte_count_per_report": 3712,
+    "raw_full_state_equality_required": false,
+    "raw_full_state_all_matched": false
+  },
+  "deferred_candidates": [
+    {
+      "candidate": "native_verilator_option_prototype_boundary",
+      "reason": "A direct/native option boundary is strategically important, but selecting it now risks overstating the evidence. The current proof is two filelist-derived targets at 32x1, not a broad sidecar policy or upstream Verilator integration."
+    },
+    {
+      "candidate": "automatic_gpu_allocation_policy_broadening",
+      "reason": "The policy should not be broadened from two targets and one executed shape. A broader explicit shape sweep should first define which shapes are accepted, refused, or low-confidence."
+    },
+    {
+      "candidate": "filelist_dependency_inference_policy",
+      "reason": "The current filelist path still depends on explicit complete source closure or copied known-template closure. Arbitrary RTL dependency inference remains a separate non-claim."
+    },
+    {
+      "candidate": "resident_execution_optimization",
+      "reason": "Resident execution could address repeated-step launch overhead, but it would broaden runtime/ABI behavior before the scoped allocation-policy shape evidence is expanded."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_gate",
+    "must_pin": [
+      "the exact evidence gates used as input",
+      "the two reviewed filelist-derived targets covered by the first broader sweep",
+      "the explicit shapes to test beyond the already executed 32x1 shape",
+      "which shapes are correctness-only, which shapes may use timing, and which shapes are refusal or low-confidence probes",
+      "that coverage_output_equivalence is the required correctness condition",
+      "that raw full-state equality remains diagnostic only",
+      "that reports and artifacts remain generated evidence rather than source of truth",
+      "that the sweep definition is not automatic optimal GPU allocation, native Verilator option support, arbitrary RTL support, or runtime/ABI work"
+    ],
+    "should_reuse": [
+      "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+      "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+      "src/tools/run_hybrid_template.py",
+      "src/tools/run_results_reproduction.py",
+      "src/tools/results_reproduction_gpu_allocation_policy.py"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "raw_full_state_equality_required": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not new execution evidence",
+    "not timing or speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not a new workload",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

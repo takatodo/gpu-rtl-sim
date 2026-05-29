@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "gate": "define_filelist_shape_breadth_gpu_allocation_policy_execution_gate",
+  "status": "defined_filelist_shape_breadth_gpu_allocation_policy_execution_boundary",
+  "objective": "Define what scoped GPU allocation policy execution means after the accepted filelist shape-breadth policy dry-run.",
+  "source_definition_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_gate.json",
+  "source_dry_run_result_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_dry_run_result_gate.json",
+  "source_dry_run_review_gate": "config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_dry_run_review_gate.json",
+  "current_priority": "run_filelist_shape_breadth_gpu_allocation_policy_execution_dry_run_gate",
+  "execution_definition": {
+    "policy_execution_meaning": "Apply the accepted scoped policy recommendation to existing tracked template command plans for the reviewed targets, starting with dry-run command-plan validation.",
+    "operator_recommendation_only": false,
+    "command_plan_application": true,
+    "non_dry_run_execution_selected_by_this_gate": false,
+    "selected_shape": "32x1",
+    "selected_targets": [
+      {
+        "target": "filelist_paged_attention_kv_score",
+        "template": "config/slice_launch_templates/filelist_paged_attention_kv_score.json",
+        "shape": "32x1",
+        "source_closure_status_required": "complete",
+        "source_policy_confidence": "high",
+        "dry_run_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_paged_attention_kv_score.json --shape 32x1 --dry-run"
+      },
+      {
+        "target": "filelist_known_template_pulp_ita_mha",
+        "template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+        "shape": "32x1",
+        "source_closure_status_required": "complete",
+        "source_policy_confidence": "high",
+        "dry_run_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape 32x1 --dry-run"
+      }
+    ],
+    "required_correctness_policy_for_later_non_dry_run": "coverage_output_equivalence",
+    "later_non_dry_run_scope_requires_separate_gate": true
+  },
+  "refusal_policy": {
+    "unreviewed_targets": "refuse until a broader shape-breadth measurement gate exists",
+    "incomplete_source_closure": "refuse before non-dry-run execution planning",
+    "missing_repeat_median_evidence": "low confidence; do not select automatic policy execution",
+    "single_state_repeated_step_request": "low confidence; prefer resident or persistent-resident mitigation",
+    "native_verilator_option_expectation": "refuse as out of scope for this wrapper-sidecar policy boundary"
+  },
+  "selected_dry_run_validation": {
+    "next_gate": "run_filelist_shape_breadth_gpu_allocation_policy_execution_dry_run_gate",
+    "must_validate": [
+      "both selected dry-run commands exit 0",
+      "both command plans use shape 32x1",
+      "both command plans remain existing tracked-template flows",
+      "coverage_output_equivalence remains the later correctness policy",
+      "no reports or artifacts are treated as canonical state",
+      "no runtime or ABI change is introduced",
+      "native Verilator option support and arbitrary RTL optimal allocation remain non-claims"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "source_template_mutation_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_shape_breadth_gpu_allocation_policy_execution_dry_run_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not non-dry-run execution evidence",
+    "not broad speedup evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not a new workload",
+    "not production LLM-serving throughput",
+    "not paper-grade statistical confidence beyond repeat-count 3"
+  ]
+}

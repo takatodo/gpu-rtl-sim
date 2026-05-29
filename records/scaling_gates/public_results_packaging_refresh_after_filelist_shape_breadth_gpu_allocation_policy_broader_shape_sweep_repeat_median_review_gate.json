@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "gate": "public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_review_gate",
+  "status": "accepted_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median",
+  "objective": "Review and accept the public-pack refresh dry-run after the broader filelist shape-sweep repeat-median timing result.",
+  "source_definition_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_gate.json",
+  "source_result_gate": "config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_result_gate.json",
+  "current_priority": "define_public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The public-pack archive dry-run exits 0 and includes the broader-shape repeat-median boundary, workflow, measurement, review, public-refresh definition, source-of-truth docs, compact selection pointers, and generated repeat-median reports as evidence-only paths.",
+    "accepted_scope": "packaging refresh evidence for the scoped two-target, two-shape broader filelist repeat-median timing measurement",
+    "known_weaknesses": [
+      "the result is a packaging dry-run and creates no archive",
+      "the included timing evidence remains scoped to two filelist-derived targets and two shapes",
+      "repeat-count 3 is a stability check, not paper-grade statistics",
+      "the 1x64 repeated-step ratios remain modest compared with the 64x1 state-parallel ratios",
+      "coverage-output equivalence inspects the explicitly selected 29 output words per state, not raw full-state byte equality",
+      "reports and artifacts remain optional generated evidence, not source of truth",
+      "GEM comparison, native Verilator option support, arbitrary RTL support, arbitrary RTL dependency inference, automatic optimal GPU allocation, runtime/ABI changes, and production LLM-serving throughput remain unclaimed"
+    ]
+  },
+  "required_next_gate": {
+    "name": "define_public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_gate",
+    "must_pin": [
+      "public pack completion boundary after this repeat-median refresh",
+      "all required manifest paths are tracked or explicitly optional generated reports",
+      "the packaging-only scope and non-claims remain visible",
+      "generated reports and artifacts remain non-canonical",
+      "the accepted timing claim remains scoped to two filelist-derived targets at 64x1 and 1x64 with repeat-count 3",
+      "the accepted correctness claim remains coverage_output_equivalence mismatch count 0",
+      "raw full-state equality remains non-required"
+    ]
+  },
+  "acceptance_policy": {
+    "review_record": true,
+    "packaging_only": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "repeat_median_claim_carried_from_review": true,
+    "repeat_count": 3,
+    "broad_speedup_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not new execution evidence",
+    "not broad speedup evidence beyond the reviewed scoped repeat-median result",
+    "not GEM benchmark or comparison evidence",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

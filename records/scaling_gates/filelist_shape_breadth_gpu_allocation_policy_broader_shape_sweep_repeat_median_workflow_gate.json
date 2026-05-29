@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "gate": "filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_workflow_gate",
+  "objective": "Add a public repeat-median workflow for the accepted broader filelist shape-sweep target and shape set.",
+  "status": "added_broader_filelist_shape_repeat_median_workflow",
+  "source_boundary_gate": "config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_timing_gate.json",
+  "public_cli": "src/tools/run_results_reproduction.py",
+  "shared_modules": [
+    "src/tools/results_reproduction.py",
+    "src/tools/results_reproduction_cli.py",
+    "src/tools/results_reproduction_cli_args.py",
+    "src/tools/results_reproduction_median_dispatch.py",
+    "src/tools/results_reproduction_workloads.py",
+    "src/tools/results_reproduction_workload_factory.py"
+  ],
+  "current_priority": "run_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_timing_gate",
+  "public_interface": {
+    "dry_run_command": "python3 src/tools/run_results_reproduction.py --filelist-broader-shape-repeat-median 3 --dry-run",
+    "command": "python3 src/tools/run_results_reproduction.py --filelist-broader-shape-repeat-median 3",
+    "repeat_count": 3,
+    "summary_report": "reports/filelist_broader_shape_repeat_median_summary.json"
+  },
+  "workflow_scope": {
+    "shape_count": 4,
+    "correctness_policy": "coverage_output_equivalence",
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "runtime_or_abi_change_allowed": false,
+    "new_workload_allowed": false,
+    "required_workloads": [
+      {
+        "name": "filelist_paged_attention_kv_score_64x1",
+        "target": "filelist_paged_attention_kv_score",
+        "shape": "64x1",
+        "source_gate": "config/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+        "median_report": "reports/filelist_broader_shape_repeat_filelist_paged_attention_kv_score_64x1_median.json"
+      },
+      {
+        "name": "filelist_paged_attention_kv_score_1x64",
+        "target": "filelist_paged_attention_kv_score",
+        "shape": "1x64",
+        "source_gate": "config/scaling_gates/filelist_paged_attention_kv_score_first_hybrid_benchmark_gate.json",
+        "median_report": "reports/filelist_broader_shape_repeat_filelist_paged_attention_kv_score_1x64_median.json"
+      },
+      {
+        "name": "filelist_known_template_pulp_ita_mha_64x1",
+        "target": "filelist_known_template_pulp_ita_mha",
+        "shape": "64x1",
+        "source_gate": "config/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json",
+        "median_report": "reports/filelist_broader_shape_repeat_filelist_known_template_pulp_ita_mha_64x1_median.json"
+      },
+      {
+        "name": "filelist_known_template_pulp_ita_mha_1x64",
+        "target": "filelist_known_template_pulp_ita_mha",
+        "shape": "1x64",
+        "source_gate": "config/scaling_gates/filelist_known_template_pulp_ita_mha_first_hybrid_benchmark_gate.json",
+        "median_report": "reports/filelist_broader_shape_repeat_filelist_known_template_pulp_ita_mha_1x64_median.json"
+      }
+    ],
+    "sample_report_naming": "reports/filelist_broader_shape_repeat_{target}_{shape}_median_sample_{sample}_{cpu,hybrid,compare,compare_stdout}.*"
+  },
+  "dry_run_result": {
+    "status": "passed",
+    "command": "python3 src/tools/run_results_reproduction.py --filelist-broader-shape-repeat-median 3 --dry-run",
+    "all_four_shapes_present": true,
+    "sample_count_per_shape": 3,
+    "local_absolute_paths_in_stdout": false,
+    "writes_generated_evidence": false
+  },
+  "acceptance_policy": {
+    "workflow_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_measurement": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "public_cli_has_contract_test": true,
+    "docs_mention_required": true,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_timing_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not repeat-median timing yet",
+    "not broad speedup evidence",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
