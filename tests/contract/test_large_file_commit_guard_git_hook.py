@@ -19,11 +19,11 @@ class LargeFileCommitGuardGitHookTest(unittest.TestCase):
 
         self.assertTrue(os.access(hook, os.X_OK))
 
-    def test_versioned_hook_runs_active_surface_boundary_when_available(self) -> None:
+    def test_versioned_hook_keeps_pre_commit_staged_only(self) -> None:
         hook = (REPO_ROOT / ".githooks" / "pre-commit").read_text(encoding="utf-8")
 
-        self.assertIn("test_tracked_tool_dependency_boundary", hook)
-        self.assertIn("[ -f tests/contract/test_tracked_tool_dependency_boundary.py ]", hook)
+        self.assertIn("src/tools/check_staged_large_files.py", hook)
+        self.assertNotIn("test_tracked_tool_dependency_boundary", hook)
 
     def test_versioned_hook_blocks_oversized_git_commit(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -2,7 +2,3 @@
 set -eu
 
 python3 src/tools/check_staged_large_files.py
-
-if [ -f tests/contract/test_tracked_tool_dependency_boundary.py ]; then
-  python3 -m unittest tests.contract.test_tracked_tool_dependency_boundary -q
-fi
