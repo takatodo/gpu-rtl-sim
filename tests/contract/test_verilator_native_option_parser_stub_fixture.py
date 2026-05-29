@@ -27,6 +27,12 @@ SOURCE_PATCH_BOUNDARY_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_source_patch_boundary_gate.json"
 )
+OVERLAY_PATCH_DESCRIPTOR_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json"
+)
 
 
 sys.path.insert(0, str(TOOLS))
@@ -273,6 +279,47 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertTrue(review["validated_boundary_decisions"]["sim_accel_estimate_efficiency_outside_first_source_patch_minimum_until_next_gate_decides"])
         self.assertFalse(review["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
         self.assertEqual(review["next_task"], "define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate")
+
+    def test_overlay_patch_descriptor_gate_pins_apply_check_without_patch_file(self) -> None:
+        gate = json.loads(OVERLAY_PATCH_DESCRIPTOR_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_source_patch_boundary_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
+        )
+        upstream = gate["upstream_verilator_ref"]
+        self.assertEqual(upstream["selected_ref"], "v5.048")
+        self.assertEqual(upstream["selected_commit"], "d0aa828c217410fffc73d92077b6f4f54830357c")
+        descriptor = gate["overlay_descriptor_boundary"]
+        self.assertEqual(descriptor["future_patch_root"], "overlays/verilator/patches/")
+        self.assertIn("source_gate", descriptor["required_descriptor_fields"])
+        self.assertIn("handoff_contract_ref", descriptor["required_descriptor_fields"])
+        self.assertEqual(descriptor["descriptor_status"], "not_added_by_this_gate")
+        self.assertEqual(descriptor["patch_file_status"], "not_added_by_this_gate")
+        touched_files = gate["allowed_touched_files"]
+        self.assertEqual(
+            touched_files["required_source_candidates_for_first_patch"],
+            ["src/V3Options.h", "src/V3Options.cpp"],
+        )
+        self.assertIn(
+            "src/V3OptionParser.cpp",
+            touched_files["inspected_context_files_not_allowed_without_review_expansion"],
+        )
+        self.assertEqual(gate["apply_check_boundary"]["expected_apply_check_exit_code"], 0)
+        self.assertIn(
+            "--sim-accel-estimate-efficiency",
+            gate["native_parser_option_surface"]["explicitly_deferred_from_first_patch"],
+        )
+        self.assertTrue(gate["descriptor_definition_decisions"]["upstream_ref_pinned"])
+        self.assertFalse(gate["acceptance_policy"]["patch_file_allowed_by_this_gate"])
+        self.assertEqual(
+            gate["next_task"],
+            "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
+        )
 
 
 if __name__ == "__main__":

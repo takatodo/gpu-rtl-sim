@@ -1,0 +1,204 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
+  "status": "defined_verilator_native_option_parser_overlay_patch_descriptor_apply_check_boundary",
+  "objective": "Define the smallest repo-owned overlay patch descriptor and reproducible apply-check boundary for future native Verilator option parser work without adding a patch file or claiming implementation.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_source_patch_boundary_gate.json",
+  "source_boundary_gate": "config/scaling_gates/define_verilator_native_option_parser_source_patch_boundary_gate.json",
+  "current_priority": "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
+  "upstream_verilator_ref": {
+    "repository_url": "https://github.com/verilator/verilator.git",
+    "selected_ref": "v5.048",
+    "selected_ref_kind": "release_tag",
+    "selected_commit": "d0aa828c217410fffc73d92077b6f4f54830357c",
+    "observed_head_commit": "9455dddab4c477c0e33d364bea735c541f6ca982",
+    "observed_head_status": "informational_only_not_selected_because_HEAD_moves",
+    "verification_commands": [
+      "git ls-remote https://github.com/verilator/verilator.git HEAD",
+      "git ls-remote --tags https://github.com/verilator/verilator.git 'v*'"
+    ]
+  },
+  "overlay_descriptor_boundary": {
+    "schema_name": "verilator_native_option_parser_overlay_patch_descriptor_v1",
+    "future_descriptor_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+    "future_patch_file": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+    "descriptor_status": "not_added_by_this_gate",
+    "patch_file_status": "not_added_by_this_gate",
+    "future_patch_root": "overlays/verilator/patches/",
+    "vendored_verilator_source_status": "not_allowed_by_this_gate",
+    "third_party_verilator_submodule_status": "not_added_by_this_gate",
+    "descriptor_must_not_embed_upstream_source": true,
+    "required_descriptor_fields": [
+      "schema_version",
+      "descriptor_name",
+      "source_gate",
+      "descriptor_path",
+      "upstream_repository_url",
+      "upstream_ref",
+      "upstream_commit",
+      "patch_path",
+      "patch_file",
+      "allowed_touched_files",
+      "native_parser_option_surface",
+      "validation_cases_promoted_from_fixture",
+      "handoff_contract_ref",
+      "apply_check_command",
+      "expected_apply_check_exit_code",
+      "scope_exclusions",
+      "non_claims"
+    ]
+  },
+  "allowed_touched_files": {
+    "required_source_candidates_for_first_patch": [
+      "src/V3Options.h",
+      "src/V3Options.cpp"
+    ],
+    "inspected_context_files_not_allowed_without_review_expansion": [
+      "src/V3OptionParser.h",
+      "src/V3OptionParser.cpp",
+      "src/VlcMain.cpp",
+      "docs/guide/exe_verilator.rst",
+      "test_regress/t/"
+    ],
+    "reason": "The first native parser patch should store and parse the three sidecar options inside V3Options before changing shared option parser mechanics, upstream documentation, or upstream regression layout."
+  },
+  "apply_check_boundary": {
+    "checkout_command_template": "git clone --filter=blob:none --no-checkout https://github.com/verilator/verilator.git \"$VERILATOR_CHECKOUT\" && git -C \"$VERILATOR_CHECKOUT\" checkout d0aa828c217410fffc73d92077b6f4f54830357c",
+    "apply_check_command_template": "git -C \"$VERILATOR_CHECKOUT\" apply --check \"$REPO_ROOT/overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch\"",
+    "expected_apply_check_exit_code": 0,
+    "descriptor_validation_command_template": "python3 -m json.tool \"$REPO_ROOT/overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json\" >/dev/null",
+    "must_run_before_patch_implementation_claim": true,
+    "must_not_require_verilator_submodule": true,
+    "must_not_write_under_third_party": true,
+    "must_not_write_generated_outputs_as_source_of_truth": true
+  },
+  "native_parser_option_surface": {
+    "accepted_accelerators": [
+      "sidecar-gpu"
+    ],
+    "required_first_patch_options": [
+      "--sim-accel sidecar-gpu",
+      "--sim-accel-states <positive integer>",
+      "--sim-accel-steps <positive integer>"
+    ],
+    "explicitly_deferred_from_first_patch": [
+      "--sim-accel-shape <NxS>",
+      "--sim-accel-estimate-efficiency",
+      "--target",
+      "--stage",
+      "--emit-command",
+      "--emit-verilator-command",
+      "--print-verilator-command",
+      "--print-verilator-estimate-command",
+      "--print-efficiency-estimate",
+      "--print-operator-plan",
+      "--operator-plan-json",
+      "--sidecar-gpu",
+      "target-first registry lookup",
+      "resident mode selection",
+      "dataset-backed host preprocessing"
+    ],
+    "ordinary_verilator_inputs_to_preserve": [
+      "--cc",
+      "--timing",
+      "-Mdir",
+      "--top-module",
+      "source files",
+      "-f filelists",
+      "defines",
+      "include directories",
+      "warning flags",
+      "remaining ordinary Verilator arguments"
+    ]
+  },
+  "validation_cases_promoted_from_fixture": [
+    "accept expanded --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1",
+    "reject unknown accelerator while preserving the unsupported value",
+    "reject missing state or step shape half",
+    "reject non-positive state or step counts",
+    "reject compact --sim-accel-shape alone as outside the first native patch minimum",
+    "reject mixed expanded and compact shape spelling with the compact-shape native-minimum error",
+    "preserve ordinary Verilator arguments, source files, and -f filelist inputs without source closure inference"
+  ],
+  "descriptor_definition_decisions": {
+    "definition_only": true,
+    "descriptor_schema_defined": true,
+    "descriptor_file_added_by_this_gate": false,
+    "patch_file_added_by_this_gate": false,
+    "upstream_ref_pinned": true,
+    "apply_check_command_defined": true,
+    "upstream_touch_boundary_defined": true,
+    "sim_accel_estimate_efficiency_deferred_from_first_patch": true,
+    "compact_shape_spelling_deferred_from_first_patch": true
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
+    "must_decide": [
+      "whether v5.048 at d0aa828c217410fffc73d92077b6f4f54830357c is the right first pinned upstream Verilator ref",
+      "whether descriptor plus patch-file paths under overlays/verilator/patches/ are acceptable before adding either file",
+      "whether src/V3Options.h and src/V3Options.cpp are the correct minimal upstream source touch candidates",
+      "whether V3OptionParser, docs, and upstream test_regress paths should remain out of the first source patch until review expands the boundary",
+      "whether --sim-accel-estimate-efficiency and --sim-accel-shape should stay deferred from the first source patch",
+      "whether the apply-check command is reproducible without vendoring Verilator or adding a Verilator submodule",
+      "whether the next implementation gate may add the descriptor and patch file"
+    ],
+    "must_not_claim": [
+      "native Verilator parser implementation",
+      "Verilator source patch landed in this repository",
+      "descriptor file landed in this repository",
+      "patch applies to every Verilator version",
+      "vendored Verilator source tree",
+      "Verilator submodule",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "arbitrary RTL dependency inference",
+      "automatic optimal GPU allocation",
+      "new execution or timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "descriptor_schema_only": true,
+    "descriptor_file_allowed_by_this_gate": false,
+    "patch_file_allowed_by_this_gate": false,
+    "vendored_verilator_source_allowed_by_this_gate": false,
+    "third_party_verilator_submodule_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "native_verilator_parser_implementation_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not a Verilator source patch",
+    "not an overlay patch descriptor file",
+    "not a vendored Verilator source tree",
+    "not a Verilator submodule",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not parser inference of coverage manifests, host-probe metadata, source closure, state paths, or report paths",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

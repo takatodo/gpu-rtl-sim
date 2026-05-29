@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The commit split is complete and the source-patch boundary review is accepted; the weak point is now defining an overlay patch descriptor and reproducible apply-check contract without confusing it with the existing sidecar shim, tracked-template registry, arbitrary filelist planning, dependency inference, automatic allocation, or a landed Verilator parser patch.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The commit split is complete and the overlay patch descriptor/apply-check boundary is defined; the weak point is now reviewing that boundary without confusing it with the existing sidecar shim, tracked-template registry, arbitrary filelist planning, dependency inference, automatic allocation, or a landed Verilator parser patch.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is defining the smallest overlay patch descriptor/apply-check boundary before any native parser implementation claim.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the smallest overlay patch descriptor/apply-check boundary before any native parser implementation claim.
 
 Current priority:
 
-`define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate`
+`review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate`
 
 Current gate:
 
-`config/scaling_gates/review_verilator_native_option_parser_source_patch_boundary_gate.json`
+`config/scaling_gates/define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native option parser overlay patch descriptor/apply-check definition**: Define the descriptor schema/path, upstream Verilator ref, touched-file allowlist, and reproducible apply-check required before any real parser patch implementation claim.
+1. **Native option parser overlay patch descriptor/apply-check review**: Review whether the descriptor schema/path, upstream Verilator ref, touched-file allowlist, and reproducible apply-check are sufficient before adding any real parser patch files.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,14 +79,15 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Define the native Verilator option parser overlay patch descriptor/apply-check boundary after accepting the future overlay descriptor path.
+Review the native Verilator option parser overlay patch descriptor/apply-check boundary after defining it.
 
 Parser boundary definition:
 
 - source gate: `config/scaling_gates/define_verilator_native_option_parser_source_patch_boundary_gate.json`
 - source review gate: `config/scaling_gates/review_verilator_native_option_parser_source_patch_boundary_gate.json`
-- selected next gate: `define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate`
-- scope: overlay patch descriptor/apply-check definition only, not public CLI, native parser implementation, or execution
+- descriptor/apply-check definition gate: `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json`
+- selected next gate: `review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate`
+- scope: overlay patch descriptor/apply-check review only, not public CLI, native parser implementation, or execution
 - defined native minimum: `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`
 - wrapper/shim compatibility kept out of native minimum: `--sim-accel-shape <NxS>`, target-first registry lookup, print modes, JSON operator plans, resident modes, and dataset-backed flows
 - parser non-inference: coverage manifests, host-probe metadata, source closure, state paths, and report paths are sidecar handoff-contract fields, not parser-discovered fields
@@ -100,6 +101,7 @@ Parser boundary definition:
 - implementation review accepts the helper narrowly and requires the next gate to define the source/overlay patch boundary before any native parser claim
 - source-patch boundary selects a future repo-owned overlay patch descriptor under `overlays/verilator/patches/`, while keeping vendored Verilator source and a Verilator submodule out of scope
 - source-patch boundary review accepts that boundary and requires the next gate to pin descriptor schema/path, upstream Verilator ref, touched upstream files, and a reproducible apply-check command before any patch implementation claim
+- descriptor/apply-check definition pins upstream Verilator `v5.048` at `d0aa828c217410fffc73d92077b6f4f54830357c`, future descriptor and patch paths under `overlays/verilator/patches/`, first source touch candidates `src/V3Options.h` and `src/V3Options.cpp`, and expected apply-check exit code `0`
 - structured handoff fields are pinned before any native parser support claim
 - non-claim: this does not add parser implementation, execution, measurement, runtime/ABI support, arbitrary RTL dependency inference, automatic optimal GPU allocation, GEM comparison, raw full-state equality, or production-serving throughput
 
@@ -333,7 +335,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
-- current next task: `define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate`
+- current next task: `review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate`
 - reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
@@ -675,15 +677,16 @@ Tracked evidence:
 
 Recommended next gate:
 
-`define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate`
+`review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/review_verilator_native_option_parser_source_patch_boundary_gate.json` as the source artifact
-- define the descriptor schema and path under `overlays/verilator/patches/`
-- pin the upstream Verilator repository/ref, preferably a commit SHA
-- list the upstream Verilator files the descriptor may touch
-- define the exact reproducible `git apply --check` or equivalent apply-check command
+- use `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json` as the source artifact
+- decide whether Verilator `v5.048` at `d0aa828c217410fffc73d92077b6f4f54830357c` is the right first pinned upstream ref
+- decide whether descriptor and patch paths under `overlays/verilator/patches/` are acceptable before adding either file
+- decide whether `src/V3Options.h` and `src/V3Options.cpp` are the correct minimal upstream touch candidates
+- decide whether `src/V3OptionParser.*`, `src/VlcMain.cpp`, docs, and upstream `test_regress/t/` remain out of first patch scope
+- verify the defined `git apply --check` command and expected exit code boundary are reproducible without vendoring Verilator
 - decide whether `--sim-accel-estimate-efficiency` remains outside the first source patch
 - keep vendored Verilator source, execution, measurement, source closure inference, automatic allocation, and arbitrary RTL/filelist support out of scope
 - keep the accepted parser-only handoff fields tied to `coverage_output_equivalence`
