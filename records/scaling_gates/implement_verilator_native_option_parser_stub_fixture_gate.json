@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "gate": "implement_verilator_native_option_parser_stub_fixture_gate",
+  "status": "implemented_verilator_native_option_parser_stub_fixture",
+  "objective": "Implement the non-executing importable parser-stub fixture for future Verilator --sim-accel sidecar-gpu spelling without claiming native parser support.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_stub_fixture_gate.json",
+  "current_priority": "review_verilator_native_option_parser_stub_fixture_implementation_gate",
+  "implemented_surface": {
+    "selected_surface": "importable_non_executing_parser_stub_fixture",
+    "module": "src/tools/verilator_native_option_parser_stub_fixture.py",
+    "entrypoint_function": "parse_verilator_native_option_stub",
+    "public_cli_added": false,
+    "native_verilator_source_tree_required": false,
+    "native_verilator_parser_status": "not_implemented",
+    "runtime_or_abi_changed": false,
+    "new_execution_added": false,
+    "new_measurement_added": false,
+    "allowed_accelerators": [
+      "sidecar-gpu"
+    ],
+    "accepted_native_minimum": {
+      "spelling": "--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>",
+      "observed_fixture_shape": "64x1",
+      "state_count": 64,
+      "step_count": 1
+    },
+    "compact_shape_spelling_status": "rejected_as_wrapper_compatibility_outside_native_parser_stub_minimum",
+    "mixed_expanded_and_compact_shape_spelling_status": "rejected_with_compact_shape_spelling_outside_native_minimum",
+    "unknown_accelerator_rejection_layer": "parser_stub_validation_contract",
+    "unknown_accelerator_preserves_unsupported_value": true,
+    "unknown_accelerator_does_not_use_argparse_choices": true,
+    "source_files_and_filelists_are_preserved_not_expanded": true,
+    "source_closure_inferred": false,
+    "target_registry_lookup_used": false,
+    "automatic_gpu_allocation_used": false
+  },
+  "serialized_handoff_fields": [
+    "schema_version",
+    "surface",
+    "accelerator_mode",
+    "state_count",
+    "step_count",
+    "shape",
+    "ordinary_verilator_args",
+    "mdir",
+    "top_module",
+    "source_files",
+    "filelists",
+    "defines",
+    "include_dirs",
+    "warning_flags",
+    "source_boundary_status",
+    "state_and_report_naming_rules",
+    "correctness_policy",
+    "non_claims"
+  ],
+  "field_rules": {
+    "surface": "native_verilator_parser_stub_fixture",
+    "accelerator_mode": "sidecar-gpu",
+    "source_boundary_status": "preserved_only_not_resolved",
+    "correctness_policy": "coverage_output_equivalence",
+    "state_and_report_naming_rules": "deterministic_rules_unresolved_by_parser_stub",
+    "ordinary_verilator_args": "preserve unconsumed Verilator build args without inferring source closure",
+    "filelists": "preserve -f inputs as inputs only; do not expand them in the parser stub fixture"
+  },
+  "tested_contract_cases": [
+    {
+      "name": "accept_expanded_sidecar_gpu_64x1",
+      "expected_status": "accepted",
+      "preserves_verilator_args": [
+        "--cc",
+        "--timing",
+        "-Mdir obj_dir",
+        "--top-module demo_top",
+        "-DTRACE=1",
+        "-Wno-fatal",
+        "-Irtl/include",
+        "-f rtl/filelist.f",
+        "rtl/demo_top.sv"
+      ]
+    },
+    {
+      "name": "reject_unknown_accelerator",
+      "expected_error_code": "invalid_sim_accel",
+      "expected_rejection_layer": "parser_stub_validation_contract",
+      "unsupported_value_preserved": true
+    },
+    {
+      "name": "reject_missing_shape_half",
+      "expected_error_code": "missing_sim_accel_shape_half"
+    },
+    {
+      "name": "reject_nonpositive_state_or_step_counts",
+      "expected_error_code": "nonpositive_sim_accel_count"
+    },
+    {
+      "name": "reject_compact_shape_spelling_outside_native_minimum",
+      "expected_error_code": "compact_shape_spelling_outside_native_minimum"
+    },
+    {
+      "name": "reject_mixed_expanded_and_compact_shape_spelling",
+      "expected_error_code": "compact_shape_spelling_outside_native_minimum"
+    },
+    {
+      "name": "preserve_remaining_ordinary_verilator_args",
+      "expected_status": "accepted"
+    }
+  ],
+  "verification": {
+    "focused_contract_test_command": "python3 -m unittest tests.contract.test_verilator_native_option_parser_stub_fixture -q",
+    "focused_contract_test_exit_code": 0,
+    "focused_contract_test_count": 6
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_stub_fixture_implementation_gate",
+    "must_decide": [
+      "whether the helper implementation satisfies the accepted fixture contract without using wrapper argparse choices",
+      "whether the structured handoff fields remain parser-only and sufficient for the next native parser boundary",
+      "whether ordinary Verilator arguments are preserved without source closure inference",
+      "whether compact shape spelling and mixed shape spelling stay outside the native parser-stub minimum",
+      "whether implementation evidence is narrow enough to avoid native parser, arbitrary RTL, automatic allocation, execution, or measurement claims"
+    ],
+    "must_not_claim": [
+      "native Verilator parser implementation",
+      "Verilator source patch landed in this repository",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "arbitrary RTL dependency inference",
+      "automatic optimal GPU allocation",
+      "new execution or timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "implementation_only": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "native_verilator_parser_implementation_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_verilator_native_option_parser_stub_fixture_implementation_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not a Verilator source patch",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not parser inference of coverage manifests, host-probe metadata, source closure, state paths, or report paths",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

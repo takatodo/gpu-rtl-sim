@@ -43,6 +43,7 @@ TRACKED_TOOL_ROOTS = (
     "run_tlul_fifo_sync_cpu_baseline",
     "run_tlul_fifo_sync_scaling_validation",
     "selection_state",
+    "verilator_native_option_parser_stub_fixture",
 )
 TRACKED_REFERENCE_PREFIXES = (
     "AGENTS.md",
