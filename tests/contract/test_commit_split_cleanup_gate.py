@@ -18,6 +18,9 @@ PARSER_BOUNDARY_REVIEW_GATE = (
 PARSER_BOUNDARY_DRY_RUN_RESULT_GATE = (
     REPO_ROOT / "config" / "scaling_gates" / "verilator_native_option_parser_boundary_dry_run_result_gate.json"
 )
+PARSER_BOUNDARY_DRY_RUN_REVIEW_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "review_verilator_native_option_parser_boundary_dry_run_gate.json"
+)
 SELECTION = REPO_ROOT / "config" / "selection.json"
 TOOLS = REPO_ROOT / "src" / "tools"
 REGISTRY_NEXT_SELECTION_GATE = (
@@ -49,6 +52,9 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
 
     def read_parser_boundary_dry_run_result_gate(self) -> dict[str, object]:
         return json.loads(PARSER_BOUNDARY_DRY_RUN_RESULT_GATE.read_text(encoding="utf-8"))
+
+    def read_parser_boundary_dry_run_review_gate(self) -> dict[str, object]:
+        return json.loads(PARSER_BOUNDARY_DRY_RUN_REVIEW_GATE.read_text(encoding="utf-8"))
 
     def test_registry_next_selection_gate_chooses_commit_split_cleanup(self) -> None:
         selection = json.loads(REGISTRY_NEXT_SELECTION_GATE.read_text(encoding="utf-8"))
@@ -158,12 +164,12 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         self.assertFalse(completion["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
         self.assertFalse(completion["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
         self.assertFalse(completion["acceptance_policy"]["new_execution_allowed_by_this_gate"])
-        self.assertEqual(selection["current_priority"], "review_verilator_native_option_parser_boundary_dry_run_gate")
+        self.assertEqual(selection["current_priority"], "define_verilator_native_option_parser_stub_boundary_gate")
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/verilator_native_option_parser_boundary_dry_run_result_gate.json",
+            "config/scaling_gates/review_verilator_native_option_parser_boundary_dry_run_gate.json",
         )
-        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 806)
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 807)
 
     def test_parser_boundary_definition_keeps_native_scope_parser_only(self) -> None:
         gate = self.read_parser_boundary_gate()
@@ -260,6 +266,47 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         self.assertFalse(result["acceptance_policy"]["new_execution_allowed_by_this_gate"])
         self.assertFalse(result["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
 
+    def test_parser_boundary_dry_run_review_accepts_validation_layer_caveat(self) -> None:
+        review = self.read_parser_boundary_dry_run_review_gate()
+
+        self.assertEqual(
+            review["source_result_gate"],
+            "config/scaling_gates/verilator_native_option_parser_boundary_dry_run_result_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("argparse choices", review["review_decision"]["weakest_point"])
+        self.assertEqual(review["current_priority"], "define_verilator_native_option_parser_stub_boundary_gate")
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "define_verilator_native_option_parser_stub_boundary_gate",
+        )
+        must_define = review["required_next_gate"]["must_define"]
+        self.assertIn(
+            "where unknown accelerator validation belongs: native parser, shared mapper, or explicit compatibility wrapper layer",
+            must_define,
+        )
+        self.assertIn(
+            "the structured handoff fields that the stub must produce or call before any execution",
+            must_define,
+        )
+        accepted = review["accepted_scope"]
+        self.assertEqual(accepted["invalid_accelerator_rejection_layer"], "argparse_choices")
+        self.assertTrue(accepted["unknown_accelerator_validation_layer_caveat_accepted_for_this_dry_run"])
+        self.assertEqual(
+            accepted["shared_mapper_rejections_observed"],
+            [
+                "missing_states_or_steps_pair",
+                "mixed_shape_spelling",
+                "nonpositive_state_count",
+            ],
+        )
+        decisions = review["validated_result_decisions"]
+        self.assertTrue(decisions["argparse_unknown_accelerator_layer_must_not_be_called_shared_mapper_validation"])
+        self.assertTrue(decisions["validation_layer_caveat_must_be_resolved_or_explicitly_assigned_by_next_gate"])
+        self.assertFalse(review["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
+        self.assertFalse(review["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+        self.assertFalse(review["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
+
     def test_public_pack_manifest_includes_definition_gate(self) -> None:
         sys.path.insert(0, str(TOOLS))
         try:
@@ -293,6 +340,10 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         )
         self.assertIn(
             "records/scaling_gates/verilator_native_option_parser_boundary_dry_run_result_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/review_verilator_native_option_parser_boundary_dry_run_gate.json",
             PUBLIC_PACK_ARCHIVE_PATHS,
         )
 

@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_boundary_dry_run_gate",
+  "status": "accepted_verilator_native_option_parser_boundary_dry_run_with_validation_layer_caveat",
+  "objective": "Review the non-executing dry-run result for the native Verilator option parser boundary and select the smallest next definition step without overstating native parser support.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_boundary_gate.json",
+  "source_boundary_review_gate": "config/scaling_gates/review_verilator_native_option_parser_boundary_gate.json",
+  "source_result_gate": "config/scaling_gates/verilator_native_option_parser_boundary_dry_run_result_gate.json",
+  "current_priority": "define_verilator_native_option_parser_stub_boundary_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The dry-run result records twelve non-executing preview or rejection commands with expected exits, exposes the expanded future-Verilator spelling for the two static tracked filelist targets, keeps estimate mode separate, shows the coverage_output_equivalence handoff contract, and writes no generated report or artifact as source of truth.",
+    "weakest_point": "There is still no Verilator source tree or parser patch in this repository, and unknown accelerator names are currently rejected by argparse choices before reaching the shared compatibility mapper. The next gate must define the parser stub boundary and validation layer rather than claiming native parser support."
+  },
+  "accepted_scope": {
+    "shape": "64x1",
+    "nstates": 64,
+    "steps": 1,
+    "command_count": 12,
+    "zero_exit_preview_commands": 6,
+    "compatibility_mapper_error_commands": 3,
+    "argparse_or_not_ready_rejection_commands": 3,
+    "ready_static_filelist_targets": [
+      "filelist_paged_attention_kv_score",
+      "filelist_known_template_pulp_ita_mha"
+    ],
+    "expanded_future_verilator_spelling_observed": true,
+    "estimate_flag_kept_separate_from_command_only_preview": true,
+    "correctness_policy": "coverage_output_equivalence",
+    "handoff_contract_visible": true,
+    "shared_mapper_rejections_observed": [
+      "missing_states_or_steps_pair",
+      "mixed_shape_spelling",
+      "nonpositive_state_count"
+    ],
+    "invalid_accelerator_rejection_layer": "argparse_choices",
+    "unknown_accelerator_validation_layer_caveat_accepted_for_this_dry_run": true,
+    "resident_modes_ready_for_direct_native_handoff": false,
+    "dataset_backed_targets_ready_for_direct_native_handoff": false,
+    "generated_reports_or_artifacts_written": false,
+    "filelist_targets_directly_supported_by_shim": true,
+    "native_verilator_parser_status": "not_implemented",
+    "native_verilator_source_patch_status": "absent",
+    "runtime_or_abi_changed": false,
+    "new_measurement_added": false,
+    "new_execution_added": false
+  },
+  "validated_result_decisions": {
+    "dry_run_only": true,
+    "no_execution_evidence": true,
+    "no_measurement_evidence": true,
+    "expanded_spelling_normalizes_to_64x1": true,
+    "compact_shape_spelling_stays_wrapper_compatibility": true,
+    "estimate_command_is_separate": true,
+    "two_static_filelist_targets_are_sufficient_for_this_boundary": true,
+    "two_static_filelist_targets_do_not_imply_arbitrary_filelist_support": true,
+    "handoff_contract_is_visible_enough_for_next_stub_definition": true,
+    "argparse_unknown_accelerator_layer_must_not_be_called_shared_mapper_validation": true,
+    "validation_layer_caveat_must_be_resolved_or_explicitly_assigned_by_next_gate": true,
+    "resident_and_dataset_backed_flows_remain_not_ready": true,
+    "reports_and_artifacts_remain_noncanonical": true
+  },
+  "required_next_gate": {
+    "name": "define_verilator_native_option_parser_stub_boundary_gate",
+    "must_define": [
+      "the smallest parser-stub boundary that can accept --sim-accel sidecar-gpu with paired positive --sim-accel-states and --sim-accel-steps",
+      "where unknown accelerator validation belongs: native parser, shared mapper, or explicit compatibility wrapper layer",
+      "how parser-stub errors are represented without depending on current argparse-only behavior",
+      "the structured handoff fields that the stub must produce or call before any execution",
+      "how ordinary Verilator inputs, defines, filelists, top module, and mdir remain visible",
+      "how the stub avoids inferring arbitrary source closure, coverage manifests, host-probe metadata, state paths, or report paths",
+      "the non-executing tests or fixtures required before any native parser implementation claim"
+    ],
+    "must_not_claim": [
+      "native Verilator parser implementation",
+      "Verilator source patch landed in this repository",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "arbitrary RTL dependency inference",
+      "automatic optimal GPU allocation",
+      "new execution or timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "dry_run_result_accepted": true,
+    "validation_layer_caveat_accepted_for_next_definition": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "native_verilator_parser_implementation_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_verilator_native_option_parser_stub_boundary_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not a Verilator source patch",
+    "not a new measurement result",
+    "not non-dry-run execution evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not parser inference of coverage manifests, host-probe metadata, source closure, state paths, or report paths",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not a new public CLI or workflow",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
