@@ -21,6 +21,12 @@ SOURCE_PATCH_BOUNDARY_GATE = (
     / "scaling_gates"
     / "define_verilator_native_option_parser_source_patch_boundary_gate.json"
 )
+SOURCE_PATCH_BOUNDARY_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_source_patch_boundary_gate.json"
+)
 
 
 sys.path.insert(0, str(TOOLS))
@@ -241,6 +247,32 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(gate["required_next_gate"]["name"], "review_verilator_native_option_parser_source_patch_boundary_gate")
         self.assertFalse(gate["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
         self.assertFalse(gate["acceptance_policy"]["patch_file_added_by_this_gate"])
+
+    def test_source_patch_boundary_review_requires_descriptor_apply_check_next(self) -> None:
+        review = json.loads(SOURCE_PATCH_BOUNDARY_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_source_patch_boundary_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("no descriptor schema", review["review_decision"]["weakest_point"])
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
+        )
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate",
+        )
+        scope = review["accepted_scope"]
+        self.assertEqual(scope["future_patch_root"], "overlays/verilator/patches/")
+        self.assertFalse(scope["patch_file_added_by_this_gate"])
+        self.assertFalse(scope["vendored_verilator_source_required"])
+        self.assertTrue(review["validated_boundary_decisions"]["reproducible_apply_check_required_before_patch_implementation_claim"])
+        self.assertTrue(review["validated_boundary_decisions"]["sim_accel_estimate_efficiency_outside_first_source_patch_minimum_until_next_gate_decides"])
+        self.assertFalse(review["acceptance_policy"]["native_verilator_parser_claim_allowed_by_gate_alone"])
+        self.assertEqual(review["next_task"], "define_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate")
 
 
 if __name__ == "__main__":
