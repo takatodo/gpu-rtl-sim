@@ -1,8 +1,8 @@
 {
   "schema_version": 3,
   "top_level_goal": "modern_llm_serving_rtl_hybrid_conditions",
-  "current_priority": "run_config_generation_validation_breadth_execution_gate",
-  "current_priority_source_artifact": "config/scaling_gates/config_generation_validation_breadth_execution_gate.json",
+  "current_priority": "execute_commit_split_index_rewrite_gate",
+  "current_priority_source_artifact": "config/scaling_gates/resolve_commit_split_line_guard_risks_gate.json",
   "active_scope": {
     "active_target_count": 127,
     "active_tlul_target_count": 22,
@@ -65,8 +65,8 @@
     "status": "active_surface_compacted_generated_outputs_noncanonical",
     "selection_policy": "current_state_only; historical gate details live in records/scaling_gates with config/scaling_gates as a compatibility link; generated outputs are reproducible under reports and artifacts but are not source of truth",
     "config_minimal_surface_audit": "records/scaling_gates/config_minimal_surface_completion_audit.json",
-    "config_file_count_after_cleanup": 146,
-    "records_scaling_gate_json_count": 568,
+    "config_file_count_after_cleanup": 143,
+    "records_scaling_gate_json_count": 802,
     "generated_output_policy": "reports and artifacts may contain local generated evidence, but canonical decisions stay in config/selection.json, docs/status.md, docs/roadmap.md, and README.md",
     "generated_dirs": [
       "artifacts",

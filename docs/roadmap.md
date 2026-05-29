@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates. The remaining weakness is validation breadth: the generic host-probe builder is wired for generated clock/reset metadata, but more real targets should be exercised before treating it as universal.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The line guard risks are resolved; the weak point is now rewriting the large staged set into the accepted eight hook-sized groups.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is validating the generated-config path that makes hybrid execution feel close to a normal Verilator flow.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is executing the accepted eight-group commit split before parser, planner, dependency inference, allocation, resident optimization, or GEM work resumes.
 
 Current priority:
 
-`run_config_generation_validation_breadth_execution_gate`
+`execute_commit_split_index_rewrite_gate`
 
 Current gate:
 
-`config/scaling_gates/config_generation_validation_breadth_execution_gate.json`
+`config/scaling_gates/resolve_commit_split_line_guard_risks_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Config-generation breadth execution**: Run the non-dry-run commands in `config_generation_validation_breadth_execution_gate.json`, then record/review scoped coverage-output equivalence evidence.
+1. **Commit split index rewrite**: Rewrite the index into the accepted eight hook-sized groups without using `git add -A`.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,7 +79,275 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Define and run config-generation validation breadth for the Verilator-like hybrid flow.
+Select the next workstream after closing the tracked-template filelist registry public-pack boundary.
+
+Broader-shape GPU allocation policy dry-run:
+
+- source gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_gate.json`
+- workflow boundary: `python3 src/tools/run_results_reproduction.py --filelist-broader-shape-gpu-allocation-policy --dry-run` exposes the conservative `64x1` recommendation and reviewed `32x1` fallback without mutating templates or running measurements
+- evidence expectation: boundary, workflow, measurement, review, refresh definition, refresh result, refresh review, and externalization completion gates remain tracked by the public-pack manifest
+- report expectation: `reports/filelist_broader_shape_repeat_median_summary.json` and the four median report paths remain generated evidence only
+- acceptance: the next selection gate chooses exactly one follow-up workstream and keeps automatic allocation, native Verilator option support, arbitrary dependency inference, and broad speedup as non-claims unless separately proven
+- non-claim: this does not add new measurement, runtime/ABI support, arbitrary RTL dependency inference, automatic optimal GPU allocation, native Verilator option support, GEM comparison, raw full-state equality, or production-serving throughput
+
+Config-generation validation breadth execution:
+
+- selected tracked templates: `nvdla_cmac_core_mac`, `pulp_ita_dotp`, `pulp_ita_softmax_top`, `pulp_ita_mha`, `pulp_paged_attention_kv_score`, and `pulp_paged_kv_cache_large`
+- execution commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/<template>.json --shape 1x1`
+- execution result: all six non-dry-run commands exited with code `0`
+- coverage result: all six selected `coverage_output_equivalence` policies passed with mismatch count `0` over `29` words / `116` bytes
+- raw state result: strict raw final-state equality is false in all six reports, with mismatches limited to Verilator-internal diagnostic fields
+- next task after review: `define_public_results_packaging_refresh_after_config_generation_validation_breadth_execution_gate` (now completed by the public refresh chain below)
+- non-claim: this is not timing evidence, speedup evidence, runtime/ABI change, raw full-state equality, universal template validation, or production LLM-serving throughput
+
+Config-generation validation breadth public refresh:
+
+- refresh gate: `config/scaling_gates/public_results_packaging_refresh_after_config_generation_validation_breadth_execution_gate.json`
+- completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_config_generation_validation_breadth_execution_gate.json`
+- next-selection gate: `config/scaling_gates/next_measurement_selection_after_config_generation_validation_breadth_public_pack_refresh_gate.json`
+- selected next workstream: `config_generation_validation_shape_breadth`
+- shape-breadth definition gate: `config/scaling_gates/config_generation_validation_shape_breadth_gate.json`
+- shape-breadth dry-run gate: `config/scaling_gates/config_generation_validation_shape_breadth_dry_run_gate.json`
+- shape-breadth dry-run review gate: `config/scaling_gates/config_generation_validation_shape_breadth_dry_run_review_gate.json`
+- shape-breadth execution gate: `config/scaling_gates/config_generation_validation_shape_breadth_execution_gate.json`
+- shape-breadth execution result gate: `config/scaling_gates/config_generation_validation_shape_breadth_execution_result_gate.json`
+- shape-breadth execution review gate: `config/scaling_gates/config_generation_validation_shape_breadth_execution_review_gate.json`
+- shape-breadth public refresh gate: `config/scaling_gates/public_results_packaging_refresh_after_config_generation_validation_shape_breadth_execution_gate.json`
+- shape-breadth public completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_config_generation_validation_shape_breadth_execution_gate.json`
+- shape-breadth next-selection gate: `config/scaling_gates/next_measurement_selection_after_config_generation_validation_shape_breadth_public_pack_refresh_gate.json`
+- additional-target definition gate: `config/scaling_gates/config_generation_validation_additional_targets_gate.json`
+- additional-target dry-run review gate: `config/scaling_gates/config_generation_validation_additional_targets_dry_run_review_gate.json`
+- additional-target execution gate: `config/scaling_gates/config_generation_validation_additional_targets_execution_gate.json`
+- additional-target execution review gate: `config/scaling_gates/config_generation_validation_additional_targets_execution_review_gate.json`
+- additional-target public refresh gate: `config/scaling_gates/public_results_packaging_refresh_after_config_generation_validation_additional_targets_execution_gate.json`
+- additional-target public completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_config_generation_validation_additional_targets_execution_gate.json`
+- additional-target next-selection gate: `config/scaling_gates/next_measurement_selection_after_config_generation_validation_additional_targets_public_pack_refresh_gate.json`
+- generated-config follow-up gate: `config/scaling_gates/config_generation_validation_followup_gate.json`
+- metadata invariant review gate: `config/scaling_gates/tlul_template_schema_metadata_invariant_review_gate.json`
+- metadata invariant dry-run review gate: `config/scaling_gates/tlul_template_schema_metadata_invariant_review_dry_run_review_gate.json`
+- metadata invariant execution gate: `config/scaling_gates/tlul_template_schema_metadata_invariant_execution_gate.json`
+- metadata invariant execution review gate: `config/scaling_gates/tlul_template_schema_metadata_invariant_execution_review_gate.json`
+- metadata invariant public refresh gate: `config/scaling_gates/public_results_packaging_refresh_after_tlul_template_schema_metadata_invariant_execution_gate.json`
+- metadata invariant public completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_tlul_template_schema_metadata_invariant_execution_gate.json`
+- metadata invariant next-selection gate: `config/scaling_gates/next_measurement_selection_after_tlul_template_schema_metadata_invariant_public_pack_refresh_gate.json`
+- Verilator-like hybrid entrypoint surface gate: `config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_gate.json`
+- Verilator-like hybrid entrypoint dry-run gate: `config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_dry_run_gate.json`
+- Verilator-like hybrid entrypoint dry-run review gate: `config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_dry_run_review_gate.json`
+- Verilator-like hybrid entrypoint execution gate: `config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_gate.json`
+- Verilator-like hybrid entrypoint execution result gate: `config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_result_gate.json`
+- Verilator-like hybrid entrypoint execution review gate: `config/scaling_gates/verilator_like_hybrid_entrypoint_option_surface_execution_review_gate.json`
+- Verilator-like hybrid entrypoint public refresh gate: `config/scaling_gates/public_results_packaging_refresh_after_verilator_like_hybrid_entrypoint_option_surface_execution_gate.json`
+- Verilator-like hybrid entrypoint public completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_verilator_like_hybrid_entrypoint_option_surface_execution_gate.json`
+- Verilator-like hybrid entrypoint next-selection gate: `config/scaling_gates/next_measurement_selection_after_verilator_like_hybrid_entrypoint_option_surface_public_pack_refresh_gate.json`
+- filelist-facing hybrid plan boundary gate: `config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_gate.json`
+- filelist-facing hybrid plan dry-run gate: `config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_dry_run_gate.json`
+- filelist-facing hybrid plan dry-run review gate: `config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_dry_run_review_gate.json`
+- filelist-facing hybrid plan materialization gate: `config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_materialization_gate.json`
+- filelist-facing hybrid plan materialization result gate: `config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_materialization_result_gate.json`
+- filelist-facing hybrid plan materialization review gate: `config/scaling_gates/filelist_to_verilator_like_hybrid_plan_boundary_materialization_review_gate.json`
+- filelist materialized template dry-run gate: `config/scaling_gates/filelist_materialized_template_dry_run_gate.json`
+- filelist materialized template dry-run result gate: `config/scaling_gates/filelist_materialized_template_dry_run_result_gate.json`
+- filelist materialized template dry-run review gate: `config/scaling_gates/filelist_materialized_template_dry_run_review_gate.json`
+- filelist materialized template execution gate: `config/scaling_gates/filelist_materialized_template_execution_gate.json`
+- filelist materialized template execution result gate: `config/scaling_gates/filelist_materialized_template_execution_result_gate.json`
+- filelist materialized template execution review gate: `config/scaling_gates/filelist_materialized_template_execution_review_gate.json`
+- filelist materialized template public refresh gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_materialized_template_execution_gate.json`
+- filelist materialized template public refresh result gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_materialized_template_execution_result_gate.json`
+- filelist materialized template public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_materialized_template_execution_review_gate.json`
+- filelist materialized template public completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_materialized_template_execution_gate.json`
+- filelist materialized template next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_materialized_template_public_pack_refresh_gate.json`
+- filelist source-closure dependency policy gate: `config/scaling_gates/filelist_source_closure_dependency_policy_gate.json`
+- source-closure dry-run result gate: `config/scaling_gates/filelist_source_closure_dependency_policy_dry_run_result_gate.json`
+- source-closure dry-run review gate: `config/scaling_gates/filelist_source_closure_dependency_policy_dry_run_review_gate.json`
+- source-closure non-dry-run refusal gate: `config/scaling_gates/filelist_source_closure_non_dry_run_refusal_gate.json`
+- source-closure non-dry-run refusal result gate: `config/scaling_gates/filelist_source_closure_non_dry_run_refusal_result_gate.json`
+- source-closure non-dry-run refusal review gate: `config/scaling_gates/filelist_source_closure_non_dry_run_refusal_review_gate.json`
+- source-closure refusal public refresh gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_source_closure_refusal_gate.json`
+- source-closure refusal public refresh result gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_source_closure_refusal_result_gate.json`
+- source-closure refusal public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_source_closure_refusal_review_gate.json`
+- source-closure refusal public completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_source_closure_refusal_gate.json`
+- source-closure refusal next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_source_closure_refusal_public_pack_refresh_gate.json`
+- known-template source-closure copy definition gate: `config/scaling_gates/filelist_known_template_source_closure_copy_gate.json`
+- known-template source-closure copy dry-run result gate: `config/scaling_gates/filelist_known_template_source_closure_copy_dry_run_result_gate.json`
+- known-template source-closure copy dry-run review gate: `config/scaling_gates/filelist_known_template_source_closure_copy_dry_run_review_gate.json`
+- known-template source-closure copy materialization definition gate: `config/scaling_gates/filelist_known_template_source_closure_copy_materialization_gate.json`
+- known-template source-closure copy materialization result gate: `config/scaling_gates/filelist_known_template_source_closure_copy_materialization_result_gate.json`
+- known-template source-closure copy materialization review gate: `config/scaling_gates/filelist_known_template_source_closure_copy_materialization_review_gate.json`
+- known-template materialized-template dry-run gate: `config/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_dry_run_gate.json`
+- known-template materialized-template dry-run result gate: `config/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_dry_run_result_gate.json`
+- known-template materialized-template dry-run review gate: `config/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_dry_run_review_gate.json`
+- known-template materialized-template execution gate: `config/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_execution_gate.json`
+- known-template materialized-template execution result gate: `config/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_execution_result_gate.json`
+- known-template materialized-template execution review gate: `config/scaling_gates/filelist_known_template_source_closure_copy_materialized_template_execution_review_gate.json`
+- known-template execution public-pack refresh gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_known_template_source_closure_copy_execution_gate.json`
+- known-template execution public-pack refresh result gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_known_template_source_closure_copy_execution_result_gate.json`
+- known-template execution public-pack refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_known_template_source_closure_copy_execution_review_gate.json`
+- known-template execution public-pack completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_known_template_source_closure_copy_execution_gate.json`
+- known-template execution next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_known_template_source_closure_copy_execution_public_pack_refresh_gate.json`
+- known-template source-closure reference inventory gate: `config/scaling_gates/known_template_source_closure_reference_inventory_gate.json`
+- known-template source-closure reference inventory result gate: `config/scaling_gates/known_template_source_closure_reference_inventory_result_gate.json`
+- known-template source-closure reference inventory review gate: `config/scaling_gates/known_template_source_closure_reference_inventory_review_gate.json`
+- known-template source-closure reference inventory next-selection gate: `config/scaling_gates/next_measurement_selection_after_known_template_source_closure_reference_inventory_gate.json`
+- known-template independent reference promotion gate: `config/scaling_gates/known_template_source_closure_independent_reference_promotion_gate.json`
+- known-template independent reference promotion result gate: `config/scaling_gates/known_template_source_closure_independent_reference_promotion_result_gate.json`
+- known-template independent reference promotion review gate: `config/scaling_gates/known_template_source_closure_independent_reference_promotion_review_gate.json`
+- known-template independent reference promotion next-selection gate: `config/scaling_gates/next_measurement_selection_after_known_template_source_closure_independent_reference_promotion_review_gate.json`
+- known-template source-closure copy breadth validation gate: `config/scaling_gates/known_template_source_closure_copy_breadth_validation_gate.json`
+- known-template source-closure copy breadth validation dry-run result gate: `config/scaling_gates/known_template_source_closure_copy_breadth_validation_dry_run_result_gate.json`
+- known-template source-closure copy breadth validation dry-run review gate: `config/scaling_gates/known_template_source_closure_copy_breadth_validation_dry_run_review_gate.json`
+- known-template source-closure copy breadth validation next-selection gate: `config/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_validation_dry_run_review_gate.json`
+- known-template source-closure copy breadth materialization gate: `config/scaling_gates/known_template_source_closure_copy_breadth_materialization_gate.json`
+- known-template source-closure copy breadth materialization result gate: `config/scaling_gates/known_template_source_closure_copy_breadth_materialization_result_gate.json`
+- known-template source-closure copy breadth materialization review gate: `config/scaling_gates/known_template_source_closure_copy_breadth_materialization_review_gate.json`
+- known-template source-closure copy breadth materialization next-selection gate: `config/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_materialization_review_gate.json`
+- known-template source-closure copy breadth materialized-template dry-run gate: `config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_dry_run_gate.json`
+- known-template source-closure copy breadth materialized-template dry-run result gate: `config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_dry_run_result_gate.json`
+- known-template source-closure copy breadth materialized-template dry-run review gate: `config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_dry_run_review_gate.json`
+- known-template source-closure copy breadth materialized-template dry-run next-selection gate: `config/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_materialized_template_dry_run_review_gate.json`
+- known-template source-closure copy breadth materialized-template execution gate: `config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_gate.json`
+- known-template source-closure copy breadth materialized-template execution result gate: `config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_result_gate.json`
+- known-template source-closure copy breadth materialized-template execution review gate: `config/scaling_gates/known_template_source_closure_copy_breadth_materialized_template_execution_review_gate.json`
+- known-template source-closure copy breadth execution next-selection gate: `config/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_execution_review_gate.json`
+- known-template source-closure copy breadth execution public-pack refresh gate: `config/scaling_gates/public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_gate.json`
+- known-template source-closure copy breadth execution public-pack refresh result gate: `config/scaling_gates/public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_result_gate.json`
+- known-template source-closure copy breadth execution public-pack refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_known_template_source_closure_copy_breadth_execution_review_gate.json`
+- known-template source-closure copy breadth execution public-pack completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_known_template_source_closure_copy_breadth_execution_gate.json`
+- known-template source-closure copy breadth execution next-selection gate: `config/scaling_gates/next_measurement_selection_after_known_template_source_closure_copy_breadth_execution_public_pack_refresh_gate.json`
+- Verilator-compatible GPU hybrid minimal bench suite gate: `config/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite_gate.json`
+- Verilator-compatible GPU hybrid minimal bench suite result gate: `config/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite_result_gate.json`
+- Verilator-compatible GPU hybrid minimal bench suite run result gate: `config/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite_run_result_gate.json`
+- Verilator-compatible GPU hybrid minimal bench suite run review gate: `config/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite_run_review_gate.json`
+- Verilator-compatible GPU hybrid minimal bench suite completion audit: `config/scaling_gates/verilator_compatible_gpu_hybrid_minimal_bench_suite_completion_audit.json`
+- minimal-suite follow-up selection gate: `config/scaling_gates/next_measured_benchmark_selection_after_verilator_compatible_gpu_hybrid_minimal_bench_suite_completion_gate.json`
+- persistent resident decode-like follow-up definition gate: `config/scaling_gates/define_persistent_resident_decode_like_followup_measurement_gate.json`
+- persistent resident decode-like follow-up result gate: `config/scaling_gates/persistent_resident_decode_like_followup_measurement_result_gate.json`
+- persistent resident decode-like follow-up review gate: `config/scaling_gates/persistent_resident_decode_like_followup_measurement_review_gate.json`
+- persistent resident decode-like public-pack refresh gate: `config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_gate.json`
+- persistent resident decode-like public-pack refresh result gate: `config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_result_gate.json`
+- persistent resident decode-like public-pack refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_decode_like_followup_measurement_review_gate.json`
+- persistent resident decode-like public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_persistent_resident_decode_like_followup_measurement_gate.json`
+- next benchmark selection gate: `config/scaling_gates/next_measurement_selection_after_persistent_resident_decode_like_followup_public_pack_refresh_gate.json`
+- filelist shape-breadth timing definition gate: `config/scaling_gates/define_filelist_shape_breadth_timing_measurement_gate.json`
+- filelist shape-breadth timing result gate: `config/scaling_gates/filelist_shape_breadth_timing_measurement_result_gate.json`
+- filelist shape-breadth timing review gate: `config/scaling_gates/filelist_shape_breadth_timing_measurement_review_gate.json`
+- filelist shape-breadth public-pack refresh definition gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_timing_measurement_gate.json`
+- filelist shape-breadth public-pack refresh result gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_timing_measurement_result_gate.json`
+- filelist shape-breadth public-pack refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_timing_measurement_review_gate.json`
+- filelist shape-breadth public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_timing_measurement_gate.json`
+- filelist shape-breadth next measurement selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_timing_measurement_public_pack_refresh_gate.json`
+- filelist shape-breadth repeat-median timing definition gate: `config/scaling_gates/define_filelist_shape_breadth_repeat_median_timing_gate.json`
+- filelist shape-breadth repeat-median workflow gate: `config/scaling_gates/filelist_shape_breadth_repeat_median_workflow_gate.json`
+- filelist shape-breadth repeat-median measurement gate: `config/scaling_gates/filelist_shape_breadth_repeat_median_measurement_gate.json`
+- filelist shape-breadth repeat-median review gate: `config/scaling_gates/filelist_shape_breadth_repeat_median_review_gate.json`
+- filelist shape-breadth repeat-median public-pack refresh definition gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median_gate.json`
+- filelist shape-breadth repeat-median public-pack refresh result gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median_result_gate.json`
+- filelist shape-breadth repeat-median public-pack refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_repeat_median_review_gate.json`
+- filelist shape-breadth repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_repeat_median_gate.json`
+- filelist shape-breadth repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_repeat_median_public_pack_refresh_gate.json`
+- filelist shape-breadth GPU allocation policy definition gate: `config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_gate.json`
+- filelist shape-breadth GPU allocation policy dry-run result gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_dry_run_result_gate.json`
+- filelist shape-breadth GPU allocation policy dry-run review gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_dry_run_review_gate.json`
+- filelist shape-breadth GPU allocation policy execution definition gate: `config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_execution_gate.json`
+- filelist shape-breadth GPU allocation policy execution dry-run result gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_execution_dry_run_result_gate.json`
+- filelist shape-breadth GPU allocation policy execution dry-run review gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_execution_dry_run_review_gate.json`
+- filelist shape-breadth GPU allocation policy non-dry-run execution definition gate: `config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate.json`
+- filelist shape-breadth GPU allocation policy non-dry-run execution result gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_result_gate.json`
+- filelist shape-breadth GPU allocation policy non-dry-run execution review gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_review_gate.json`
+- filelist shape-breadth GPU allocation policy non-dry-run public refresh definition gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate.json`
+- filelist shape-breadth GPU allocation policy non-dry-run public refresh result gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_result_gate.json`
+- filelist shape-breadth GPU allocation policy non-dry-run public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_review_gate.json`
+- filelist shape-breadth GPU allocation policy non-dry-run public externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_gate.json`
+- filelist shape-breadth GPU allocation policy non-dry-run next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_non_dry_run_execution_public_pack_refresh_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep definition gate: `config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep dry-run result gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_dry_run_result_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep dry-run review gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_dry_run_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep non-dry-run definition gate: `config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep non-dry-run result gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_result_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep non-dry-run review gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep public refresh definition gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep public refresh result gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_result_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep public externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_non_dry_run_execution_public_pack_refresh_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep timing definition gate: `config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep timing result gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_result_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep timing review gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep timing public refresh definition gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep timing public refresh result gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_result_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep timing public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep timing public externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep timing next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_timing_measurement_public_pack_refresh_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep repeat-median measurement gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_measurement_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep repeat-median review gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep repeat-median public refresh definition gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep repeat-median public refresh result gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_result_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep repeat-median public externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_repeat_median_public_pack_refresh_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy definition gate: `config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy workflow gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_workflow_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy dry-run review gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_dry_run_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy public refresh definition gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_public_pack_refresh_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy non-dry-run execution definition gate: `config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy non-dry-run execution result gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_result_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy non-dry-run execution review gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy non-dry-run public refresh definition gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy non-dry-run public refresh result gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_result_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy non-dry-run public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy non-dry-run public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy non-dry-run next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_non_dry_run_execution_public_pack_refresh_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median definition gate: `config/scaling_gates/define_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_timing_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median workflow gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_workflow_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median dry-run review gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_dry_run_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median measurement gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_measurement_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median review gate: `config/scaling_gates/filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
+- filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
+- current next task: `execute_commit_split_index_rewrite_gate`
+- reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
+
+Config-generation validation shape breadth definition:
+
+- selected tracked templates: the same six templates used by the `1x1` breadth execution
+- selected shapes: `32x1` and `1x32`
+- planned dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/<template>.json --shape <32x1|1x32> --dry-run`
+- dry-run result: all 12 command plans exited with code `0`, emitted `src/tools/build_host_probe.py`, avoided Makefile host-probe targets, and preserved `coverage_output_equivalence`
+- execution definition: all 12 reviewed commands are selected for real build/run/compare
+- execution result: all 12 non-dry-run commands completed build/run/compare and passed `coverage_output_equivalence` with mismatch count `0`
+- review result: accepted for public packaging refresh; raw full-state equality remains false and timing/speedup claims remain out of scope
+- public refresh: defined and includes the 12-command shape-breadth result in the public pack without adding timing, speedup, raw-state, runtime/ABI, or production-serving claims
+- public completion: closed and selected additional tracked target breadth next
+- likely first added targets: `nvdla_cmac_a2cacc`, `prim_count`, and `prim_secded_inv_39_32_enc`
+- additional-target definition: selects `nvdla_cmac_a2cacc`, `prim_count`, and `prim_secded_inv_39_32_enc` at `1x1 --dry-run`
+- execution definition: all six representative metadata-invariant commands are selected for real build/run/compare
+- execution result: all six non-dry-run commands completed build/run/compare and passed `coverage_output_equivalence` with mismatch count `0`
+- execution review: accepted for public packaging refresh; raw full-state equality remains false and timing/speedup claims remain out of scope
+- public refresh/completion: closed and selected Verilator-like hybrid entrypoint surface definition next
+- entrypoint surface definition: target-name plus `--sim-accel-shape <NxS>` is the first operator-facing bridge; raw filelist input remains deferred
+- entrypoint dry-run/review: six non-executing preview/operator-plan commands exited `0`, preserved tracked-template handoff plus `coverage_output_equivalence`, and exposed synthesized Verilator command spelling
+- entrypoint execution definition: one non-dry-run `paged_attention_kv_score --sim-accel-shape 64x1` operator command is selected for build/run/compare
+- entrypoint execution/review: the selected operator command exited `0` and passed `coverage_output_equivalence` with mismatch count `0`; raw strict final-state equality remains false
+- entrypoint public refresh/completion: closed and selected filelist-to-hybrid-plan boundary next
+- filelist-facing boundary definition: repeatable `--source` plus explicit top/overlay/clock/reset metadata is the first plan-only contract
+- filelist-facing dry-run/review: one accepted plan command and one missing source/overlay refusal were accepted as plan-only evidence
+- filelist-facing materialization definition: exactly three reviewed payload paths may be written; existing source overwrite remains forbidden
+- filelist-facing materialization/review: exactly three JSON source files were written and accepted as materialized source, not execution evidence
+- filelist materialized template dry-run/review: the generated template dry-run exited `0`, produced the expected seven-stage command plan, and preserved `coverage_output_equivalence`
+- filelist materialized template execution definition: the matching non-dry-run `1x1` command is selected; later acceptance requires `coverage_output_equivalence` mismatch count `0`
+- filelist materialized template execution/review: the first attempt exposed incomplete source closure; after repairing the template source list, the `1x1` build/run/compare passed `coverage_output_equivalence` with mismatch count `0`
+- filelist materialized template public refresh/review: public manifest now includes the scoped filelist gate chain, generated filelist template/coverage manifest, generator helpers, and optional compare report
+- filelist materialized template public completion/next-selection: externalization is closed, and the next workstream is selected as source-closure dependency policy
+- filelist source-closure dependency policy definition: explicit complete source closure is required for execution; arbitrary RTL dependency inference remains a non-claim
+- source-closure dry-run/review: the `ita.sv` leaf-source case is marked incomplete, the explicit 29-file ITA/common_cells closure is marked complete, and arbitrary RTL dependency inference remains a non-claim
+- source-closure non-dry-run refusal/review: templates marked `incomplete` or `refused` are stopped before Verilator in non-dry-run mode; dry-run remains plan-only and unknown remains risk metadata
+- source-closure refusal public refresh/review: the refusal gate chain and contract test are in the public-pack manifest
+- source-closure refusal public completion/next-selection: externalization is closed and known-template source-closure copy is selected next
+- next task: `define_public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate`
+- current scope reminder: the execution gate must not add runtime/ABI changes, raw full-state equality claims, universal template validation, arbitrary dependency inference, arbitrary automatic GPU allocation claims, broad speedup claims beyond the scoped reviewed repeat-count-3 result, GEM comparison claims, native Verilator option claims, or production LLM-serving throughput claims
 
 TL-UL template schema normalization breadth:
 
@@ -210,8 +478,8 @@ PULP ITA softmax-top dependency/template boundary gate:
 Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
-- active `config/` file count: `146`
-- tracked gate JSON records under `records/scaling_gates/`: `568`
+- active `config/` file count: `143`
+- tracked gate JSON records under `records/scaling_gates/`: `802`
 - compatibility link: `config/scaling_gates -> ../records/scaling_gates`
 - generated files under `reports/` and `artifacts/`: reproducible evidence only, never source of truth
 
@@ -381,175 +649,28 @@ Tracked evidence:
 
 Recommended next gate:
 
-`run_config_generation_validation_breadth_execution_gate`
+`execute_commit_split_index_rewrite_gate`
 
 Acceptance criteria:
 
-- review `config/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json`
-- review `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
-- review `config/scaling_gates/persistent_resident_state_abi_repeat_median_measurement_gate.json`
-- review `config/scaling_gates/next_goal_selection_after_persistent_resident_repeat_median_gate.json`
-- review `config/scaling_gates/public_results_packaging_refresh_after_persistent_resident_repeat_median_gate.json`
-- review `config/scaling_gates/public_benchmark_pack_externalization_completion_gate.json`
-- review `config/scaling_gates/next_measurement_selection_after_public_benchmark_pack_externalization_gate.json`
-- review `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_gate.json`
-- review `config/scaling_gates/paged_attention_kv_cache_scale_up_measurement_review_gate.json`
-- review `config/scaling_gates/paged_attention_kv_cache_timing_summary_gate.json`
-- review `config/scaling_gates/paged_attention_kv_cache_timing_summary_review_gate.json`
-- review `config/scaling_gates/public_results_packaging_refresh_after_paged_attention_kv_cache_timing_summary_gate.json`
-- review `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_timing_summary_gate.json`
-- review `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_timing_refresh_gate.json`
-- review `config/scaling_gates/paged_attention_kv_cache_repeat_median_timing_gate.json`
-- review `config/scaling_gates/paged_attention_kv_cache_repeat_median_workflow_gate.json`
-- review `config/scaling_gates/paged_attention_kv_cache_repeat_median_measurement_gate.json`
-- review `config/scaling_gates/paged_attention_kv_cache_repeat_median_review_gate.json`
-- review `config/scaling_gates/public_benchmark_pack_externalization_completion_after_paged_attention_kv_cache_repeat_median_gate.json`
-- review `config/scaling_gates/next_measurement_selection_after_paged_attention_kv_cache_repeat_median_refresh_gate.json`
-- review `config/scaling_gates/config_generation_validation_breadth_gate.json`
-- review `config/scaling_gates/config_generation_validation_breadth_dry_run_gate.json`
-- review `config/scaling_gates/config_generation_validation_breadth_dry_run_review_gate.json`
-- review `config/scaling_gates/config_generation_validation_breadth_execution_gate.json`
-- review tracked gate records only when they are part of the staged source-of-truth set
-- use `config/selection.json` and `config/selection_extensions.json` for current and historical gate-chain pointers instead of copying long local candidate record lists into this roadmap
-- verify the persistent resident state ABI shape/phase sweep summary is reproducible and records all four cases with coverage-output equivalence pass and mismatch count `0`
-- preserve the measured repeat-median result for the existing `16x64` four-phase path
-- preserve `coverage_output_equivalence` as the correctness policy
-- keep reports and artifacts as generated evidence, not source of truth
-- preserve the passed paged-attention/KV-cache scale-up dry-run record
-- preserve the passed paged-attention/KV-cache scale-up measurement record
-- verify the four generated compare reports passed `coverage_output_equivalence` with mismatch count `0`
-- review `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_256x1_coverage_output_compare.json`
-- review `reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x64_coverage_output_compare.json`
-- review `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_64x1_coverage_output_compare.json`
-- review `reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x64_coverage_output_compare.json`
-- keep the measurement set on tracked `pulp_paged_kv_cache_large` and `pulp_paged_attention_kv_score` templates
-- preserve the single-run timing summary for the same four measured shapes before making broader speedup claims
-- keep the publication-only refresh gate for the reviewed paged-attention/KV-cache correctness and timing evidence aligned with the public pack
-- define a repeat-median timing gate for the existing four-shape paged-attention/KV-cache set before adding new shapes or runtime optimizations
-- add a public repeat-median workflow for those four shapes because the existing representative `--repeat-median` flow does not cover the full paged-attention/KV-cache set
-- preserve the generated `reports/paged_attention_kv_cache_repeat_median_summary.json` as evidence only, not source of truth
-- keep the reviewed paged-attention/KV-cache repeat-median result packaged before selecting another measurement
-- define tracked target breadth for generated config and generic host-probe metadata validation
-- dry-run the tracked config-generation breadth set before measured execution
-- review that the six tracked dry-run command plans use generic host-probe metadata without Makefile host-probe targets
-- define the build/run/compare execution boundary before claiming breadth execution evidence
-- run the six tracked `1x1` build/run/compare commands only after the execution boundary is fixed
-- keep the reviewed six-report execution result packaged before selecting another measurement
-- preserve the 12-command non-`1x1` shape-breadth dry-run result before claiming execution evidence
-- review that the 12 shape-breadth dry-run command plans use generic host-probe metadata and `coverage_output_equivalence` compare plans
-- run the tracked non-dry-run shape-breadth build/run/compare commands fixed by the current tracked execution boundary
-- verify the 12 generated shape-breadth compare reports passed `coverage_output_equivalence` with mismatch count `0`
-- keep the reviewed 12-report execution result packaged before selecting another measurement
-- avoid importing unreviewed candidate overlays, MobileViT, Ibex, or quantized KV-cache files
-- keep broad modern-NN, production LLM-serving, and raw full-state equality claims out of the externalization pack
+- use `config/scaling_gates/resolve_commit_split_line_guard_risks_gate.json` as the source artifact
+- keep the accepted group counts `15`, `26`, `71`, `30`, `24`, `59`, `28`, and `25` below the documented `100`-file commit guard limit
+- rewrite the index into those groups without touching unrelated unstaged changes
+- check that shared docs, tests, and manifest files stay coherent when staged into the first group
+- confirm unrelated or pre-existing unstaged changes remain untouched
+- keep generated reports and artifacts non-canonical
+- add no measurement, runtime/ABI, arbitrary RTL, automatic allocation, GEM, production-serving, or raw full-state equality claim
+- keep native parser, arbitrary filelist planning, dependency inference, automatic allocation, resident optimization, and GEM comparison as deferred workstreams
+- approve the verification commands to rerun after each split before any index rewrite
 
-Working tree review boundary:
+Deferred technical workstreams:
 
-Canonical next measurement selection task:
-
-`select_next_measurement_after_paged_attention_kv_cache_scale_up_followup_public_pack_refresh`
-
-Historical public-packaging boundary (superseded by the follow-up chain):
-
-`select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`
-
-The config-generation validation breadth execution result is now reviewed, refreshed into the public pack, closed by an externalization completion gate, followed by a selection gate, defined as a non-`1x1` shape-breadth dry-run set, dry-run command plans have passed, the dry-run result is accepted, the 12-command shape-breadth execution boundary is defined, all 12 build/run/compare commands passed `coverage_output_equivalence` with mismatch count `0`, the shape-breadth execution result is reviewed, the shape-breadth public-results refresh is defined, the shape-breadth externalization completion gate is closed, the next measurement selection gate selects resident execution overhead breakdown, the overhead breakdown analysis is recorded from existing evidence, the runtime-boundary review selects a persistent resident ABI shape/phase sweep, the sweep matrix is defined, the public sweep workflow is implemented with distinct per-case reports, the four-case sweep measurement is recorded with mismatch count `0`, the sweep result is reviewed and refreshed into the public pack, the persistent-resident externalization completion gate is closed, the next measurement selection gate selects `define_paged_attention_kv_cache_scale_up_continuation_gate`, the continuation definition gate fixes tracked `pulp_paged_kv_cache_large` `512x1` and `1x128` plus tracked `pulp_paged_attention_kv_score` `128x1` and `1x128`, the continuation dry-run gate passed 4 command plans, the dry-run review accepted the non-dry-run boundary, and the continuation measurement recorded all 4 build/run/compare commands passing `coverage_output_equivalence` with mismatch count `0`, the measurement review accepted that result, the public results refresh packaged the reviewed four-report correctness evidence, the externalization completion gate selected the next measurement selection task, that selection gate chose repeat-median timing for the same four scale-up continuation shapes, the repeat-median workflow and measurement are complete, the review accepts the scoped repeat-count `3` result, the repeat-median public results refresh is defined, the externalization completion gate selects `select_next_measurement_after_paged_attention_kv_cache_scale_up_continuation_repeat_median_public_pack_refresh`, that selection chooses `define_paged_attention_kv_cache_scale_up_next_shapes_gate`, the next-shapes definition pins four larger same-target shapes before dry-run, the next-shapes dry-run gate passed 4 command plans, the dry-run review accepts the non-dry-run measurement boundary, the next-shapes measurement recorded all 4 build/run/compare commands passing `coverage_output_equivalence` with mismatch count `0`, the measurement review accepts that scoped correctness result, and the public results refresh packages the reviewed four-report correctness evidence. Do not mix in MobileViT, Ibex, untracked candidate overlays, quantized KV-cache, unrelated workload execution outputs, runtime/ABI changes, repeat-median timing claims, or production serving claims.
-
-Review/stage boundary:
-
-- `docs/roadmap.md`
-- `docs/status.md`
-- `records/scaling_gates/ita_first_seed_selection_after_dependency_boundary_gate.json`
-- `records/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json`
-- `records/scaling_gates/pulp_ita_dotp_first_generic_host_probe_build_run_compare_gate.json`
-- `records/scaling_gates/pulp_ita_dotp_shape_expansion_gate.json`
-- `records/scaling_gates/pulp_ita_dotp_shape_expansion_review_gate.json`
-- `records/scaling_gates/pulp_ita_softmax_top_dependency_template_boundary_gate.json`
-- `records/scaling_gates/pulp_ita_softmax_top_first_generic_host_probe_build_run_compare_gate.json`
-- `records/scaling_gates/pulp_ita_softmax_top_shape_expansion_gate.json`
-- `records/scaling_gates/pulp_ita_softmax_top_shape_expansion_review_gate.json`
-- `records/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json`
-- `records/scaling_gates/pulp_ita_mha_first_generic_host_probe_build_run_compare_gate.json`
-- `records/scaling_gates/pulp_ita_mha_shape_expansion_gate.json`
-- `records/scaling_gates/pulp_ita_mha_shape_expansion_review_gate.json`
-- `records/scaling_gates/public_results_packaging_refresh_after_pulp_ita_mha_shape_expansion_gate.json`
-- `records/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json`
-- `records/scaling_gates/next_measurement_goal_selection_after_public_pack_readiness_gate.json`
-- `docs/results.md`
-- `config/slice_launch_templates/pulp_ita_mha.json`
-- `overlays/ITA/src/pulp_ita_tc_sram_sim.sv`
-- `overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv`
-- `overlays/ITA/tests/pulp_ita_mha_coverage_regions.json`
-- `config/slice_launch_templates/pulp_ita_dotp.json`
-- `config/slice_launch_templates/pulp_ita_softmax_top.json`
-- `overlays/ITA/src/pulp_ita_dotp_gpu_cov_tb.sv`
-- `overlays/ITA/tests/pulp_ita_dotp_coverage_regions.json`
-- `overlays/ITA/src/pulp_ita_cluster_clock_gating_sim.sv`
-- `overlays/ITA/src/pulp_ita_softmax_top_gpu_cov_tb.sv`
-- `overlays/ITA/tests/pulp_ita_softmax_top_coverage_regions.json`
-- `records/scaling_gates/ita_dependency_clean_checkout_boundary_gate.json`
-- `records/scaling_gates/nvdla_shape_expansion_next_workstream_review_gate.json`
-- `records/scaling_gates/candidate_template_clean_checkout_selection_gate.json`
-- `records/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json`
-- `records/scaling_gates/nvdla_cmac_core_mac_template_shape_expansion_gate.json`
-- `config/slice_launch_templates/nvdla_cmac_core_mac.json`
-- `overlays/rtlmeter/designs/NVDLA/src/nvdla_cmac_core_mac_gpu_cov_tb.sv`
-- `overlays/rtlmeter/designs/NVDLA/tests/nvdla_cmac_core_mac_coverage_regions.json`
-- `src/tools/hybrid_template_runner.py`
-- `tests/contract/test_full_ita_mha_larger_paged_kv_next.py`
-- `tests/contract/test_hybrid_verilator_like_cli.py`
-
-Exclude from this review boundary:
-
-- `AGENTS.md`
-- `src/hybrid/Makefile`
-- `third_party/ITA`, `third_party/common_cells`, and `third_party/ibex` edits beyond validating required source paths
-- additional NVDLA targets beyond `nvdla_cmac_core_mac`
-- `ita_softmax_top`, KV-cache, LLM SoC, and MobileViT candidate templates and overlays
-- MobileViT, tiny LLM serving, and LLM SoC CPU-kick tools/tests
-- runtime/pass changes already closed by `resident_runtime_contract_completion_boundary`
-- generated-config tooling already closed by `verilator_like_hybrid_config_generation_boundary`
-- generated output under `reports/`, `artifacts/`, and `work/`
-
-Boundary acceptance:
-
-- candidate selection gate identifies `NVDLA.nvdla_cmac_core_mac` as primary and `NVDLA.nvdla_cmac_a2cacc` as secondary
-- minimal build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
-- shape expansion gate records `8x1`, `32x1`, and `8x4` coverage-output pass with mismatch count `0`
-- next workstream review selects `ita_dependency_clean_checkout_boundary`
-- ITA dependency boundary gate records canonical `.gitmodules` entries and gitlinks for `third_party/ITA` and `third_party/common_cells`
-- ITA first seed selection gate selects `pulp_ita_dotp` and defers `pulp_ita_softmax_top`
-- `third_party/ITA/src/ita_dotp.sv` is the only required ITA source path for the first selected seed
-- PULP ITA dotp overlay/template gate carries `build.host_probe_builder: src/tools/build_host_probe.py`
-- dry-run emits `python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_dotp.json`
-- PULP ITA dotp first build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
-- PULP ITA dotp first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch
-- PULP ITA dotp shape expansion gate records `64x1` and `1x64` coverage-output pass with mismatch count `0`
-- PULP ITA dotp shape expansion gate records `64x1` as much more favorable than `1x64` in scoped single-run timing
-- PULP ITA dotp shape expansion review gate selects `ita_softmax_top_dependency_template_boundary` next
-- PULP ITA dotp shape expansion review gate keeps softmax measurement separate from boundary definition
-- PULP ITA softmax-top dependency/template boundary gate carries `build.host_probe_builder: src/tools/build_host_probe.py`
-- dry-run emits `python3 src/tools/build_host_probe.py config/slice_launch_templates/pulp_ita_softmax_top.json`
-- PULP ITA softmax-top first build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
-- PULP ITA softmax-top first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch
-- PULP ITA softmax-top shape expansion gate records `64x1` and `1x64` coverage-output pass with mismatch count `0`
-- PULP ITA softmax-top shape expansion gate records `64x1` as much more favorable than `1x64` in scoped single-run timing
-- PULP ITA softmax-top shape expansion review gate selects `full_ita_mha_dependency_template_boundary` next
-- PULP ITA softmax-top shape expansion review gate keeps full MHA measurement separate from boundary definition
-- PULP ITA MHA dependency/template boundary gate carries `build.host_probe_builder: src/tools/build_host_probe.py`
-- PULP ITA MHA dependency/template boundary gate keeps first full MHA measurement separate from boundary definition
-- PULP ITA MHA first build/run/compare gate records `coverage_output_equivalence` pass with mismatch count `0`
-- PULP ITA MHA first build/run/compare gate records raw full-state equality as false with Verilator-internal-only mismatch
-- PULP ITA MHA shape expansion gate records `32x1` and `1x32` coverage-output pass with mismatch count `0`
-- PULP ITA MHA shape expansion gate records `32x1` as much more favorable than `1x32` in scoped single-run timing
-- the NVDLA `cmac_core_mac` template references only present source files
-- the template carries `build.host_probe_builder: src/tools/build_host_probe.py`
-- `run_hybrid_template.py` passes template `verilator_defines` into the Verilator command
-- the overlay and coverage manifest are tracked source files
-- `src/hybrid/Makefile` remains free of generated NVDLA host-probe targets
-- no generated output is introduced as source of truth
-- `python3 -m unittest tests.contract.test_resident_runtime_contract -q` passes
-- `python3 -m unittest discover -s tests/contract -q` passes
+- native Verilator parser boundary
+- arbitrary filelist-to-sidecar planner
+- filelist dependency inference
+- broader automatic GPU allocation policy
+- resident execution optimization
+- GEM comparison boundary
 
 ## Archive Boundary
 
