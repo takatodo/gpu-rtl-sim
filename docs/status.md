@@ -2,11 +2,11 @@
 
 ## Weakest Point
 
-The commit-split cleanup is complete, and the first Verilator native-option parser stub boundary review is accepted. The current weak point is now making that contract testable without overstating it: existing evidence still comes through sidecar/shim entrypoints and tracked-template registry support rather than a real Verilator parser, no Verilator source tree or parser patch exists in this repository, and observable unknown-accelerator rejection still happens through wrapper argparse choices.
+The commit-split cleanup is complete, and the first Verilator native-option parser stub fixture contract is defined. The current weak point is now reviewing that fixture before implementation: existing evidence still comes through sidecar/shim entrypoints and tracked-template registry support rather than a real Verilator parser, no Verilator source tree or parser patch exists in this repository, and observable unknown-accelerator rejection still happens through wrapper argparse choices.
 
 Current cleanup policy: keep `config/selection.json` compact (core pointer and operational fields), park bulky historical maps in `config/selection_extensions.json`, keep historical gate records under `records/scaling_gates/` with `config/scaling_gates` as a compatibility link, and keep generated evidence reproducible under `reports/` and `artifacts/` without retaining it as source of truth.
 
-Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `809` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
+Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `810` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
 
 Hybrid usability state: generated templates now carry generic host-probe build metadata and can use `src/tools/build_host_probe.py` without adding a per-target Makefile rule.
 
@@ -52,15 +52,15 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`define_verilator_native_option_parser_stub_fixture_gate`
+`review_verilator_native_option_parser_stub_fixture_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/review_verilator_native_option_parser_stub_boundary_gate.json`
+`config/scaling_gates/define_verilator_native_option_parser_stub_fixture_gate.json`
 
 ## 追跡タスク
 
-- `define_verilator_native_option_parser_stub_fixture_gate` で、parser-stub validation/handoff の非実行 fixture を定義する。
+- `review_verilator_native_option_parser_stub_fixture_gate` で、parser-stub validation/handoff fixture 定義を受け入れてよいか確認する。
 - `docs/migration_notes.md` の「シンプル検証からの乖離」節を、前提変更時に見直す。
 - 新規ゲート完了時は `config/selection_extensions.json` の `completed_goal_evidence` / `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json` の整合を取る。
 - ゲート JSON に残る履歴表記の例: `next_task: select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`（正の源泉は常に `config/selection.json` の `current_priority` を優先）。マージ後の全体像が必要なら `src/tools/selection_state.py` の `load_selection` を参照。
@@ -178,6 +178,8 @@ Verilator native option parser boundary dry-run review: `config/scaling_gates/re
 Verilator native option parser stub boundary definition: `config/scaling_gates/define_verilator_native_option_parser_stub_boundary_gate.json` assigns canonical unknown-accelerator validation to the parser-stub validation contract and treats current argparse choices as wrapper compatibility only. It defines the structured handoff fields for a future non-executing parser-stub fixture while keeping target registry lookup, source closure metadata, coverage manifest selection, host-probe metadata, state materialization, execution, and comparison on the sidecar side. The next task is review; this definition adds no Verilator source patch, parser implementation, execution, measurement, runtime/ABI change, arbitrary filelist support, dependency inference, automatic allocation, GEM comparison, production-serving claim, or raw full-state equality claim.
 
 Verilator native option parser stub boundary review: `config/scaling_gates/review_verilator_native_option_parser_stub_boundary_gate.json` accepts the boundary narrowly and advances to `define_verilator_native_option_parser_stub_fixture_gate`. The review keeps the weak point explicit: this remains contract-only, the repository has no Verilator source tree or parser patch, and current unknown-accelerator rejection is still observable through wrapper argparse choices. The next gate must define a non-executing fixture that makes the parser-stub validation and handoff contract testable before any native parser support claim.
+
+Verilator native option parser stub fixture definition: `config/scaling_gates/define_verilator_native_option_parser_stub_fixture_gate.json` defines the non-executing importable fixture contract and advances to `review_verilator_native_option_parser_stub_fixture_gate`. The fixture must accept `sidecar-gpu` `64x1`, reject unknown accelerators through parser-stub validation rather than wrapper argparse choices, reject missing/non-positive shape inputs, reject compact `--sim-accel-shape` as wrapper compatibility outside the native minimum, preserve ordinary Verilator build arguments, and serialize parser-only handoff fields. This definition adds no helper implementation, Verilator source patch, parser implementation, execution, measurement, runtime/ABI change, arbitrary filelist support, dependency inference, automatic allocation, GEM comparison, production-serving claim, or raw full-state equality claim.
 
 Public benchmark pack externalization readiness state: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for handing the refreshed pack to an external reader. The status is `ready_for_external_review`; this is a packaging/readiness audit only, not a new measurement result or stronger performance claim.
 
