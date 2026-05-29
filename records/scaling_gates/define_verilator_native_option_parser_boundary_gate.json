@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_boundary_gate",
+  "status": "defined_verilator_native_option_parser_boundary",
+  "objective": "Define the smallest native Verilator option-parser boundary that can hand off to the existing sidecar plan contract without claiming a native parser implementation yet.",
+  "source_commit_split_completion_gate": "config/scaling_gates/execute_commit_split_index_rewrite_gate.json",
+  "source_prototype_boundary_gate": "config/scaling_gates/define_verilator_native_option_prototype_boundary_gate.json",
+  "source_prototype_dry_run_review_gate": "config/scaling_gates/verilator_native_option_prototype_boundary_dry_run_review_gate.json",
+  "source_filelist_registry_resolution_gate": "config/scaling_gates/define_verilator_native_option_prototype_filelist_target_resolution_gate.json",
+  "source_filelist_registry_review_gate": "config/scaling_gates/verilator_native_option_prototype_filelist_registry_review_gate.json",
+  "current_priority": "review_verilator_native_option_parser_boundary_gate",
+  "parser_boundary": {
+    "selected_surface": "native_verilator_option_parser_to_sidecar_plan_contract",
+    "operator_goal": "A normal Verilator build invocation should be able to add a compact sidecar GPU acceleration option and produce the same inspectable sidecar handoff contract now exposed by the wrapper and shim.",
+    "future_verilator_facing_spelling": {
+      "primary_command_form": "verilator --cc --timing <normal Verilator build inputs> --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>",
+      "minimal_option": "--sim-accel sidecar-gpu",
+      "required_shape_options": [
+        "--sim-accel-states <N>",
+        "--sim-accel-steps <S>"
+      ],
+      "optional_estimate_option": "--sim-accel-estimate-efficiency",
+      "wrapper_compatibility_shape_form": "--sim-accel-shape <NxS>",
+      "wrapper_compatibility_shape_native_minimal_scope": false,
+      "first_reviewed_shape": "64x1"
+    },
+    "parser_owned_responsibilities": [
+      "parse --sim-accel and accept only sidecar-gpu in the first native boundary",
+      "require --sim-accel-states and --sim-accel-steps as a positive-integer pair",
+      "reject missing shape halves, non-positive counts, unknown accelerators, and mixed native shape spellings",
+      "preserve ordinary Verilator inputs such as --cc, --timing, -Mdir, source files, -f filelists, --top-module, defines, warning flags, and other Verilator arguments",
+      "emit or call a structured sidecar-plan handoff instead of relying on scraped command strings",
+      "keep the parse/plan result inspectable before any execution"
+    ],
+    "sidecar_owned_responsibilities_kept_out_of_native_parser": [
+      "target-first registry lookup and aliases",
+      "tracked-template source closure metadata",
+      "coverage manifest selection",
+      "host-probe builder selection",
+      "GPU artifact build orchestration",
+      "hybrid sidecar execution",
+      "coverage_output_equivalence comparison execution",
+      "human efficiency estimate formatting",
+      "not-ready stage inspection for resident modes and dataset-backed flows",
+      "terminal print modes and JSON operator-plan convenience output"
+    ],
+    "required_handoff_fields": [
+      "accelerator mode",
+      "state count",
+      "step count",
+      "Verilator mdir",
+      "top module",
+      "source files or explicit filelist inputs",
+      "Verilator args and defines",
+      "coverage overlay or coverage top boundary",
+      "coverage manifest scope and compared output words",
+      "host-probe build metadata",
+      "init state path",
+      "reference state path",
+      "candidate state path",
+      "compare report path or deterministic naming rule",
+      "correctness policy set to coverage_output_equivalence"
+    ],
+    "current_compatibility_surface": {
+      "status": "wrapper_and_shim_only",
+      "target_first_wrapper": "src/tools/run_hybrid_benchmark.py",
+      "json_shim": "src/tools/verilator_sidecar_shim.py",
+      "shared_option_mapper": "src/tools/verilator_sidecar_options.py",
+      "ready_static_filelist_targets": [
+        "filelist_paged_attention_kv_score",
+        "filelist_known_template_pulp_ita_mha"
+      ],
+      "native_verilator_parser_status": "not_implemented_by_this_gate",
+      "runtime_or_abi_status": "unchanged_by_this_gate"
+    },
+    "native_parser_minimal_scope_exclusions": [
+      "--target",
+      "--stage",
+      "--emit-command",
+      "--emit-verilator-command",
+      "--print-verilator-command",
+      "--print-verilator-estimate-command",
+      "--print-efficiency-estimate",
+      "--print-operator-plan",
+      "--operator-plan-json",
+      "--sidecar-gpu",
+      "--sim-accel-shape <NxS>"
+    ],
+    "readiness_limits": {
+      "resident_modes_ready_for_native_parser_handoff": false,
+      "mobile_vit_dataset_backed_flow_ready_for_native_parser_handoff": false,
+      "arbitrary_filelist_dependency_inference_ready": false,
+      "automatic_optimal_gpu_allocation_ready": false
+    }
+  },
+  "review_command_candidates": [
+    "python3 src/tools/verilator_sidecar_shim.py --target filelist_paged_attention_kv_score --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --emit-verilator-command",
+    "python3 src/tools/verilator_sidecar_shim.py --target filelist_known_template_pulp_ita_mha --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --emit-verilator-command",
+    "python3 src/tools/run_hybrid_benchmark.py filelist_paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json",
+    "python3 src/tools/run_hybrid_benchmark.py filelist_known_template_pulp_ita_mha --sim-accel-shape 64x1 --operator-plan-json"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_boundary_gate",
+    "must_decide": [
+      "whether the definition keeps the boundary parser-only and no-execution",
+      "whether the expanded future-Verilator spelling is the native minimum while --sim-accel-shape remains wrapper compatibility",
+      "whether the parser-owned responsibilities are separate from wrapper/shim print modes, target registry lookup, and sidecar execution",
+      "whether the handoff field list is sufficient for mdir, top module, source boundary, state files, compare report path, and coverage_output_equivalence",
+      "whether invalid accelerator names, missing states/steps halves, non-positive counts, and mixed shape spellings are correctly assigned to the compatibility mapper for later dry-run checks",
+      "whether resident modes and dataset-backed targets remain outside the direct native-parser handoff",
+      "whether the next reviewed action may be a non-executing dry-run gate",
+      "whether the result avoids native Verilator parser support, arbitrary RTL support, dependency inference, automatic optimal GPU allocation, and new timing claims"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "plan_only_boundary": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "native_verilator_parser_implementation_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_verilator_native_option_parser_boundary_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not a Verilator source patch",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not a new public CLI or workflow",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The commit split is complete; the weak point is now defining the real Verilator native-option parser boundary without confusing it with the existing sidecar shim, tracked-template registry, arbitrary filelist planning, dependency inference, or automatic allocation.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The commit split is complete and the parser boundary is defined; the weak point is now reviewing that boundary before any dry-run or implementation step, without confusing it with the existing sidecar shim, tracked-template registry, arbitrary filelist planning, dependency inference, or automatic allocation.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is defining the next native Verilator option parser boundary now that the accepted eight-group commit split has been executed and verified.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the defined native Verilator option parser boundary now that the accepted eight-group commit split has been executed and verified.
 
 Current priority:
 
-`define_verilator_native_option_parser_boundary_gate`
+`review_verilator_native_option_parser_boundary_gate`
 
 Current gate:
 
-`config/scaling_gates/execute_commit_split_index_rewrite_gate.json`
+`config/scaling_gates/define_verilator_native_option_parser_boundary_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native option parser boundary**: Define what must move from sidecar/shim into Verilator option parsing, and what stays explicitly out of scope.
+1. **Native option parser boundary review**: Review what must move from sidecar/shim into Verilator option parsing, and what stays explicitly out of scope.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,14 +79,15 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Define the native Verilator option parser boundary after closing the commit split.
+Review the native Verilator option parser boundary after closing the commit split.
 
 Parser boundary definition:
 
-- source gate: `config/scaling_gates/execute_commit_split_index_rewrite_gate.json`
-- selected next gate: `define_verilator_native_option_parser_boundary_gate`
-- scope: parser/option boundary definition only, not implementation
-- must distinguish: Verilator-native option spelling, sidecar compatibility behavior, tracked-template registry support, and future arbitrary filelist planning
+- source gate: `config/scaling_gates/define_verilator_native_option_parser_boundary_gate.json`
+- selected next gate: `review_verilator_native_option_parser_boundary_gate`
+- scope: review a parser/option boundary definition only, not implementation
+- defined native minimum: `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`
+- wrapper/shim compatibility kept out of native minimum: `--sim-accel-shape <NxS>`, target-first registry lookup, print modes, JSON operator plans, resident modes, and dataset-backed flows
 - non-claim: this does not add parser implementation, execution, measurement, runtime/ABI support, arbitrary RTL dependency inference, automatic optimal GPU allocation, GEM comparison, raw full-state equality, or production-serving throughput
 
 Historical completed stage:
@@ -319,7 +320,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
-- current next task: `define_verilator_native_option_parser_boundary_gate`
+- current next task: `review_verilator_native_option_parser_boundary_gate`
 - reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
@@ -661,14 +662,14 @@ Tracked evidence:
 
 Recommended next gate:
 
-`define_verilator_native_option_parser_boundary_gate`
+`review_verilator_native_option_parser_boundary_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/execute_commit_split_index_rewrite_gate.json` as the source artifact
-- define the exact native Verilator option spelling and parser touch points to evaluate
-- identify which existing sidecar wrapper behavior remains the compatibility baseline
-- identify which tracked-template registry evidence may be reused
+- use `config/scaling_gates/define_verilator_native_option_parser_boundary_gate.json` as the source artifact
+- review the exact native Verilator option spelling and parser touch points to evaluate
+- confirm which existing sidecar wrapper behavior remains the compatibility baseline
+- confirm which tracked-template registry evidence may be reused
 - keep generated reports and artifacts non-canonical
 - add no parser implementation, measurement, runtime/ABI, arbitrary RTL, automatic allocation, GEM, production-serving, or raw full-state equality claim
 - keep arbitrary filelist planning, dependency inference, automatic allocation, resident optimization, and GEM comparison as deferred workstreams

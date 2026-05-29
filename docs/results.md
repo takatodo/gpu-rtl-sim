@@ -141,6 +141,8 @@ Filelist broader shape timing public-pack externalization completion:
 
 `config/scaling_gates/execute_commit_split_index_rewrite_gate.json` records that the index rewrite completed as eight payload commits after a staged-only hook prerequisite. The largest payload commit touched `76` files, the worktree was clean afterward, and `make simple && make check` passed with `221` contract tests. This completion advances to `define_verilator_native_option_parser_boundary_gate` and still does not claim a native parser implementation, new measurement, runtime/ABI change, arbitrary filelist support, dependency inference, automatic allocation, GEM comparison, production-serving throughput, or raw full-state equality.
 
+`config/scaling_gates/define_verilator_native_option_parser_boundary_gate.json` defines the next native parser boundary as the expanded Verilator-facing spelling `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` mapped into the existing sidecar handoff contract. It keeps `--sim-accel-shape <NxS>`, target-first registry lookup, terminal print modes, JSON operator plans, resident modes, and dataset-backed flows on the wrapper/shim compatibility side. The next task is `review_verilator_native_option_parser_boundary_gate`; this is definition-only and adds no Verilator parser implementation, source patch, execution, measurement, runtime/ABI change, arbitrary filelist support, dependency inference, automatic allocation, GEM comparison, production-serving throughput, or raw full-state equality.
+
 Public archive dry-run:
 
 This section is the scoped `public_pack_archive_ready` task inside the current public benchmark pack externalization objective.
