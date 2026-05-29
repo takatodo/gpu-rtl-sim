@@ -2,11 +2,11 @@
 
 ## Weakest Point
 
-The commit-split cleanup is complete, and the first Verilator native-option overlay patch build-only validation boundary has been defined. The current weak point is now reviewing that boundary without overstating it: even a future `verilator_bin` build success would prove compile/link compatibility only, not parser behavior, upstream acceptance, execution, measurement, or arbitrary RTL/filelist support.
+The commit-split cleanup is complete, and the first Verilator native-option overlay patch build-only validation boundary has been reviewed. The current weak point is now running that build-only validation without overstating it: even `verilator_bin` build success would prove compile/link compatibility only, not parser behavior, upstream acceptance, execution, measurement, or arbitrary RTL/filelist support.
 
 Current cleanup policy: keep `config/selection.json` compact (core pointer and operational fields), park bulky historical maps in `config/selection_extensions.json`, keep historical gate records under `records/scaling_gates/` with `config/scaling_gates` as a compatibility link, and keep generated evidence reproducible under `reports/` and `artifacts/` without retaining it as source of truth.
 
-Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `820` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
+Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `821` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
 
 Hybrid usability state: generated templates now carry generic host-probe build metadata and can use `src/tools/build_host_probe.py` without adding a per-target Makefile rule.
 
@@ -52,15 +52,15 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`review_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
+`run_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/define_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json`
+`config/scaling_gates/review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json`
 
 ## 追跡タスク
 
-- `review_verilator_native_option_parser_overlay_patch_build_only_validation_gate` で、定義済み build-only validation 境界が狭く、parser behavior や実行主張に膨らんでいないことをレビューする。
+- `run_verilator_native_option_parser_overlay_patch_build_only_validation_gate` で、外部 clean checkout に patch を適用して `verilator_bin` build-only validation を実行し、exit/log を記録する。
 - `docs/migration_notes.md` の「シンプル検証からの乖離」節を、前提変更時に見直す。
 - 新規ゲート完了時は `config/selection_extensions.json` の `completed_goal_evidence` / `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json` の整合を取る。
 - ゲート JSON に残る履歴表記の例: `next_task: select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`（正の源泉は常に `config/selection.json` の `current_priority` を優先）。マージ後の全体像が必要なら `src/tools/selection_state.py` の `load_selection` を参照。

@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The commit split is complete and the overlay patch build-only validation boundary has been defined; the weak point is now reviewing that boundary without confusing future `verilator_bin` build success with parser behavior, upstream acceptance, arbitrary filelist planning, dependency inference, automatic allocation, or a landed parser patch.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The commit split is complete and the overlay patch build-only validation boundary has been reviewed; the weak point is now running that boundary without confusing `verilator_bin` build success with parser behavior, upstream acceptance, arbitrary filelist planning, dependency inference, automatic allocation, or a landed parser patch.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the smallest build-only validation boundary for the accepted overlay patch before any native parser support claim.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is running the smallest build-only validation boundary for the accepted overlay patch before any native parser support claim.
 
 Current priority:
 
-`review_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
+`run_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
 
 Current gate:
 
-`config/scaling_gates/define_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json`
+`config/scaling_gates/review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native option parser overlay patch build-only validation review**: Review whether the defined external clean-checkout apply plus `verilator_bin` build boundary is narrow enough before any native parser support, upstream landing, execution, timing, or automatic allocation claim.
+1. **Native option parser overlay patch build-only validation run**: Run the accepted external clean-checkout apply plus `verilator_bin` build boundary and record only build status/log evidence before any native parser support, upstream landing, execution, timing, or automatic allocation claim.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,7 +79,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Review the native Verilator option parser overlay patch build-only validation boundary after definition.
+Run the native Verilator option parser overlay patch build-only validation boundary after review.
 
 Parser boundary definition:
 
@@ -90,8 +90,9 @@ Parser boundary definition:
 - descriptor/apply-check implementation gate: `config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json`
 - descriptor/apply-check implementation review gate: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_implementation_gate.json`
 - build-only validation definition gate: `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json`
-- selected next gate: `review_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
-- scope: build-only validation boundary review only, not public CLI, native parser support, parser behavior, or execution
+- build-only validation review gate: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json`
+- selected next gate: `run_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
+- scope: build-only validation run only, not public CLI, native parser support, parser behavior, simulation execution, or timing
 - defined native minimum: `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`
 - wrapper/shim compatibility kept out of native minimum: `--sim-accel-shape <NxS>`, target-first registry lookup, print modes, JSON operator plans, resident modes, and dataset-backed flows
 - parser non-inference: coverage manifests, host-probe metadata, source closure, state paths, and report paths are sidecar handoff-contract fields, not parser-discovered fields
@@ -110,6 +111,7 @@ Parser boundary definition:
 - descriptor/apply-check implementation adds the descriptor and patch files, validates descriptor JSON, and records `git apply --check` exit code `0` against Verilator `v5.048` peeled commit; the patch touches only `src/V3Options.h` and `src/V3Options.cpp` and leaves the new options undocumented to keep docs/test_regress out of first patch scope
 - descriptor/apply-check implementation review accepts only the descriptor and patch applicability evidence, records that Verilator build/regression/execution/timing are still unproven, and selects a build-only validation definition gate next
 - build-only validation definition selects an external clean-checkout apply plus `make ... verilator_bin` command sequence and keeps parser behavior, upstream regression, docs/test_regress, sidecar runtime/ABI, execution, timing, arbitrary filelist support, and automatic allocation deferred
+- build-only validation review accepts the narrow `verilator_bin` build boundary and requires the run gate to record whether `VERILATOR_INSTALL` was supplied or mechanically defaulted
 - structured handoff fields are pinned before any native parser support claim
 - non-claim: this does not add parser implementation, execution, measurement, runtime/ABI support, arbitrary RTL dependency inference, automatic optimal GPU allocation, GEM comparison, raw full-state equality, or production-serving throughput
 
@@ -343,7 +345,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
-- current next task: `review_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
+- current next task: `run_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
 - reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
@@ -685,14 +687,15 @@ Tracked evidence:
 
 Recommended next gate:
 
-`review_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
+`run_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json` as the source artifact
-- verify the defined clean-checkout apply/build command sequence stays build-only and targets `verilator_bin`
-- verify the definition does not claim build success because the build has not run yet
-- verify parser-behavior checks remain separate unless a later gate explicitly selects them
+- use `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json` as the source artifact
+- run the accepted clean-checkout apply/build command sequence and record the exit code
+- record whether `VERILATOR_INSTALL` was provided or mechanically defaulted under the external checkout
+- record whether the command reached `verilator_bin`, and classify any failure as tooling/dependency, patch compile/link, or command-boundary related
+- keep parser-behavior checks separate unless a later gate explicitly selects them
 - keep `--sim-accel-estimate-efficiency`, compact shape spelling, `src/V3OptionParser.*`, `src/VlcMain.cpp`, docs, and upstream `test_regress/t/` outside scope unless a new review expands scope
 - keep vendored Verilator source, execution, measurement, source closure inference, automatic allocation, and arbitrary RTL/filelist support out of scope
 - keep the accepted parser-only handoff fields tied to `coverage_output_equivalence`

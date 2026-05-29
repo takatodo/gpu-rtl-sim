@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`review_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
+`run_verilator_native_option_parser_overlay_patch_build_only_validation_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/define_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json`
+`config/scaling_gates/review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -76,6 +76,7 @@ Commit cadence: keep commits small enough to review by one gate or one workflow 
 - Public pack manifest: `docs/results.md` lists the minimum source-of-truth files, `records/scaling_gates` gate/audit records, tools, templates, contract tests, and optional generated evidence snapshots to include for review.
 - Verilator native option parser overlay patch descriptor/apply-check implementation reviewed: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_implementation_gate.json` accepts only the descriptor JSON and `git apply --check` evidence for the repo-owned overlay patch. The next task is defining a build-only validation gate; this still adds no native parser support, upstream landing, Verilator build success, execution, timing, arbitrary RTL/filelist support, or automatic GPU allocation claim.
 - Verilator native option parser overlay patch build-only validation boundary defined: `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json` selects an external clean-checkout apply plus `make ... verilator_bin` command sequence and advances the current task to review. This definition still does not run the build or claim native parser support, upstream landing, parser behavior, execution, timing, arbitrary RTL/filelist support, or automatic GPU allocation.
+- Verilator native option parser overlay patch build-only validation boundary reviewed: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json` accepts the narrow `verilator_bin` build boundary and advances the current task to the build-only run gate. The run must record whether `VERILATOR_INSTALL` was supplied or mechanically defaulted; this still adds no parser behavior, upstream regression, sidecar execution, timing, arbitrary RTL/filelist support, or automatic allocation claim.
 - Public reproduction smoke: `docs/results.md` lists the first dry-run commands to run before attempting full measurements.
 - Public release checklist: `docs/results.md` lists the final source-of-truth, path hygiene, smoke, evidence, non-claim, and contract-test checks before handoff.
 - Externalization readiness audit: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for externalization.
@@ -685,6 +686,7 @@ The paged-attention/KV-cache repeat-median public-pack boundary is complete. The
 - Verilator native option parser overlay patch descriptor/apply-check payload implemented: `config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json` advances the current task to `review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_implementation_gate`.
 - Verilator native option parser overlay patch descriptor/apply-check implementation review accepted: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_implementation_gate.json` advances the current task to `define_verilator_native_option_parser_overlay_patch_build_only_validation_gate`.
 - Verilator native option parser overlay patch build-only validation boundary defined: `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json` advances the current task to `review_verilator_native_option_parser_overlay_patch_build_only_validation_gate`.
+- Verilator native option parser overlay patch build-only validation boundary review accepted: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json` advances the current task to `run_verilator_native_option_parser_overlay_patch_build_only_validation_gate`.
 - config-generation validation breadth execution and subsequent candidate measurement/publication gates are summarized by `config/selection.json`, `docs/status.md`, and the tracked public-pack manifest instead of being listed here one gate file at a time
 - local candidate gate files under `records/scaling_gates/` are not public-pack source of truth until they are intentionally tracked and included by `python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run`
 - previous paged-attention/KV-cache dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`
