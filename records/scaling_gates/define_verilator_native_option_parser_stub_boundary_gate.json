@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_stub_boundary_gate",
+  "status": "defined_verilator_native_option_parser_stub_boundary",
+  "objective": "Define the smallest native Verilator parser-stub validation and handoff boundary before any native parser implementation or source patch claim.",
+  "source_dry_run_review_gate": "config/scaling_gates/review_verilator_native_option_parser_boundary_dry_run_gate.json",
+  "source_result_gate": "config/scaling_gates/verilator_native_option_parser_boundary_dry_run_result_gate.json",
+  "current_priority": "review_verilator_native_option_parser_stub_boundary_gate",
+  "parser_stub_boundary": {
+    "selected_surface": "native_verilator_parser_stub_validation_to_sidecar_handoff_contract",
+    "operator_goal": "A future native Verilator parser should be able to parse the minimal sidecar GPU options, validate them without relying on wrapper argparse choices, and emit a structured sidecar handoff plan before any execution.",
+    "future_verilator_facing_spelling": {
+      "primary_command_form": "verilator --cc --timing <normal Verilator build inputs> --sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>",
+      "minimal_option": "--sim-accel sidecar-gpu",
+      "required_shape_options": [
+        "--sim-accel-states <N>",
+        "--sim-accel-steps <S>"
+      ],
+      "optional_estimate_option": "--sim-accel-estimate-efficiency",
+      "wrapper_compatibility_shape_form": "--sim-accel-shape <NxS>",
+      "wrapper_compatibility_shape_native_minimal_scope": false,
+      "first_stub_review_shape": "64x1"
+    },
+    "validation_ownership": {
+      "canonical_unknown_accelerator_owner": "native_parser_stub_validation_contract",
+      "allowed_accelerators": [
+        "sidecar-gpu"
+      ],
+      "unknown_accelerator_error": {
+        "code": "invalid_sim_accel",
+        "message_requirement": "must name the unsupported value and list sidecar-gpu as the only accepted accelerator for this boundary"
+      },
+      "paired_shape_owner": "native_parser_stub_validation_contract_may_call_shared_sidecar_option_mapper",
+      "positive_count_owner": "native_parser_stub_validation_contract_may_call_shared_sidecar_option_mapper",
+      "mixed_shape_spelling_owner": "native_parser_stub_validation_contract_may_call_shared_sidecar_option_mapper",
+      "current_wrapper_argparse_choices_status": "compatibility_wrapper_behavior_only_not_canonical_stub_validation",
+      "current_wrapper_argparse_choices_must_not_be_used_as_native_parser_evidence": true
+    },
+    "parser_stub_owned_responsibilities": [
+      "parse --sim-accel and accept only sidecar-gpu in the first native parser-stub boundary",
+      "reject unknown accelerator names through the parser-stub validation contract rather than depending on Python argparse choices",
+      "require --sim-accel-states and --sim-accel-steps as a positive-integer pair",
+      "reject missing shape halves, non-positive counts, and mixed native shape spellings",
+      "preserve ordinary Verilator inputs such as --cc, --timing, -Mdir, source files, -f filelists, --top-module, defines, include directories, warning flags, and other Verilator arguments",
+      "emit or call a structured sidecar-plan handoff before any build, run, compare, or estimate execution"
+    ],
+    "sidecar_owned_responsibilities_kept_out_of_native_parser_stub": [
+      "target-first registry lookup and aliases",
+      "tracked-template source closure metadata",
+      "coverage manifest selection",
+      "coverage output word selection",
+      "host-probe builder selection",
+      "state file materialization",
+      "GPU artifact build orchestration",
+      "hybrid sidecar execution",
+      "coverage_output_equivalence comparison execution",
+      "human efficiency estimate formatting",
+      "resident workflow orchestration",
+      "dataset-backed host preprocessing",
+      "terminal print modes and JSON operator-plan convenience output"
+    ],
+    "structured_handoff_fields": [
+      "schema_version",
+      "accelerator mode",
+      "state count",
+      "step count",
+      "ordinary Verilator arguments",
+      "Verilator mdir if supplied or deterministic mdir naming rule",
+      "top module if supplied or explicit unresolved top-module status",
+      "source files or explicit filelist inputs",
+      "defines, include directories, warning flags, and other preserved Verilator args",
+      "coverage overlay or coverage top boundary reference supplied by sidecar/template metadata",
+      "coverage manifest scope and compared output words supplied by sidecar/template metadata",
+      "host-probe build metadata reference supplied by sidecar/template metadata",
+      "init state path or deterministic naming rule",
+      "reference state path or deterministic naming rule",
+      "candidate state path or deterministic naming rule",
+      "compare report path or deterministic naming rule",
+      "correctness policy set to coverage_output_equivalence",
+      "non-claims carried into the handoff"
+    ],
+    "current_compatibility_surface": {
+      "status": "wrapper_and_shim_only",
+      "target_first_wrapper": "src/tools/run_hybrid_benchmark.py",
+      "json_shim": "src/tools/verilator_sidecar_shim.py",
+      "shared_option_mapper": "src/tools/verilator_sidecar_options.py",
+      "ready_static_filelist_targets": [
+        "filelist_paged_attention_kv_score",
+        "filelist_known_template_pulp_ita_mha"
+      ],
+      "unknown_accelerator_current_rejection_layer": "argparse_choices",
+      "native_verilator_parser_status": "not_implemented_by_this_gate",
+      "runtime_or_abi_status": "unchanged_by_this_gate"
+    },
+    "native_parser_stub_minimal_scope_exclusions": [
+      "--target",
+      "--stage",
+      "--emit-command",
+      "--emit-verilator-command",
+      "--print-verilator-command",
+      "--print-verilator-estimate-command",
+      "--print-efficiency-estimate",
+      "--print-operator-plan",
+      "--operator-plan-json",
+      "--sidecar-gpu",
+      "--sim-accel-shape <NxS>",
+      "automatic target registry lookup",
+      "arbitrary filelist dependency inference",
+      "automatic optimal GPU allocation"
+    ],
+    "readiness_limits": {
+      "resident_modes_ready_for_native_parser_handoff": false,
+      "mobile_vit_dataset_backed_flow_ready_for_native_parser_handoff": false,
+      "arbitrary_filelist_dependency_inference_ready": false,
+      "automatic_optimal_gpu_allocation_ready": false,
+      "native_verilator_source_tree_available": false
+    }
+  },
+  "review_command_candidates": [
+    "review the structured handoff fields against records/scaling_gates/verilator_native_option_parser_boundary_dry_run_result_gate.json",
+    "review that unknown accelerator validation is assigned to native_parser_stub_validation_contract, not current argparse choices",
+    "review that wrapper-only options remain outside the native parser-stub minimum"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_stub_boundary_gate",
+    "must_decide": [
+      "whether unknown accelerator validation is correctly assigned to the parser-stub validation contract",
+      "whether using the shared sidecar option mapper for paired shape validation is acceptable while current argparse choices remain wrapper-only",
+      "whether the structured handoff fields are sufficient for a future non-executing parser stub fixture",
+      "whether the stub avoids source closure, coverage manifest, host-probe metadata, state path, and report path inference",
+      "whether the next action may define a non-executing parser-stub fixture or must first refactor wrapper validation",
+      "whether the definition avoids native parser implementation, execution, measurement, arbitrary filelist support, dependency inference, automatic allocation, and timing claims"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "parser_stub_boundary_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "native_verilator_parser_implementation_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_verilator_native_option_parser_stub_boundary_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not a Verilator source patch",
+    "not a new measurement result",
+    "not new execution evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not parser inference of coverage manifests, host-probe metadata, source closure, state paths, or report paths",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not a new public CLI or workflow",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
