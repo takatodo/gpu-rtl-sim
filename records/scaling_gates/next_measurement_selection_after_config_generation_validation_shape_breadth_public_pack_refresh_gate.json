@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_config_generation_validation_shape_breadth_public_pack_refresh_gate",
+  "status": "selected_config_generation_validation_additional_targets_next",
+  "objective": "Select the next validation goal after closing the config-generation validation shape-breadth execution public-pack boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_config_generation_validation_shape_breadth_execution_gate.json",
+  "current_priority": "define_config_generation_validation_additional_targets_gate",
+  "decision": {
+    "selected_next_workstream": "config_generation_validation_additional_targets",
+    "selected_first_gate": "define_config_generation_validation_additional_targets_gate",
+    "reason": "The six tracked templates now pass both 1x1 breadth and 32x1/1x32 shape breadth through the generated-config and generic host-probe path. The next narrower validation gap is target breadth for additional already-tracked templates, not timing, runtime tuning, or a new workload import."
+  },
+  "candidate_review": [
+    {
+      "name": "config_generation_validation_additional_targets",
+      "decision": "selected",
+      "reason": "It extends the validated generated-config path to additional tracked target families while keeping shape, correctness policy, runtime behavior, and source dependencies controlled."
+    },
+    {
+      "name": "tlul_template_schema_metadata_invariant_review",
+      "decision": "deferred",
+      "reason": "Metadata invariant review remains useful, but additional target breadth is the direct continuation after the same six-template path passes both shape checks."
+    },
+    {
+      "name": "resident_execution_optimization",
+      "decision": "deferred",
+      "reason": "Runtime tuning should wait until generated-config validation is less target-specific."
+    },
+    {
+      "name": "quantized_kv_cache_boundary",
+      "decision": "deferred",
+      "reason": "Quantized KV-cache candidates remain outside the current tracked validation boundary."
+    },
+    {
+      "name": "larger_shape_or_repeat_median_timing",
+      "decision": "deferred",
+      "reason": "The just-closed result is correctness breadth. Timing and larger-shape evidence should not be mixed into the next target-breadth definition gate."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_config_generation_validation_additional_targets_gate",
+    "must_pin": [
+      "tracked additional target list",
+      "whether the first added target set is the three existing dry-run-tested templates",
+      "dry-run commands before any non-dry-run execution",
+      "coverage_output_equivalence policy for CPU-vs-hybrid comparisons",
+      "generated reports and artifacts remain non-canonical",
+      "runtime and ABI non-change policy"
+    ],
+    "likely_first_target_set": [
+      "NVDLA.nvdla_cmac_a2cacc",
+      "OpenTitan.prim_count",
+      "OpenTitan.prim_secded_inv_39_32_enc"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_config_generation_validation_additional_targets_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a new runtime or ABI change",
+    "not a new workload promotion",
+    "not approval to import untracked candidate overlays",
+    "not universal validation for every historical template",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

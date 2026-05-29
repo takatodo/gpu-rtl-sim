@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "gate": "config_generation_validation_breadth_execution_review_gate",
+  "status": "reviewed_config_generation_validation_breadth_execution_select_public_refresh_next",
+  "objective": "Review the completed six-template config-generation validation execution and select the next source-of-truth step.",
+  "source_result_gate": "config/scaling_gates/config_generation_validation_breadth_execution_result_gate.json",
+  "source_execution_gate": "config/scaling_gates/config_generation_validation_breadth_execution_gate.json",
+  "current_priority": "define_public_results_packaging_refresh_after_config_generation_validation_breadth_execution_gate",
+  "review_decision": {
+    "execution_boundary_accepted": true,
+    "selected_next_task": "define_public_results_packaging_refresh_after_config_generation_validation_breadth_execution_gate",
+    "reason": "All six tracked 1x1 template commands completed Verilator build, generic host-probe build, GPU cubin build, CPU run, hybrid run, and CPU-vs-hybrid compare. Every selected coverage-output policy passed with mismatch count 0, so the remaining work is packaging this breadth evidence without upgrading it into timing, raw-state, or production-serving claims."
+  },
+  "reviewed_result": {
+    "command_count": 6,
+    "all_commands_exited_zero": true,
+    "all_expected_reports_present": true,
+    "all_compare_reports_passed_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "raw_full_state_equality_required": false,
+    "raw_full_state_all_matched": false,
+    "raw_mismatch_pattern": "all six reports have raw final-state mismatch limited to Verilator-internal diagnostic fields",
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "reviewed_reports": [
+    "reports/nvdla_cmac_core_mac_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "reports/pulp_ita_dotp_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "reports/pulp_ita_softmax_top_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+    "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+  ],
+  "options_reviewed": [
+    {
+      "option": "shape_breadth_execution",
+      "decision": "defer",
+      "reason": "The just-completed result should first be made visible in the public/result packaging chain before expanding shapes.",
+      "weakness": "Skipping the packaging step would leave source-of-truth docs behind generated evidence."
+    },
+    {
+      "option": "public_results_packaging_refresh",
+      "decision": "select_next",
+      "reason": "This records the completed validation breadth in the reader-facing pack while preserving reports and artifacts as generated evidence.",
+      "weakness": "It is packaging-only and does not add timing, repeated-run stability, or universal template coverage."
+    },
+    {
+      "option": "runtime_or_abi_optimization",
+      "decision": "defer",
+      "reason": "The execution result validates current generic config and host-probe metadata; changing runtime behavior would broaden the boundary.",
+      "weakness": "Would mix validation breadth with optimization work."
+    }
+  ],
+  "selected_next_workstream": {
+    "name": "public_results_packaging_refresh_after_config_generation_validation_breadth_execution",
+    "required_next_gate": "public_results_packaging_refresh_after_config_generation_validation_breadth_execution_gate",
+    "next_task": "define_public_results_packaging_refresh_after_config_generation_validation_breadth_execution_gate",
+    "scope": [
+      "summarize the six-template 1x1 execution result in public/source-of-truth docs",
+      "include the new result and review records in completed evidence",
+      "keep generated reports under reports/ non-canonical",
+      "preserve coverage_output_equivalence as the correctness policy",
+      "avoid timing, speedup, raw-state, or production-serving claims"
+    ],
+    "new_measurement_allowed_by_review_gate": false
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "review_boundary": [
+    "records/scaling_gates/config_generation_validation_breadth_execution_gate.json",
+    "records/scaling_gates/config_generation_validation_breadth_execution_result_gate.json",
+    "records/scaling_gates/config_generation_validation_breadth_execution_review_gate.json",
+    "config/selection.json",
+    "config/selection_extensions.json",
+    "docs/status.md",
+    "docs/roadmap.md",
+    "README.md",
+    "tests/contract/test_full_ita_mha_larger_paged_kv_next.py"
+  ],
+  "next_task": "define_public_results_packaging_refresh_after_config_generation_validation_breadth_execution_gate",
+  "non_claims": [
+    "not a new measurement result beyond the reviewed six-template execution",
+    "not a runtime or ABI change",
+    "not a new workload import",
+    "not universal validation for every historical template",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

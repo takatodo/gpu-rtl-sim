@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "gate": "config_generation_validation_additional_targets_execution_gate",
+  "status": "defined_config_generation_validation_additional_targets_execution",
+  "objective": "Define the real build/run/compare execution boundary for the three-command additional-target generated-config validation set after the dry-run command-plan review.",
+  "source_definition_gate": "config/scaling_gates/config_generation_validation_additional_targets_gate.json",
+  "source_dry_run_gate": "config/scaling_gates/config_generation_validation_additional_targets_dry_run_gate.json",
+  "source_review_gate": "config/scaling_gates/config_generation_validation_additional_targets_dry_run_review_gate.json",
+  "current_priority": "run_config_generation_validation_additional_targets_execution_gate",
+  "execution_scope": {
+    "name": "three_tracked_additional_targets_1x1_build_run_compare",
+    "decision": "execute_all_three_reviewed_additional_target_commands",
+    "reason": "The accepted dry-run boundary covered all three selected tracked templates. Executing all three resolves the dry-run weakness for this scope: no Verilator build, generic host-probe compile, GPU cubin build, CPU/hybrid run, or compare evidence yet exists for the generated-config path on these additional targets.",
+    "shape": "1x1",
+    "targets": [
+      {
+        "target": "NVDLA.nvdla_cmac_a2cacc",
+        "template": "config/slice_launch_templates/nvdla_cmac_a2cacc.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_a2cacc.json --shape 1x1",
+        "expected_compare_report": "reports/nvdla_cmac_a2cacc_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "coverage_output_gate": "config/scaling_gates/neural_network_rtl_nvdla_cmac_a2cacc_first_hybrid_benchmark_gate.json",
+        "coverage_output_target": "nvdla_cmac_a2cacc"
+      },
+      {
+        "target": "OpenTitan.prim_count",
+        "template": "config/slice_launch_templates/prim_count.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/prim_count.json --shape 1x1",
+        "expected_compare_report": "reports/prim_count_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "coverage_output_gate": "config/scaling_gates/prim_count_source_gate.json",
+        "coverage_output_target": "prim_count"
+      },
+      {
+        "target": "OpenTitan.prim_secded_inv_39_32_enc",
+        "template": "config/slice_launch_templates/prim_secded_inv_39_32_enc.json",
+        "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/prim_secded_inv_39_32_enc.json --shape 1x1",
+        "expected_compare_report": "reports/prim_secded_inv_39_32_enc_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "coverage_output_gate": "config/scaling_gates/prim_secded_inv_39_32_enc_source_gate.json",
+        "coverage_output_target": "prim_secded_inv_39_32_enc"
+      }
+    ]
+  },
+  "execution_requirements": [
+    "each command must complete Verilator build",
+    "each command must build the generic host probe through src/tools/build_host_probe.py",
+    "each command must build the GPU cubin",
+    "each command must run CPU and hybrid paths",
+    "each command must write the expected compare report under reports/",
+    "each compare report must pass coverage_output_equivalence with mismatch count 0",
+    "raw full-state equality is not required",
+    "generated reports and artifacts remain non-canonical"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "execute_all_three_reviewed_additional_target_commands_next": true,
+    "generic_host_probe_builder_required": true,
+    "makefile_host_probe_target_allowed": false,
+    "coverage_output_equivalence_required_for_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "run_config_generation_validation_additional_targets_execution_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not fresh build/run/compare execution",
+    "not coverage-output equivalence evidence for the additional-target set",
+    "not a runtime or ABI change",
+    "not a new workload promotion",
+    "not universal validation for every historical template or target",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

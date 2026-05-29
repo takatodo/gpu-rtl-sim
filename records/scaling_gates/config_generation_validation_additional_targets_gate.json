@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "gate": "config_generation_validation_additional_targets_gate",
+  "status": "defined_config_generation_validation_additional_targets",
+  "objective": "Define the first additional tracked target boundary for validating generated config and generic host-probe metadata after the six-template shape-breadth path passed.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_config_generation_validation_shape_breadth_public_pack_refresh_gate.json",
+  "current_priority": "run_config_generation_validation_additional_targets_dry_run_gate",
+  "selected_scope": {
+    "name": "three_tracked_additional_targets_1x1",
+    "decision": "start_with_existing_dry_run_tested_templates",
+    "reason": "The previous six-template set now passes 1x1 breadth and 32x1/1x32 shape breadth. The next narrow check is target breadth for already-tracked templates with different source histories and metadata, without changing runtime behavior, importing new workloads, or expanding shapes.",
+    "shape": "1x1",
+    "templates": [
+      {
+        "target": "NVDLA.nvdla_cmac_a2cacc",
+        "template": "config/slice_launch_templates/nvdla_cmac_a2cacc.json",
+        "top_module": "nvdla_cmac_a2cacc_gpu_cov_tb",
+        "host_probe_target": "nvdla_cmac_a2cacc_host_probe",
+        "source_gate": "config/scaling_gates/neural_network_rtl_nvdla_cmac_a2cacc_first_hybrid_benchmark_gate.json",
+        "expected_compare_report": "reports/nvdla_cmac_a2cacc_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "reason": "Secondary NVDLA CNN-era template with non-default clock/reset polarity and separate source history from cmac_core_mac."
+      },
+      {
+        "target": "OpenTitan.prim_count",
+        "template": "config/slice_launch_templates/prim_count.json",
+        "top_module": "prim_count_gpu_cov_tb",
+        "host_probe_target": "prim_count_host_probe",
+        "source_gate": "config/scaling_gates/prim_count_source_gate.json",
+        "expected_compare_report": "reports/prim_count_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "reason": "Tracked OpenTitan primitive with parameterized counter behavior and existing first-pass/depth evidence."
+      },
+      {
+        "target": "OpenTitan.prim_secded_inv_39_32_enc",
+        "template": "config/slice_launch_templates/prim_secded_inv_39_32_enc.json",
+        "top_module": "prim_secded_inv_39_32_enc_gpu_cov_tb",
+        "host_probe_target": "prim_secded_inv_39_32_enc_host_probe",
+        "source_gate": "config/scaling_gates/prim_secded_inv_39_32_enc_source_gate.json",
+        "expected_compare_report": "reports/prim_secded_inv_39_32_enc_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+        "reason": "Tracked OpenTitan SECDED encoder primitive with fixed 39/32 inverse-code datapath and existing source-backed evidence."
+      }
+    ]
+  },
+  "metadata_fields_under_review": [
+    "schema_version",
+    "target",
+    "source_gate",
+    "top_module",
+    "build.mdir",
+    "build.host_probe_target",
+    "build.host_probe_builder",
+    "build.host_probe.clock_field",
+    "build.host_probe.clock_report_name",
+    "build.host_probe.reset_field",
+    "build.host_probe.reset_report_name",
+    "build.host_probe.reset_asserted_value",
+    "build.host_probe.reset_deasserted_value",
+    "build.host_probe.host_clock_control",
+    "build.host_probe.host_reset_control",
+    "source_files",
+    "verilator_args",
+    "planned_overlay.coverage_tb_path",
+    "planned_overlay.coverage_manifest_path",
+    "planned_overlay.launch_template_path"
+  ],
+  "required_static_checks": [
+    "all selected templates are tracked by git",
+    "all selected templates use src/tools/build_host_probe.py",
+    "all selected templates declare host_probe clock and reset metadata",
+    "all selected planned overlays and coverage manifests are tracked by git",
+    "untracked candidate templates are not part of this gate"
+  ],
+  "dry_run_commands": [
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_a2cacc.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/prim_count.json --shape 1x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/prim_secded_inv_39_32_enc.json --shape 1x1 --dry-run"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "generic_host_probe_builder_required": true,
+    "dry_run_required_before_measured_execution": true,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "deferred_scopes": [
+    {
+      "name": "larger_shapes",
+      "reason": "This first additional-target check keeps shape fixed at 1x1 before expanding shape breadth for the new target set."
+    },
+    {
+      "name": "timing_or_repeat_median",
+      "reason": "Timing should not be mixed into a target-breadth definition gate."
+    },
+    {
+      "name": "new_workload_imports",
+      "reason": "Quantized KV-cache and other candidate workload imports require a separate promotion boundary."
+    }
+  ],
+  "next_task": "run_config_generation_validation_additional_targets_dry_run_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not fresh build/run/compare execution",
+    "not coverage-output equivalence evidence for the additional-target set",
+    "not a runtime or ABI change",
+    "not a new workload promotion",
+    "not universal validation for every historical template",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

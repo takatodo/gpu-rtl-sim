@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_config_generation_validation_additional_targets_public_pack_refresh_gate",
+  "status": "selected_config_generation_validation_followup_next",
+  "objective": "Select the next validation goal after closing the config-generation validation additional-target execution public-pack boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_config_generation_validation_additional_targets_execution_gate.json",
+  "current_priority": "define_config_generation_validation_followup_gate",
+  "decision": {
+    "selected_next_workstream": "config_generation_validation_followup",
+    "selected_first_gate": "define_config_generation_validation_followup_gate",
+    "reason": "The generated-config path now has six-template breadth, 32x1/1x32 shape breadth, and three additional tracked targets passing coverage-output equivalence. The next narrow gap is a follow-up generated-config validation boundary that can decide whether to extend to more tracked templates or switch to metadata-invariant review without mixing timing or runtime tuning into the current correctness track."
+  },
+  "candidate_review": [
+    {
+      "name": "config_generation_validation_followup",
+      "decision": "selected",
+      "reason": "It is the direct continuation of the generated-config validation track after the additional-target public pack closes."
+    },
+    {
+      "name": "tlul_template_schema_metadata_invariant_review",
+      "decision": "deferred",
+      "reason": "Metadata invariant review remains a strong next branch, but a follow-up gate should first decide whether the generated-config validation track is complete enough to switch workstreams."
+    },
+    {
+      "name": "resident_execution_optimization",
+      "decision": "deferred",
+      "reason": "Runtime tuning should wait until generated-config correctness validation is explicitly closed or handed off."
+    },
+    {
+      "name": "quantized_kv_cache_boundary",
+      "decision": "deferred",
+      "reason": "Quantized KV-cache candidates remain outside the current tracked validation boundary."
+    },
+    {
+      "name": "larger_shape_or_repeat_median_timing",
+      "decision": "deferred",
+      "reason": "The just-closed result is correctness breadth. Timing and larger-shape evidence should not be mixed into the follow-up selection gate."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_config_generation_validation_followup_gate",
+    "must_pin": [
+      "whether generated-config validation needs another tracked target set or should close into metadata-invariant review",
+      "any selected target list and shape set",
+      "dry-run commands before any non-dry-run execution",
+      "coverage_output_equivalence policy for CPU-vs-hybrid comparisons",
+      "generated reports and artifacts remain non-canonical",
+      "runtime and ABI non-change policy"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_config_generation_validation_followup_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a new runtime or ABI change",
+    "not a new workload promotion",
+    "not approval to import untracked candidate overlays",
+    "not universal validation for every historical template",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

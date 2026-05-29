@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "gate": "config_generation_validation_shape_breadth_gate",
+  "status": "defined_config_generation_validation_shape_breadth",
+  "objective": "Define the next shape-breadth validation boundary for the tracked config-generation templates after the six-template 1x1 execution was published.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_config_generation_validation_breadth_public_pack_refresh_gate.json",
+  "source_execution_review_gate": "config/scaling_gates/config_generation_validation_breadth_execution_review_gate.json",
+  "current_priority": "run_config_generation_validation_shape_breadth_dry_run_gate",
+  "selected_scope": {
+    "name": "six_tracked_templates_two_small_shapes",
+    "decision": "reuse_all_six_tracked_templates_with_32x1_and_1x32",
+    "reason": "The previous boundary proved all six tracked templates at 1x1. The narrow next check is whether the same generated config, generic host-probe metadata, and compare planning survive both a small state-parallel shape and a small single-state repeated shape without importing new workloads or changing runtime behavior.",
+    "shapes": [
+      {
+        "shape": "32x1",
+        "interpretation": "small_state_parallel_launch",
+        "reason": "Exercises multiple independent states in one launch while keeping dry-run and later execution scope modest."
+      },
+      {
+        "shape": "1x32",
+        "interpretation": "small_single_state_repeated_launch",
+        "reason": "Exercises repeated evaluation steps for one state without jumping directly to the heavier historical 1x64 decode-like shapes."
+      }
+    ],
+    "targets": [
+      {
+        "target": "NVDLA.nvdla_cmac_core_mac",
+        "template": "config/slice_launch_templates/nvdla_cmac_core_mac.json",
+        "source_gate": "config/scaling_gates/nvdla_cmac_core_mac_minimal_build_run_compare_gate.json",
+        "reason": "CNN-era tracked NVDLA template with non-default compile defines and larger Verilated state."
+      },
+      {
+        "target": "PULP_ITA.pulp_ita_dotp",
+        "template": "config/slice_launch_templates/pulp_ita_dotp.json",
+        "source_gate": "config/scaling_gates/pulp_ita_dotp_overlay_template_generic_host_probe_gate.json",
+        "reason": "Small ITA attention-score datapath."
+      },
+      {
+        "target": "PULP_ITA.pulp_ita_softmax_top",
+        "template": "config/slice_launch_templates/pulp_ita_softmax_top.json",
+        "source_gate": "config/scaling_gates/pulp_ita_softmax_top_dependency_template_boundary_gate.json",
+        "reason": "Softmax/reduction datapath with common_cells dependencies."
+      },
+      {
+        "target": "PULP_ITA.pulp_ita_mha",
+        "template": "config/slice_launch_templates/pulp_ita_mha.json",
+        "source_gate": "config/scaling_gates/pulp_ita_mha_dependency_template_boundary_gate.json",
+        "reason": "Integrated tracked full ITA/MHA boundary."
+      },
+      {
+        "target": "PULP_ITA.pulp_paged_attention_kv_score",
+        "template": "config/slice_launch_templates/pulp_paged_attention_kv_score.json",
+        "source_gate": "config/scaling_gates/neural_network_rtl_paged_attention_kv_score_harness_gate.json",
+        "reason": "Tracked paged-attention score serving-state proxy."
+      },
+      {
+        "target": "PULP_ITA.pulp_paged_kv_cache_large",
+        "template": "config/slice_launch_templates/pulp_paged_kv_cache_large.json",
+        "source_gate": "config/scaling_gates/neural_network_rtl_paged_kv_cache_large_scaleup_gate.json",
+        "reason": "Tracked larger paged KV-cache harness."
+      }
+    ]
+  },
+  "dry_run_commands": [
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 32x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_core_mac.json --shape 1x32 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 32x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_dotp.json --shape 1x32 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_softmax_top.json --shape 32x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_softmax_top.json --shape 1x32 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 32x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 1x32 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_attention_kv_score.json --shape 32x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_attention_kv_score.json --shape 1x32 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 32x1 --dry-run",
+    "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x32 --dry-run"
+  ],
+  "expected_later_compare_reports": [
+    "reports/nvdla_cmac_core_mac_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+    "reports/nvdla_cmac_core_mac_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+    "reports/pulp_ita_dotp_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+    "reports/pulp_ita_dotp_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+    "reports/pulp_ita_softmax_top_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+    "reports/pulp_ita_softmax_top_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+    "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+    "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+    "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+    "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+    "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+    "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x32_coverage_output_compare.json"
+  ],
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "generic_host_probe_builder_required": true,
+    "dry_run_required_before_measured_execution": true,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "deferred_scopes": [
+    {
+      "name": "larger_state_parallel_or_decode_like_shapes",
+      "reason": "Historical 64x1, 1x64, and larger paged-KV shapes remain useful, but this gate first checks a moderate two-shape breadth across all six templates."
+    },
+    {
+      "name": "additional_targets",
+      "reason": "Adding more targets would broaden source dependencies before the selected six-template shape breadth is reviewed."
+    },
+    {
+      "name": "runtime_or_resident_optimization",
+      "reason": "Runtime tuning should not be mixed into a config-generation validation gate."
+    }
+  ],
+  "next_task": "run_config_generation_validation_shape_breadth_dry_run_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not fresh build/run/compare execution",
+    "not coverage-output equivalence evidence for the shape-breadth set",
+    "not a runtime or ABI change",
+    "not a new workload promotion",
+    "not universal validation for every historical template or shape",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

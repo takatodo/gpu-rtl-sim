@@ -1,0 +1,247 @@
+{
+  "schema_version": 1,
+  "gate": "config_generation_validation_shape_breadth_execution_result_gate",
+  "status": "completed_config_generation_validation_shape_breadth_execution",
+  "objective": "Record the completed 12-command shape-breadth build/run/compare execution for the six tracked config-generation validation templates.",
+  "source_execution_gate": "config/scaling_gates/config_generation_validation_shape_breadth_execution_gate.json",
+  "current_priority": "review_config_generation_validation_shape_breadth_execution_result_gate",
+  "executed_scope": {
+    "name": "six_tracked_templates_32x1_and_1x32_build_run_compare",
+    "template_count": 6,
+    "shape_count": 2,
+    "command_count": 12,
+    "shapes": [
+      "32x1",
+      "1x32"
+    ],
+    "targets": [
+      "NVDLA.nvdla_cmac_core_mac",
+      "PULP_ITA.pulp_ita_dotp",
+      "PULP_ITA.pulp_ita_softmax_top",
+      "PULP_ITA.pulp_ita_mha",
+      "PULP_ITA.pulp_paged_attention_kv_score",
+      "PULP_ITA.pulp_paged_kv_cache_large"
+    ]
+  },
+  "execution_result": {
+    "all_commands_exited_zero": true,
+    "all_expected_reports_present": true,
+    "all_selected_acceptance_policy_is_coverage_output_equivalence": true,
+    "all_selected_acceptance_policies_passed": true,
+    "all_compare_reports_passed_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "coverage_compared_byte_counts": [
+      116,
+      3712
+    ],
+    "raw_full_state_equality_required": false,
+    "raw_full_state_all_matched": false,
+    "raw_full_state_match_count": 0,
+    "normalized_final_state_all_passed": true,
+    "max_functional_non_internal_mismatch_byte_count": 0,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "reports": [
+    {
+      "target": "NVDLA.nvdla_cmac_core_mac",
+      "shape": "32x1",
+      "report": "reports/nvdla_cmac_core_mac_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "raw_match": false,
+      "raw_mismatch_count": 1144,
+      "raw_mismatch_role_summary": {
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 1144
+        }
+      }
+    },
+    {
+      "target": "NVDLA.nvdla_cmac_core_mac",
+      "shape": "1x32",
+      "report": "reports/nvdla_cmac_core_mac_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "raw_match": false,
+      "raw_mismatch_count": 37,
+      "raw_mismatch_role_summary": {
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 37
+        }
+      }
+    },
+    {
+      "target": "PULP_ITA.pulp_ita_dotp",
+      "shape": "32x1",
+      "report": "reports/pulp_ita_dotp_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "raw_match": false,
+      "raw_mismatch_count": 1116,
+      "raw_mismatch_role_summary": {
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 1116
+        }
+      }
+    },
+    {
+      "target": "PULP_ITA.pulp_ita_dotp",
+      "shape": "1x32",
+      "report": "reports/pulp_ita_dotp_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "raw_match": false,
+      "raw_mismatch_count": 37,
+      "raw_mismatch_role_summary": {
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 37
+        }
+      }
+    },
+    {
+      "target": "PULP_ITA.pulp_ita_softmax_top",
+      "shape": "32x1",
+      "report": "reports/pulp_ita_softmax_top_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "raw_match": false,
+      "raw_mismatch_count": 1672,
+      "raw_mismatch_role_summary": {
+        "other": {
+          "field_count": 46,
+          "mismatch_bytes": 430
+        },
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 1242
+        }
+      }
+    },
+    {
+      "target": "PULP_ITA.pulp_ita_softmax_top",
+      "shape": "1x32",
+      "report": "reports/pulp_ita_softmax_top_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "raw_match": false,
+      "raw_mismatch_count": 36,
+      "raw_mismatch_role_summary": {
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 36
+        }
+      }
+    },
+    {
+      "target": "PULP_ITA.pulp_ita_mha",
+      "shape": "32x1",
+      "report": "reports/pulp_ita_mha_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "raw_match": false,
+      "raw_mismatch_count": 1203,
+      "raw_mismatch_role_summary": {
+        "other": {
+          "field_count": 1,
+          "mismatch_bytes": 29
+        },
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 1174
+        }
+      }
+    },
+    {
+      "target": "PULP_ITA.pulp_ita_mha",
+      "shape": "1x32",
+      "report": "reports/pulp_ita_mha_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "raw_match": false,
+      "raw_mismatch_count": 36,
+      "raw_mismatch_role_summary": {
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 36
+        }
+      }
+    },
+    {
+      "target": "PULP_ITA.pulp_paged_attention_kv_score",
+      "shape": "32x1",
+      "report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "raw_match": false,
+      "raw_mismatch_count": 1606,
+      "raw_mismatch_role_summary": {
+        "other": {
+          "field_count": 25,
+          "mismatch_bytes": 318
+        },
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 1288
+        }
+      }
+    },
+    {
+      "target": "PULP_ITA.pulp_paged_attention_kv_score",
+      "shape": "1x32",
+      "report": "reports/pulp_paged_attention_kv_score_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "raw_match": false,
+      "raw_mismatch_count": 36,
+      "raw_mismatch_role_summary": {
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 36
+        }
+      }
+    },
+    {
+      "target": "PULP_ITA.pulp_paged_kv_cache_large",
+      "shape": "32x1",
+      "report": "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_32x1_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "raw_match": false,
+      "raw_mismatch_count": 1351,
+      "raw_mismatch_role_summary": {
+        "other": {
+          "field_count": 10,
+          "mismatch_bytes": 110
+        },
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 1241
+        }
+      }
+    },
+    {
+      "target": "PULP_ITA.pulp_paged_kv_cache_large",
+      "shape": "1x32",
+      "report": "reports/pulp_paged_kv_cache_large_cpu_vs_hybrid_1x32_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "raw_match": false,
+      "raw_mismatch_count": 37,
+      "raw_mismatch_role_summary": {
+        "verilator_internal": {
+          "field_count": 4,
+          "mismatch_bytes": 37
+        }
+      }
+    }
+  ],
+  "observations": [
+    "All 12 commands completed real Verilator build, generic host-probe build, GPU cubin build, CPU run, hybrid run, and compare report generation.",
+    "The selected correctness policy is coverage_output_equivalence; all 12 reports pass with mismatch count 0.",
+    "Raw full-state equality is false for every report and is not the acceptance policy.",
+    "Some 32x1 reports include raw mismatch bytes classified as other, but normalized final-state comparison reports zero functional non-internal mismatch bytes and coverage-output equivalence passes.",
+    "This is correctness breadth evidence for generated config and generic host-probe metadata, not timing, speedup, or production LLM-serving throughput evidence."
+  ],
+  "next_task": "review_config_generation_validation_shape_breadth_execution_result_gate",
+  "non_claims": [
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not production LLM serving throughput",
+    "not universal validation for every historical template or shape",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

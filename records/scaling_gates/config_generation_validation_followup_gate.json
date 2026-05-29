@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "gate": "config_generation_validation_followup_gate",
+  "status": "selected_tlul_template_schema_metadata_invariant_review_after_generated_config_validation",
+  "objective": "Decide whether the generated-config validation track needs another scoped target set or should hand off to metadata-invariant review after the additional-target public pack closes.",
+  "source_selection_gate": "config/scaling_gates/next_measurement_selection_after_config_generation_validation_additional_targets_public_pack_refresh_gate.json",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_config_generation_validation_additional_targets_execution_gate.json",
+  "current_priority": "define_tlul_template_schema_metadata_invariant_review_gate",
+  "reviewed_generated_config_evidence": {
+    "breadth_execution_gate": "config/scaling_gates/config_generation_validation_breadth_execution_review_gate.json",
+    "shape_breadth_execution_gate": "config/scaling_gates/config_generation_validation_shape_breadth_execution_review_gate.json",
+    "additional_targets_execution_gate": "config/scaling_gates/config_generation_validation_additional_targets_execution_review_gate.json",
+    "coverage_output_equivalence_policy": "coverage_output_equivalence",
+    "all_reviewed_execution_sets_passed": true,
+    "max_coverage_output_mismatch_count": 0,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "raw_full_state_equality_required": false,
+    "raw_full_state_all_matched": false,
+    "generated_reports_are_source_of_truth": false
+  },
+  "decision": {
+    "selected_next_workstream": "tlul_template_schema_metadata_invariant_review",
+    "selected_first_gate": "define_tlul_template_schema_metadata_invariant_review_gate",
+    "reason": "The generated-config path now has enough correctness breadth for the current track: six tracked templates at 1x1, the same six templates at 32x1 and 1x32, and three additional tracked targets at 1x1 all pass coverage-output equivalence. Adding another target set would mainly increase evidence volume while leaving the sharper remaining risk unaddressed: whether template metadata invariants are explicit enough for Verilator-like usage without per-target hand-maintained assumptions."
+  },
+  "candidate_review": [
+    {
+      "name": "tlul_template_schema_metadata_invariant_review",
+      "decision": "selected",
+      "reason": "It directly attacks the remaining usability risk for passing a filelist/template and getting a predictable GPU-backed simulation plan: clock/reset metadata, source files, overlays, coverage manifests, builder metadata, and compare policy must be consistently machine-checkable."
+    },
+    {
+      "name": "another_generated_config_target_set",
+      "decision": "deferred",
+      "reason": "More targets would improve breadth, but the current three execution layers already cover NVDLA, ITA, paged-attention/KV, and OpenTitan primitive templates. The next weakest point is metadata consistency rather than another correctness run."
+    },
+    {
+      "name": "larger_shape_or_repeat_median_timing",
+      "decision": "deferred",
+      "reason": "Timing and larger-shape evidence should remain separate from the generated-config correctness and metadata-invariant track."
+    },
+    {
+      "name": "resident_execution_optimization",
+      "decision": "deferred",
+      "reason": "Runtime tuning should wait until the generated-config/template metadata surface is stable enough for routine operator use."
+    },
+    {
+      "name": "quantized_kv_cache_boundary",
+      "decision": "deferred",
+      "reason": "Quantized KV-cache remains a new workload boundary and should not be mixed into this validation handoff."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_tlul_template_schema_metadata_invariant_review_gate",
+    "must_pin": [
+      "template metadata fields that are required for generic host-probe generation",
+      "clock/reset metadata invariants",
+      "source file and overlay path invariants",
+      "coverage manifest and coverage-output policy invariants",
+      "dry-run commands or static checks before any execution",
+      "runtime and ABI non-change policy",
+      "generated reports and artifacts remain non-canonical"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_tlul_template_schema_metadata_invariant_review_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a new runtime or ABI change",
+    "not a new workload promotion",
+    "not approval to import untracked candidate overlays",
+    "not universal validation for every historical template",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

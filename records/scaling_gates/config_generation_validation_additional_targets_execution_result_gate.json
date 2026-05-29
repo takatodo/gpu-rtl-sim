@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "gate": "config_generation_validation_additional_targets_execution_result_gate",
+  "status": "completed_config_generation_validation_additional_targets_execution",
+  "objective": "Record the completed three-command additional-target build/run/compare execution for generated-config validation.",
+  "source_execution_gate": "config/scaling_gates/config_generation_validation_additional_targets_execution_gate.json",
+  "current_priority": "review_config_generation_validation_additional_targets_execution_result_gate",
+  "executed_scope": {
+    "name": "three_tracked_additional_targets_1x1_build_run_compare",
+    "template_count": 3,
+    "shape": "1x1",
+    "command_count": 3,
+    "targets": [
+      "NVDLA.nvdla_cmac_a2cacc",
+      "OpenTitan.prim_count",
+      "OpenTitan.prim_secded_inv_39_32_enc"
+    ]
+  },
+  "execution_result": {
+    "all_commands_exited_zero": true,
+    "all_expected_reports_present": true,
+    "all_selected_acceptance_policy_is_coverage_output_equivalence": true,
+    "all_selected_acceptance_policies_passed": true,
+    "all_compare_reports_passed_coverage_output_equivalence": true,
+    "max_coverage_output_mismatch_count": 0,
+    "strict_output_word_count_per_state": 29,
+    "strict_output_byte_count_per_state": 116,
+    "raw_full_state_equality_required": false,
+    "raw_full_state_all_matched": false,
+    "raw_full_state_match_count": 0,
+    "normalized_final_state_all_passed": true,
+    "max_functional_non_internal_mismatch_byte_count": 0,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "reports": [
+    {
+      "target": "NVDLA.nvdla_cmac_a2cacc",
+      "shape": "1x1",
+      "report": "reports/nvdla_cmac_a2cacc_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "strict_output_word_count": 29,
+      "strict_output_byte_count": 116,
+      "raw_match": false,
+      "raw_mismatch_count": 32,
+      "storage_size": 1216,
+      "normalized_final_state_passed": true
+    },
+    {
+      "target": "OpenTitan.prim_count",
+      "shape": "1x1",
+      "report": "reports/prim_count_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "strict_output_word_count": 29,
+      "strict_output_byte_count": 116,
+      "raw_match": false,
+      "raw_mismatch_count": 33,
+      "storage_size": 640,
+      "normalized_final_state_passed": true
+    },
+    {
+      "target": "OpenTitan.prim_secded_inv_39_32_enc",
+      "shape": "1x1",
+      "report": "reports/prim_secded_inv_39_32_enc_cpu_vs_hybrid_1x1_coverage_output_compare.json",
+      "coverage_output_mismatch_count": 0,
+      "strict_output_word_count": 29,
+      "strict_output_byte_count": 116,
+      "raw_match": false,
+      "raw_mismatch_count": 32,
+      "storage_size": 640,
+      "normalized_final_state_passed": true
+    }
+  ],
+  "acceptance_policy": {
+    "result_record": true,
+    "new_measurement_allowed_by_this_gate": true,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required": true,
+    "max_coverage_output_mismatch_count": 0,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "speedup_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_config_generation_validation_additional_targets_execution_result_gate",
+  "non_claims": [
+    "not timing or speedup evidence",
+    "not a runtime or ABI change",
+    "not a new workload promotion",
+    "not universal validation for every historical template or target",
+    "not raw full-state equality",
+    "not production LLM serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

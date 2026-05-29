@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "gate": "config_generation_validation_additional_targets_dry_run_gate",
+  "status": "passed_config_generation_validation_additional_targets_dry_run",
+  "objective": "Run the dry-run command plans for the first additional tracked generated-config target boundary.",
+  "source_definition_gate": "config/scaling_gates/config_generation_validation_additional_targets_gate.json",
+  "current_priority": "review_config_generation_validation_additional_targets_dry_run_gate",
+  "dry_run_result": {
+    "shape": "1x1",
+    "template_count": 3,
+    "command_count": 3,
+    "all_commands_exited_zero": true,
+    "all_emit_generic_host_probe_builder": true,
+    "makefile_host_probe_target_observed": false,
+    "all_emit_coverage_output_compare_policy": true,
+    "all_outputs_are_command_plans_only": true,
+    "created_measurement_reports": false,
+    "created_artifacts": false
+  },
+  "commands": [
+    {
+      "target": "NVDLA.nvdla_cmac_a2cacc",
+      "shape": "1x1",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/nvdla_cmac_a2cacc.json --shape 1x1 --dry-run",
+      "exit_code": 0,
+      "observed_host_probe_builder": "python3 src/tools/build_host_probe.py config/slice_launch_templates/nvdla_cmac_a2cacc.json",
+      "observed_compare_policy": "coverage_output_equivalence",
+      "json_out": "reports/nvdla_cmac_a2cacc_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+    },
+    {
+      "target": "OpenTitan.prim_count",
+      "shape": "1x1",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/prim_count.json --shape 1x1 --dry-run",
+      "exit_code": 0,
+      "observed_host_probe_builder": "python3 src/tools/build_host_probe.py config/slice_launch_templates/prim_count.json",
+      "observed_compare_policy": "coverage_output_equivalence",
+      "json_out": "reports/prim_count_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+    },
+    {
+      "target": "OpenTitan.prim_secded_inv_39_32_enc",
+      "shape": "1x1",
+      "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/prim_secded_inv_39_32_enc.json --shape 1x1 --dry-run",
+      "exit_code": 0,
+      "observed_host_probe_builder": "python3 src/tools/build_host_probe.py config/slice_launch_templates/prim_secded_inv_39_32_enc.json",
+      "observed_compare_policy": "coverage_output_equivalence",
+      "json_out": "reports/prim_secded_inv_39_32_enc_cpu_vs_hybrid_1x1_coverage_output_compare.json"
+    }
+  ],
+  "acceptance_policy": {
+    "dry_run_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "generic_host_probe_builder_required": true,
+    "makefile_host_probe_target_allowed": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_config_generation_validation_additional_targets_dry_run_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not fresh build/run/compare execution",
+    "not coverage-output equivalence evidence for the additional-target set",
+    "not a runtime or ABI change",
+    "not a new workload promotion",
+    "not universal validation for every historical template or target",
+    "not timing or speedup evidence",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

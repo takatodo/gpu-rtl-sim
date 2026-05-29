@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "gate": "next_measurement_selection_after_config_generation_validation_breadth_public_pack_refresh_gate",
+  "status": "selected_config_generation_validation_shape_breadth_next",
+  "objective": "Select the next validation goal after closing the config-generation validation breadth execution public-pack boundary.",
+  "source_completion_gate": "config/scaling_gates/public_benchmark_pack_externalization_completion_after_config_generation_validation_breadth_execution_gate.json",
+  "current_priority": "define_config_generation_validation_shape_breadth_gate",
+  "decision": {
+    "selected_next_workstream": "config_generation_validation_shape_breadth",
+    "selected_first_gate": "define_config_generation_validation_shape_breadth_gate",
+    "reason": "The six-template 1x1 breadth execution now validates generated config and generic host-probe metadata across tracked target types. The next narrower gap is shape breadth for the same Verilator-like flow, not a new workload or runtime optimization."
+  },
+  "candidate_review": [
+    {
+      "name": "config_generation_validation_shape_breadth",
+      "decision": "selected",
+      "reason": "It extends the just-validated generated-config path from one shape to more launch shapes while reusing tracked templates and the same coverage-output policy."
+    },
+    {
+      "name": "config_generation_validation_additional_targets",
+      "decision": "deferred",
+      "reason": "Adding targets before shape breadth would broaden source dependencies before the current six-template flow is exercised beyond 1x1."
+    },
+    {
+      "name": "tlul_template_schema_metadata_invariant_review",
+      "decision": "deferred",
+      "reason": "Metadata invariant review is useful, but shape breadth is the immediate empirical gap after the six 1x1 executions."
+    },
+    {
+      "name": "resident_execution_optimization",
+      "decision": "deferred",
+      "reason": "Runtime tuning should wait until the Verilator-like config path is less shape-specific."
+    },
+    {
+      "name": "quantized_kv_cache_boundary",
+      "decision": "deferred",
+      "reason": "Quantized KV-cache candidates remain outside the current tracked review boundary."
+    }
+  ],
+  "required_next_gate": {
+    "name": "define_config_generation_validation_shape_breadth_gate",
+    "must_pin": [
+      "tracked target and shape list",
+      "whether all six templates or a smaller tracked subset are used",
+      "dry-run commands before any non-dry-run execution",
+      "coverage_output_equivalence policy for CPU-vs-hybrid comparisons",
+      "generated reports and artifacts remain non-canonical",
+      "runtime and ABI non-change policy"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "untracked_candidate_overlay_allowed_by_this_gate": false,
+    "coverage_output_equivalence_required_for_later_execution": true,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "define_config_generation_validation_shape_breadth_gate",
+  "non_claims": [
+    "not a new measurement result",
+    "not a new runtime or ABI change",
+    "not a new workload promotion",
+    "not approval to import untracked candidate overlays",
+    "not universal validation for every historical template",
+    "not production LLM serving throughput",
+    "not raw full-state equality",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
