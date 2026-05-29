@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_overlay_patch_build_only_validation_gate",
+  "status": "defined_verilator_native_option_parser_overlay_patch_build_only_validation_boundary",
+  "objective": "Define the smallest build-only validation boundary for the accepted repo-owned Verilator overlay patch before any native parser support, execution, timing, or automatic allocation claim.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_implementation_gate.json",
+  "current_priority": "review_verilator_native_option_parser_overlay_patch_build_only_validation_gate",
+  "definition_decision": {
+    "accepted": true,
+    "weakest_point": "A successful build would prove only that the patched Verilator source compiles and links far enough to produce verilator_bin. It would still not prove parser behavior, sidecar handoff, runtime execution, timing, upstream acceptance, or arbitrary RTL/filelist support.",
+    "reason": [
+      "the descriptor/apply-check implementation has already been reviewed and accepted narrowly",
+      "the next unknown is compile/link compatibility of the patch against pinned Verilator v5.048",
+      "Verilator v5.048 Makefile.in exposes a verilator_bin target, which is narrower than upstream regression tests and broader than a source-only apply check",
+      "parser behavior and option validation should remain separate from build-only validation unless a later gate explicitly selects them"
+    ]
+  },
+  "source_payload": {
+    "descriptor_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+    "patch_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+    "upstream_repository_url": "https://github.com/verilator/verilator.git",
+    "upstream_ref": "v5.048",
+    "upstream_commit": "d0aa828c217410fffc73d92077b6f4f54830357c",
+    "upstream_commit_kind": "peeled_release_tag_commit",
+    "allowed_touched_files": [
+      "src/V3Options.h",
+      "src/V3Options.cpp"
+    ]
+  },
+  "build_only_validation_boundary": {
+    "selected_validation_kind": "external_clean_checkout_apply_and_build_verilator_bin",
+    "requires_verilator_source_in_repository": false,
+    "writes_under_third_party": false,
+    "uses_generated_reports_as_source_of_truth": false,
+    "selected_build_target": "verilator_bin",
+    "selected_build_target_rationale": "Verilator v5.048 Makefile.in defines a phony verilator_bin target that builds the main optimized binary without running upstream test_regress.",
+    "expected_success_exit_code": 0,
+    "command_sequence": [
+      "test -n \"$REPO_ROOT\"",
+      "test -n \"$VERILATOR_CHECKOUT\"",
+      "test ! -e \"$VERILATOR_CHECKOUT\"",
+      "git clone --filter=blob:none --no-checkout https://github.com/verilator/verilator.git \"$VERILATOR_CHECKOUT\"",
+      "git -C \"$VERILATOR_CHECKOUT\" checkout d0aa828c217410fffc73d92077b6f4f54830357c",
+      "python3 -m json.tool \"$REPO_ROOT/overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json\" >/dev/null",
+      "git -C \"$VERILATOR_CHECKOUT\" apply --check \"$REPO_ROOT/overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch\"",
+      "git -C \"$VERILATOR_CHECKOUT\" apply \"$REPO_ROOT/overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch\"",
+      "cd \"$VERILATOR_CHECKOUT\" && autoconf",
+      "cd \"$VERILATOR_CHECKOUT\" && ./configure --prefix \"$VERILATOR_INSTALL\"",
+      "cd \"$VERILATOR_CHECKOUT\" && make -j \"${NPROC:-$(nproc)}\" verilator_bin"
+    ],
+    "required_environment_variables": [
+      "REPO_ROOT",
+      "VERILATOR_CHECKOUT"
+    ],
+    "optional_environment_variables": [
+      "VERILATOR_INSTALL",
+      "NPROC"
+    ],
+    "log_capture_policy": "If the next execution gate captures logs, store them under reports/ as generated evidence only and do not write local absolute paths into source-of-truth files.",
+    "artifacts_policy": "The external checkout and build outputs are local/generated state, not repo source of truth."
+  },
+  "explicitly_deferred_validation": {
+    "parser_behavior_execution": [
+      "accept --sim-accel sidecar-gpu --sim-accel-states N --sim-accel-steps S through the built binary",
+      "reject unknown accelerators",
+      "reject missing state/step halves",
+      "reject non-positive counts",
+      "handle std::atoi non-numeric suffix caveat"
+    ],
+    "upstream_scope": [
+      "test_regress/t/",
+      "docs/guide/exe_verilator.rst",
+      "upstream patch submission or landing"
+    ],
+    "project_scope": [
+      "public CLI changes",
+      "src/V3OptionParser.*",
+      "src/VlcMain.cpp",
+      "--sim-accel-shape <NxS>",
+      "--sim-accel-estimate-efficiency",
+      "sidecar runtime or ABI wiring",
+      "source closure inference",
+      "arbitrary filelist planning",
+      "automatic GPU allocation",
+      "execution or timing measurement"
+    ]
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_overlay_patch_build_only_validation_gate",
+    "must_decide": [
+      "whether the selected command sequence is narrow enough to remain build-only",
+      "whether verilator_bin is the right first build target before parser-behavior execution",
+      "whether the command sequence avoids vendoring Verilator or writing under third_party",
+      "whether the deferred parser-behavior and std::atoi caveats are explicit enough",
+      "whether the following gate should run the build-only validation or revise the boundary"
+    ],
+    "must_not_claim": [
+      "native Verilator parser support works",
+      "the patch has landed upstream",
+      "Verilator builds with this patch",
+      "Verilator upstream regression tests pass with this patch",
+      "parser behavior is correct",
+      "arbitrary RTL or filelist support",
+      "automatic optimal GPU allocation",
+      "new execution or timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "build_only_validation_boundary_defined": true,
+    "build_executed_by_this_gate": false,
+    "verilator_build_success_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_support_claim_allowed_by_gate_alone": false,
+    "parser_behavior_claim_allowed_by_gate_alone": false,
+    "upstream_regression_success_claim_allowed_by_gate_alone": false,
+    "upstream_patch_landed_claim_allowed_by_gate_alone": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_overlay_patch_build_only_validation_gate",
+  "non_claims": [
+    "not Verilator build success",
+    "not native Verilator parser support",
+    "not parser behavior validation",
+    "not a landed upstream Verilator patch",
+    "not Verilator regression-test success",
+    "not new execution evidence",
+    "not new measurement evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
