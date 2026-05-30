@@ -132,6 +132,7 @@ def _validate_ready_input(
     _require_flag(plan_resolution, "sidecar_stage_plan_invoked", True, error_factory)
     _require_flag(plan_resolution, "sidecar_handoff_contract_invoked", False, error_factory)
     _require_flag(plan_resolution, "command_synthesis_invoked", False, error_factory)
+    _require_flag(plan_resolution, "efficiency_estimate_invoked", False, error_factory)
     _require_flag(plan_resolution, "execution_performed", False, error_factory)
     _require_flag(plan_resolution, "measurement_performed", False, error_factory)
     if plan_resolution.get("status") != STATUS_READY_FOR_VERILATOR_OPTION_SHIM:

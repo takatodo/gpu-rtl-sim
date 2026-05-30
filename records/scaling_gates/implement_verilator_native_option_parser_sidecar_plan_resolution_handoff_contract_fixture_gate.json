@@ -18,6 +18,7 @@
     "line_guard_split": true,
     "new_public_cli_added": false,
     "command_synthesis_invoked": false,
+    "efficiency_estimate_invoked": false,
     "operator_plan_invoked": false,
     "new_execution_added": false,
     "new_measurement_added": false,
@@ -37,6 +38,7 @@
     "parser_schedule_constraints.shape_matches_state_step": true,
     "parser_schedule_constraints.shape_equals_stage_plan.shape": true,
     "hybrid_sidecar_run.shape_equals_parser_shape": true,
+    "efficiency_estimate_invoked": false,
     "correctness_policy": "coverage_output_equivalence",
     "correctness_policy_ref_status": "reference_only_not_compare_evidence",
     "forbidden_prepopulated_fields": [
@@ -116,6 +118,11 @@
       "sidecar_handoff_contract_invoked_before_validation": false
     },
     {
+      "name": "handoff_contract_rejects_efficiency_estimate_before_metadata",
+      "raises": "NativeParserSidecarPlanResolutionError",
+      "sidecar_handoff_contract_invoked_before_validation": false
+    },
+    {
       "name": "handoff_contract_rejects_prepopulated_execution_fields",
       "raises": "NativeParserSidecarPlanResolutionError"
     }
@@ -123,7 +130,7 @@
   "verification": {
     "focused_contract_test_command": "python3 -m unittest tests.contract.test_verilator_native_option_parser_sidecar_plan_resolution_fixture -q",
     "focused_contract_test_exit_code": 0,
-    "focused_contract_test_count": 14
+    "focused_contract_test_count": 15
   },
   "required_next_gate": {
     "name": "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_fixture_implementation_gate",

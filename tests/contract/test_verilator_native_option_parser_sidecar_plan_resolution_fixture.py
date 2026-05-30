@@ -73,6 +73,7 @@ class VerilatorNativeOptionParserSidecarPlanResolutionFixtureTest(unittest.TestC
     def assert_non_executing_plan_resolution(self, resolved: dict[str, object]) -> None:
         self.assertFalse(resolved["sidecar_handoff_contract_invoked"])
         self.assertFalse(resolved["command_synthesis_invoked"])
+        self.assertFalse(resolved["efficiency_estimate_invoked"])
         self.assertFalse(resolved["execution_performed"])
         self.assertFalse(resolved["measurement_performed"])
         self.assertEqual(resolved["correctness_policy_ref_status"], "reference_only_not_compare_evidence")
@@ -369,6 +370,32 @@ class VerilatorNativeOptionParserSidecarPlanResolutionFixtureTest(unittest.TestC
 
         with self.assertRaisesRegex(plan_resolution.NativeParserSidecarPlanResolutionError, "already contains"):
             plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+
+    def test_handoff_contract_rejects_efficiency_estimate_before_metadata(self) -> None:
+        (plan_resolution,) = _load_tool_modules("verilator_native_option_parser_sidecar_plan_resolution")
+        resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+            _adapter_payload(),
+            sidecar_context=_sidecar_context(),
+        )
+        resolved["efficiency_estimate_invoked"] = True
+
+        original = plan_resolution.sidecar_handoff_contract
+        calls = []
+
+        def fail_if_called(plan):
+            calls.append(plan)
+            raise AssertionError("sidecar_handoff_contract must not be called after estimate metadata")
+
+        plan_resolution.sidecar_handoff_contract = fail_if_called
+        try:
+            with self.assertRaisesRegex(
+                plan_resolution.NativeParserSidecarPlanResolutionError,
+                "efficiency_estimate_invoked",
+            ):
+                plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+            self.assertEqual(calls, [])
+        finally:
+            plan_resolution.sidecar_handoff_contract = original
 
     def test_handoff_contract_rejects_shape_mismatch_before_metadata(self) -> None:
         (plan_resolution,) = _load_tool_modules("verilator_native_option_parser_sidecar_plan_resolution")

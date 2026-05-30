@@ -43,6 +43,7 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractFixtureGate
         self.assertTrue(surface["metadata_only"])
         self.assertFalse(surface["new_public_cli_added"])
         self.assertFalse(surface["command_synthesis_invoked"])
+        self.assertFalse(surface["efficiency_estimate_invoked"])
         self.assertFalse(surface["operator_plan_invoked"])
         self.assertFalse(surface["new_execution_added"])
         self.assertFalse(surface["new_measurement_added"])
@@ -64,6 +65,7 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractFixtureGate
         self.assertTrue(checks["parser_schedule_constraints.shape_matches_state_step"])
         self.assertTrue(checks["parser_schedule_constraints.shape_equals_stage_plan.shape"])
         self.assertTrue(checks["hybrid_sidecar_run.shape_equals_parser_shape"])
+        self.assertFalse(checks["efficiency_estimate_invoked"])
         self.assertEqual(checks["correctness_policy"], "coverage_output_equivalence")
         self.assertEqual(checks["correctness_policy_ref_status"], "reference_only_not_compare_evidence")
         for forbidden in ("handoff_contract", "operator_plan", "verilator_command_argv", "timing"):
@@ -110,7 +112,7 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractFixtureGate
             "python3 -m unittest tests.contract.test_verilator_native_option_parser_sidecar_plan_resolution_fixture -q",
         )
         self.assertEqual(gate["verification"]["focused_contract_test_exit_code"], 0)
-        self.assertEqual(gate["verification"]["focused_contract_test_count"], 14)
+        self.assertEqual(gate["verification"]["focused_contract_test_count"], 15)
 
         next_gate = gate["required_next_gate"]
         self.assertEqual(

@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The repaired overlay patch now applies cleanly, passes post-apply location sanity, has accepted `verilator_bin` build-only evidence, reviewed parser-only smoke, reviewed rebuilt parser integer-hardening smoke, a reviewed native parser-to-adapter handoff boundary, a reviewed non-executing adapter fixture, a reviewed adapter-payload to sidecar plan-resolution boundary, an implemented non-executing plan-resolution fixture, a review accepting only the explicit-context template-plan fixture, a definition for status/readiness hardening, a review accepting that definition, an implementation of the in-place helper hardening, a review accepting that implementation, a definition of the ready-only handoff-contract metadata boundary, a review accepting that boundary, and an implemented non-executing handoff-contract metadata fixture. The weak point is reviewing that implementation without claiming sidecar execution, upstream acceptance, arbitrary filelist planning, dependency inference, automatic allocation, or landed parser-patch support.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The repaired overlay patch now applies cleanly, passes post-apply location sanity, has accepted `verilator_bin` build-only evidence, reviewed parser-only smoke, reviewed rebuilt parser integer-hardening smoke, a reviewed native parser-to-adapter handoff boundary, a reviewed non-executing adapter fixture, a reviewed adapter-payload to sidecar plan-resolution boundary, an implemented non-executing plan-resolution fixture, a review accepting only the explicit-context template-plan fixture, a definition for status/readiness hardening, a review accepting that definition, an implementation of the in-place helper hardening, a review accepting that implementation, a definition of the ready-only handoff-contract metadata boundary, a review accepting that boundary, an implemented non-executing handoff-contract metadata fixture, and an accepted implementation review after adding the explicit `efficiency_estimate_invoked` guard. The weak point is defining the next command/operator-plan metadata boundary without claiming sidecar execution, upstream acceptance, arbitrary filelist planning, dependency inference, automatic allocation, landed parser-patch support, or timing evidence.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the implemented handoff-contract metadata fixture after the ready-only boundary in the non-executing native parser adapter-payload to sidecar plan-resolution fixture.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is defining how the accepted handoff-contract metadata may feed non-executing command argv, estimate-command, and operator-plan metadata after the ready-only fixture review.
 
 Current priority:
 
-`review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_fixture_implementation_gate`
+`define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_boundary_gate`
 
 Current gate:
 
-`config/scaling_gates/implement_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_fixture_gate.json`
+`config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_fixture_implementation_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native parser-to-sidecar handoff-contract fixture implementation review**: Review the wrapper plus support-module implementation that lets only ready plan-resolution outputs build `sidecar_handoff_contract` metadata, while fail-closing not-ready/unsupported results before any broader native parser support, upstream landing, sidecar execution, timing, or automatic allocation claim.
+1. **Native parser-to-sidecar operator-plan boundary definition**: Define the first non-executing boundary from accepted handoff-contract metadata to command argv, estimate-command, and operator-plan metadata, while keeping execution, timing, runtime/ABI, arbitrary filelist expansion, and automatic allocation out of scope.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,7 +79,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Review the native Verilator option parser-to-sidecar plan-resolution handoff-contract fixture after accepting scoped strict count-token parser smoke, the reviewed adapter boundary, the reviewed adapter fixture, the explicit-context plan-resolution definition, the reviewed non-executing plan-resolution fixture, the reviewed status/readiness hardening, the reviewed ready-only handoff-contract metadata boundary, and the implementation gate.
+Define the native Verilator option parser-to-sidecar handoff-contract-to-operator-plan metadata boundary after accepting scoped strict count-token parser smoke, the reviewed adapter boundary, the reviewed adapter fixture, the explicit-context plan-resolution definition, the reviewed non-executing plan-resolution fixture, the reviewed status/readiness hardening, the reviewed ready-only handoff-contract metadata boundary, the implementation gate, and the fixture implementation review.
 
 Parser boundary definition:
 
@@ -121,7 +121,8 @@ Parser boundary definition:
 - parser-to-sidecar plan-resolution handoff-contract boundary definition gate: `config/scaling_gates/define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate.json`
 - parser-to-sidecar plan-resolution handoff-contract boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate.json`
 - parser-to-sidecar plan-resolution handoff-contract fixture implementation gate: `config/scaling_gates/implement_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_fixture_gate.json`
-- selected next gate: `review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_fixture_implementation_gate`
+- parser-to-sidecar plan-resolution handoff-contract fixture implementation review gate: `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_fixture_implementation_gate.json`
+- selected next gate: `define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_boundary_gate`
 - scope: update existing overlay patch in place before public CLI, sidecar support, simulation execution, or timing
 - defined native minimum: `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`
 - wrapper/shim compatibility kept out of native minimum: `--sim-accel-shape <NxS>`, target-first registry lookup, print modes, JSON operator plans, resident modes, and dataset-backed flows
@@ -132,6 +133,8 @@ Parser boundary definition:
 - handoff fixture review: accepts that non-executing adapter authority, fixes `correctness_policy_ref` as reference-only, and advances to defining sidecar plan resolution
 - plan-resolution boundary definition: requires explicit sidecar context such as target, mode, template or registry entry, and source gate/manifest reference before an adapter payload may call or mirror `sidecar_stage_plan`; parser-owned values remain schedule and preserved Verilator build inputs only
 - plan-resolution boundary review: accepts only that explicit-context, non-executing planning definition and selects a fixture that must reject payload-only resolution
+- handoff-contract fixture review: accepts only metadata-only, ready-only construction after adding an explicit `efficiency_estimate_invoked` rejection before `sidecar_handoff_contract(stage_plan)`
+- operator-plan boundary next: define whether accepted metadata can feed non-executing command argv, estimate-command, and operator-plan metadata, and define rejection for closed, unsupported, malformed, or prepopulated metadata
 - dry-run result: 12 non-executing preview/rejection commands matched expected exits; the two static `filelist_*` targets expose `64x1`, the expanded future Verilator spelling, and `coverage_output_equivalence`; estimate mode is separate
 - accepted caveat: missing shape halves, mixed shape spelling, and non-positive counts reject through the shared mapper, but unknown accelerators currently reject at argparse choices
 - definition assigns unknown-accelerator validation to the parser-stub validation contract and records current argparse choices as wrapper compatibility only
@@ -385,7 +388,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
-- current next task: `review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_fixture_implementation_gate`
+- current next task: `define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_boundary_gate`
 - reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
@@ -727,16 +730,17 @@ Tracked evidence:
 
 Recommended next gate:
 
-`review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_fixture_implementation_gate`
+`define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_boundary_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/implement_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_fixture_gate.json` as the source artifact
-- check that the public wrapper remains thin and the support logic lives in `src/tools/verilator_native_option_parser_sidecar_handoff_contract.py`
-- confirm only `surface: native_verilator_parser_sidecar_plan_resolution_fixture` with `status: ready_for_verilator_option_shim` can call `sidecar_handoff_contract(stage_plan)`
-- confirm not-ready and unsupported outputs return structured closed results without metadata construction
-- confirm malformed ready inputs fail before calling the metadata authority
-- keep command synthesis, operator plan, execution, compare execution, timing, runtime/ABI, arbitrary filelist expansion, and automatic allocation out of scope
+- use `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_fixture_implementation_gate.json` as the source artifact
+- define whether ready handoff-contract metadata may feed synthesized Verilator command metadata
+- define `command_argv`, estimate-command, and operator-plan metadata as non-executing planning outputs
+- define rejection behavior for closed, unsupported, malformed, or prepopulated handoff-contract metadata
+- keep parser-preserved `source_files` and `filelists` as preserved inputs, not source-closure or dependency-inference authority
+- keep `efficiency_estimate_invoked` out of the ready metadata path until a later estimate boundary explicitly accepts it
+- keep command execution, operator-plan execution, RTL execution, compare execution, timing, runtime/ABI, arbitrary filelist expansion, and automatic allocation out of scope
 - preserve `correctness_policy_ref` as a later sidecar policy reference, not native-parser output-equivalence evidence
 - keep compact shape, sidecar execution, runtime/ABI changes, and timing as deferred unless a later review expands scope
 - keep `--sim-accel-estimate-efficiency`, compact shape spelling, `src/V3OptionParser.*`, `src/VlcMain.cpp`, docs, and upstream `test_regress/t/` outside scope unless a new review expands scope
