@@ -93,6 +93,12 @@ OVERLAY_PATCH_COMPILE_FIX_BUILD_ONLY_VALIDATION_RUN_GATE = (
     / "scaling_gates"
     / "run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate.json"
 )
+OVERLAY_PATCH_COMPILE_FIX_BUILD_ONLY_VALIDATION_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate.json"
+)
 OVERLAY_DESCRIPTOR_FILE = (
     REPO_ROOT
     / "overlays"
@@ -811,6 +817,63 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(
             gate["next_task"],
             "review_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
+        )
+
+    def test_overlay_patch_compile_fix_build_only_validation_review_selects_parser_behavior_definition(self) -> None:
+        review = json.loads(OVERLAY_PATCH_COMPILE_FIX_BUILD_ONLY_VALIDATION_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("build-only", review["review_decision"]["weakest_point"])
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+        )
+        result = review["accepted_result"]
+        self.assertEqual(result["validation_kind"], "external_clean_checkout_apply_and_build_verilator_bin")
+        self.assertEqual(result["descriptor_validation_exit_code"], 0)
+        self.assertEqual(result["apply_check_exit_code"], 0)
+        self.assertEqual(result["apply_exit_code"], 0)
+        self.assertEqual(result["autoconf_exit_code"], 0)
+        self.assertEqual(result["configure_exit_code"], 0)
+        self.assertEqual(result["make_verilator_bin_exit_code"], 0)
+        self.assertTrue(result["build_only_validation_passed"])
+        self.assertTrue(result["primary_log_path"].startswith("artifacts/"))
+        install = review["accepted_verilator_install_boundary"]
+        self.assertFalse(install["provided_by_environment"])
+        self.assertTrue(install["mechanically_defaulted"])
+        self.assertTrue(install["accepted_as_mechanical_command_adjustment"])
+        claim = review["accepted_claim_scope"]
+        self.assertTrue(claim["verilator_build_success_claim_allowed"])
+        self.assertTrue(claim["compile_link_compatibility_evidence_accepted"])
+        self.assertFalse(claim["parser_behavior_accepted"])
+        self.assertFalse(claim["sidecar_runtime_execution_accepted"])
+        self.assertFalse(claim["arbitrary_filelist_or_rtl_support_accepted"])
+        next_gate = review["required_next_gate"]
+        self.assertEqual(
+            next_gate["name"],
+            "define_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+        )
+        self.assertIn("unknown accelerator", next_gate["candidate_rejection_cases"])
+        self.assertIn(
+            "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1",
+            next_gate["candidate_positive_cases"],
+        )
+        policy = review["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertTrue(policy["build_only_validation_result_accepted"])
+        self.assertTrue(policy["verilator_build_success_claim_allowed"])
+        self.assertFalse(policy["native_verilator_parser_support_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["parser_behavior_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            review["next_task"],
+            "define_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
         )
 
 
