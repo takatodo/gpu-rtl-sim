@@ -28,6 +28,12 @@ RUN_GATE = (
     / "scaling_gates"
     / "run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json"
 )
+RUN_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate.json"
+)
 DESCRIPTOR = (
     REPO_ROOT
     / "overlays"
@@ -56,6 +62,9 @@ class VerilatorNativeOptionParserIntegerHardeningGateTest(unittest.TestCase):
 
     def read_run_gate(self) -> dict[str, object]:
         return json.loads(RUN_GATE.read_text(encoding="utf-8"))
+
+    def read_run_review_gate(self) -> dict[str, object]:
+        return json.loads(RUN_REVIEW_GATE.read_text(encoding="utf-8"))
 
     def test_definition_selects_strict_integer_hardening_boundary(self) -> None:
         gate = self.read_gate()
@@ -239,6 +248,49 @@ class VerilatorNativeOptionParserIntegerHardeningGateTest(unittest.TestCase):
         self.assertEqual(
             gate["next_task"],
             "review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate",
+        )
+
+    def test_run_review_accepts_scoped_hardening_and_selects_handoff_boundary(self) -> None:
+        review = self.read_run_review_gate()
+
+        self.assertEqual(
+            review["source_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json",
+        )
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_sidecar_handoff_boundary_gate",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+
+        accepted = review["accepted_result"]
+        self.assertTrue(accepted["parser_integer_hardening_smoke_passed"])
+        self.assertTrue(accepted["suffix_cases_prove_std_atoi_prefix_behavior_rejected"])
+        self.assertTrue(accepted["negative_separate_token_cases_reached_value_validation"])
+        self.assertFalse(accepted["negative_separate_token_cases_rejected_by_tokenizer"])
+
+        scope = review["accepted_claim_scope"]
+        self.assertTrue(scope["scoped_parser_only_strict_integer_validation_accepted"])
+        self.assertEqual(scope["accepted_options"], ["--sim-accel-states", "--sim-accel-steps"])
+        self.assertFalse(scope["sidecar_handoff_accepted"])
+        self.assertFalse(scope["coverage_output_equivalence_accepted"])
+
+        next_workstream = review["selected_next_workstream"]
+        self.assertEqual(
+            next_workstream["name"],
+            "define_verilator_native_option_parser_sidecar_handoff_boundary_gate",
+        )
+        self.assertIn("parsed native option fields", next_workstream["reason"])
+
+        policy = review["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertTrue(policy["scoped_strict_integer_parsing_result_accepted"])
+        self.assertTrue(policy["next_sidecar_handoff_boundary_definition_allowed"])
+        self.assertFalse(policy["sidecar_handoff_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertEqual(
+            review["next_task"],
+            "define_verilator_native_option_parser_sidecar_handoff_boundary_gate",
         )
 
 

@@ -2,11 +2,11 @@
 
 ## Weakest Point
 
-The commit-split cleanup is complete, and the repaired Verilator native-option overlay patch now has accepted scoped `verilator_bin` build-only validation, reviewed parser-only smoke, and a rebuilt integer-hardening smoke run. The current weak point is reviewing that run result without overstating it: suffix inputs such as `64abc` and `1abc` now reject through the rebuilt binary, and separate-token negative `-1` values reached value validation in this run, but this is still parser-only evidence before any sidecar handoff, measurement, runtime/ABI, or arbitrary RTL/filelist claim.
+The commit-split cleanup is complete, and the repaired Verilator native-option overlay patch now has accepted scoped `verilator_bin` build-only validation, reviewed parser-only smoke, and reviewed rebuilt integer-hardening smoke. The current weak point is defining the next handoff boundary without overstating the parser evidence: the parser now has scoped strict count-token evidence, but parsed fields are not yet connected to a native sidecar plan, runtime/ABI, RTL simulation, coverage-output equivalence, timing, or arbitrary RTL/filelist flow.
 
 Current cleanup policy: keep `config/selection.json` compact (core pointer and operational fields), park bulky historical maps in `config/selection_extensions.json`, keep historical gate records under `records/scaling_gates/` with `config/scaling_gates` as a compatibility link, and keep generated evidence reproducible under `reports/` and `artifacts/` without retaining it as source of truth.
 
-Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `835` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
+Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `836` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
 
 Hybrid usability state: generated templates now carry generic host-probe build metadata and can use `src/tools/build_host_probe.py` without adding a per-target Makefile rule.
 
@@ -52,15 +52,15 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate`
+`define_verilator_native_option_parser_sidecar_handoff_boundary_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json`
+`config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate.json`
 
 ## 追跡タスク
 
-- `review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate` で、rebuilt `verilator_bin` hardening smoke の範囲を確認し、次に sidecar handoff へ進むか文書化/上流準備で止めるかを決める。
+- `define_verilator_native_option_parser_sidecar_handoff_boundary_gate` で、native parser が受け取った `sidecar-gpu` / state / step / ordinary Verilator args をどの sidecar plan 契約へ渡すか定義する。
 - `docs/migration_notes.md` の「シンプル検証からの乖離」節を、前提変更時に見直す。
 - 新規ゲート完了時は `config/selection_extensions.json` の `completed_goal_evidence` / `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json` の整合を取る。
 - ゲート JSON に残る履歴表記の例: `next_task: select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`（正の源泉は常に `config/selection.json` の `current_priority` を優先）。マージ後の全体像が必要なら `src/tools/selection_state.py` の `load_selection` を参照。
@@ -224,6 +224,8 @@ Verilator native option parser overlay patch parser-integer hardening review: `c
 Verilator native option parser overlay patch parser-integer hardening implementation: `config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json` records the in-place descriptor/patch update. The `parsePositiveSimAccelCount` helper now uses manual full-token decimal digit validation and no longer uses `std::atoi` for sim-accel count parsing; descriptor JSON validation, clean-checkout `git apply --check`, actual patch apply, and diff/location sanity all exit `0`.
 
 Verilator native option parser overlay patch parser-integer hardening run: `config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json` records a clean-checkout rebuild of the updated overlay patch, `make -j 28 verilator_bin` exiting `0`, two positive expanded parser cases exiting `0`, and four hardening rejection cases exiting `1` with expected diagnostics. The suffix cases prove `std::atoi` prefix behavior is rejected, and the separate-token negative cases reached strict value validation in this run. This permits only scoped parser-only hardening evidence for `--sim-accel-states` and `--sim-accel-steps`; sidecar handoff, RTL simulation, timing, coverage-output equivalence, arbitrary RTL/filelist support, automatic allocation, GEM, production-serving, and upstream landing remain non-claims. The next gate is reviewing this run.
+
+Verilator native option parser overlay patch parser-integer hardening run review: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate.json` accepts only the scoped strict count-token result for the listed parser-only smoke cases. It accepts the observed separate-token negative cases as helper value-validation evidence for this run, but still rejects broad parser, sidecar handoff, RTL simulation, timing, arbitrary RTL/filelist, automatic allocation, upstream regression, or upstream landing claims. The selected next gate is defining the native parser-to-sidecar handoff boundary.
 
 Public benchmark pack externalization readiness state: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for handing the refreshed pack to an external reader. The status is `ready_for_external_review`; this is a packaging/readiness audit only, not a new measurement result or stronger performance claim.
 
