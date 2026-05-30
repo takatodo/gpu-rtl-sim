@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "gate": "run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
+  "status": "passed_verilator_bin_build_only_validation_after_compile_fix",
+  "objective": "Run the repaired Verilator native option parser overlay patch through a fail-fast build-only validation and record compile/link compatibility without claiming parser behavior, sidecar execution, timing, or automatic allocation.",
+  "source_implementation_gate": "config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
+  "source_failed_build_gate": "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json",
+  "current_priority": "review_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
+  "execution_boundary": {
+    "validation_kind": "external_clean_checkout_apply_and_build_verilator_bin",
+    "upstream_repository_url": "https://github.com/verilator/verilator.git",
+    "upstream_ref": "v5.048",
+    "upstream_commit": "d0aa828c217410fffc73d92077b6f4f54830357c",
+    "descriptor_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+    "patch_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+    "selected_build_target": "verilator_bin",
+    "writes_under_third_party": false,
+    "requires_verilator_source_in_repository": false,
+    "parser_behavior_executed": false,
+    "sidecar_runtime_executed": false
+  },
+  "verilator_install": {
+    "provided_by_environment": false,
+    "mechanically_defaulted": true,
+    "default_policy": "checkout-local generated install prefix under artifacts",
+    "install_prefix_rel": "artifacts/verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation/install"
+  },
+  "observed_result": {
+    "descriptor_json_validated": true,
+    "descriptor_validation_exit_code": 0,
+    "apply_check_exit_code": 0,
+    "patch_applied": true,
+    "apply_exit_code": 0,
+    "autoconf_reached": true,
+    "autoconf_exit_code": 0,
+    "configure_reached": true,
+    "configure_exit_code": 0,
+    "make_verilator_bin_reached": true,
+    "make_command": "make -j 28 verilator_bin",
+    "make_verilator_bin_exit_code": 0,
+    "expected_success_exit_code": 0,
+    "build_only_validation_passed": true,
+    "failure_class": null,
+    "failure_summary": null,
+    "primary_log_path": "artifacts/verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation/build-only-validation.log",
+    "generated_artifact_dir": "artifacts/verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation",
+    "changed_files_after_apply": [
+      "src/V3Options.cpp",
+      "src/V3Options.h"
+    ]
+  },
+  "command_boundary_note": {
+    "fail_fast_wrapper_used": true,
+    "wrapper_exit_code_accepted": true,
+    "accepted_evidence": "descriptor validation, git apply --check, actual patch apply, autoconf/configure reach, and make verilator_bin exit code 0 from one fail-fast build-only sequence",
+    "local_checkout_source": "local clone of artifacts/verilator_native_option_parser_overlay_patch_build_only_validation/verilator-v5.048-patched at d0aa828c217410fffc73d92077b6f4f54830357c"
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
+    "must_decide": [
+      "whether the build-only evidence is accepted as compile/link compatibility for the repaired overlay patch",
+      "whether the next selected gate should define parser behavior checks using the built Verilator binary",
+      "which parser inputs are required before claiming native Verilator option support"
+    ],
+    "must_not_claim": [
+      "native Verilator parser support works until parser behavior is executed through the built binary",
+      "parser behavior is correct",
+      "Verilator upstream regression tests pass",
+      "the patch has landed upstream",
+      "sidecar runtime or ABI integration",
+      "arbitrary RTL or filelist support",
+      "automatic optimal GPU allocation",
+      "new simulation timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "run_executed": true,
+    "build_only_validation_passed": true,
+    "compile_link_compatibility_evidence_recorded": true,
+    "patch_compile_failure_resolved_for_verilator_bin_build_only": true,
+    "verilator_build_success_claim_allowed": true,
+    "verilator_build_success_scope": "verilator_bin build-only for the repaired overlay patch against pinned Verilator v5.048 checkout",
+    "native_verilator_parser_support_claim_allowed_by_gate_alone": false,
+    "parser_behavior_claim_allowed_by_gate_alone": false,
+    "upstream_regression_success_claim_allowed_by_gate_alone": false,
+    "upstream_patch_landed_claim_allowed_by_gate_alone": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
+  "non_claims": [
+    "not native Verilator parser support",
+    "not parser behavior validation",
+    "not a landed upstream Verilator patch",
+    "not Verilator regression-test success",
+    "not new simulation execution evidence",
+    "not new measurement evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

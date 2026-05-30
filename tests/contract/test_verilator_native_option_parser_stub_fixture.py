@@ -87,6 +87,12 @@ OVERLAY_PATCH_COMPILE_FIX_IMPLEMENTATION_GATE = (
     / "scaling_gates"
     / "implement_verilator_native_option_parser_overlay_patch_compile_fix_gate.json"
 )
+OVERLAY_PATCH_COMPILE_FIX_BUILD_ONLY_VALIDATION_RUN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate.json"
+)
 OVERLAY_DESCRIPTOR_FILE = (
     REPO_ROOT
     / "overlays"
@@ -745,6 +751,66 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(
             gate["next_task"],
             "run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
+        )
+
+    def test_overlay_patch_compile_fix_build_only_validation_records_success_scope(self) -> None:
+        gate = json.loads(OVERLAY_PATCH_COMPILE_FIX_BUILD_ONLY_VALIDATION_RUN_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_implementation_gate"],
+            "config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
+        )
+        self.assertEqual(gate["status"], "passed_verilator_bin_build_only_validation_after_compile_fix")
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
+        )
+        boundary = gate["execution_boundary"]
+        self.assertEqual(boundary["selected_build_target"], "verilator_bin")
+        self.assertFalse(boundary["writes_under_third_party"])
+        self.assertFalse(boundary["requires_verilator_source_in_repository"])
+        self.assertFalse(boundary["parser_behavior_executed"])
+        self.assertFalse(boundary["sidecar_runtime_executed"])
+        install = gate["verilator_install"]
+        self.assertFalse(install["provided_by_environment"])
+        self.assertTrue(install["mechanically_defaulted"])
+        self.assertIn("artifacts/", install["install_prefix_rel"])
+        observed = gate["observed_result"]
+        self.assertTrue(observed["descriptor_json_validated"])
+        self.assertEqual(observed["descriptor_validation_exit_code"], 0)
+        self.assertEqual(observed["apply_check_exit_code"], 0)
+        self.assertTrue(observed["patch_applied"])
+        self.assertEqual(observed["apply_exit_code"], 0)
+        self.assertTrue(observed["autoconf_reached"])
+        self.assertEqual(observed["autoconf_exit_code"], 0)
+        self.assertTrue(observed["configure_reached"])
+        self.assertEqual(observed["configure_exit_code"], 0)
+        self.assertTrue(observed["make_verilator_bin_reached"])
+        self.assertEqual(observed["make_verilator_bin_exit_code"], 0)
+        self.assertTrue(observed["build_only_validation_passed"])
+        self.assertIsNone(observed["failure_class"])
+        self.assertTrue(observed["primary_log_path"].startswith("artifacts/"))
+        self.assertEqual(observed["changed_files_after_apply"], ["src/V3Options.cpp", "src/V3Options.h"])
+        next_gate = gate["required_next_gate"]
+        self.assertEqual(
+            next_gate["name"],
+            "review_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
+        )
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["run_executed"])
+        self.assertTrue(policy["build_only_validation_passed"])
+        self.assertTrue(policy["compile_link_compatibility_evidence_recorded"])
+        self.assertTrue(policy["verilator_build_success_claim_allowed"])
+        self.assertFalse(policy["native_verilator_parser_support_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["parser_behavior_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["upstream_regression_success_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(policy["arbitrary_filelist_support_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            gate["next_task"],
+            "review_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
         )
 
 
