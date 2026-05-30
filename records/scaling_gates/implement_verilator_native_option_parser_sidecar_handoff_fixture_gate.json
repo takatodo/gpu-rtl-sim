@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "gate": "implement_verilator_native_option_parser_sidecar_handoff_fixture_gate",
+  "status": "implemented_verilator_native_option_parser_sidecar_handoff_fixture",
+  "objective": "Implement an importable, non-executing native-parser adapter payload helper after the reviewed parser-to-sidecar handoff boundary, without claiming sidecar runtime handoff, RTL simulation, coverage-output equivalence, timing, arbitrary RTL/filelist support, automatic allocation, upstream regression success, or upstream landing.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_sidecar_handoff_boundary_gate.json",
+  "current_priority": "review_verilator_native_option_parser_sidecar_handoff_fixture_implementation_gate",
+  "implemented_surface": {
+    "selected_surface": "native_parser_values_to_sidecar_plan_adapter_boundary",
+    "module": "src/tools/verilator_native_option_parser_sidecar_handoff.py",
+    "primary_entrypoint_function": "native_parser_values_to_sidecar_adapter_payload",
+    "argv_entrypoint_function": "parse_verilator_native_option_sidecar_handoff",
+    "source_parser_fixture": "src/tools/verilator_native_option_parser_stub_fixture.py::parse_verilator_native_option_stub",
+    "public_cli_added": false,
+    "native_verilator_source_tree_required": false,
+    "native_verilator_parser_status": "not_implemented",
+    "runtime_or_abi_changed": false,
+    "new_execution_added": false,
+    "new_measurement_added": false,
+    "sidecar_stage_plan_invoked": false,
+    "sidecar_handoff_contract_invoked": false,
+    "target_registry_lookup_used": false,
+    "source_closure_inferred": false,
+    "filelists_expanded": false,
+    "automatic_gpu_allocation_used": false
+  },
+  "adapter_payload_fields": [
+    "schema_version",
+    "surface",
+    "adapter_source_surface",
+    "accelerator_mode",
+    "state_count",
+    "step_count",
+    "shape",
+    "ordinary_verilator_args",
+    "mdir",
+    "top_module",
+    "source_files",
+    "filelists",
+    "defines",
+    "include_dirs",
+    "warning_flags",
+    "source_boundary_status",
+    "state_and_report_naming_rules",
+    "correctness_policy_ref",
+    "correctness_policy_reference_status",
+    "sidecar_owned_resolution_status",
+    "unresolved_sidecar_responsibilities",
+    "non_claims"
+  ],
+  "field_rules": {
+    "surface": "native_verilator_parser_sidecar_handoff_fixture",
+    "adapter_source_surface": "preserve the parser-stub source surface",
+    "ordinary_verilator_args": "preserve parser-stub ordinary Verilator arguments without semantic expansion",
+    "filelists": "preserve -f inputs as filelist paths only; do not expand source closure",
+    "correctness_policy_ref": "coverage_output_equivalence",
+    "correctness_policy_reference_status": "adapter_default_reference_only_not_parser_populated_compare_evidence",
+    "sidecar_owned_resolution_status": "unresolved_by_native_parser_adapter_fixture"
+  },
+  "forbidden_resolved_sidecar_fields": [
+    "state_authority",
+    "state_files",
+    "generated_reports",
+    "compare",
+    "acceptance_policy",
+    "compare_labels",
+    "coverage_output_target",
+    "coverage_output_gate_or_manifest_ref",
+    "host_probe_build_metadata_ref",
+    "init_state_path_or_rule",
+    "reference_dump_path_or_rule",
+    "candidate_dump_path_or_rule",
+    "compare_report_path_or_rule",
+    "verilator_command",
+    "verilator_command_argv"
+  ],
+  "tested_contract_cases": [
+    {
+      "name": "preserve_parser_owned_fields_without_expansion",
+      "expected_status": "accepted",
+      "preserved_fields": [
+        "ordinary_verilator_args",
+        "mdir",
+        "top_module",
+        "source_files",
+        "filelists",
+        "defines",
+        "include_dirs",
+        "warning_flags"
+      ]
+    },
+    {
+      "name": "do_not_populate_sidecar_owned_resolved_fields",
+      "expected_status": "accepted",
+      "correctness_policy_is_reference_only": true
+    },
+    {
+      "name": "reject_parser_values_that_already_contain_sidecar_outputs",
+      "expected_error": "NativeParserSidecarHandoffError"
+    }
+  ],
+  "verification": {
+    "focused_contract_test_command": "python3 -m unittest tests.contract.test_verilator_native_option_parser_sidecar_handoff_fixture -q",
+    "focused_contract_test_exit_code": 0,
+    "focused_contract_test_count": 4
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_sidecar_handoff_fixture_implementation_gate",
+    "must_decide": [
+      "whether the helper is the adapter authority rather than a direct sidecar_handoff_contract output",
+      "whether parser-owned fields are preserved exactly enough without source closure expansion, filelist expansion, target registry lookup, or Verilator semantic analysis",
+      "whether sidecar-owned fields remain absent from the adapter payload except as unresolved responsibilities",
+      "whether correctness_policy_ref is clearly reference-only and not compare evidence",
+      "whether the implementation evidence stays narrow enough to avoid runtime, execution, timing, upstream, arbitrary RTL/filelist, and automatic allocation claims"
+    ],
+    "must_not_claim": [
+      "native Verilator parser implementation",
+      "sidecar runtime handoff validation",
+      "RTL simulation execution",
+      "coverage-output equivalence for a native-parser flow",
+      "new timing or speedup evidence",
+      "Verilator upstream regression tests pass",
+      "the patch has landed upstream",
+      "arbitrary RTL or filelist support",
+      "automatic optimal GPU allocation"
+    ]
+  },
+  "acceptance_policy": {
+    "implementation_only": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "native_verilator_parser_implementation_allowed_by_this_gate": false,
+    "sidecar_runtime_handoff_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "new_workload_allowed_by_this_gate": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "raw_full_state_equality_required": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "sidecar_handoff_validation_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false
+  },
+  "next_task": "review_verilator_native_option_parser_sidecar_handoff_fixture_implementation_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not sidecar runtime handoff validation",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a native-parser flow",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not new timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not parser inference of coverage manifests, host-probe metadata, source closure, state paths, or report paths",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

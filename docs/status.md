@@ -2,11 +2,11 @@
 
 ## Weakest Point
 
-The commit-split cleanup is complete, and the repaired Verilator native-option overlay patch now has accepted scoped `verilator_bin` build-only validation, reviewed parser-only smoke, reviewed rebuilt integer-hardening smoke, and a reviewed parser-to-adapter handoff boundary. The current weak point is implementing the first non-executing handoff fixture without overstating it: parsed fields are still not connected to native sidecar execution, runtime/ABI, RTL simulation, coverage-output equivalence, timing, or arbitrary RTL/filelist flow.
+The commit-split cleanup is complete, and the repaired Verilator native-option overlay patch now has accepted scoped `verilator_bin` build-only validation, reviewed parser-only smoke, reviewed rebuilt integer-hardening smoke, a reviewed parser-to-adapter handoff boundary, and an implemented non-executing handoff fixture. The current weak point is reviewing that fixture without overstating it: parsed fields are still not connected to native sidecar execution, runtime/ABI, RTL simulation, coverage-output equivalence, timing, or arbitrary RTL/filelist flow.
 
 Current cleanup policy: keep `config/selection.json` compact (core pointer and operational fields), park bulky historical maps in `config/selection_extensions.json`, keep historical gate records under `records/scaling_gates/` with `config/scaling_gates` as a compatibility link, and keep generated evidence reproducible under `reports/` and `artifacts/` without retaining it as source of truth.
 
-Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `838` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
+Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `839` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
 
 Hybrid usability state: generated templates now carry generic host-probe build metadata and can use `src/tools/build_host_probe.py` without adding a per-target Makefile rule.
 
@@ -52,15 +52,15 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`implement_verilator_native_option_parser_sidecar_handoff_fixture_gate`
+`review_verilator_native_option_parser_sidecar_handoff_fixture_implementation_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/review_verilator_native_option_parser_sidecar_handoff_boundary_gate.json`
+`config/scaling_gates/implement_verilator_native_option_parser_sidecar_handoff_fixture_gate.json`
 
 ## 追跡タスク
 
-- `implement_verilator_native_option_parser_sidecar_handoff_fixture_gate` で、native parser が受け取った `sidecar-gpu` / state / step / ordinary Verilator args を非実行 adapter payload に写す importable helper を実装する。source closure / state paths / report paths / coverage output target / host-probe metadata は未解決または rule/ref のままにする。
+- `review_verilator_native_option_parser_sidecar_handoff_fixture_implementation_gate` で、非実行 adapter helper が parser-owned fields だけを保持し、sidecar-owned resolved fields を埋めていないことを確認する。
 - `docs/migration_notes.md` の「シンプル検証からの乖離」節を、前提変更時に見直す。
 - 新規ゲート完了時は `config/selection_extensions.json` の `completed_goal_evidence` / `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json` の整合を取る。
 - ゲート JSON に残る履歴表記の例: `next_task: select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`（正の源泉は常に `config/selection.json` の `current_priority` を優先）。マージ後の全体像が必要なら `src/tools/selection_state.py` の `load_selection` を参照。
@@ -76,6 +76,8 @@ TL-UL template schema and later launch-overhead follow-up gates are retained as 
 Native parser-to-sidecar handoff boundary state: `config/scaling_gates/define_verilator_native_option_parser_sidecar_handoff_boundary_gate.json` defines a non-executing adapter boundary from native Verilator parser values to the existing sidecar plan surface. Parser-owned fields are limited to the accelerator selector, positive state/step counts, normalized shape, ordinary Verilator args, and preserved build inputs; sidecar-owned source closure, coverage target, state paths, report paths, host-probe metadata, and compare policy are referenced but not populated by the parser. This adds no adapter implementation, runtime/ABI integration, RTL simulation, timing, arbitrary RTL/filelist support, automatic allocation, upstream regression success, or upstream landing claim.
 
 Native parser-to-sidecar handoff boundary review state: `config/scaling_gates/review_verilator_native_option_parser_sidecar_handoff_boundary_gate.json` accepts that boundary narrowly and selects a non-executing fixture implementation next. The review clarifies that `coverage_output_equivalence` is only a later sidecar correctness-policy reference, not parser-populated compare evidence. The fixture must not produce resolved `state_files`, generated reports, compare labels, coverage targets, manifest refs, host-probe metadata, runtime handoff, timing, source closure inference, or automatic allocation.
+
+Native parser-to-sidecar handoff fixture implementation state: `config/scaling_gates/implement_verilator_native_option_parser_sidecar_handoff_fixture_gate.json` adds `src/tools/verilator_native_option_parser_sidecar_handoff.py`. The helper maps parser-stub values into a non-executing adapter payload, preserves ordinary Verilator args and classified build inputs without expansion, emits `correctness_policy_ref` only as a later sidecar policy reference, and rejects parser values that already contain resolved sidecar outputs. It does not call the sidecar stage planner or `sidecar_handoff_contract`, does not run compare or RTL simulation, and does not infer source closure, state paths, report paths, coverage targets, host-probe metadata, runtime handoff, timing, or automatic allocation.
 
 The full ITA/MHA plus larger paged KV-cache goal is complete and held for review. Full MHA was retried through the current hybrid path; the fresh 1x1 run wrote `reports/pulp_ita_mha_hybrid_1x1.txt` and passed coverage-output equivalence in `reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json`.
 
