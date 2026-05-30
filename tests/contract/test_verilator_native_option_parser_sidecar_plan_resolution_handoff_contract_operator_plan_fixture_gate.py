@@ -64,6 +64,12 @@ REVIEW_SIDECAR_EXECUTION_RUN_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate.json"
 )
+DIRECT_COMMAND_PATH_BOUNDARY_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "define_verilator_native_option_parser_direct_command_path_boundary_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPlanFixtureGateTest(
@@ -98,6 +104,9 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
 
     def read_review_sidecar_execution_run_gate(self) -> dict[str, object]:
         return json.loads(REVIEW_SIDECAR_EXECUTION_RUN_GATE.read_text(encoding="utf-8"))
+
+    def read_direct_command_path_boundary_gate(self) -> dict[str, object]:
+        return json.loads(DIRECT_COMMAND_PATH_BOUNDARY_GATE.read_text(encoding="utf-8"))
 
     def test_gate_records_importable_operator_plan_fixture(self) -> None:
         gate = self.read_gate()
@@ -725,6 +734,77 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
         )
         self.assertIn("not command_argv runtime authority", review["non_claims"])
         self.assertIn("not raw full-state equality", review["non_claims"])
+
+    def test_direct_command_path_boundary_defines_minimum_spelling(self) -> None:
+        gate = self.read_direct_command_path_boundary_gate()
+
+        self.assertEqual(
+            gate["source_run_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_boundary_gate",
+        )
+        boundary = gate["direct_command_path_boundary"]
+        self.assertIn("--sim-accel sidecar-gpu", boundary["minimum_verilator_facing_spelling"])
+        self.assertEqual(
+            boundary["required_shape_options"],
+            [
+                "--sim-accel-states <positive integer>",
+                "--sim-accel-steps <positive integer>",
+            ],
+        )
+        self.assertEqual(boundary["direct_command_route"], "native parser values must materialize or reference a structured sidecar stage plan before any execution authority")
+        self.assertTrue(boundary["dry_run_and_preflight_required_before_execution"])
+        self.assertEqual(boundary["coverage_policy"], "coverage_output_equivalence")
+
+    def test_direct_command_path_boundary_separates_parser_and_sidecar_authority(self) -> None:
+        gate = self.read_direct_command_path_boundary_gate()
+        parser = gate["parser_owned_fields"]
+        sidecar = gate["sidecar_owned_fields"]
+
+        self.assertIn("ordinary_verilator_args", parser["required"])
+        self.assertIn("source_files", parser["required"])
+        self.assertIn("filelists", parser["required"])
+        self.assertIn("source closure expansion", parser["not_authoritative_for"])
+        self.assertIn("filelist dependency inference", parser["not_authoritative_for"])
+        self.assertIn("coverage output word selection", parser["not_authoritative_for"])
+        self.assertIn("source_closure_authority", sidecar["required_before_execution"])
+        self.assertIn("host_probe_build_metadata_ref", sidecar["required_before_execution"])
+        self.assertIn("compare_report_path_or_rule", sidecar["required_before_execution"])
+        self.assertEqual(
+            sidecar["stage_order_required_for_future_execution"],
+            [
+                "verilator_build",
+                "host_probe_build",
+                "cpu_init_state",
+                "cpu_reference_output",
+                "gpu_artifact_build",
+                "hybrid_sidecar_run",
+                "coverage_output_compare",
+            ],
+        )
+
+    def test_direct_command_path_boundary_non_claims_remain_definition_only(self) -> None:
+        gate = self.read_direct_command_path_boundary_gate()
+        policy = gate["acceptance_policy"]
+
+        self.assertTrue(policy["definition_only"])
+        self.assertTrue(policy["direct_command_path_boundary_defined"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(policy["native_verilator_option_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["direct_verilator_command_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["timing_or_speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["arbitrary_filelist_support_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            gate["required_next_gate"]["name"],
+            "review_verilator_native_option_parser_direct_command_path_boundary_gate",
+        )
+        self.assertIn("not direct Verilator command execution", gate["non_claims"])
+        self.assertIn("not timing or speedup evidence", gate["non_claims"])
 
 
 if __name__ == "__main__":
