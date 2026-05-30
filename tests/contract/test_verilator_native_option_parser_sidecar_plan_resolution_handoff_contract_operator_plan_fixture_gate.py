@@ -52,6 +52,12 @@ REVIEW_EXECUTION_BOUNDARY_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate.json"
 )
+RUN_SIDECAR_EXECUTION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "run_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPlanFixtureGateTest(
@@ -80,6 +86,9 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
 
     def read_review_execution_boundary_gate(self) -> dict[str, object]:
         return json.loads(REVIEW_EXECUTION_BOUNDARY_GATE.read_text(encoding="utf-8"))
+
+    def read_run_sidecar_execution_gate(self) -> dict[str, object]:
+        return json.loads(RUN_SIDECAR_EXECUTION_GATE.read_text(encoding="utf-8"))
 
     def test_gate_records_importable_operator_plan_fixture(self) -> None:
         gate = self.read_gate()
@@ -585,6 +594,80 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
             "not coverage-output equivalence evidence for a native-parser flow",
             review["non_claims"],
         )
+
+    def test_sidecar_execution_run_records_scoped_compare_success(self) -> None:
+        gate = self.read_run_sidecar_execution_gate()
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate",
+        )
+        scope = gate["executed_scope"]
+        self.assertEqual(scope["target"], "pulp_ita_mha")
+        self.assertEqual(scope["shape"], "64x1")
+        self.assertEqual(scope["exit_code"], 0)
+        self.assertEqual(scope["executed_stage_count"], 7)
+        result = gate["execution_result"]
+        self.assertTrue(result["command_exit_zero"])
+        self.assertTrue(result["coverage_output_equivalence_passed"])
+        self.assertEqual(result["coverage_output_mismatch_count"], 0)
+        self.assertEqual(result["compared_state_pair_count"], 64)
+        self.assertEqual(result["compared_word_count"], 1856)
+        self.assertEqual(result["compared_byte_count"], 7424)
+        self.assertTrue(result["normalized_final_state_equivalence_passed"])
+        self.assertFalse(result["raw_full_state_equality_required"])
+
+    def test_sidecar_execution_run_preserves_metadata_boundary(self) -> None:
+        gate = self.read_run_sidecar_execution_gate()
+        metadata = gate["metadata_validation"]
+
+        self.assertEqual(metadata["fixture_surface"], "native_verilator_parser_sidecar_operator_plan_fixture")
+        self.assertEqual(metadata["operator_plan_status"], "ready_for_sidecar_operator_plan_metadata")
+        self.assertTrue(metadata["reviewed_or_regenerated_stage_plan_used_for_execution_authority"])
+        self.assertFalse(metadata["execution_performed_by_metadata_fixture"])
+        self.assertFalse(metadata["direct_verilator_command_metadata_runtime_evidence"])
+        self.assertFalse(metadata["source_closure_inferred"])
+        self.assertFalse(metadata["filelists_expanded"])
+        self.assertFalse(metadata["automatic_gpu_allocation_used"])
+        self.assertEqual(
+            metadata["stage_order"],
+            [
+                "verilator_build",
+                "host_probe_build",
+                "cpu_init_state",
+                "cpu_reference_output",
+                "gpu_artifact_build",
+                "hybrid_sidecar_run",
+                "coverage_output_compare",
+            ],
+        )
+        roles = metadata["parser_preserved_build_inputs_role"]
+        self.assertEqual(roles["source_files"], "preserved_parser_input_not_source_closure")
+        self.assertEqual(roles["filelists"], "preserved_parser_input_not_filelist_expansion")
+
+    def test_sidecar_execution_run_non_claims_remain_narrow(self) -> None:
+        gate = self.read_run_sidecar_execution_gate()
+        policy = gate["acceptance_policy"]
+
+        self.assertTrue(policy["run_executed"])
+        self.assertTrue(policy["scoped_sidecar_build_run_compare_claim_allowed"])
+        self.assertTrue(policy["coverage_output_equivalence_claim_allowed_for_this_scoped_run"])
+        self.assertFalse(policy["native_verilator_option_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["direct_verilator_command_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["timing_or_speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["arbitrary_filelist_support_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["runtime_or_abi_change_allowed_by_this_gate"])
+        self.assertEqual(
+            gate["required_next_gate"]["name"],
+            "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate",
+        )
+        self.assertIn("not native Verilator option support", gate["non_claims"])
+        self.assertIn("not timing or speedup evidence", gate["non_claims"])
 
 
 if __name__ == "__main__":
