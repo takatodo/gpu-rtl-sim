@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "gate": "implement_verilator_native_option_parser_sidecar_plan_resolution_fixture_gate",
+  "status": "implemented_verilator_native_option_parser_sidecar_plan_resolution_fixture",
+  "objective": "Implement an importable, non-executing native-parser adapter-payload to sidecar plan-resolution fixture after the reviewed explicit-context boundary, without claiming native parser execution, sidecar runtime handoff, RTL simulation, coverage-output equivalence, timing, arbitrary RTL/filelist support, automatic allocation, upstream regression success, or upstream landing.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate.json",
+  "current_priority": "review_verilator_native_option_parser_sidecar_plan_resolution_fixture_implementation_gate",
+  "implemented_surface": {
+    "selected_surface": "native_parser_adapter_payload_to_existing_sidecar_stage_plan_resolution_fixture",
+    "module": "src/tools/verilator_native_option_parser_sidecar_plan_resolution.py",
+    "primary_entrypoint_function": "resolve_native_parser_adapter_payload_to_sidecar_plan",
+    "adapter_payload_source_module": "src/tools/verilator_native_option_parser_sidecar_handoff.py",
+    "sidecar_plan_authority": "src/tools/hybrid_benchmark_sidecar_plan.py::sidecar_stage_plan",
+    "sidecar_stage_plan_invoked_after_explicit_context": true,
+    "sidecar_handoff_contract_invoked": false,
+    "command_synthesis_invoked": false,
+    "operator_plan_invoked": false,
+    "efficiency_estimate_invoked": false,
+    "new_public_cli_added": false,
+    "native_verilator_source_tree_required": false,
+    "runtime_or_abi_changed": false,
+    "new_execution_added": false,
+    "new_measurement_added": false,
+    "source_closure_inferred": false,
+    "filelists_expanded": false,
+    "automatic_gpu_allocation_used": false
+  },
+  "accepted_inputs": {
+    "adapter_payload_required_surface": "native_verilator_parser_sidecar_handoff_fixture",
+    "adapter_payload_required_accelerator_mode": "sidecar-gpu",
+    "adapter_payload_required_correctness_policy_ref": "coverage_output_equivalence",
+    "adapter_payload_required_correctness_policy_reference_status": "adapter_default_reference_only_not_parser_populated_compare_evidence",
+    "adapter_payload_required_sidecar_owned_resolution_status": "unresolved_by_native_parser_adapter_fixture",
+    "explicit_sidecar_context_required_fields": [
+      "target",
+      "mode",
+      "template or target_registry_entry",
+      "source_gate_or_manifest_ref"
+    ],
+    "template_validation_rule": "slice-template targets must match the reviewed target registry template before sidecar_stage_plan is called",
+    "shape_validation_rule": "adapter shape must exactly match state_count x step_count"
+  },
+  "output_contract": {
+    "surface": "native_verilator_parser_sidecar_plan_resolution_fixture",
+    "status": "planned",
+    "contains_stage_plan": true,
+    "contains_parser_schedule_constraints": true,
+    "contains_parser_preserved_build_inputs": true,
+    "correctness_policy_ref_status": "reference_only_not_compare_evidence",
+    "sidecar_handoff_contract": "not produced",
+    "generated_reports": "not produced",
+    "verilator_command": "not produced",
+    "timing": "not measured"
+  },
+  "field_rules": {
+    "source_files": "preserved parser input only; not source closure",
+    "filelists": "preserved parser input only; not dependency expansion",
+    "ordinary_verilator_args": "preserved parser input only; not command synthesis",
+    "correctness_policy_ref": "must match the later sidecar stage-plan correctness_policy but is not compare evidence",
+    "target_registry_entry": "allowed only as explicit sidecar context, not inferred from parser payload"
+  },
+  "tested_contract_cases": [
+    {
+      "name": "resolve_adapter_payload_with_explicit_context_to_non_executing_plan",
+      "expected_status": "accepted"
+    },
+    {
+      "name": "reject_missing_target_mode_template_or_source_reference_context",
+      "expected_error": "NativeParserSidecarPlanResolutionError"
+    },
+    {
+      "name": "allow_registry_entry_as_explicit_template_context",
+      "expected_status": "accepted"
+    },
+    {
+      "name": "reject_template_or_shape_mismatch_before_plan_resolution_claims",
+      "expected_error": "NativeParserSidecarPlanResolutionError"
+    },
+    {
+      "name": "parser_files_remain_preserved_inputs_not_source_closure",
+      "expected_status": "accepted"
+    },
+    {
+      "name": "reject_payload_with_resolved_sidecar_outputs_or_policy_mismatch",
+      "expected_error": "NativeParserSidecarPlanResolutionError"
+    }
+  ],
+  "verification": {
+    "focused_contract_test_command": "python3 -m unittest tests.contract.test_verilator_native_option_parser_sidecar_plan_resolution_fixture -q",
+    "focused_contract_test_exit_code": 0,
+    "focused_contract_test_count": 7
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_sidecar_plan_resolution_fixture_implementation_gate",
+    "must_decide": [
+      "whether the helper is narrow enough to remain a non-executing plan-resolution fixture",
+      "whether the explicit context fields are strong enough before sidecar_stage_plan is reached",
+      "whether template or registry-entry checks avoid arbitrary parser-driven target inference",
+      "whether parser source_files and filelists remain preserved inputs rather than source closure or dependency expansion",
+      "whether correctness_policy_ref stays reference-only and does not become compare evidence"
+    ],
+    "must_not_claim": [
+      "native Verilator parser support",
+      "sidecar runtime handoff validation",
+      "RTL simulation execution",
+      "coverage-output equivalence for a native-parser flow",
+      "timing or speedup evidence",
+      "arbitrary RTL or filelist support",
+      "automatic optimal GPU allocation"
+    ]
+  },
+  "acceptance_policy": {
+    "implementation_only": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "native_verilator_parser_implementation_allowed_by_this_gate": false,
+    "sidecar_runtime_handoff_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_sidecar_plan_resolution_fixture_implementation_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not sidecar runtime handoff validation",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a native-parser flow",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not parser inference of coverage manifests, host-probe metadata, source closure, state paths, or report paths",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

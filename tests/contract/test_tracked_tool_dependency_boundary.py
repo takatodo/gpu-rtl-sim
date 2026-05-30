@@ -44,6 +44,7 @@ TRACKED_TOOL_ROOTS = (
     "run_tlul_fifo_sync_scaling_validation",
     "selection_state",
     "verilator_native_option_parser_sidecar_handoff",
+    "verilator_native_option_parser_sidecar_plan_resolution",
     "verilator_native_option_parser_stub_fixture",
 )
 TRACKED_REFERENCE_PREFIXES = (
