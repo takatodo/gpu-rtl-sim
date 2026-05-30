@@ -52,15 +52,15 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`run_verilator_native_option_parser_overlay_patch_parser_behavior_gate`
+`review_verilator_native_option_parser_overlay_patch_parser_behavior_run_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json`
+`config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json`
 
 ## 追跡タスク
 
-- `run_verilator_native_option_parser_overlay_patch_parser_behavior_gate` で、built Verilator binary による parser-only smoke を実行または再生成条件付きで記録する。
+- `review_verilator_native_option_parser_overlay_patch_parser_behavior_run_gate` で、parser-only smoke の実測結果と `VERILATOR_ROOT` 機械調整を受け入れるかレビューする。
 - `docs/migration_notes.md` の「シンプル検証からの乖離」節を、前提変更時に見直す。
 - 新規ゲート完了時は `config/selection_extensions.json` の `completed_goal_evidence` / `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json` の整合を取る。
 - ゲート JSON に残る履歴表記の例: `next_task: select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`（正の源泉は常に `config/selection.json` の `current_priority` を優先）。マージ後の全体像が必要なら `src/tools/selection_state.py` の `load_selection` を参照。
@@ -212,6 +212,8 @@ Verilator native option parser overlay patch compile-fix build-only validation r
 Verilator native option parser overlay patch parser-behavior definition: `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json` defines the smallest built-binary lint-only smoke boundary: accept expanded `64x1` and `1x64` spellings, reject unknown accelerator, missing accelerator/shape halves, and zero counts, and reuse or regenerate the prior build artifact only as generated evidence. This definition explicitly defers strict `std::atoi` suffix hardening and still adds no parser execution, sidecar execution, measurement, runtime/ABI, arbitrary RTL/filelist support, automatic allocation, GEM, production-serving, or upstream landing claim.
 
 Verilator native option parser overlay patch parser-behavior review: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json` accepts that definition as a narrow parser-only built-binary smoke boundary and advances to the run gate. The review permits reusing the generated `verilator_bin` only with recorded provenance, or regenerating it from the build-run gate commands; it still adds no parser behavior result, native parser support, sidecar execution, measurement, runtime/ABI, arbitrary RTL/filelist support, automatic allocation, GEM, production-serving, or upstream landing claim.
+
+Verilator native option parser overlay patch parser-behavior run: `config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json` records the reused generated `verilator_bin`, `VERILATOR_ROOT` set to the generated checkout root, a generated trivial RTL input, two positive expanded option cases exiting `0`, and six required rejection cases exiting `1` with expected diagnostics. This is a scoped parser-only smoke result; strict `std::atoi` suffix handling, negative counts, sidecar handoff, RTL simulation, timing, coverage-output equivalence, arbitrary RTL/filelist support, automatic allocation, GEM, production-serving, and upstream landing remain non-claims.
 
 Public benchmark pack externalization readiness state: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for handing the refreshed pack to an external reader. The status is `ready_for_external_review`; this is a packaging/readiness audit only, not a new measurement result or stronger performance claim.
 

@@ -111,6 +111,12 @@ OVERLAY_PATCH_PARSER_BEHAVIOR_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json"
 )
+OVERLAY_PATCH_PARSER_BEHAVIOR_RUN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "run_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json"
+)
 OVERLAY_DESCRIPTOR_FILE = (
     REPO_ROOT
     / "overlays"
@@ -1064,6 +1070,101 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(
             review["next_task"],
             "run_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+        )
+
+    def test_overlay_patch_parser_behavior_run_records_scoped_smoke_result(self) -> None:
+        gate = json.loads(OVERLAY_PATCH_PARSER_BEHAVIOR_RUN_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json",
+        )
+        self.assertEqual(
+            gate["source_build_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_overlay_patch_parser_behavior_run_gate",
+        )
+
+        boundary = gate["execution_boundary"]
+        self.assertEqual(
+            boundary["validation_kind"],
+            "built_verilator_binary_option_parse_and_notify_smoke",
+        )
+        self.assertEqual(boundary["binary_source"], "reused_existing_generated_build_artifact")
+        self.assertTrue(boundary["binary_rel"].startswith("artifacts/"))
+        self.assertTrue(boundary["verilator_root_env_set_for_run"])
+        self.assertIn("VERILATOR_ROOT", boundary["base_command_shape"][0])
+        self.assertTrue(boundary["generated_smoke_rtl_rel"].startswith("artifacts/"))
+        self.assertFalse(boundary["uses_generated_artifacts_as_source_of_truth"])
+
+        observed = gate["observed_result"]
+        self.assertEqual(observed["command_count"], 8)
+        self.assertEqual(observed["positive_case_count"], 2)
+        self.assertEqual(observed["rejection_case_count"], 6)
+        self.assertTrue(observed["all_positive_cases_passed"])
+        self.assertTrue(observed["all_rejection_cases_failed_as_expected"])
+        self.assertTrue(observed["all_expected_diagnostics_matched"])
+        self.assertTrue(observed["parser_behavior_smoke_passed"])
+
+        cases = {case["name"]: case for case in gate["case_results"]}
+        self.assertEqual(cases["accept_sidecar_gpu_64x1"]["observed_exit_code"], 0)
+        self.assertEqual(cases["accept_sidecar_gpu_1x64"]["observed_exit_code"], 0)
+        self.assertEqual(cases["reject_unknown_accelerator"]["observed_exit_code"], 1)
+        self.assertIn(
+            "Unknown setting for --sim-accel",
+            cases["reject_unknown_accelerator"]["expected_diagnostic_substrings"],
+        )
+        self.assertEqual(cases["reject_shape_without_accelerator"]["observed_exit_code"], 1)
+        self.assertEqual(cases["reject_missing_states"]["observed_exit_code"], 1)
+        self.assertEqual(cases["reject_missing_steps"]["observed_exit_code"], 1)
+        self.assertEqual(cases["reject_zero_states"]["observed_exit_code"], 1)
+        self.assertEqual(cases["reject_zero_steps"]["observed_exit_code"], 1)
+        self.assertTrue(all(case.get("stderr_log_rel", "").startswith("artifacts/") for case in cases.values()))
+        self.assertTrue(
+            all(
+                case.get("diagnostic_matched", True)
+                for case in cases.values()
+                if case["category"] == "rejection"
+            )
+        )
+
+        deferred = gate["deferred_behavior"]
+        self.assertEqual(deferred["non_numeric_suffix_inputs"], "deferred_known_gap_due_to_std_atoi")
+        self.assertEqual(deferred["compact_shape_spelling"], "outside_native_minimum")
+        self.assertEqual(
+            deferred["sidecar_handoff_or_accessor_value_observation"],
+            "not_observed_by_exit_code_stderr_smoke",
+        )
+
+        next_gate = gate["required_next_gate"]
+        self.assertEqual(
+            next_gate["name"],
+            "review_verilator_native_option_parser_overlay_patch_parser_behavior_run_gate",
+        )
+        self.assertIn(
+            "whether VERILATOR_ROOT as a mechanical environment adjustment is acceptable for reused build artifacts",
+            next_gate["must_decide"],
+        )
+        self.assertIn(
+            "strict integer-token parsing for std::atoi suffix inputs",
+            next_gate["must_not_claim"],
+        )
+
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["run_executed"])
+        self.assertTrue(policy["parser_behavior_smoke_passed"])
+        self.assertTrue(policy["scoped_parser_behavior_smoke_claim_allowed"])
+        self.assertFalse(policy["native_verilator_parser_support_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["unqualified_parser_behavior_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["strict_integer_parsing_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["rtl_simulation_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["coverage_output_equivalence_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            gate["next_task"],
+            "review_verilator_native_option_parser_overlay_patch_parser_behavior_run_gate",
         )
 
 
