@@ -1,0 +1,215 @@
+import json
+import importlib
+import sys
+import unittest
+from pathlib import Path
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+TOOLS = REPO_ROOT / "src" / "tools"
+IMPLEMENTATION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "implement_verilator_native_option_parser_direct_command_path_fixture_gate.json"
+)
+
+BASE_DIRECT_ARGS = [
+    "verilator",
+    "--cc",
+    "--timing",
+    "-Mdir",
+    "artifacts/pulp_ita_mha_obj_dir",
+    "--top-module",
+    "pulp_ita_mha_gpu_cov_tb",
+    "-DTRACE=1",
+    "-Wno-fatal",
+    "-Ioverlays/ITA/src",
+    "-f",
+    "config/slice_launch_templates/pulp_ita_mha.filelist",
+    "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+]
+
+
+def _load_tool_modules(*names: str) -> tuple[object, ...]:
+    tools_s = str(TOOLS)
+    added = False
+    if tools_s not in sys.path:
+        sys.path.insert(0, tools_s)
+        added = True
+    try:
+        return tuple(importlib.import_module(name) for name in names)
+    finally:
+        if added:
+            sys.path.remove(tools_s)
+
+
+def _expanded_argv() -> list[str]:
+    return [
+        *BASE_DIRECT_ARGS,
+        "--sim-accel",
+        "sidecar-gpu",
+        "--sim-accel-states",
+        "64",
+        "--sim-accel-steps",
+        "1",
+    ]
+
+
+def _sidecar_context() -> dict[str, object]:
+    return {
+        "target": "pulp_ita_mha",
+        "mode": "template",
+        "template_or_target_registry_entry": "config/slice_launch_templates/pulp_ita_mha.json",
+        "source_gate_or_manifest_ref": (
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_gate.json"
+        ),
+    }
+
+
+class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase):
+    def test_implementation_gate_records_non_executing_fixture_scope(self) -> None:
+        gate = json.loads(IMPLEMENTATION_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate",
+        )
+        implemented = gate["implemented_surface"]
+        self.assertEqual(
+            implemented["module"],
+            "src/tools/verilator_native_option_parser_direct_command_path_fixture.py",
+        )
+        self.assertEqual(implemented["primary_entrypoint_function"], "define_direct_command_path_sidecar_plan_fixture")
+        self.assertFalse(implemented["public_cli_added"])
+        self.assertFalse(implemented["sidecar_stage_plan_invoked"])
+        self.assertFalse(implemented["new_execution_added"])
+        self.assertFalse(gate["acceptance_policy"]["coverage_output_equivalence_claim_allowed_by_gate_alone"])
+
+    def test_accepts_expanded_64x1_and_returns_reference_only_boundary(self) -> None:
+        (fixture,) = _load_tool_modules("verilator_native_option_parser_direct_command_path_fixture")
+
+        result = fixture.define_direct_command_path_sidecar_plan_fixture(
+            _expanded_argv(),
+            sidecar_context=_sidecar_context(),
+        )
+
+        self.assertEqual(tuple(result), fixture.DIRECT_COMMAND_PATH_FIXTURE_FIELDS)
+        self.assertEqual(result["surface"], "native_verilator_parser_direct_command_path_fixture")
+        self.assertEqual(result["status"], "fixture_contract_ready_for_sidecar_plan_boundary")
+        self.assertEqual(result["accelerator_mode"], "sidecar-gpu")
+        self.assertEqual(result["state_count"], 64)
+        self.assertEqual(result["step_count"], 1)
+        self.assertEqual(result["shape"], "64x1")
+        self.assertEqual(result["ordinary_verilator_args"], BASE_DIRECT_ARGS)
+        self.assertEqual(result["mdir"], "artifacts/pulp_ita_mha_obj_dir")
+        self.assertEqual(result["top_module"], "pulp_ita_mha_gpu_cov_tb")
+        self.assertEqual(result["source_files"], ["overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv"])
+        self.assertEqual(result["filelists"], ["config/slice_launch_templates/pulp_ita_mha.filelist"])
+        self.assertEqual(result["defines"], ["-DTRACE=1"])
+        self.assertEqual(result["include_dirs"], ["-Ioverlays/ITA/src"])
+        self.assertEqual(result["warning_flags"], ["-Wno-fatal"])
+        boundary = result["sidecar_plan_boundary"]
+        self.assertEqual(boundary["source_boundary_status"], "preserved_only_not_resolved")
+        self.assertEqual(boundary["coverage_output_target"], "pulp_ita_mha")
+        self.assertEqual(boundary["stage_order_required"], list(fixture.DIRECT_COMMAND_STAGE_ORDER))
+        self.assertEqual(result["correctness_policy_ref"], "coverage_output_equivalence")
+        self.assertFalse(result["execution_performed"])
+        self.assertFalse(result["measurement_performed"])
+        self.assertFalse(result["timing_measured"])
+        self.assertFalse(result["runtime_or_abi_changed"])
+        self.assertFalse(result["source_closure_inferred"])
+        self.assertFalse(result["filelists_expanded"])
+        self.assertFalse(result["automatic_gpu_allocation_used"])
+
+    def test_shape_rejections_use_direct_fixture_layer(self) -> None:
+        (fixture,) = _load_tool_modules("verilator_native_option_parser_direct_command_path_fixture")
+        cases = [
+            (
+                [*BASE_DIRECT_ARGS, "--sim-accel", "sidecar-gpu", "--sim-accel-states", "64"],
+                "missing_sim_accel_shape_half",
+            ),
+            (
+                [*BASE_DIRECT_ARGS, "--sim-accel", "sidecar-gpu", "--sim-accel-steps", "1"],
+                "missing_sim_accel_shape_half",
+            ),
+            (
+                [
+                    *BASE_DIRECT_ARGS,
+                    "--sim-accel",
+                    "sidecar-gpu",
+                    "--sim-accel-states",
+                    "0",
+                    "--sim-accel-steps",
+                    "1",
+                ],
+                "nonpositive_sim_accel_count",
+            ),
+            (
+                [*BASE_DIRECT_ARGS, "--sim-accel", "sidecar-gpu", "--sim-accel-shape", "64x1"],
+                "compact_shape_spelling_outside_native_minimum",
+            ),
+            (
+                [
+                    *_expanded_argv(),
+                    "--sim-accel-shape",
+                    "64x1",
+                ],
+                "mixed_sim_accel_shape_spelling",
+            ),
+        ]
+
+        for argv, code in cases:
+            with self.subTest(code=code):
+                with self.assertRaises(fixture.NativeParserDirectCommandPathFixtureError) as raised:
+                    fixture.define_direct_command_path_sidecar_plan_fixture(
+                        argv,
+                        sidecar_context=_sidecar_context(),
+                    )
+                self.assertEqual(raised.exception.code, code)
+                self.assertEqual(raised.exception.rejection_layer, "direct_command_path_fixture_contract")
+
+    def test_rejects_missing_context_before_boundary_reference(self) -> None:
+        (fixture,) = _load_tool_modules("verilator_native_option_parser_direct_command_path_fixture")
+
+        for missing in fixture.REQUIRED_CONTEXT_FIELDS:
+            context = _sidecar_context()
+            context.pop(missing)
+            with self.subTest(missing=missing):
+                with self.assertRaises(fixture.NativeParserDirectCommandPathFixtureError) as raised:
+                    fixture.define_direct_command_path_sidecar_plan_fixture(
+                        _expanded_argv(),
+                        sidecar_context=context,
+                    )
+                self.assertEqual(raised.exception.code, "missing_explicit_sidecar_context")
+                self.assertEqual(raised.exception.rejection_layer, "direct_command_path_fixture_contract")
+
+    def test_rejects_prepopulated_sidecar_owned_parser_fields(self) -> None:
+        fixture, parser_stub = _load_tool_modules(
+            "verilator_native_option_parser_direct_command_path_fixture",
+            "verilator_native_option_parser_stub_fixture",
+        )
+        parser_payload = parser_stub.parse_verilator_native_option_stub(_expanded_argv())
+
+        for field, value in (
+            ("state_files", {"init": "artifacts/init.bin"}),
+            ("verilator_command_argv", ["verilator", "--cc"]),
+        ):
+            mutated = dict(parser_payload)
+            mutated[field] = value
+            with self.subTest(field=field):
+                with self.assertRaises(fixture.NativeParserDirectCommandPathFixtureError) as raised:
+                    fixture.direct_command_parser_payload_to_sidecar_plan_fixture(
+                        mutated,
+                        sidecar_context=_sidecar_context(),
+                    )
+                self.assertEqual(raised.exception.code, "sidecar_owned_field_prepopulated_by_parser")
+                self.assertEqual(raised.exception.rejection_layer, "direct_command_path_fixture_contract")
+
+
+if __name__ == "__main__":
+    unittest.main()

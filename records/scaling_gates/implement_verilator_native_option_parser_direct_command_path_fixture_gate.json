@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "gate": "implement_verilator_native_option_parser_direct_command_path_fixture_gate",
+  "status": "implemented_verilator_native_option_parser_direct_command_path_fixture",
+  "objective": "Implement the importable non-executing direct command-path fixture helper after the accepted fixture-contract review, without claiming native Verilator option support, direct command execution, RTL simulation, coverage-output equivalence evidence, timing, arbitrary filelist support, automatic allocation, runtime/ABI change, or raw full-state equality.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate",
+  "implemented_surface": {
+    "selected_surface": "importable_non_executing_direct_command_path_fixture",
+    "module": "src/tools/verilator_native_option_parser_direct_command_path_fixture.py",
+    "primary_entrypoint_function": "define_direct_command_path_sidecar_plan_fixture",
+    "parser_payload_entrypoint_function": "direct_command_parser_payload_to_sidecar_plan_fixture",
+    "source_parser_fixture": "src/tools/verilator_native_option_parser_stub_fixture.py::parse_verilator_native_option_stub",
+    "public_cli_added": false,
+    "native_verilator_source_tree_required": false,
+    "native_verilator_parser_status": "not_implemented",
+    "runtime_or_abi_changed": false,
+    "new_execution_added": false,
+    "new_measurement_added": false,
+    "sidecar_stage_plan_invoked": false,
+    "sidecar_handoff_contract_invoked": false,
+    "command_synthesis_invoked": false,
+    "operator_plan_invoked": false,
+    "efficiency_estimate_invoked": false,
+    "source_closure_inferred": false,
+    "filelists_expanded": false,
+    "target_registry_lookup_used": false,
+    "coverage_manifest_selection_used": false,
+    "host_probe_metadata_selection_used": false,
+    "automatic_gpu_allocation_used": false,
+    "line_count_after_change": 250
+  },
+  "accepted_case": {
+    "name": "accept_sidecar_gpu_pulp_ita_mha_64x1",
+    "spelling": "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1",
+    "shape": "64x1",
+    "state_count": 64,
+    "step_count": 1,
+    "ordinary_verilator_args_preserved": true,
+    "source_files_preserved_as_input_only": true,
+    "filelists_preserved_as_input_only": true,
+    "command_must_not_execute": true
+  },
+  "output_contract": {
+    "surface": "native_verilator_parser_direct_command_path_fixture",
+    "status": "fixture_contract_ready_for_sidecar_plan_boundary",
+    "sidecar_plan_boundary": "structured reference only; not materialized sidecar_stage_plan and not execution authority",
+    "correctness_policy_ref": "coverage_output_equivalence",
+    "correctness_policy_ref_status": "later_sidecar_compare_policy_only_not_fixture_evidence",
+    "source_boundary_status": "preserved_only_not_resolved",
+    "generated_evidence_policy": "reports/ and artifacts/ are generated evidence only and never source of truth",
+    "execution_performed": false,
+    "measurement_performed": false,
+    "timing_measured": false,
+    "runtime_or_abi_changed": false,
+    "source_closure_inferred": false,
+    "filelists_expanded": false,
+    "automatic_gpu_allocation_used": false
+  },
+  "tested_contract_cases": [
+    {
+      "name": "accept_expanded_64x1_and_returns_reference_only_boundary",
+      "expected_status": "accepted"
+    },
+    {
+      "name": "reject_shape_spelling_and_count_errors",
+      "expected_error_codes": [
+        "missing_sim_accel_shape_half",
+        "nonpositive_sim_accel_count",
+        "compact_shape_spelling_outside_native_minimum",
+        "mixed_sim_accel_shape_spelling"
+      ],
+      "expected_rejection_layer": "direct_command_path_fixture_contract"
+    },
+    {
+      "name": "reject_missing_explicit_sidecar_context",
+      "expected_error_code": "missing_explicit_sidecar_context",
+      "expected_rejection_layer": "direct_command_path_fixture_contract"
+    },
+    {
+      "name": "reject_prepopulated_sidecar_owned_parser_fields",
+      "expected_error_code": "sidecar_owned_field_prepopulated_by_parser",
+      "expected_rejection_layer": "direct_command_path_fixture_contract"
+    }
+  ],
+    "verification": {
+    "focused_contract_test_command": "python3 -m unittest tests.contract.test_verilator_native_option_parser_direct_command_path_fixture -q",
+    "focused_contract_test_exit_code": 0,
+    "focused_contract_test_count": 5
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate",
+    "must_decide": [
+      "whether the helper satisfies the accepted non-executing fixture contract",
+      "whether mixed compact/expanded shape spelling rejects with the direct fixture error code before parser-stub fallback",
+      "whether explicit sidecar context is required before a sidecar_plan_boundary reference is returned",
+      "whether sidecar-owned fields are rejected before reference metadata is produced",
+      "whether implementation evidence is narrow enough to avoid native parser, execution, timing, arbitrary filelist, automatic allocation, or runtime/ABI claims"
+    ],
+    "must_not_claim": [
+      "native Verilator option support",
+      "native parser integration is complete",
+      "direct Verilator command execution",
+      "RTL simulation execution",
+      "coverage-output equivalence for a direct native-parser flow",
+      "timing or speedup evidence",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic optimal GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "implementation_only": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "direct_verilator_command_execution_claim_allowed_by_gate_alone": false,
+    "command_argv_runtime_authority_claim_allowed_by_gate_alone": false,
+    "operator_plan_execution_claim_allowed_by_gate_alone": false,
+    "rtl_simulation_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate",
+  "non_claims": [
+    "not native Verilator option support",
+    "not native Verilator parser implementation completion",
+    "not direct Verilator command execution",
+    "not command_argv runtime authority",
+    "not operator-plan runtime execution",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a direct native-parser flow",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not source-closure or filelist dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
