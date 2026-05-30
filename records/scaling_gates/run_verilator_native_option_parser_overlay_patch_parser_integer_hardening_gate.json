@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "gate": "run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+  "status": "passed_verilator_native_option_parser_overlay_patch_parser_integer_hardening_smoke",
+  "objective": "Rebuild the repaired Verilator native option parser overlay patch after integer hardening, run the scoped parser-only positive and hardening smoke cases, and record strict count-token behavior without claiming sidecar execution, timing, arbitrary RTL/filelist support, automatic allocation, upstream regression success, or upstream landing.",
+  "source_implementation_gate": "config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json",
+  "current_priority": "review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate",
+  "execution_boundary": {
+    "validation_kind": "rebuilt_verilator_binary_option_parse_and_notify_hardening_smoke",
+    "binary_source": "rebuilt_from_clean_checkout_with_current_overlay_patch",
+    "binary_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/verilator-v5.048-clean/bin/verilator_bin",
+    "verilator_root_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/verilator-v5.048-clean",
+    "verilator_root_env_set_for_run": true,
+    "verilator_root_env_reason": "The generated checkout build is not installed; setting VERILATOR_ROOT to the generated checkout root lets the rebuilt binary find built-in include files for lint-only parser smoke.",
+    "regenerated_equivalent_build": true,
+    "generated_smoke_rtl_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/sim_accel_smoke.sv",
+    "generated_smoke_rtl_contents": "module sim_accel_smoke(input logic clk); endmodule",
+    "base_command_shape": [
+      "VERILATOR_ROOT=$VERILATOR_ROOT_REL",
+      "$VERILATOR_BIN",
+      "--lint-only",
+      "--timing",
+      "--top-module",
+      "sim_accel_smoke",
+      "$SMOKE_RTL"
+    ],
+    "writes_under_third_party": false,
+    "uses_generated_reports_as_source_of_truth": false,
+    "uses_generated_artifacts_as_source_of_truth": false
+  },
+  "build_result": {
+    "generated_artifact_dir": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1",
+    "source_checkout_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/verilator-v5.048-clean",
+    "source_checkout_origin": "local clone of artifacts/verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation/verilator-v5.048-patched",
+    "upstream_commit": "d0aa828c217410fffc73d92077b6f4f54830357c",
+    "descriptor_validation_exit_code": 0,
+    "apply_check_exit_code": 0,
+    "apply_exit_code": 0,
+    "diff_check_exit_code": 0,
+    "autoconf_exit_code": 0,
+    "configure_exit_code": 0,
+    "make_command": "make -j 28 verilator_bin",
+    "make_verilator_bin_exit_code": 0,
+    "primary_log_path": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/build-and-smoke.log",
+    "changed_files_after_apply": [
+      "src/V3Options.cpp",
+      "src/V3Options.h"
+    ]
+  },
+  "observed_result": {
+    "command_count": 6,
+    "positive_case_count": 2,
+    "hardening_rejection_case_count": 4,
+    "all_positive_cases_passed": true,
+    "all_hardening_rejection_cases_failed_as_expected": true,
+    "all_expected_diagnostics_matched": true,
+    "suffix_cases_prove_std_atoi_prefix_behavior_rejected": true,
+    "negative_separate_token_cases_reached_value_validation": true,
+    "negative_separate_token_cases_rejected_by_tokenizer": false,
+    "parser_integer_hardening_smoke_passed": true,
+    "failure_class": null
+  },
+  "case_results": [
+    {
+      "name": "accept_sidecar_gpu_64x1",
+      "category": "positive",
+      "argv_suffix": [
+        "--sim-accel",
+        "sidecar-gpu",
+        "--sim-accel-states",
+        "64",
+        "--sim-accel-steps",
+        "1"
+      ],
+      "expected_exit_code": 0,
+      "observed_exit_code": 0,
+      "stderr_log_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/accept_sidecar_gpu_64x1.stderr",
+      "stdout_log_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/accept_sidecar_gpu_64x1.stdout"
+    },
+    {
+      "name": "accept_sidecar_gpu_1x64",
+      "category": "positive",
+      "argv_suffix": [
+        "--sim-accel",
+        "sidecar-gpu",
+        "--sim-accel-states",
+        "1",
+        "--sim-accel-steps",
+        "64"
+      ],
+      "expected_exit_code": 0,
+      "observed_exit_code": 0,
+      "stderr_log_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/accept_sidecar_gpu_1x64.stderr",
+      "stdout_log_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/accept_sidecar_gpu_1x64.stdout"
+    },
+    {
+      "name": "reject_negative_states_separate_token",
+      "category": "hardening_rejection",
+      "argv_suffix": [
+        "--sim-accel",
+        "sidecar-gpu",
+        "--sim-accel-states",
+        "-1",
+        "--sim-accel-steps",
+        "1"
+      ],
+      "expected_exit_code": "nonzero",
+      "observed_exit_code": 1,
+      "classification": "strict_integer_validation_rejection",
+      "expected_diagnostic_substrings": [
+        "--sim-accel-states requires a positive integer",
+        "-1"
+      ],
+      "observed_diagnostic_summary": "--sim-accel-states requires a positive integer, but '-1' was passed",
+      "diagnostic_matched": true,
+      "stderr_log_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/reject_negative_states_separate_token.stderr",
+      "stdout_log_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/reject_negative_states_separate_token.stdout"
+    },
+    {
+      "name": "reject_negative_steps_separate_token",
+      "category": "hardening_rejection",
+      "argv_suffix": [
+        "--sim-accel",
+        "sidecar-gpu",
+        "--sim-accel-states",
+        "64",
+        "--sim-accel-steps",
+        "-1"
+      ],
+      "expected_exit_code": "nonzero",
+      "observed_exit_code": 1,
+      "classification": "strict_integer_validation_rejection",
+      "expected_diagnostic_substrings": [
+        "--sim-accel-steps requires a positive integer",
+        "-1"
+      ],
+      "observed_diagnostic_summary": "--sim-accel-steps requires a positive integer, but '-1' was passed",
+      "diagnostic_matched": true,
+      "stderr_log_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/reject_negative_steps_separate_token.stderr",
+      "stdout_log_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/reject_negative_steps_separate_token.stdout"
+    },
+    {
+      "name": "reject_non_numeric_states_suffix",
+      "category": "hardening_rejection",
+      "argv_suffix": [
+        "--sim-accel",
+        "sidecar-gpu",
+        "--sim-accel-states",
+        "64abc",
+        "--sim-accel-steps",
+        "1"
+      ],
+      "expected_exit_code": "nonzero",
+      "observed_exit_code": 1,
+      "classification": "strict_integer_validation_rejection",
+      "expected_diagnostic_substrings": [
+        "--sim-accel-states requires a positive integer",
+        "64abc"
+      ],
+      "observed_diagnostic_summary": "--sim-accel-states requires a positive integer, but '64abc' was passed",
+      "diagnostic_matched": true,
+      "stderr_log_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/reject_non_numeric_states_suffix.stderr",
+      "stdout_log_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/reject_non_numeric_states_suffix.stdout"
+    },
+    {
+      "name": "reject_non_numeric_steps_suffix",
+      "category": "hardening_rejection",
+      "argv_suffix": [
+        "--sim-accel",
+        "sidecar-gpu",
+        "--sim-accel-states",
+        "64",
+        "--sim-accel-steps",
+        "1abc"
+      ],
+      "expected_exit_code": "nonzero",
+      "observed_exit_code": 1,
+      "classification": "strict_integer_validation_rejection",
+      "expected_diagnostic_substrings": [
+        "--sim-accel-steps requires a positive integer",
+        "1abc"
+      ],
+      "observed_diagnostic_summary": "--sim-accel-steps requires a positive integer, but '1abc' was passed",
+      "diagnostic_matched": true,
+      "stderr_log_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/reject_non_numeric_steps_suffix.stderr",
+      "stdout_log_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/reject_non_numeric_steps_suffix.stdout"
+    }
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate",
+    "must_decide": [
+      "whether the rebuilt binary smoke result is sufficient to accept scoped parser integer hardening",
+      "whether separate-token negative cases reaching helper validation are accepted as strict value-validation evidence",
+      "whether the next selected gate should wire native parser output toward sidecar handoff or stop for documentation/upstream preparation"
+    ],
+    "must_not_claim": [
+      "sidecar runtime or ABI integration",
+      "RTL simulation execution",
+      "coverage-output equivalence for a native-parser flow",
+      "Verilator upstream regression tests pass",
+      "the patch has landed upstream",
+      "arbitrary RTL or filelist support",
+      "automatic optimal GPU allocation",
+      "new simulation timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "run_executed": true,
+    "verilator_bin_rebuilt_for_current_hardening_patch": true,
+    "parser_integer_hardening_smoke_executed": true,
+    "parser_integer_hardening_smoke_passed": true,
+    "scoped_strict_integer_parsing_claim_allowed": true,
+    "scoped_strict_integer_parsing_claim_scope": "--sim-accel-states and --sim-accel-steps parser-only lint smoke cases listed in this gate",
+    "native_verilator_parser_support_claim_allowed_by_gate_alone": false,
+    "unqualified_parser_behavior_claim_allowed_by_gate_alone": false,
+    "sidecar_handoff_claim_allowed_by_gate_alone": false,
+    "upstream_regression_success_claim_allowed_by_gate_alone": false,
+    "upstream_patch_landed_claim_allowed_by_gate_alone": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "rtl_simulation_execution_allowed_by_this_gate": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate",
+  "non_claims": [
+    "not unqualified native Verilator parser support",
+    "not sidecar handoff validation",
+    "not sidecar runtime execution",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a native-parser flow",
+    "not a landed upstream Verilator patch",
+    "not Verilator regression-test success",
+    "not new simulation timing evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

@@ -22,6 +22,12 @@ IMPLEMENTATION_GATE = (
     / "scaling_gates"
     / "implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json"
 )
+RUN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json"
+)
 DESCRIPTOR = (
     REPO_ROOT
     / "overlays"
@@ -47,6 +53,9 @@ class VerilatorNativeOptionParserIntegerHardeningGateTest(unittest.TestCase):
 
     def read_implementation_gate(self) -> dict[str, object]:
         return json.loads(IMPLEMENTATION_GATE.read_text(encoding="utf-8"))
+
+    def read_run_gate(self) -> dict[str, object]:
+        return json.loads(RUN_GATE.read_text(encoding="utf-8"))
 
     def test_definition_selects_strict_integer_hardening_boundary(self) -> None:
         gate = self.read_gate()
@@ -181,6 +190,55 @@ class VerilatorNativeOptionParserIntegerHardeningGateTest(unittest.TestCase):
         self.assertEqual(
             gate["next_task"],
             "run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+        )
+
+    def test_run_gate_records_rebuilt_binary_and_hardening_smoke(self) -> None:
+        gate = self.read_run_gate()
+
+        self.assertEqual(
+            gate["source_implementation_gate"],
+            "config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate",
+        )
+
+        build = gate["build_result"]
+        self.assertEqual(build["descriptor_validation_exit_code"], 0)
+        self.assertEqual(build["apply_check_exit_code"], 0)
+        self.assertEqual(build["apply_exit_code"], 0)
+        self.assertEqual(build["autoconf_exit_code"], 0)
+        self.assertEqual(build["configure_exit_code"], 0)
+        self.assertEqual(build["make_verilator_bin_exit_code"], 0)
+
+        observed = gate["observed_result"]
+        self.assertEqual(observed["command_count"], 6)
+        self.assertTrue(observed["all_positive_cases_passed"])
+        self.assertTrue(observed["all_hardening_rejection_cases_failed_as_expected"])
+        self.assertTrue(observed["suffix_cases_prove_std_atoi_prefix_behavior_rejected"])
+        self.assertTrue(observed["negative_separate_token_cases_reached_value_validation"])
+        self.assertFalse(observed["negative_separate_token_cases_rejected_by_tokenizer"])
+
+        cases = {case["name"]: case for case in gate["case_results"]}
+        self.assertEqual(cases["accept_sidecar_gpu_64x1"]["observed_exit_code"], 0)
+        self.assertEqual(cases["accept_sidecar_gpu_1x64"]["observed_exit_code"], 0)
+        self.assertEqual(
+            cases["reject_negative_states_separate_token"]["classification"],
+            "strict_integer_validation_rejection",
+        )
+        self.assertIn("-1", cases["reject_negative_steps_separate_token"]["observed_diagnostic_summary"])
+        self.assertIn("64abc", cases["reject_non_numeric_states_suffix"]["observed_diagnostic_summary"])
+        self.assertIn("1abc", cases["reject_non_numeric_steps_suffix"]["observed_diagnostic_summary"])
+
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["verilator_bin_rebuilt_for_current_hardening_patch"])
+        self.assertTrue(policy["parser_integer_hardening_smoke_passed"])
+        self.assertFalse(policy["sidecar_handoff_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["rtl_simulation_execution_allowed_by_this_gate"])
+        self.assertEqual(
+            gate["next_task"],
+            "review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate",
         )
 
 

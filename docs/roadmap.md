@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The repaired overlay patch now applies cleanly, passes post-apply location sanity, has accepted `verilator_bin` build-only evidence, has a reviewed parser-only smoke result, and has an implemented parser integer-hardening patch update. The weak point is validating that hardening through a built-binary smoke without treating it as sidecar handoff, upstream acceptance, arbitrary filelist planning, dependency inference, automatic allocation, or a landed parser patch.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The repaired overlay patch now applies cleanly, passes post-apply location sanity, has accepted `verilator_bin` build-only evidence, has a reviewed parser-only smoke result, and has a rebuilt parser integer-hardening smoke run. The weak point is reviewing that run result without treating it as sidecar handoff, upstream acceptance, arbitrary filelist planning, dependency inference, automatic allocation, or a landed parser patch.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is running the smallest parser integer hardening validation after updating the repaired overlay patch to replace `std::atoi` prefix parsing with full-token positive integer validation.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the smallest parser integer hardening validation after rebuilding the repaired overlay patch that replaced `std::atoi` prefix parsing with full-token positive integer validation.
 
 Current priority:
 
-`run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate`
+`review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate`
 
 Current gate:
 
-`config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json`
+`config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native option parser integer hardening run**: Apply the updated overlay patch in a clean checkout, build or reuse with recorded provenance, and run positive plus hardening parser-only smoke cases before any broader native parser support, upstream landing, sidecar handoff, execution, timing, or automatic allocation claim.
+1. **Native option parser integer hardening run review**: Review the rebuilt-binary positive plus hardening parser-only smoke result before any broader native parser support, upstream landing, sidecar handoff, execution, timing, or automatic allocation claim.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,7 +79,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Run native Verilator option parser integer hardening smoke after applying the in-place overlay patch update that replaced `std::atoi` prefix parsing.
+Review native Verilator option parser integer hardening smoke after rebuilding the in-place overlay patch update that replaced `std::atoi` prefix parsing.
 
 Parser boundary definition:
 
@@ -104,7 +104,8 @@ Parser boundary definition:
 - parser-integer hardening definition gate: `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json`
 - parser-integer hardening review gate: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json`
 - parser-integer hardening implementation gate: `config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json`
-- selected next gate: `run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate`
+- parser-integer hardening smoke run gate: `config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json`
+- selected next gate: `review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate`
 - scope: update existing overlay patch in place before public CLI, sidecar support, simulation execution, or timing
 - defined native minimum: `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`
 - wrapper/shim compatibility kept out of native minimum: `--sim-accel-shape <NxS>`, target-first registry lookup, print modes, JSON operator plans, resident modes, and dataset-backed flows
@@ -362,7 +363,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
-- current next task: `run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate`
+- current next task: `review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate`
 - reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
@@ -704,15 +705,14 @@ Tracked evidence:
 
 Recommended next gate:
 
-`run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate`
+`review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json` as the source artifact
-- apply the updated overlay patch to a clean Verilator `v5.048` checkout
-- build or reuse `verilator_bin` with recorded provenance
-- run the two positive parser smoke cases plus the four negative/suffix hardening cases
-- classify separate-token negative values as tokenizer behavior if they do not reach value validation
+- use `config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json` as the source artifact
+- decide whether the rebuilt-binary smoke is sufficient for the scoped parser-only strict integer hardening claim
+- decide whether separate-token negative cases reaching helper validation are accepted as strict value-validation evidence for this run
+- decide whether the next selected gate should wire native parser output toward sidecar handoff or stop for documentation/upstream preparation
 - keep compact shape, sidecar execution, and timing as deferred unless a review expands scope
 - keep `--sim-accel-estimate-efficiency`, compact shape spelling, `src/V3OptionParser.*`, `src/VlcMain.cpp`, docs, and upstream `test_regress/t/` outside scope unless a new review expands scope
 - keep vendored Verilator source, execution, measurement, source closure inference, automatic allocation, and arbitrary RTL/filelist support out of scope
