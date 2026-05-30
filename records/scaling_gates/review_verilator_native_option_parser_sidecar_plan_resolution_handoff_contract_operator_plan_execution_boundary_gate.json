@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate",
+  "status": "accepted_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_definition",
+  "objective": "Review the definition-only execution boundary after accepted native-parser handoff-contract-to-operator-plan metadata hardening, decide whether a later run gate may execute a narrow reviewed sidecar build/run/compare sequence, and keep this review from claiming command execution, RTL simulation, compare execution, measured timing, speedup, arbitrary filelist support, automatic GPU allocation, runtime/ABI change, or native Verilator support.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate.json",
+  "current_priority": "run_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The definition is narrow enough for a later run gate because it admits only ready operator-plan metadata from the reviewed fixture, requires all non-execution flags to be false before any command can run, requires a reviewed or regenerated sidecar stage plan with explicit stage order, keeps direct-looking Verilator command metadata as preview/build input rather than sidecar runtime evidence, and keeps coverage_output_equivalence as a future compare result rather than evidence from this definition.",
+    "weakest_point": "The handoff_contract and command_argv metadata can be over-read as authority because command_argv starts with a Verilator-like command while the stage plan still decides what may actually run. The accepted boundary therefore permits only a scoped sidecar build/run/compare execution derived from reviewed metadata and a reviewed or regenerated stage plan; it does not permit arbitrary filelist dependency inference, automatic GPU allocation, measured timing, speedup, raw full-state equality, or broad native parser support claims."
+  },
+  "accepted_boundary": {
+    "selected_surface": "native_parser_operator_plan_metadata_to_reviewed_sidecar_execution_boundary",
+    "input_surface": "native_verilator_parser_sidecar_operator_plan_fixture",
+    "input_status": "ready_for_sidecar_operator_plan_metadata",
+    "input_must_be_ready_only": true,
+    "input_must_preserve_non_execution_flags": true,
+    "direct_verilator_command_is_runtime_evidence": false,
+    "reviewed_stage_plan_required_before_run": true,
+    "required_stage_order": [
+      "verilator_build",
+      "host_probe_build",
+      "cpu_init_state",
+      "cpu_reference_output",
+      "gpu_artifact_build",
+      "hybrid_sidecar_run",
+      "coverage_output_compare"
+    ],
+    "future_compare_policy": "coverage_output_equivalence",
+    "future_compare_policy_is_evidence_from_this_gate": false,
+    "parser_filelists_are_source_closure_authority": false,
+    "automatic_gpu_allocation_allowed": false,
+    "runtime_or_abi_change_allowed": false
+  },
+  "accepted_input_preconditions": {
+    "operator_plan_metadata_allowed": true,
+    "correctness_policy": "coverage_output_equivalence",
+    "correctness_policy_ref_status": "reference_only_not_compare_evidence",
+    "command_synthesis_invoked": true,
+    "operator_plan_invoked": true,
+    "efficiency_estimate_invoked": true,
+    "execution_performed": false,
+    "measurement_performed": false,
+    "timing_measured": false,
+    "runtime_or_abi_changed": false,
+    "source_closure_inferred": false,
+    "filelists_expanded": false,
+    "automatic_gpu_allocation_used": false,
+    "parser_preserved_build_inputs_role": {
+      "source_files": "preserved_parser_input_not_source_closure",
+      "filelists": "preserved_parser_input_not_filelist_expansion"
+    }
+  },
+  "required_next_gate": {
+    "name": "run_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_gate",
+    "must_run_or_record": [
+      "construct or load the reviewed ready operator-plan metadata fixture",
+      "validate the ready surface, status, correctness policy, non-execution flags, and parser-preserved input roles before running anything",
+      "recover, preserve, or regenerate the reviewed sidecar stage plan with the accepted stage order",
+      "execute only the reviewed sidecar build/run/compare stages for the scoped fixture target and shape",
+      "write generated execution evidence only under reports/ and artifacts/",
+      "record CPU-vs-hybrid compare with coverage_output_equivalence if the run reaches compare",
+      "record failures as scoped execution-boundary evidence without promoting native Verilator support"
+    ],
+    "must_not_claim": [
+      "native Verilator parser support",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic optimal GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "timing or speedup evidence unless a later measurement gate explicitly defines it",
+      "production LLM-serving throughput",
+      "complete adversarial Mapping schema validation"
+    ],
+    "review_after_run_must_decide": [
+      "whether the run used only accepted ready metadata and reviewed stage order",
+      "whether generated evidence stayed in reports/ and artifacts/",
+      "whether any compare result is correctly scoped to coverage_output_equivalence",
+      "whether direct Verilator command metadata remained preview/build input rather than native runtime evidence",
+      "whether the next review should use review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate",
+      "whether a follow-up should define a true native-Verilator command path or hold at the sidecar execution boundary"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "definition_accepted": true,
+    "next_execution_run_allowed": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "sidecar_handoff_validation_claim_allowed_by_gate_alone": false,
+    "command_execution_claim_allowed_by_gate_alone": false,
+    "operator_plan_execution_claim_allowed_by_gate_alone": false,
+    "rtl_simulation_claim_allowed_by_gate_alone": false,
+    "compare_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "complete_adversarial_mapping_schema_validation_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "run_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not native Verilator parser support",
+    "not sidecar runtime handoff validation",
+    "not command execution by this review gate",
+    "not operator-plan execution by this review gate",
+    "not RTL simulation execution by this review gate",
+    "not compare execution by this review gate",
+    "not coverage-output equivalence evidence for a native-parser flow",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not timing or speedup evidence",
+    "not complete adversarial Mapping schema validation",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
