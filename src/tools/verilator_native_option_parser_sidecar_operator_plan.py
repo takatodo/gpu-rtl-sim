@@ -48,8 +48,13 @@ def _string(mapping, field, error_factory):
     return value
 def _positive_int(mapping, field, error_factory, *, default=None):
     value = mapping.get(field, default) if default is not None else mapping.get(field)
-    if not isinstance(value, int) or value <= 0:
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
         _fail(error_factory, f"field {field!r} must be a positive integer")
+    return value
+def _optional_int(mapping, field, error_factory):
+    value = mapping.get(field)
+    if value is not None and (isinstance(value, bool) or not isinstance(value, int)):
+        _fail(error_factory, f"field {field!r} must be an integer when provided")
     return value
 def _require_fields(mapping, fields, label, error_factory):
     missing = [field for field in fields if field not in mapping]
@@ -114,7 +119,10 @@ def _validated_handoff_contract(handoff_metadata, error_factory):
         _fail(error_factory, "handoff_contract.non_claims must be a list")
     return handoff
 def _validate_stage_details(details, handoff, error_factory):
-    run_shape = f"{details['hybrid_sidecar_run']['nstates']}x{details['hybrid_sidecar_run']['steps']}"
+    hybrid_run = details["hybrid_sidecar_run"]
+    nstates = _positive_int(hybrid_run, "nstates", error_factory)
+    steps = _positive_int(hybrid_run, "steps", error_factory)
+    run_shape = f"{nstates}x{steps}"
     if run_shape != handoff["shape"]:
         _fail(error_factory, f"hybrid_sidecar_run shape {run_shape!r} does not match handoff shape {handoff['shape']!r}")
     state_files = _mapping(handoff, "state_files", error_factory)
@@ -142,6 +150,8 @@ def _validate_stage_plan(handoff_metadata, handoff, error_factory):
     details = {name: _stage(stage_plan, name, error_factory) for name in STAGE_REQUIRED_FIELDS}
     for name, fields in STAGE_REQUIRED_FIELDS.items():
         _require_fields(details[name], fields, f"stage {name!r}", error_factory)
+    _positive_int(stage_plan, "phases", error_factory, default=4)
+    _optional_int(stage_plan, "limit", error_factory)
     _validate_stage_details(details, handoff, error_factory)
     return stage_plan
 def _validate_ready_input(handoff_metadata, error_factory):
@@ -171,8 +181,11 @@ def _validate_ready_input(handoff_metadata, error_factory):
     cross = _mapping(handoff_metadata, "parser_schedule_cross_check", error_factory)
     if cross.get("shape_matches_handoff_contract") is not True:
         _fail(error_factory, "parser_schedule_cross_check.shape_matches_handoff_contract is not true")
-    for left, right in (("shape", "shape"), ("state_count", "nstates"), ("step_count", "steps")):
-        if cross.get(left) != handoff.get(right):
+    if cross.get("shape") != handoff.get("shape"):
+        _fail(error_factory, "parser_schedule_cross_check.shape does not match handoff_contract.shape")
+    for left, right in (("state_count", "nstates"), ("step_count", "steps")):
+        value = _positive_int(cross, left, error_factory)
+        if value != handoff.get(right):
             _fail(error_factory, f"parser_schedule_cross_check.{left} does not match handoff_contract.{right}")
     return _validate_stage_plan(handoff_metadata, handoff, error_factory), handoff
 def resolve_handoff_contract_to_operator_plan(
@@ -197,9 +210,7 @@ def resolve_handoff_contract_to_operator_plan(
     stage_plan, handoff = _validate_ready_input(handoff_metadata, error_factory)
     command_argv = command_builder(dict(stage_plan))
     estimate_command_argv = estimate_command_builder(command_argv)
-    limit = stage_plan.get("limit")
-    if limit is not None and not isinstance(limit, int):
-        _fail(error_factory, "stage_plan.limit must be an integer when provided")
+    limit = _optional_int(stage_plan, "limit", error_factory)
     estimate = efficiency_builder(
         target=_string(stage_plan, "target", error_factory),
         shape=_string(stage_plan, "shape", error_factory),

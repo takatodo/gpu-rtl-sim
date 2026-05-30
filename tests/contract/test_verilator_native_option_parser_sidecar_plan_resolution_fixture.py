@@ -2,6 +2,7 @@ import importlib
 import json
 import sys
 import unittest
+from copy import deepcopy
 from pathlib import Path
 
 
@@ -119,6 +120,54 @@ class VerilatorNativeOptionParserSidecarPlanResolutionFixtureTest(unittest.TestC
         self.assertFalse(resolved["filelists_expanded"])
         self.assertFalse(resolved["automatic_gpu_allocation_used"])
         self.assertEqual(resolved["correctness_policy_ref_status"], "reference_only_not_compare_evidence")
+
+    def ready_handoff_contract_fixture(self) -> tuple[object, object, dict[str, object]]:
+        operator_plan_module, plan_resolution = _load_tool_modules(
+            "verilator_native_option_parser_sidecar_operator_plan",
+            "verilator_native_option_parser_sidecar_plan_resolution",
+        )
+        resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+            _adapter_payload(),
+            sidecar_context=_sidecar_context(),
+        )
+        handoff = plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+        return operator_plan_module, plan_resolution, handoff
+
+    def assert_rejects_before_operator_plan_authorities(
+        self,
+        handoff: dict[str, object],
+        *,
+        expected_error: str,
+    ) -> None:
+        operator_plan_module, plan_resolution = _load_tool_modules(
+            "verilator_native_option_parser_sidecar_operator_plan",
+            "verilator_native_option_parser_sidecar_plan_resolution",
+        )
+        calls = []
+
+        def fail_authority(name: str):
+            def _fail(*args, **kwargs):
+                calls.append((name, args, kwargs))
+                raise AssertionError(f"{name} authority must not be called before validation")
+
+            return _fail
+
+        with self.assertRaisesRegex(plan_resolution.NativeParserSidecarPlanResolutionError, expected_error):
+            operator_plan_module.resolve_handoff_contract_to_operator_plan(
+                handoff,
+                error_factory=plan_resolution.NativeParserSidecarPlanResolutionError,
+                command_builder=fail_authority("command"),
+                estimate_command_builder=fail_authority("estimate"),
+                efficiency_builder=fail_authority("efficiency"),
+                operator_plan_builder=fail_authority("operator_plan"),
+            )
+        self.assertEqual(calls, [])
+
+    def stage_details(self, handoff: dict[str, object], stage_name: str) -> dict[str, object]:
+        for item in handoff["stage_plan"]["stages"]:
+            if item["stage"] == stage_name:
+                return item["details"]
+        raise AssertionError(f"missing stage {stage_name}")
 
     def test_implementation_gate_records_non_executing_fixture_scope(self) -> None:
         gate = json.loads(IMPLEMENTATION_GATE.read_text(encoding="utf-8"))
@@ -372,6 +421,41 @@ class VerilatorNativeOptionParserSidecarPlanResolutionFixtureTest(unittest.TestC
             operator_metadata["parser_input_resolution_role"]["filelists"],
             "preserved_parser_input_not_filelist_expansion",
         )
+
+    def test_operator_plan_rejects_bool_integer_fields_before_authorities(self) -> None:
+        _, _, base_handoff = self.ready_handoff_contract_fixture()
+
+        cases = (
+            ("handoff_contract.nstates", lambda handoff: handoff["handoff_contract"].__setitem__("nstates", True)),
+            ("handoff_contract.steps", lambda handoff: handoff["handoff_contract"].__setitem__("steps", True)),
+            ("stage_plan.phases", lambda handoff: handoff["stage_plan"].__setitem__("phases", True)),
+            ("stage_plan.limit", lambda handoff: handoff["stage_plan"].__setitem__("limit", True)),
+            (
+                "hybrid_sidecar_run.details.nstates",
+                lambda handoff: self.stage_details(handoff, "hybrid_sidecar_run").__setitem__("nstates", True),
+            ),
+            (
+                "hybrid_sidecar_run.details.steps",
+                lambda handoff: self.stage_details(handoff, "hybrid_sidecar_run").__setitem__("steps", True),
+            ),
+            (
+                "parser_schedule_cross_check.state_count",
+                lambda handoff: handoff["parser_schedule_cross_check"].__setitem__("state_count", True),
+            ),
+            (
+                "parser_schedule_cross_check.step_count",
+                lambda handoff: handoff["parser_schedule_cross_check"].__setitem__("step_count", True),
+            ),
+        )
+
+        for field, mutate in cases:
+            with self.subTest(field=field):
+                handoff = deepcopy(base_handoff)
+                mutate(handoff)
+                self.assert_rejects_before_operator_plan_authorities(
+                    handoff,
+                    expected_error="positive integer|integer when provided",
+                )
 
     def test_not_ready_and_unsupported_handoff_contracts_fail_closed_before_operator_plan(self) -> None:
         (operator_plan_module, plan_resolution) = _load_tool_modules(

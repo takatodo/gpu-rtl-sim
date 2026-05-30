@@ -28,6 +28,12 @@ REVIEW_HARDENING_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate.json"
 )
+IMPLEMENT_HARDENING_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "implement_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPlanFixtureGateTest(
@@ -44,6 +50,9 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
 
     def read_review_hardening_gate(self) -> dict[str, object]:
         return json.loads(REVIEW_HARDENING_GATE.read_text(encoding="utf-8"))
+
+    def read_implement_hardening_gate(self) -> dict[str, object]:
+        return json.loads(IMPLEMENT_HARDENING_GATE.read_text(encoding="utf-8"))
 
     def test_gate_records_importable_operator_plan_fixture(self) -> None:
         gate = self.read_gate()
@@ -349,6 +358,55 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
             "not complete adversarial Mapping schema validation",
             review["non_claims"],
         )
+
+    def test_hardening_implementation_records_strict_integer_scope(self) -> None:
+        gate = self.read_implement_hardening_gate()
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_implementation_gate",
+        )
+        surface = gate["implemented_surface"]
+        self.assertEqual(surface["module"], "src/tools/verilator_native_option_parser_sidecar_operator_plan.py")
+        self.assertEqual(surface["primary_entrypoint_function"], "resolve_handoff_contract_to_operator_plan")
+        self.assertTrue(surface["ready_only"])
+        self.assertTrue(surface["metadata_only"])
+        self.assertFalse(surface["new_public_cli_added"])
+        self.assertFalse(surface["new_execution_added"])
+        self.assertLessEqual(surface["line_count_after_change"], 300)
+
+        hardening = gate["implemented_hardening"]
+        self.assertTrue(hardening["positive_int_helper_rejects_bool"])
+        self.assertTrue(hardening["optional_int_helper_rejects_bool"])
+        self.assertTrue(hardening["stage_plan_phase_and_limit_validated_before_authorities"])
+        self.assertTrue(hardening["hybrid_sidecar_run_details_validated_before_command_builder"])
+        self.assertTrue(hardening["parser_schedule_cross_check_counts_validated_before_equality_comparison"])
+        self.assertFalse(hardening["complete_adversarial_mapping_schema_validation_added"])
+
+    def test_hardening_implementation_records_verification_and_non_claims(self) -> None:
+        gate = self.read_implement_hardening_gate()
+
+        self.assertEqual(gate["verification"]["focused_contract_test_exit_code"], 0)
+        self.assertEqual(gate["verification"]["focused_contract_test_count"], 21)
+        self.assertEqual(gate["verification"]["bool_field_subtest_count"], 8)
+        self.assertEqual(
+            set(gate["verification"]["counting_stub_authorities"]),
+            {"command_builder", "estimate_command_builder", "efficiency_builder", "operator_plan_builder"},
+        )
+        ordering = gate["authority_ordering"]
+        self.assertTrue(ordering["bool_rejection_before_command_builder"])
+        self.assertTrue(ordering["bool_rejection_before_estimate_command_builder"])
+        self.assertTrue(ordering["bool_rejection_before_efficiency_builder"])
+        self.assertTrue(ordering["bool_rejection_before_operator_plan_builder"])
+        self.assertFalse(gate["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["next_execution_boundary_definition_allowed"])
+        self.assertFalse(gate["acceptance_policy"]["complete_adversarial_mapping_schema_validation_claim_allowed_by_gate_alone"])
+        self.assertIn("not command execution", gate["non_claims"])
+        self.assertIn("not complete adversarial Mapping schema validation", gate["non_claims"])
 
 
 if __name__ == "__main__":
