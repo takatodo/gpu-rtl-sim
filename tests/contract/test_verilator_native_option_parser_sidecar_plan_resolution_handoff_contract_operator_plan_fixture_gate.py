@@ -22,6 +22,12 @@ HARDENING_GATE = (
     / "scaling_gates"
     / "define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate.json"
 )
+REVIEW_HARDENING_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPlanFixtureGateTest(
@@ -35,6 +41,9 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
 
     def read_hardening_gate(self) -> dict[str, object]:
         return json.loads(HARDENING_GATE.read_text(encoding="utf-8"))
+
+    def read_review_hardening_gate(self) -> dict[str, object]:
+        return json.loads(REVIEW_HARDENING_GATE.read_text(encoding="utf-8"))
 
     def test_gate_records_importable_operator_plan_fixture(self) -> None:
         gate = self.read_gate()
@@ -286,6 +295,60 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
         self.assertFalse(policy["complete_adversarial_mapping_schema_validation_claim_allowed_by_gate_alone"])
         self.assertIn("not timing or speedup evidence", gate["non_claims"])
         self.assertIn("not complete adversarial Mapping schema validation", gate["non_claims"])
+
+    def test_hardening_review_accepts_definition_and_selects_implementation(self) -> None:
+        review = self.read_review_hardening_gate()
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("phase/limit wording is weaker", review["review_decision"]["weakest_point"])
+        self.assertEqual(
+            review["current_priority"],
+            "implement_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate",
+        )
+        accepted = review["accepted_definition"]
+        self.assertEqual(
+            accepted["primary_module"],
+            "src/tools/verilator_native_option_parser_sidecar_operator_plan.py",
+        )
+        self.assertFalse(accepted["bool_values_are_positive_ints"])
+        self.assertFalse(accepted["complete_adversarial_mapping_schema_validation_required"])
+        self.assertFalse(accepted["new_timing_or_speedup_evidence_allowed"])
+        self.assertEqual(
+            review["required_next_implementation"]["name"],
+            "implement_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate",
+        )
+
+    def test_hardening_review_requires_all_authorities_before_phase_limit_bool(self) -> None:
+        review = self.read_review_hardening_gate()
+        required = review["required_next_implementation"]
+
+        self.assertIn(
+            "reject bool stage_plan.phases and stage_plan.limit before command, estimate, efficiency, or operator-plan authorities",
+            required["must_implement"],
+        )
+        self.assertIn(
+            "bool stage_plan.phases rejects before command, estimate, efficiency, or operator-plan authorities",
+            required["must_test"],
+        )
+        self.assertIn(
+            "bool stage_plan.limit rejects before command, estimate, efficiency, or operator-plan authorities",
+            required["must_test"],
+        )
+        mapping = review["accepted_scoped_mapping_boundary"]
+        self.assertFalse(review["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+        self.assertFalse(review["acceptance_policy"]["next_execution_boundary_definition_allowed"])
+        self.assertIn(
+            "src/tools/hybrid_benchmark_sidecar_operator.py::synthesized_verilator_command_argv",
+            mapping["authorities_that_must_not_be_called_before_validation"],
+        )
+        self.assertIn(
+            "not complete adversarial Mapping schema validation",
+            review["non_claims"],
+        )
 
 
 if __name__ == "__main__":
