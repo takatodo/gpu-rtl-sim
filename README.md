@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate`
+`review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_implementation_gate.json`
+`config/scaling_gates/define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -103,6 +103,7 @@ Commit cadence: keep commits small enough to review by one gate or one workflow 
 - Verilator native option parser-to-sidecar plan-resolution status hardening reviewed: `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_gate.json` accepts the readiness-classified outer status contract and selects in-place helper hardening next. The implementation must add `plan_resolution_readiness`, preserve nested `stage_plan_status`, and keep handoff contract, command synthesis, execution, timing, runtime/ABI, arbitrary RTL/filelist support, and automatic allocation out of scope.
 - Verilator native option parser-to-sidecar plan-resolution status hardening implemented: `config/scaling_gates/implement_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_gate.json` records in-place helper hardening. The helper now reports outer readiness status, preserves nested `stage_plan_status` through `plan_resolution_readiness`, and keeps sidecar handoff contract, command synthesis, execution, timing, runtime/ABI, arbitrary RTL/filelist support, and automatic allocation absent.
 - Verilator native option parser-to-sidecar plan-resolution status hardening implementation reviewed: `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_implementation_gate.json` accepts only the readiness-classified non-executing helper and advances the current task to defining the handoff-contract boundary after plan resolution. This still adds no executed handoff contract, command synthesis, RTL simulation, timing, runtime/ABI, arbitrary RTL/filelist support, or automatic allocation.
+- Verilator native option parser-to-sidecar plan-resolution handoff-contract boundary defined: `config/scaling_gates/define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate.json` defines that only ready plan-resolution outputs may feed future `sidecar_handoff_contract` metadata. It separates metadata construction from runtime handoff execution, command synthesis, operator-plan production, RTL simulation, timing, runtime/ABI, arbitrary filelist expansion, and automatic allocation.
 - Public reproduction smoke: `docs/results.md` lists the first dry-run commands to run before attempting full measurements.
 - Public release checklist: `docs/results.md` lists the final source-of-truth, path hygiene, smoke, evidence, non-claim, and contract-test checks before handoff.
 - Externalization readiness audit: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for externalization.
@@ -740,6 +741,7 @@ The paged-attention/KV-cache repeat-median public-pack boundary is complete. The
 - Verilator native option parser-to-sidecar plan-resolution status hardening review accepted: `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_gate.json` advances the current task to `implement_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_gate`.
 - Verilator native option parser-to-sidecar plan-resolution status hardening implemented: `config/scaling_gates/implement_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_gate.json` advances the current task to `review_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_implementation_gate`.
 - Verilator native option parser-to-sidecar plan-resolution status hardening implementation review accepted: `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_implementation_gate.json` advances the current task to `define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate`.
+- Verilator native option parser-to-sidecar plan-resolution handoff-contract boundary defined: `config/scaling_gates/define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate.json` advances the current task to `review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate`.
 - config-generation validation breadth execution and subsequent candidate measurement/publication gates are summarized by `config/selection.json`, `docs/status.md`, and the tracked public-pack manifest instead of being listed here one gate file at a time
 - local candidate gate files under `records/scaling_gates/` are not public-pack source of truth until they are intentionally tracked and included by `python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run`
 - previous paged-attention/KV-cache dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`

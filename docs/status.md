@@ -2,11 +2,11 @@
 
 ## Weakest Point
 
-The commit-split cleanup is complete, and the repaired Verilator native-option overlay patch now has accepted scoped `verilator_bin` build-only validation, reviewed parser-only smoke, reviewed rebuilt integer-hardening smoke, a reviewed parser-to-adapter handoff boundary, a reviewed non-executing handoff fixture, a reviewed parser-adapter to sidecar plan-resolution boundary, a reviewed non-executing plan-resolution fixture, an accepted status/readiness hardening definition, and a reviewed in-place helper implementation of that hardening. The current weak point is defining the next handoff-contract boundary after plan resolution without treating parser evidence as native sidecar execution, runtime/ABI, RTL simulation, coverage-output equivalence, timing, or arbitrary RTL/filelist flow.
+The commit-split cleanup is complete, and the repaired Verilator native-option overlay patch now has accepted scoped `verilator_bin` build-only validation, reviewed parser-only smoke, reviewed rebuilt integer-hardening smoke, a reviewed parser-to-adapter handoff boundary, a reviewed non-executing handoff fixture, a reviewed parser-adapter to sidecar plan-resolution boundary, a reviewed non-executing plan-resolution fixture, an accepted status/readiness hardening definition, a reviewed in-place helper implementation of that hardening, and a defined handoff-contract metadata boundary after plan resolution. The current weak point is reviewing that boundary before letting ready plan-resolution outputs produce `sidecar_handoff_contract` metadata, and before treating parser evidence as native sidecar execution, runtime/ABI, RTL simulation, coverage-output equivalence, timing, or arbitrary RTL/filelist flow.
 
 Current cleanup policy: keep `config/selection.json` compact (core pointer and operational fields), park bulky historical maps in `config/selection_extensions.json`, keep historical gate records under `records/scaling_gates/` with `config/scaling_gates` as a compatibility link, and keep generated evidence reproducible under `reports/` and `artifacts/` without retaining it as source of truth.
 
-Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `848` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
+Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `849` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
 
 Hybrid usability state: generated templates now carry generic host-probe build metadata and can use `src/tools/build_host_probe.py` without adding a per-target Makefile rule.
 
@@ -52,15 +52,15 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate`
+`review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_implementation_gate.json`
+`config/scaling_gates/define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate.json`
 
 ## 追跡タスク
 
-- `define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate` で、readyなplan-resolution出力から `sidecar_handoff_contract` へ渡してよい最小フィールドと、not-ready/unsupported時の拒否境界を定義する。
+- `review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate` で、readyなplan-resolution出力だけが `sidecar_handoff_contract` メタデータへ進める定義になっているか確認する。
 - `docs/migration_notes.md` の「シンプル検証からの乖離」節を、前提変更時に見直す。
 - 新規ゲート完了時は `config/selection_extensions.json` の `completed_goal_evidence` / `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json` の整合を取る。
 - ゲート JSON に残る履歴表記の例: `next_task: select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`（正の源泉は常に `config/selection.json` の `current_priority` を優先）。マージ後の全体像が必要なら `src/tools/selection_state.py` の `load_selection` を参照。
@@ -96,6 +96,8 @@ Native parser-to-sidecar plan-resolution status hardening review state: `config/
 Native parser-to-sidecar plan-resolution status hardening implementation state: `config/scaling_gates/implement_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_gate.json` records the in-place helper change in `src/tools/verilator_native_option_parser_sidecar_plan_resolution.py`. The helper now derives outer status from `sidecar_stage_plan` plus nested readiness, adds `plan_resolution_readiness`, and covers ready template, resident not-ready, persistent-resident not-ready, and unsupported modes in focused contract tests. This remains non-executing fixture evidence only, not sidecar handoff contract, command synthesis, execution, timing, runtime/ABI, arbitrary RTL/filelist support, or automatic allocation.
 
 Native parser-to-sidecar plan-resolution status hardening implementation review state: `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_implementation_gate.json` accepts only the readiness-classified non-executing helper. The accepted weak point is that `ready_for_verilator_option_shim` can still be over-read as execution or correctness evidence, so the next boundary must define handoff-contract inputs and rejections without executing sidecar handoff, synthesizing commands, measuring timing, changing runtime/ABI, expanding arbitrary filelists, or claiming automatic allocation.
+
+Native parser-to-sidecar plan-resolution handoff-contract boundary definition state: `config/scaling_gates/define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_boundary_gate.json` defines the ready-only metadata boundary after plan resolution. It requires `status: ready_for_verilator_option_shim`, `plan_resolution_readiness.ready_for_direct_verilator_option: true`, `stage_plan.status: planned`, matching parser/stage shape, and `coverage_output_equivalence` before a future helper may build `sidecar_handoff_contract` metadata. Not-ready and unsupported outputs must not produce handoff metadata. This is definition-only; it adds no command synthesis, operator plan, runtime handoff execution, RTL execution, timing, runtime/ABI change, arbitrary filelist expansion, or automatic allocation.
 
 The full ITA/MHA plus larger paged KV-cache goal is complete and held for review. Full MHA was retried through the current hybrid path; the fresh 1x1 run wrote `reports/pulp_ita_mha_hybrid_1x1.txt` and passed coverage-output equivalence in `reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json`.
 
