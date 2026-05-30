@@ -76,6 +76,12 @@ REVIEW_DIRECT_COMMAND_PATH_BOUNDARY_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_direct_command_path_boundary_gate.json"
 )
+DIRECT_COMMAND_PATH_FIXTURE_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "define_verilator_native_option_parser_direct_command_path_fixture_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPlanFixtureGateTest(
@@ -116,6 +122,9 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
 
     def read_review_direct_command_path_boundary_gate(self) -> dict[str, object]:
         return json.loads(REVIEW_DIRECT_COMMAND_PATH_BOUNDARY_GATE.read_text(encoding="utf-8"))
+
+    def read_direct_command_path_fixture_gate(self) -> dict[str, object]:
+        return json.loads(DIRECT_COMMAND_PATH_FIXTURE_GATE.read_text(encoding="utf-8"))
 
     def test_gate_records_importable_operator_plan_fixture(self) -> None:
         gate = self.read_gate()
@@ -892,6 +901,121 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
         self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone"])
         self.assertIn("not direct Verilator command execution", review["non_claims"])
         self.assertIn("not timing or speedup evidence", review["non_claims"])
+
+    def test_direct_command_path_fixture_definition_pins_contract_surface(self) -> None:
+        gate = self.read_direct_command_path_fixture_gate()
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_boundary_gate.json",
+        )
+        self.assertEqual(gate["current_priority"], "review_verilator_native_option_parser_direct_command_path_fixture_gate")
+        self.assertEqual(
+            gate["required_next_gate"]["name"],
+            "review_verilator_native_option_parser_direct_command_path_fixture_gate",
+        )
+        fixture = gate["fixture_contract"]
+        self.assertEqual(fixture["fixture_kind"], "importable_helper_contract_not_public_cli")
+        self.assertEqual(fixture["implementation_status"], "not_implemented_by_this_gate")
+        self.assertFalse(fixture["native_verilator_source_tree_required"])
+        self.assertEqual(
+            fixture["candidate_module"],
+            "src/tools/verilator_native_option_parser_direct_command_path_fixture.py",
+        )
+        accepted = fixture["accepted_minimal_case"]
+        self.assertEqual(accepted["expected_shape"], "64x1")
+        self.assertEqual(accepted["expected_state_count"], 64)
+        self.assertEqual(accepted["expected_step_count"], 1)
+        self.assertTrue(accepted["ordinary_verilator_args_must_be_preserved"])
+        self.assertTrue(accepted["command_must_not_execute"])
+        self.assertIn("--sim-accel", accepted["argv"])
+        self.assertIn("--sim-accel-states", accepted["argv"])
+        self.assertIn("--sim-accel-steps", accepted["argv"])
+
+    def test_direct_command_path_fixture_definition_keeps_sidecar_boundary_reference_only(self) -> None:
+        gate = self.read_direct_command_path_fixture_gate()
+        fixture = gate["fixture_contract"]
+
+        self.assertIn("ordinary_verilator_args", fixture["required_input_payload_fields"])
+        self.assertIn("source_files", fixture["required_input_payload_fields"])
+        self.assertIn("filelists", fixture["required_input_payload_fields"])
+        self.assertIn("sidecar_plan_boundary", fixture["required_output_payload_fields"])
+        self.assertEqual(
+            fixture["required_explicit_sidecar_context"],
+            [
+                "target",
+                "mode",
+                "template_or_target_registry_entry",
+                "source_gate_or_manifest_ref",
+            ],
+        )
+        self.assertIn("sidecar_context", fixture["required_output_payload_fields"])
+        self.assertIn("execution_performed", fixture["required_output_payload_fields"])
+        self.assertEqual(fixture["output_payload_rules"]["status"], "fixture_contract_ready_for_sidecar_plan_boundary")
+        self.assertIn("must not execute", fixture["output_payload_rules"]["sidecar_plan_boundary"])
+        self.assertEqual(
+            fixture["output_payload_rules"]["correctness_policy_ref_status"],
+            "later_sidecar_compare_policy_only_not_fixture_evidence",
+        )
+        self.assertFalse(fixture["output_payload_rules"]["execution_performed"])
+        self.assertFalse(fixture["output_payload_rules"]["measurement_performed"])
+        self.assertFalse(fixture["output_payload_rules"]["timing_measured"])
+        self.assertFalse(fixture["output_payload_rules"]["runtime_or_abi_changed"])
+        self.assertFalse(fixture["output_payload_rules"]["source_closure_inferred"])
+        self.assertFalse(fixture["output_payload_rules"]["filelists_expanded"])
+        self.assertFalse(fixture["output_payload_rules"]["automatic_gpu_allocation_used"])
+        self.assertIn("source_closure_authority", fixture["sidecar_plan_boundary_required_fields"])
+        self.assertIn("host_probe_build_metadata_ref", fixture["sidecar_plan_boundary_required_fields"])
+        self.assertEqual(
+            fixture["required_stage_order"],
+            [
+                "verilator_build",
+                "host_probe_build",
+                "cpu_init_state",
+                "cpu_reference_output",
+                "gpu_artifact_build",
+                "hybrid_sidecar_run",
+                "coverage_output_compare",
+            ],
+        )
+        self.assertIn("source closure expansion", fixture["must_not_call_or_infer"])
+        self.assertIn("coverage_output_equivalence compare execution", fixture["must_not_call_or_infer"])
+        self.assertIn("automatic optimal GPU allocation", fixture["must_not_call_or_infer"])
+
+    def test_direct_command_path_fixture_definition_forces_fail_closed_cases(self) -> None:
+        gate = self.read_direct_command_path_fixture_gate()
+        fixture = gate["fixture_contract"]
+        cases = {case["name"]: case for case in fixture["required_rejection_cases"]}
+
+        self.assertEqual(cases["reject_missing_states"]["expected_error_code"], "missing_sim_accel_shape_half")
+        self.assertEqual(cases["reject_missing_steps"]["expected_error_code"], "missing_sim_accel_shape_half")
+        self.assertEqual(cases["reject_nonpositive_states"]["expected_error_code"], "nonpositive_sim_accel_count")
+        self.assertEqual(cases["reject_mixed_compact_and_expanded_shape"]["expected_error_code"], "mixed_sim_accel_shape_spelling")
+        compact = cases["reject_compact_shape_only"]
+        self.assertEqual(compact["expected_error_code"], "compact_shape_spelling_outside_native_minimum")
+        self.assertIn("wrapper compatibility", compact["message_requirement"])
+        self.assertEqual(
+            cases["reject_missing_explicit_sidecar_context"]["expected_error_code"],
+            "missing_explicit_sidecar_context",
+        )
+        self.assertEqual(
+            cases["reject_prepopulated_sidecar_owned_fields"]["expected_error_code"],
+            "sidecar_owned_field_prepopulated_by_parser",
+        )
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["definition_only"])
+        self.assertTrue(policy["fixture_contract_only"])
+        self.assertFalse(policy["implementation_allowed_by_this_gate"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(policy["native_verilator_option_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["direct_verilator_command_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["coverage_output_equivalence_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["timing_or_speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["arbitrary_filelist_support_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone"])
+        self.assertIn("not direct Verilator command execution", gate["non_claims"])
+        self.assertIn("not timing or speedup evidence", gate["non_claims"])
 
 
 if __name__ == "__main__":
