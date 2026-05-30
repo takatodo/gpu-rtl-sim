@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "descriptor_name": "verilator_native_option_parser_sidecar_gpu_v5_048",
-  "source_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json",
+  "source_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
   "descriptor_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
   "upstream_repository_url": "https://github.com/verilator/verilator.git",
   "upstream_ref": "v5.048",
@@ -55,6 +55,8 @@
   },
   "patch_behavior": {
     "scope": "parse_store_and_validate_only",
+    "hunk_policy": "contextual_hunks_only",
+    "compile_fix_source_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
     "stores": [
       "m_simAccel",
       "m_simAccelStates",
@@ -70,6 +72,12 @@
       "--sim-accel requires both --sim-accel-states and --sim-accel-steps"
     ],
     "does_not_launch_sidecar_runtime": true
+  },
+  "compile_fix_anchor_policy": {
+    "zero_context_hunks_allowed": false,
+    "v3options_h_fields_and_accessors_inside_class": true,
+    "v3options_cpp_additions_inside_notify_and_parse_opts_list": true,
+    "positive_count_parser_anchor_requires_call_str_setter_prior_context": true
   },
   "apply_check_command": "git -C \"$VERILATOR_CHECKOUT\" apply --check \"$REPO_ROOT/overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch\"",
   "expected_apply_check_exit_code": 0,

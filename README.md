@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`implement_verilator_native_option_parser_overlay_patch_compile_fix_gate`
+`run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json`
+`config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_compile_fix_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -80,6 +80,7 @@ Commit cadence: keep commits small enough to review by one gate or one workflow 
 - Verilator native option parser overlay patch build-only validation run failed: `config/scaling_gates/run_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json` records `verilator_bin` reached and `make` exit code `2` due to `V3Options.h` patch placement after the header guard. The current task is defining the compile-fix boundary.
 - Verilator native option parser overlay patch compile-fix boundary defined: `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_compile_fix_gate.json` keeps the existing patch path, rejects zero-context hunks, and pins contextual anchors for `V3Options.h` plus `V3Options.cpp`. The current task is reviewing that boundary before changing the patch or rerunning `verilator_bin`.
 - Verilator native option parser overlay patch compile-fix boundary reviewed: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json` accepts the in-place contextual patch repair and advances the current task to `implement_verilator_native_option_parser_overlay_patch_compile_fix_gate`.
+- Verilator native option parser overlay patch compile-fix implemented: `config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_compile_fix_gate.json` records the contextual patch repair, descriptor validation, clean-checkout `git apply --check`, actual patch apply, and post-apply location sanity. `make verilator_bin` is intentionally deferred to `run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate`; this still adds no build success, parser behavior, execution, timing, arbitrary RTL/filelist, or automatic allocation claim.
 - Public reproduction smoke: `docs/results.md` lists the first dry-run commands to run before attempting full measurements.
 - Public release checklist: `docs/results.md` lists the final source-of-truth, path hygiene, smoke, evidence, non-claim, and contract-test checks before handoff.
 - Externalization readiness audit: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for externalization.
@@ -693,6 +694,7 @@ The paged-attention/KV-cache repeat-median public-pack boundary is complete. The
 - Verilator native option parser overlay patch build-only validation run failed at compile: `config/scaling_gates/run_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json` records descriptor/apply-check success, checkout-local `VERILATOR_INSTALL`, `verilator_bin` reached, and `make` exit code `2` because `V3Options.h` additions landed after `#endif  // guard`. The current task is `define_verilator_native_option_parser_overlay_patch_compile_fix_gate`; this is not parser behavior, execution, timing, or arbitrary RTL/filelist evidence.
 - Verilator native option parser overlay patch compile-fix boundary defined: `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_compile_fix_gate.json` advances the current task to `review_verilator_native_option_parser_overlay_patch_compile_fix_gate`.
 - Verilator native option parser overlay patch compile-fix boundary review accepted: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json` advances the current task to `implement_verilator_native_option_parser_overlay_patch_compile_fix_gate`.
+- Verilator native option parser overlay patch compile-fix implemented: `config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_compile_fix_gate.json` advances the current task to `run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate`.
 - config-generation validation breadth execution and subsequent candidate measurement/publication gates are summarized by `config/selection.json`, `docs/status.md`, and the tracked public-pack manifest instead of being listed here one gate file at a time
 - local candidate gate files under `records/scaling_gates/` are not public-pack source of truth until they are intentionally tracked and included by `python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run`
 - previous paged-attention/KV-cache dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`

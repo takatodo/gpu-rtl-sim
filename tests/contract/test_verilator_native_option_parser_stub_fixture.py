@@ -81,6 +81,12 @@ OVERLAY_PATCH_COMPILE_FIX_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json"
 )
+OVERLAY_PATCH_COMPILE_FIX_IMPLEMENTATION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "implement_verilator_native_option_parser_overlay_patch_compile_fix_gate.json"
+)
 OVERLAY_DESCRIPTOR_FILE = (
     REPO_ROOT
     / "overlays"
@@ -442,7 +448,7 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
 
         self.assertEqual(
             descriptor["source_gate"],
-            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_descriptor_apply_check_gate.json",
+            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
         )
         self.assertEqual(descriptor["upstream_ref"], "v5.048")
         self.assertEqual(descriptor["upstream_commit"], "d0aa828c217410fffc73d92077b6f4f54830357c")
@@ -458,7 +464,14 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(descriptor["allowed_touched_files"], ["src/V3Options.h", "src/V3Options.cpp"])
         self.assertEqual(descriptor["native_parser_option_surface"]["registration_visibility"], "undocumented")
         self.assertEqual(descriptor["patch_behavior"]["scope"], "parse_store_and_validate_only")
+        self.assertEqual(descriptor["patch_behavior"]["hunk_policy"], "contextual_hunks_only")
+        self.assertEqual(
+            descriptor["patch_behavior"]["compile_fix_source_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
+        )
         self.assertTrue(descriptor["patch_behavior"]["does_not_launch_sidecar_runtime"])
+        self.assertFalse(descriptor["compile_fix_anchor_policy"]["zero_context_hunks_allowed"])
+        self.assertTrue(descriptor["compile_fix_anchor_policy"]["v3options_h_fields_and_accessors_inside_class"])
         self.assertIn("src/V3OptionParser.cpp", descriptor["scope_exclusions"])
         self.assertIn("not upstream build or regression-test evidence", descriptor["non_claims"])
         self.assertIn("diff --git a/src/V3Options.cpp b/src/V3Options.cpp", patch_text)
@@ -690,6 +703,48 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(
             review["next_task"],
             "implement_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+        )
+
+    def test_overlay_patch_compile_fix_implementation_records_apply_and_location_sanity(self) -> None:
+        gate = json.loads(OVERLAY_PATCH_COMPILE_FIX_IMPLEMENTATION_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
+        )
+        payload = gate["implemented_payload"]
+        self.assertTrue(payload["descriptor_modified_by_this_gate"])
+        self.assertTrue(payload["patch_modified_by_this_gate"])
+        self.assertFalse(payload["vendored_verilator_source_added"])
+        repair = gate["patch_repair_summary"]
+        self.assertEqual(repair["hunk_policy"], "contextual_hunks_only")
+        self.assertTrue(repair["zero_context_hunks_removed"])
+        self.assertEqual(repair["allowed_touched_files"], ["src/V3Options.h", "src/V3Options.cpp"])
+        self.assertEqual(repair["observed_touched_files_after_apply"], ["src/V3Options.cpp", "src/V3Options.h"])
+        verification = gate["verification"]
+        self.assertEqual(verification["descriptor_validation_exit_code"], 0)
+        self.assertEqual(verification["apply_check_exit_code"], 0)
+        self.assertEqual(verification["apply_exit_code"], 0)
+        self.assertEqual(verification["location_sanity_exit_code"], 0)
+        self.assertIn("artifacts/", verification["generated_sanity_log"])
+        sanity = gate["post_apply_location_sanity"]
+        self.assertTrue(all(sanity.values()))
+        build = gate["build_only_validation_decision"]
+        self.assertFalse(build["make_verilator_bin_executed_by_this_gate"])
+        self.assertTrue(build["deferred_to_next_gate"])
+        self.assertEqual(
+            gate["required_next_gate"]["name"],
+            "run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
+        )
+        self.assertFalse(gate["acceptance_policy"]["verilator_build_success_claim_allowed_by_gate_alone"])
+        self.assertFalse(gate["acceptance_policy"]["parser_behavior_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            gate["next_task"],
+            "run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
         )
 
 

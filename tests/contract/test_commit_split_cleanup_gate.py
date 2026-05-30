@@ -190,13 +190,13 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         self.assertFalse(completion["acceptance_policy"]["new_execution_allowed_by_this_gate"])
         self.assertEqual(
             selection["current_priority"],
-            "implement_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+            "run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
+            "config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
         )
-        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 824)
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 825)
 
     def test_parser_boundary_definition_keeps_native_scope_parser_only(self) -> None:
         gate = self.read_parser_boundary_gate()
@@ -607,6 +607,10 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         )
         self.assertIn(
             "records/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/implement_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
             PUBLIC_PACK_ARCHIVE_PATHS,
         )
         self.assertIn(
