@@ -117,6 +117,12 @@ OVERLAY_PATCH_PARSER_BEHAVIOR_RUN_GATE = (
     / "scaling_gates"
     / "run_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json"
 )
+OVERLAY_PATCH_PARSER_BEHAVIOR_RUN_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_overlay_patch_parser_behavior_run_gate.json"
+)
 OVERLAY_DESCRIPTOR_FILE = (
     REPO_ROOT
     / "overlays"
@@ -1167,6 +1173,27 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
             "review_verilator_native_option_parser_overlay_patch_parser_behavior_run_gate",
         )
 
+    def test_overlay_patch_parser_behavior_run_review_selects_integer_hardening(self) -> None:
+        review = json.loads(OVERLAY_PATCH_PARSER_BEHAVIOR_RUN_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+        )
+        self.assertTrue(review["accepted_result"]["parser_behavior_smoke_passed"])
+        self.assertTrue(review["acceptance_policy"]["scoped_parser_behavior_smoke_result_accepted"])
+        self.assertTrue(review["acceptance_policy"]["next_parser_integer_hardening_definition_allowed"])
+        self.assertFalse(review["acceptance_policy"]["sidecar_handoff_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+        )
+        self.assertIn("64abc", " ".join(review["required_next_gate"]["candidate_inputs"]))
 
 if __name__ == "__main__":
     unittest.main()

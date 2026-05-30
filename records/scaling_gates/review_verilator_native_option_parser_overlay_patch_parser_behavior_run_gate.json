@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_overlay_patch_parser_behavior_run_gate",
+  "status": "accepted_verilator_native_option_parser_overlay_patch_parser_behavior_smoke_result",
+  "objective": "Review the built-binary parser-only smoke result for the repaired Verilator native option parser overlay patch, accept only the scoped option accept/reject behavior, and select the next handoff-boundary definition without claiming sidecar execution, timing, arbitrary RTL/filelist support, or automatic allocation.",
+  "source_run_gate": "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json",
+  "current_priority": "define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+  "review_decision": {
+    "accepted": true,
+    "weakest_point": "The smoke proves only that the repaired built Verilator binary accepts the selected expanded --sim-accel sidecar-gpu spellings and rejects the selected invalid parser cases on a generated trivial lint-only RTL input. It still does not observe V3Options accessor values directly, does not hand the parsed fields to a sidecar plan or runtime ABI, does not run an RTL simulation, does not measure timing, and does not infer arbitrary RTL/filelist dependencies or automatic GPU allocation.",
+    "accepted_because": [
+      "the source run gate is downstream of accepted descriptor/apply/location sanity, accepted verilator_bin compile/link evidence, and an accepted parser-behavior boundary",
+      "the reused generated verilator_bin provenance is recorded and the source build-run gate remains the reproducible authority",
+      "the VERILATOR_ROOT adjustment is recorded as a mechanical include-discovery workaround for a generated checkout-local build, not as canonical project state",
+      "both positive expanded shape classes, 64x1 and 1x64, exited 0",
+      "all six selected rejection cases exited nonzero with the expected diagnostic substrings",
+      "the generated smoke RTL and stderr/stdout logs live under artifacts and are explicitly non-canonical",
+      "the run gate keeps strict std::atoi suffix parsing, negative counts, compact shape spelling, sidecar handoff, runtime/ABI, RTL simulation, timing, and arbitrary filelist support as non-claims"
+    ]
+  },
+  "accepted_result": {
+    "validation_kind": "built_verilator_binary_option_parse_and_notify_smoke",
+    "binary_source": "reused_existing_generated_build_artifact",
+    "binary_rel": "artifacts/verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation/verilator-v5.048-patched/bin/verilator_bin",
+    "verilator_root_env_set_for_run": true,
+    "verilator_root_adjustment_accepted_as_mechanical": true,
+    "generated_smoke_rtl_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_behavior/sim_accel_smoke.sv",
+    "command_count": 8,
+    "positive_case_count": 2,
+    "rejection_case_count": 6,
+    "all_positive_cases_passed": true,
+    "all_rejection_cases_failed_as_expected": true,
+    "all_expected_diagnostics_matched": true,
+    "parser_behavior_smoke_passed": true,
+    "uses_generated_reports_as_source_of_truth": false,
+    "uses_generated_artifacts_as_source_of_truth": false
+  },
+  "accepted_claim_scope": {
+    "scoped_parser_only_smoke_result_accepted": true,
+    "expanded_sidecar_gpu_shape_spelling_acceptance_accepted": true,
+    "selected_invalid_parser_case_rejection_accepted": true,
+    "native_verilator_parser_support_accepted": false,
+    "strict_integer_token_parsing_accepted": false,
+    "sidecar_handoff_accepted": false,
+    "runtime_or_abi_integration_accepted": false,
+    "rtl_simulation_execution_accepted": false,
+    "coverage_output_equivalence_accepted": false,
+    "timing_or_speedup_evidence_accepted": false,
+    "arbitrary_rtl_or_filelist_support_accepted": false,
+    "automatic_gpu_allocation_accepted": false,
+    "upstream_regression_or_landing_accepted": false
+  },
+  "hardening_decision": {
+    "negative_count_inputs": {
+      "decision": "defer_without_blocking_next_handoff_boundary_definition",
+      "reason": "zero counts already exercised the patched positive-count error path; dash-prefixed negative values can interact with option-token parsing and should be defined before claiming stricter parser quality"
+    },
+    "non_numeric_suffix_inputs": {
+      "decision": "defer_as_known_std_atoi_gap",
+      "reason": "the overlay patch currently uses std::atoi, so suffix acceptance or truncation cannot be treated as strict integer validation"
+    },
+    "compact_shape_spelling": {
+      "decision": "keep_outside_native_minimum",
+      "reason": "the accepted native minimum is the expanded --sim-accel-states/--sim-accel-steps spelling"
+    }
+  },
+  "selected_next_workstream": {
+    "name": "define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+    "reason": "After the scoped parser-only smoke is accepted, the narrowest remaining parser weakness is that negative counts and std::atoi suffix behavior are not yet defined. This should be pinned before moving from parser smoke into sidecar handoff wiring or upstream-prep.",
+    "sidecar_handoff_not_selected_first": "sidecar handoff remains the next integration weakness, but it would broaden the boundary before the known parser-token hardening gaps have been defined"
+  },
+  "required_next_gate": {
+    "name": "define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+    "must_decide": [
+      "whether negative --sim-accel-states and --sim-accel-steps tokens must reject before any broader native-parser claim",
+      "whether non-numeric suffix inputs such as 64abc must reject, warn, or remain an explicit std::atoi limitation",
+      "whether hardening requires changing the existing overlay patch or can first be captured as an expected-failure definition",
+      "which exact built-binary smoke cases would prove the hardening boundary",
+      "whether sidecar handoff wiring remains deferred until the parser hardening result is reviewed"
+    ],
+    "candidate_inputs": [
+      "--sim-accel sidecar-gpu --sim-accel-states -1 --sim-accel-steps 1",
+      "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps -1",
+      "--sim-accel sidecar-gpu --sim-accel-states 64abc --sim-accel-steps 1",
+      "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1abc"
+    ],
+    "must_not_claim": [
+      "sidecar runtime or ABI integration",
+      "RTL simulation execution",
+      "coverage-output equivalence for a native-parser flow",
+      "strict integer-token parsing for std::atoi suffix inputs",
+      "Verilator upstream regression tests pass",
+      "the patch has landed upstream",
+      "arbitrary RTL or filelist support",
+      "automatic optimal GPU allocation",
+      "new simulation timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "source_run_gate_accepted": true,
+    "scoped_parser_behavior_smoke_result_accepted": true,
+    "verilator_root_mechanical_adjustment_accepted": true,
+    "next_parser_integer_hardening_definition_allowed": true,
+    "parser_behavior_executed_by_this_gate": false,
+    "new_build_executed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "native_verilator_parser_support_claim_allowed_by_gate_alone": false,
+    "unqualified_parser_behavior_claim_allowed_by_gate_alone": false,
+    "strict_integer_parsing_claim_allowed_by_gate_alone": false,
+    "sidecar_handoff_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "rtl_simulation_execution_allowed_by_this_gate": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "upstream_regression_success_claim_allowed_by_gate_alone": false,
+    "upstream_patch_landed_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+  "non_claims": [
+    "not unqualified native Verilator parser support",
+    "not strict integer parsing validation",
+    "not sidecar handoff validation",
+    "not sidecar runtime execution",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a native-parser flow",
+    "not a landed upstream Verilator patch",
+    "not Verilator regression-test success",
+    "not new simulation timing evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
