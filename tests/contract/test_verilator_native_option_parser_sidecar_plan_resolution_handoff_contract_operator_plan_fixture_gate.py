@@ -58,6 +58,12 @@ RUN_SIDECAR_EXECUTION_GATE = (
     / "scaling_gates"
     / "run_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_gate.json"
 )
+REVIEW_SIDECAR_EXECUTION_RUN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPlanFixtureGateTest(
@@ -89,6 +95,9 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
 
     def read_run_sidecar_execution_gate(self) -> dict[str, object]:
         return json.loads(RUN_SIDECAR_EXECUTION_GATE.read_text(encoding="utf-8"))
+
+    def read_review_sidecar_execution_run_gate(self) -> dict[str, object]:
+        return json.loads(REVIEW_SIDECAR_EXECUTION_RUN_GATE.read_text(encoding="utf-8"))
 
     def test_gate_records_importable_operator_plan_fixture(self) -> None:
         gate = self.read_gate()
@@ -668,6 +677,54 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
         )
         self.assertIn("not native Verilator option support", gate["non_claims"])
         self.assertIn("not timing or speedup evidence", gate["non_claims"])
+
+    def test_sidecar_execution_run_review_accepts_only_scoped_result(self) -> None:
+        review = self.read_review_sidecar_execution_run_gate()
+
+        self.assertEqual(
+            review["source_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_gate.json",
+        )
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_direct_command_path_boundary_gate",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        result = review["accepted_result"]
+        self.assertEqual(result["target"], "pulp_ita_mha")
+        self.assertEqual(result["shape"], "64x1")
+        self.assertEqual(result["executed_stage_count"], 7)
+        self.assertEqual(result["selected_acceptance_policy"], "coverage_output_equivalence")
+        self.assertTrue(result["selected_acceptance_policy_passed"])
+        self.assertEqual(result["coverage_output_mismatch_count"], 0)
+        self.assertEqual(result["compared_state_pair_count"], 64)
+        self.assertEqual(result["compared_word_count"], 1856)
+        self.assertEqual(result["compared_byte_count"], 7424)
+        self.assertFalse(result["raw_full_state_equality_required"])
+
+    def test_sidecar_execution_run_review_claim_scope_stays_narrow(self) -> None:
+        review = self.read_review_sidecar_execution_run_gate()
+        scope = review["accepted_claim_scope"]
+        policy = review["acceptance_policy"]
+
+        self.assertTrue(scope["scoped_sidecar_execution_run_accepted"])
+        self.assertTrue(scope["coverage_output_equivalence_for_pulp_ita_mha_64x1_accepted"])
+        self.assertFalse(scope["direct_verilator_command_path_accepted"])
+        self.assertFalse(scope["native_verilator_option_support_accepted"])
+        self.assertFalse(scope["timing_or_speedup_evidence_accepted"])
+        self.assertFalse(scope["arbitrary_rtl_or_filelist_support_accepted"])
+        self.assertFalse(scope["automatic_gpu_allocation_accepted"])
+        self.assertTrue(policy["review_only"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["direct_verilator_command_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["timing_or_speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["arbitrary_filelist_support_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "define_verilator_native_option_parser_direct_command_path_boundary_gate",
+        )
+        self.assertIn("not command_argv runtime authority", review["non_claims"])
+        self.assertIn("not raw full-state equality", review["non_claims"])
 
 
 if __name__ == "__main__":

@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The repaired overlay patch now applies cleanly, passes post-apply location sanity, has accepted `verilator_bin` build-only evidence, reviewed parser-only smoke, reviewed rebuilt parser integer-hardening smoke, a reviewed native parser-to-adapter handoff boundary, a reviewed non-executing adapter fixture, a reviewed adapter-payload to sidecar plan-resolution boundary, an implemented non-executing plan-resolution fixture, a review accepting only the explicit-context template-plan fixture, a definition for status/readiness hardening, a review accepting that definition, an implementation of the in-place helper hardening, a review accepting that implementation, a definition of the ready-only handoff-contract metadata boundary, a review accepting that boundary, an implemented non-executing handoff-contract metadata fixture, an accepted implementation review after adding the explicit `efficiency_estimate_invoked` guard, a defined command/operator-plan metadata boundary, a review accepting that boundary, an implemented importable operator-plan fixture, a review accepting that fixture as metadata only, a defined hardening boundary for bool/int validation plus the `efficiency_estimate` non-timing claim, a review accepting that hardening definition, an in-place implementation of the hardening, a review accepting that implementation, a definition of the first execution boundary, a review accepting that boundary, and a scoped sidecar execution run. The weak point is reviewing that run without turning it into a broad native Verilator, timing, arbitrary filelist, or automatic allocation claim.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The repaired overlay patch now applies cleanly, passes post-apply location sanity, has accepted `verilator_bin` build-only evidence, reviewed parser-only smoke, reviewed rebuilt parser integer-hardening smoke, a reviewed native parser-to-adapter handoff boundary, a reviewed non-executing adapter fixture, a reviewed adapter-payload to sidecar plan-resolution boundary, an implemented non-executing plan-resolution fixture, a review accepting only the explicit-context template-plan fixture, a definition for status/readiness hardening, a review accepting that definition, an implementation of the in-place helper hardening, a review accepting that implementation, a definition of the ready-only handoff-contract metadata boundary, a review accepting that boundary, an implemented non-executing handoff-contract metadata fixture, an accepted implementation review after adding the explicit `efficiency_estimate_invoked` guard, a defined command/operator-plan metadata boundary, a review accepting that boundary, an implemented importable operator-plan fixture, a review accepting that fixture as metadata only, a defined hardening boundary for bool/int validation plus the `efficiency_estimate` non-timing claim, a review accepting that hardening definition, an in-place implementation of the hardening, a review accepting that implementation, a definition of the first execution boundary, a review accepting that boundary, a scoped sidecar execution run, and a review accepting that run only as scoped sidecar build/run/compare evidence. The weak point is defining a direct native-Verilator command path without turning the accepted sidecar run into a broad native Verilator, timing, arbitrary filelist, or automatic allocation claim.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the accepted execution-boundary run after the non-executing importable fixture hardening.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is defining the direct command-path boundary after accepting the scoped sidecar execution run.
 
 Current priority:
 
-`review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate`
+`define_verilator_native_option_parser_direct_command_path_boundary_gate`
 
 Current gate:
 
-`config/scaling_gates/run_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_gate.json`
+`config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native parser-to-sidecar execution boundary**: Review the scoped sidecar execution run after accepted operator-plan fixture hardening, with timing and broad native claims still deferred.
+1. **Native parser direct command path**: Define how an eventual native Verilator option invocation enters the reviewed sidecar command path, with timing and broad native claims still deferred.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,7 +79,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Review the implemented hardening for the native Verilator option parser-to-sidecar handoff-contract-to-operator-plan metadata fixture after accepting scoped strict count-token parser smoke, the reviewed adapter boundary, the reviewed adapter fixture, the explicit-context plan-resolution definition, the reviewed non-executing plan-resolution fixture, the reviewed status/readiness hardening, the reviewed ready-only handoff-contract metadata boundary, the implementation gate, the fixture implementation review, the operator-plan boundary definition, the operator-plan boundary review, the operator-plan fixture implementation, the fixture implementation review, the hardening definition, the hardening review, and the hardening implementation.
+Define the direct native-Verilator command-path boundary after accepting the scoped sidecar execution run. The definition must explain how a future `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` invocation enters reviewed sidecar planning, while keeping source closure, generated evidence paths, compare policy, timing, arbitrary filelists, automatic allocation, and runtime/ABI claims outside the parser layer.
 
 Parser boundary definition:
 
@@ -133,7 +133,8 @@ Parser boundary definition:
 - parser-to-sidecar plan-resolution handoff-contract-to-operator-plan execution boundary definition gate: `config/scaling_gates/define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate.json`
 - parser-to-sidecar plan-resolution handoff-contract-to-operator-plan execution boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate.json`
 - parser-to-sidecar plan-resolution handoff-contract-to-operator-plan sidecar execution run gate: `config/scaling_gates/run_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_gate.json`
-- selected next gate: `review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate`
+- parser-to-sidecar plan-resolution handoff-contract-to-operator-plan sidecar execution run review gate: `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate.json`
+- selected next gate: `define_verilator_native_option_parser_direct_command_path_boundary_gate`
 - scope: update existing overlay patch in place before public CLI, sidecar support, simulation execution, or timing
 - defined native minimum: `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`
 - wrapper/shim compatibility kept out of native minimum: `--sim-accel-shape <NxS>`, target-first registry lookup, print modes, JSON operator plans, resident modes, and dataset-backed flows
@@ -399,7 +400,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
-- current next task: `review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate`
+- current next task: `define_verilator_native_option_parser_direct_command_path_boundary_gate`
 - reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
@@ -571,7 +572,7 @@ Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
 - active `config/` file count: `143`
-- tracked gate JSON records under `records/scaling_gates/`: `863`
+- tracked gate JSON records under `records/scaling_gates/`: `864`
 - compatibility link: `config/scaling_gates -> ../records/scaling_gates`
 - generated files under `reports/` and `artifacts/`: reproducible evidence only, never source of truth
 
@@ -741,26 +742,18 @@ Tracked evidence:
 
 Recommended next gate:
 
-`review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate`
+`define_verilator_native_option_parser_direct_command_path_boundary_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/run_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_gate.json` as the source artifact
-- verify the run used accepted ready operator-plan metadata and reviewed sidecar stage order before executing commands
-- verify the scoped `pulp_ita_mha 64x1` compare evidence passes `coverage_output_equivalence` without promoting native Verilator support, arbitrary filelists, automatic allocation, timing, speedup, or raw full-state equality
-- verify the `efficiency_estimate` claim boundary remains planning metadata only; existing-report-derived values are not new timing or speedup evidence from this gate
-- keep parser-preserved `source_files` and `filelists` as preserved inputs, not source-closure or dependency-inference authority
-- keep the accepted ready-only operator-plan fixture review as the source of metadata-scope evidence, not execution evidence
-- keep command execution, operator-plan execution, RTL execution, compare execution, timing, runtime/ABI, arbitrary filelist expansion, and automatic allocation out of scope
-- preserve `correctness_policy_ref` as a later sidecar policy reference, not native-parser output-equivalence evidence
-- keep compact shape, sidecar execution, runtime/ABI changes, and timing as deferred unless a later review expands scope
-- keep `--sim-accel-estimate-efficiency`, compact shape spelling, `src/V3OptionParser.*`, `src/VlcMain.cpp`, docs, and upstream `test_regress/t/` outside scope unless a new review expands scope
-- keep vendored Verilator source, execution, measurement, source closure inference, automatic allocation, and arbitrary RTL/filelist support out of scope
-- keep the accepted parser-only handoff fields tied to `coverage_output_equivalence`
-- preserve the two tracked `filelist_*` targets as evidence only, without claiming arbitrary filelist support
-- keep generated reports and artifacts non-canonical
-- add no parser implementation, measurement, runtime/ABI, arbitrary RTL, automatic allocation, GEM, production-serving, or raw full-state equality claim
-- keep arbitrary filelist planning, dependency inference, automatic allocation, resident optimization, and GEM comparison as deferred workstreams
+- use `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_sidecar_execution_run_gate.json` as the source artifact
+- define the exact minimum Verilator-facing spelling for direct sidecar GPU execution
+- decide whether the native path materializes a structured sidecar plan, invokes an existing wrapper, or writes an intermediate operator plan
+- keep parser-owned fields separate from sidecar-owned source closure, host-probe metadata, state/report paths, compare labels, and coverage-output target selection
+- keep parser-preserved `source_files` and `filelists` as preserved build inputs, not source-closure or dependency-inference authority
+- preserve `coverage_output_equivalence` as the later compare policy, not as evidence from a definition-only gate
+- define how dry-run, preflight, generated report paths, and generated artifact paths remain reviewable and non-canonical
+- add no command execution, new measurement, timing, speedup, runtime/ABI change, arbitrary filelist support, automatic allocation, GEM, production-serving, or raw full-state equality claim
 
 Deferred technical workstreams:
 
