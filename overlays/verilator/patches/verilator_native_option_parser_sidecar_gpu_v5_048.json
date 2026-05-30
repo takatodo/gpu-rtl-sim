@@ -57,6 +57,17 @@
     "scope": "parse_store_and_validate_only",
     "hunk_policy": "contextual_hunks_only",
     "compile_fix_source_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
+    "parser_integer_hardening_source_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json",
+    "positive_count_parser": {
+      "implementation": "manual_full_token_decimal_digit_validation",
+      "rejects_empty": true,
+      "rejects_negative": true,
+      "rejects_plus_prefixed": true,
+      "rejects_zero": true,
+      "rejects_suffix_bearing_values": true,
+      "rejects_int_overflow": true,
+      "replaces_std_atoi_prefix_parsing": true
+    },
     "stores": [
       "m_simAccel",
       "m_simAccelStates",

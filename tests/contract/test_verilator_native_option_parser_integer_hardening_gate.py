@@ -16,6 +16,26 @@ REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json"
 )
+IMPLEMENTATION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json"
+)
+DESCRIPTOR = (
+    REPO_ROOT
+    / "overlays"
+    / "verilator"
+    / "patches"
+    / "verilator_native_option_parser_sidecar_gpu_v5_048.json"
+)
+PATCH = (
+    REPO_ROOT
+    / "overlays"
+    / "verilator"
+    / "patches"
+    / "verilator_native_option_parser_sidecar_gpu_v5_048.patch"
+)
 
 
 class VerilatorNativeOptionParserIntegerHardeningGateTest(unittest.TestCase):
@@ -24,6 +44,9 @@ class VerilatorNativeOptionParserIntegerHardeningGateTest(unittest.TestCase):
 
     def read_review_gate(self) -> dict[str, object]:
         return json.loads(REVIEW_GATE.read_text(encoding="utf-8"))
+
+    def read_implementation_gate(self) -> dict[str, object]:
+        return json.loads(IMPLEMENTATION_GATE.read_text(encoding="utf-8"))
 
     def test_definition_selects_strict_integer_hardening_boundary(self) -> None:
         gate = self.read_gate()
@@ -109,6 +132,55 @@ class VerilatorNativeOptionParserIntegerHardeningGateTest(unittest.TestCase):
         self.assertEqual(
             review["next_task"],
             "implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+        )
+
+    def test_implementation_replaces_prefix_parsing_and_selects_run_gate(self) -> None:
+        gate = self.read_implementation_gate()
+        descriptor = json.loads(DESCRIPTOR.read_text(encoding="utf-8"))
+        patch_text = PATCH.read_text(encoding="utf-8")
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+        )
+        self.assertEqual(
+            descriptor["source_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
+        )
+
+        parser = descriptor["patch_behavior"]["positive_count_parser"]
+        self.assertEqual(
+            descriptor["patch_behavior"]["parser_integer_hardening_source_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json",
+        )
+        self.assertEqual(parser["implementation"], "manual_full_token_decimal_digit_validation")
+        self.assertTrue(parser["rejects_suffix_bearing_values"])
+        self.assertTrue(parser["rejects_int_overflow"])
+        self.assertTrue(parser["replaces_std_atoi_prefix_parsing"])
+
+        self.assertIn("parsePositiveSimAccelCount", patch_text)
+        self.assertIn("std::isdigit(static_cast<unsigned char>(*cp))", patch_text)
+        self.assertIn("214748364", patch_text)
+        self.assertNotIn("std::atoi", patch_text)
+
+        verification = gate["verification"]
+        self.assertEqual(verification["descriptor_validation_exit_code"], 0)
+        self.assertEqual(verification["apply_check_exit_code"], 0)
+        self.assertEqual(verification["apply_exit_code"], 0)
+        self.assertEqual(verification["changed_files_after_apply"], ["src/V3Options.cpp", "src/V3Options.h"])
+
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["std_atoi_replaced_for_sim_accel_count_parser"])
+        self.assertFalse(policy["build_executed_by_this_gate"])
+        self.assertFalse(policy["hardening_smoke_executed_by_this_gate"])
+        self.assertFalse(policy["strict_integer_parsing_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            gate["next_task"],
+            "run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
         )
 
 

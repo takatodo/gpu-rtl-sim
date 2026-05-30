@@ -21,14 +21,28 @@ index 6736434f..e52f82f7 100644
 +
      // m_build, m_preprocOnly, m_dpiHdrOnly, m_lintOnly, and m_jsonOnly are mutually
      // exclusive
-@@ -1189,6 +1201,14 @@ void V3Options::parseOptsList(FileLine* fl, const string& optdir, int argc,
+@@ -1189,6 +1201,28 @@ void V3Options::parseOptsList(FileLine* fl, const string& optdir, int argc,
      const auto callStrSetter = [this](void (V3Options::*cbStr)(const string&)) {
          return [this, cbStr](const string& v) { (this->*cbStr)(v); };
      };
 +    const auto parsePositiveSimAccelCount = [fl](const char* optp, const char* valp) {
-+        int val = std::atoi(valp);
-+        if (val <= 0) {
-+            fl->v3error(optp << " requires a positive integer, but '" << valp << "' was passed");
++        const char* const textp = valp ? valp : "";
++        bool valid = textp[0] != '\0';
++        int val = 0;
++        for (const char* cp = textp; valid && *cp; ++cp) {
++            if (!std::isdigit(static_cast<unsigned char>(*cp))) {
++                valid = false;
++                break;
++            }
++            const int digit = *cp - '0';
++            if (val > 214748364 || (val == 214748364 && digit > 7)) {
++                valid = false;
++                break;
++            }
++            val = (val * 10) + digit;
++        }
++        if (!valid || val <= 0) {
++            fl->v3error(optp << " requires a positive integer, but '" << textp << "' was passed");
 +            val = 1;
 +        }
 +        return val;
@@ -36,7 +50,7 @@ index 6736434f..e52f82f7 100644
      // Usage
      // DECL_OPTION("-option", action, pointer_or_lambda);
      // action: one of Set, OnOff, CbCall, CbOnOff, CbVal, CbPartialMatch, and CbPartialMatchVal
-@@ -1725,5 +1745,19 @@ void V3Options::parseOptsList(FileLine* fl, const string& optdir, int argc,
+@@ -1725,5 +1759,19 @@ void V3Options::parseOptsList(FileLine* fl, const string& optdir, int argc,
      });
      DECL_OPTION("-sched-zero-delay", OnOff, &m_schedZeroDelay);
 +    DECL_OPTION("-sim-accel", CbVal, [this, fl](const char* valp) {
