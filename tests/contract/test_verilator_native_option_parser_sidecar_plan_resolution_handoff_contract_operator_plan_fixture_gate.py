@@ -10,6 +10,12 @@ GATE = (
     / "scaling_gates"
     / "implement_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_gate.json"
 )
+REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_implementation_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPlanFixtureGateTest(
@@ -17,6 +23,9 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
 ):
     def read_gate(self) -> dict[str, object]:
         return json.loads(GATE.read_text(encoding="utf-8"))
+
+    def read_review_gate(self) -> dict[str, object]:
+        return json.loads(REVIEW_GATE.read_text(encoding="utf-8"))
 
     def test_gate_records_importable_operator_plan_fixture(self) -> None:
         gate = self.read_gate()
@@ -147,6 +156,58 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
         self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone"])
         self.assertIn("not operator-plan execution", gate["non_claims"])
         self.assertIn("not timing or speedup evidence", gate["non_claims"])
+
+    def test_review_gate_accepts_metadata_only_fixture(self) -> None:
+        review = self.read_review_gate()
+
+        self.assertEqual(
+            review["source_implementation_gate"],
+            "config/scaling_gates/implement_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate",
+        )
+        implementation = review["accepted_implementation"]
+        self.assertEqual(implementation["module"], "src/tools/verilator_native_option_parser_sidecar_operator_plan.py")
+        self.assertEqual(implementation["primary_entrypoint_function"], "resolve_handoff_contract_to_operator_plan")
+        self.assertTrue(implementation["ready_only"])
+        self.assertTrue(implementation["metadata_only"])
+        self.assertFalse(implementation["new_public_cli_added"])
+        self.assertFalse(implementation["new_execution_added"])
+        self.assertTrue(implementation["line_guard_compliant"])
+        self.assertFalse(implementation["complete_adversarial_mapping_schema_validation"])
+
+    def test_review_gate_keeps_hardening_boundary_open(self) -> None:
+        review = self.read_review_gate()
+        metadata = review["accepted_ready_metadata"]
+
+        self.assertTrue(metadata["command_synthesis_invoked"])
+        self.assertTrue(metadata["operator_plan_invoked"])
+        self.assertTrue(metadata["efficiency_estimate_invoked"])
+        self.assertFalse(metadata["execution_performed"])
+        self.assertFalse(metadata["measurement_performed"])
+        self.assertFalse(metadata["timing_measured"])
+        self.assertFalse(metadata["runtime_or_abi_changed"])
+        self.assertFalse(metadata["source_closure_inferred"])
+        self.assertFalse(metadata["filelists_expanded"])
+        self.assertFalse(metadata["automatic_gpu_allocation_used"])
+        self.assertIn("not new measured timing", metadata["estimate_metadata_boundary"])
+        gaps = review["known_hardening_gaps"]
+        self.assertTrue(gaps["bool_is_not_rejected_by_positive_int_checks"])
+        self.assertFalse(gaps["adversarial_mapping_schema_validation_complete"])
+        self.assertTrue(gaps["efficiency_estimate_object_may_reference_existing_reports"])
+        self.assertFalse(gaps["efficiency_estimate_new_timing_evidence_allowed"])
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate",
+        )
+        self.assertFalse(review["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+        self.assertFalse(review["acceptance_policy"]["next_execution_boundary_definition_allowed"])
+        self.assertFalse(review["acceptance_policy"]["operator_plan_execution_claim_allowed_by_gate_alone"])
+        self.assertIn("not operator-plan execution", review["non_claims"])
+        self.assertIn("not complete adversarial Mapping schema validation", review["non_claims"])
 
 
 if __name__ == "__main__":
