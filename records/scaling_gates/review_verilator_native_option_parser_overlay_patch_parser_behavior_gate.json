@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+  "status": "accepted_verilator_native_option_parser_overlay_patch_parser_behavior_boundary",
+  "objective": "Review the defined built-binary parser-behavior boundary for the repaired Verilator native option parser overlay patch and decide whether the next gate may execute that parser-only smoke without claiming sidecar execution, timing, arbitrary RTL/filelist support, or automatic allocation.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json",
+  "source_build_run_gate": "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate.json",
+  "current_priority": "run_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+  "review_decision": {
+    "accepted": true,
+    "weakest_point": "The accepted boundary can observe only built-binary option parsing and notify diagnostics through exit code and stderr on a generated trivial lint-only RTL input. It cannot observe V3Options accessor values directly, sidecar handoff, runtime ABI behavior, simulation execution, timing, arbitrary filelist planning, dependency inference, automatic allocation, upstream regression success, or upstream landing.",
+    "accepted_because": [
+      "the source definition is downstream of accepted descriptor/apply/location sanity and accepted verilator_bin compile/link evidence for the repaired overlay patch",
+      "the selected validation kind is limited to a built Verilator binary option-parse-and-notify smoke",
+      "the positive cases cover the two expanded spellings needed for state-parallel and repeated-step shape classes",
+      "the rejection cases cover unknown accelerator, missing accelerator, missing shape halves, and zero counts without broadening into runtime behavior",
+      "the generated trivial RTL input is sufficient for parser-only lint-mode execution and is explicitly not source of truth",
+      "reusing the generated built binary is acceptable only when the source build gate remains the reproducible authority; otherwise the run gate must regenerate an equivalent build from recorded commands",
+      "strict std::atoi suffix behavior remains a known deferred gap rather than a parser-quality claim"
+    ]
+  },
+  "accepted_boundary": {
+    "validation_kind": "built_verilator_binary_option_parse_and_notify_smoke",
+    "next_run_allowed": true,
+    "requires_verilator_source_in_repository": false,
+    "writes_under_third_party": false,
+    "uses_generated_reports_as_source_of_truth": false,
+    "uses_generated_artifacts_as_source_of_truth": false,
+    "generated_smoke_rtl_sufficient_for_parser_only": true,
+    "base_command_shape": [
+      "$VERILATOR_BIN",
+      "--lint-only",
+      "--timing",
+      "--top-module",
+      "sim_accel_smoke",
+      "$SMOKE_RTL"
+    ],
+    "source_binary_policy": {
+      "reuse_existing_generated_build_artifact_accepted": true,
+      "regenerate_equivalent_build_from_source_commands_accepted": true,
+      "binary_rel": "artifacts/verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation/verilator-v5.048-patched/bin/verilator_bin",
+      "source_build_run_gate": "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate.json",
+      "generated_binary_is_source_of_truth": false
+    },
+    "positive_case_names": [
+      "accept_sidecar_gpu_64x1",
+      "accept_sidecar_gpu_1x64"
+    ],
+    "rejection_case_names": [
+      "reject_unknown_accelerator",
+      "reject_shape_without_accelerator",
+      "reject_missing_states",
+      "reject_missing_steps",
+      "reject_zero_states",
+      "reject_zero_steps"
+    ],
+    "accepted_deferred_behavior": {
+      "negative_count_inputs": "deferred_to_parser_behavior_run_review_or_followup",
+      "non_numeric_suffix_inputs": "deferred_known_gap_due_to_std_atoi",
+      "compact_shape_spelling": "outside_native_minimum"
+    }
+  },
+  "required_next_gate": {
+    "name": "run_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+    "must_run_or_record": [
+      "locate the existing generated verilator_bin or regenerate an equivalent build from the source build-run gate commands",
+      "write the generated trivial RTL input under artifacts/verilator_native_option_parser_overlay_patch_parser_behavior/",
+      "run the two accepted positive expanded option cases through the built binary in lint-only mode",
+      "run the required rejection cases through the built binary and capture exit code plus expected stderr substrings",
+      "record whether the generated built binary was reused or regenerated",
+      "record all command exit codes and diagnostics without storing generated artifacts or reports as source of truth"
+    ],
+    "must_not_claim": [
+      "sidecar runtime or ABI integration",
+      "RTL simulation execution",
+      "coverage-output equivalence for a native-parser flow",
+      "strict integer-token parsing for std::atoi suffix inputs",
+      "Verilator upstream regression tests pass",
+      "the patch has landed upstream",
+      "arbitrary RTL or filelist support",
+      "automatic optimal GPU allocation",
+      "new simulation timing evidence"
+    ],
+    "review_after_run_must_decide": [
+      "whether all required positive and rejection cases passed",
+      "whether generated-binary reuse was acceptable or regeneration was needed",
+      "whether negative-count behavior should be promoted into a required hardening case",
+      "whether std::atoi suffix behavior should remain deferred or block further native-parser claims"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "definition_accepted": true,
+    "next_parser_behavior_run_allowed": true,
+    "parser_behavior_executed_by_this_gate": false,
+    "build_executed_by_this_gate": false,
+    "verilator_build_success_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_support_claim_allowed_by_gate_alone": false,
+    "parser_behavior_claim_allowed_by_gate_alone": false,
+    "strict_integer_parsing_claim_allowed_by_gate_alone": false,
+    "upstream_regression_success_claim_allowed_by_gate_alone": false,
+    "upstream_patch_landed_claim_allowed_by_gate_alone": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "run_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+  "non_claims": [
+    "not native Verilator parser support",
+    "not parser behavior validation",
+    "not strict integer parsing validation",
+    "not sidecar runtime execution",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a native-parser flow",
+    "not a landed upstream Verilator patch",
+    "not Verilator regression-test success",
+    "not new simulation timing evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

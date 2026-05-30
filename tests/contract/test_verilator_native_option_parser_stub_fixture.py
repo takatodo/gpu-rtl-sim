@@ -105,6 +105,12 @@ OVERLAY_PATCH_PARSER_BEHAVIOR_DEFINITION_GATE = (
     / "scaling_gates"
     / "define_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json"
 )
+OVERLAY_PATCH_PARSER_BEHAVIOR_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json"
+)
 OVERLAY_DESCRIPTOR_FILE = (
     REPO_ROOT
     / "overlays"
@@ -977,6 +983,87 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(
             gate["next_task"],
             "review_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+        )
+
+    def test_overlay_patch_parser_behavior_review_accepts_parser_only_run_boundary(self) -> None:
+        review = json.loads(OVERLAY_PATCH_PARSER_BEHAVIOR_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json",
+        )
+        self.assertEqual(
+            review["source_build_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("exit code and stderr", review["review_decision"]["weakest_point"])
+        self.assertEqual(
+            review["current_priority"],
+            "run_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+        )
+
+        boundary = review["accepted_boundary"]
+        self.assertEqual(
+            boundary["validation_kind"],
+            "built_verilator_binary_option_parse_and_notify_smoke",
+        )
+        self.assertTrue(boundary["next_run_allowed"])
+        self.assertFalse(boundary["requires_verilator_source_in_repository"])
+        self.assertFalse(boundary["writes_under_third_party"])
+        self.assertFalse(boundary["uses_generated_artifacts_as_source_of_truth"])
+        self.assertTrue(boundary["generated_smoke_rtl_sufficient_for_parser_only"])
+        self.assertEqual(
+            boundary["positive_case_names"],
+            ["accept_sidecar_gpu_64x1", "accept_sidecar_gpu_1x64"],
+        )
+        self.assertEqual(
+            boundary["rejection_case_names"],
+            [
+                "reject_unknown_accelerator",
+                "reject_shape_without_accelerator",
+                "reject_missing_states",
+                "reject_missing_steps",
+                "reject_zero_states",
+                "reject_zero_steps",
+            ],
+        )
+        binary_policy = boundary["source_binary_policy"]
+        self.assertTrue(binary_policy["reuse_existing_generated_build_artifact_accepted"])
+        self.assertTrue(binary_policy["regenerate_equivalent_build_from_source_commands_accepted"])
+        self.assertTrue(binary_policy["binary_rel"].startswith("artifacts/"))
+        self.assertFalse(binary_policy["generated_binary_is_source_of_truth"])
+        deferred = boundary["accepted_deferred_behavior"]
+        self.assertEqual(deferred["non_numeric_suffix_inputs"], "deferred_known_gap_due_to_std_atoi")
+        self.assertEqual(deferred["compact_shape_spelling"], "outside_native_minimum")
+
+        next_gate = review["required_next_gate"]
+        self.assertEqual(
+            next_gate["name"],
+            "run_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+        )
+        self.assertIn(
+            "run the two accepted positive expanded option cases through the built binary in lint-only mode",
+            next_gate["must_run_or_record"],
+        )
+        self.assertIn(
+            "strict integer-token parsing for std::atoi suffix inputs",
+            next_gate["must_not_claim"],
+        )
+        policy = review["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertTrue(policy["definition_accepted"])
+        self.assertTrue(policy["next_parser_behavior_run_allowed"])
+        self.assertFalse(policy["parser_behavior_executed_by_this_gate"])
+        self.assertFalse(policy["parser_behavior_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["native_verilator_parser_support_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["strict_integer_parsing_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(policy["arbitrary_filelist_support_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            review["next_task"],
+            "run_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
         )
 
 
