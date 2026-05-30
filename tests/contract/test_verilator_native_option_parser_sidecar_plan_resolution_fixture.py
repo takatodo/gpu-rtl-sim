@@ -85,6 +85,26 @@ class VerilatorNativeOptionParserSidecarPlanResolutionFixtureTest(unittest.TestC
         ):
             self.assertNotIn(field, resolved)
 
+    def assert_non_executing_handoff_contract_fixture(self, resolved: dict[str, object]) -> None:
+        self.assertTrue(resolved["sidecar_handoff_contract_invoked"])
+        self.assertFalse(resolved["command_synthesis_invoked"])
+        self.assertFalse(resolved["operator_plan_invoked"])
+        self.assertFalse(resolved["execution_performed"])
+        self.assertFalse(resolved["measurement_performed"])
+        self.assertFalse(resolved["timing_measured"])
+        self.assertFalse(resolved["runtime_or_abi_changed"])
+        self.assertFalse(resolved["source_closure_inferred"])
+        self.assertFalse(resolved["filelists_expanded"])
+        self.assertFalse(resolved["automatic_gpu_allocation_used"])
+        for field in (
+            "operator_plan",
+            "verilator_command",
+            "verilator_command_argv",
+            "timing",
+            "efficiency_estimate",
+        ):
+            self.assertNotIn(field, resolved)
+
     def test_implementation_gate_records_non_executing_fixture_scope(self) -> None:
         gate = json.loads(IMPLEMENTATION_GATE.read_text(encoding="utf-8"))
 
@@ -268,6 +288,131 @@ class VerilatorNativeOptionParserSidecarPlanResolutionFixtureTest(unittest.TestC
         self.assertIsNone(readiness["verilator_option_readiness_status"])
         self.assertFalse(readiness["ready_for_direct_verilator_option"])
         self.assertIn("not the template sidecar build/run/compare plan", readiness["not_ready_reason"])
+
+    def test_ready_plan_resolution_builds_handoff_contract_metadata_only(self) -> None:
+        (plan_resolution,) = _load_tool_modules("verilator_native_option_parser_sidecar_plan_resolution")
+        resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+            _adapter_payload(),
+            sidecar_context=_sidecar_context(),
+        )
+
+        handoff = plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+
+        self.assertEqual(
+            handoff["surface"],
+            "native_verilator_parser_sidecar_plan_resolution_handoff_contract_fixture",
+        )
+        self.assertEqual(handoff["status"], "ready_for_sidecar_handoff_contract_metadata")
+        self.assertEqual(handoff["input_surface"], "native_verilator_parser_sidecar_plan_resolution_fixture")
+        self.assertEqual(handoff["input_status"], "ready_for_verilator_option_shim")
+        self.assert_non_executing_handoff_contract_fixture(handoff)
+        self.assertEqual(handoff["correctness_policy_ref_status"], "reference_only_not_compare_evidence")
+        self.assertEqual(handoff["correctness_policy"], "coverage_output_equivalence")
+        self.assertTrue(handoff["parser_schedule_cross_check"]["shape_matches_handoff_contract"])
+
+        contract = handoff["handoff_contract"]
+        self.assertEqual(contract["shape"], "64x1")
+        self.assertEqual(contract["nstates"], 64)
+        self.assertEqual(contract["steps"], 1)
+        self.assertEqual(contract["state_authority"], "cpu_init_state_to_hybrid_candidate_dump")
+        self.assertIn("init_state", contract["state_files"])
+        self.assertIn("reference_dump", contract["state_files"])
+        self.assertIn("candidate_dump", contract["state_files"])
+        self.assertEqual(contract["compare"]["correctness_policy"], "coverage_output_equivalence")
+        self.assertIn("compare_report", contract["generated_reports"])
+
+    def test_not_ready_and_unsupported_results_fail_closed_before_handoff_contract(self) -> None:
+        (plan_resolution,) = _load_tool_modules("verilator_native_option_parser_sidecar_plan_resolution")
+        original = plan_resolution.sidecar_handoff_contract
+        calls = []
+
+        def fail_if_called(plan):
+            calls.append(plan)
+            raise AssertionError("sidecar_handoff_contract must not be called for not-ready results")
+
+        plan_resolution.sidecar_handoff_contract = fail_if_called
+        try:
+            for mode in ("resident-state-reuse", "persistent-resident-state-abi", "unknown-mode"):
+                context = _sidecar_context()
+                context["mode"] = mode
+                resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+                    _adapter_payload(),
+                    sidecar_context=context,
+                )
+                with self.subTest(mode=mode):
+                    closed = plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+                    self.assertEqual(
+                        closed["surface"],
+                        "native_verilator_parser_sidecar_plan_resolution_handoff_contract_fixture",
+                    )
+                    self.assertFalse(closed["handoff_contract_metadata_allowed"])
+                    self.assertFalse(closed["sidecar_handoff_contract_invoked"])
+                    self.assertIn(closed["status"], {
+                        "not_ready_for_sidecar_handoff_contract_metadata",
+                        "unsupported_for_sidecar_handoff_contract_metadata",
+                    })
+                    self.assertIn("not ready", closed["fail_closed_reason"])
+                    self.assertIn("stage_plan_status", closed)
+                    self.assertIn("plan_resolution_readiness", closed)
+                    self.assertNotIn("handoff_contract", closed)
+            self.assertEqual(calls, [])
+        finally:
+            plan_resolution.sidecar_handoff_contract = original
+
+    def test_handoff_contract_rejects_prepopulated_execution_fields(self) -> None:
+        (plan_resolution,) = _load_tool_modules("verilator_native_option_parser_sidecar_plan_resolution")
+        resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+            _adapter_payload(),
+            sidecar_context=_sidecar_context(),
+        )
+        resolved["handoff_contract"] = {"shape": "64x1"}
+
+        with self.assertRaisesRegex(plan_resolution.NativeParserSidecarPlanResolutionError, "already contains"):
+            plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+
+    def test_handoff_contract_rejects_shape_mismatch_before_metadata(self) -> None:
+        (plan_resolution,) = _load_tool_modules("verilator_native_option_parser_sidecar_plan_resolution")
+        resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+            _adapter_payload(),
+            sidecar_context=_sidecar_context(),
+        )
+        resolved["stage_plan"] = dict(resolved["stage_plan"])
+        resolved["stage_plan"]["shape"] = "1x64"
+
+        with self.assertRaisesRegex(plan_resolution.NativeParserSidecarPlanResolutionError, "does not match"):
+            plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+
+    def test_handoff_contract_validates_required_stage_details_before_calling_authority(self) -> None:
+        (plan_resolution,) = _load_tool_modules("verilator_native_option_parser_sidecar_plan_resolution")
+        resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+            _adapter_payload(),
+            sidecar_context=_sidecar_context(),
+        )
+        resolved["stage_plan"] = dict(resolved["stage_plan"])
+        copied_stages = []
+        for stage in resolved["stage_plan"]["stages"]:
+            stage_copy = dict(stage)
+            if stage_copy.get("stage") == "coverage_output_compare":
+                details = dict(stage_copy["details"])
+                details.pop("json_out")
+                stage_copy["details"] = details
+            copied_stages.append(stage_copy)
+        resolved["stage_plan"]["stages"] = copied_stages
+
+        original = plan_resolution.sidecar_handoff_contract
+        calls = []
+
+        def fail_if_called(plan):
+            calls.append(plan)
+            raise AssertionError("sidecar_handoff_contract must not be called before detail validation")
+
+        plan_resolution.sidecar_handoff_contract = fail_if_called
+        try:
+            with self.assertRaisesRegex(plan_resolution.NativeParserSidecarPlanResolutionError, "missing detail fields"):
+                plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+            self.assertEqual(calls, [])
+        finally:
+            plan_resolution.sidecar_handoff_contract = original
 
 
 if __name__ == "__main__":

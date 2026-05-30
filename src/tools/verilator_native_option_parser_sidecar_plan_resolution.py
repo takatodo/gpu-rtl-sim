@@ -15,6 +15,11 @@ from hybrid_benchmark_specs import (
     STATUS_READY_FOR_VERILATOR_OPTION_SHIM,
     STATUS_UNSUPPORTED_FOR_STAGE_PLAN,
 )
+from hybrid_benchmark_sidecar_operator import sidecar_handoff_contract
+from verilator_native_option_parser_sidecar_handoff_contract import (
+    HANDOFF_CONTRACT_FIXTURE_SURFACE,
+    resolve_plan_resolution_to_handoff_contract,
+)
 from verilator_native_option_parser_sidecar_handoff import (
     ADAPTER_SURFACE,
     CORRECTNESS_POLICY_REFERENCE_STATUS,
@@ -263,3 +268,15 @@ def resolve_native_parser_adapter_payload_to_sidecar_plan(
             "sidecar_handoff_contract, command synthesis, efficiency estimation, timing, and runtime ABI remain out of scope",
         ],
     }
+
+
+def resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(
+    plan_resolution: Mapping[str, object],
+) -> dict[str, object]:
+    """Build non-executing sidecar_handoff_contract metadata for a ready plan-resolution result."""
+
+    return resolve_plan_resolution_to_handoff_contract(
+        plan_resolution,
+        error_factory=NativeParserSidecarPlanResolutionError,
+        handoff_builder=sidecar_handoff_contract,
+    )
