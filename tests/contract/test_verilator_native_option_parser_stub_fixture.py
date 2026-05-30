@@ -99,6 +99,12 @@ OVERLAY_PATCH_COMPILE_FIX_BUILD_ONLY_VALIDATION_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate.json"
 )
+OVERLAY_PATCH_PARSER_BEHAVIOR_DEFINITION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "define_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json"
+)
 OVERLAY_DESCRIPTOR_FILE = (
     REPO_ROOT
     / "overlays"
@@ -874,6 +880,103 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(
             review["next_task"],
             "define_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+        )
+
+    def test_overlay_patch_parser_behavior_definition_pins_minimum_accept_reject_scope(self) -> None:
+        gate = json.loads(OVERLAY_PATCH_PARSER_BEHAVIOR_DEFINITION_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate.json",
+        )
+        self.assertEqual(
+            gate["source_build_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_compile_fix_build_only_validation_gate.json",
+        )
+        self.assertTrue(gate["definition_decision"]["accepted"])
+        self.assertIn("std::atoi", " ".join(gate["definition_decision"]["reason"]))
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+        )
+
+        boundary = gate["parser_behavior_boundary"]
+        self.assertEqual(
+            boundary["selected_validation_kind"],
+            "built_verilator_binary_option_parse_and_notify_smoke",
+        )
+        self.assertFalse(boundary["requires_verilator_source_in_repository"])
+        self.assertFalse(boundary["writes_under_third_party"])
+        self.assertFalse(boundary["uses_generated_artifacts_as_source_of_truth"])
+        self.assertTrue(boundary["allowed_binary_sources"][0]["binary_rel"].startswith("artifacts/"))
+        self.assertTrue(boundary["generated_smoke_rtl"]["suggested_rel"].startswith("artifacts/"))
+        self.assertIn("--lint-only", boundary["base_command_shape"])
+
+        positive = {case["name"]: case["argv_suffix"] for case in gate["required_positive_cases"]}
+        self.assertEqual(
+            positive["accept_sidecar_gpu_64x1"],
+            [
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+        )
+        self.assertEqual(
+            positive["accept_sidecar_gpu_1x64"],
+            [
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "1",
+                "--sim-accel-steps",
+                "64",
+            ],
+        )
+
+        rejection_names = {case["name"] for case in gate["required_rejection_cases"]}
+        self.assertEqual(
+            {
+                "reject_unknown_accelerator",
+                "reject_shape_without_accelerator",
+                "reject_missing_states",
+                "reject_missing_steps",
+                "reject_zero_states",
+                "reject_zero_steps",
+            },
+            rejection_names,
+        )
+        unknown = next(
+            case
+            for case in gate["required_rejection_cases"]
+            if case["name"] == "reject_unknown_accelerator"
+        )
+        self.assertIn("sidecar-gpu", unknown["expected_diagnostic_substrings"])
+
+        deferred = gate["explicitly_deferred_behavior"]
+        self.assertEqual(deferred["non_numeric_suffix_inputs"]["status"], "deferred_known_gap")
+        self.assertIn("std::atoi", deferred["non_numeric_suffix_inputs"]["reason"])
+        self.assertEqual(deferred["compact_shape_spelling"]["status"], "outside_native_minimum")
+
+        next_gate = gate["required_next_gate"]
+        self.assertEqual(
+            next_gate["name"],
+            "review_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
+        )
+        self.assertIn("std::atoi", " ".join(next_gate["must_decide"]))
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["definition_only"])
+        self.assertFalse(policy["parser_behavior_executed_by_this_gate"])
+        self.assertFalse(policy["native_verilator_parser_support_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["strict_integer_parsing_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(policy["arbitrary_filelist_support_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            gate["next_task"],
+            "review_verilator_native_option_parser_overlay_patch_parser_behavior_gate",
         )
 
 
