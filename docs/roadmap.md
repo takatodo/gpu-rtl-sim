@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The repaired overlay patch now applies cleanly, passes post-apply location sanity, has accepted `verilator_bin` build-only evidence, reviewed parser-only smoke, and reviewed rebuilt parser integer-hardening smoke. The weak point is defining the native parser-to-sidecar handoff boundary without treating parser evidence as sidecar execution, upstream acceptance, arbitrary filelist planning, dependency inference, automatic allocation, or a landed parser patch.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The repaired overlay patch now applies cleanly, passes post-apply location sanity, has accepted `verilator_bin` build-only evidence, reviewed parser-only smoke, and reviewed rebuilt parser integer-hardening smoke. The weak point is reviewing the newly defined native parser-to-adapter handoff boundary without treating parser evidence as sidecar execution, upstream acceptance, arbitrary filelist planning, dependency inference, automatic allocation, or a landed parser patch.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is defining the smallest native parser-to-sidecar handoff boundary after accepting scoped parser integer hardening.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the smallest native parser-to-adapter handoff boundary after accepting scoped parser integer hardening.
 
 Current priority:
 
-`define_verilator_native_option_parser_sidecar_handoff_boundary_gate`
+`review_verilator_native_option_parser_sidecar_handoff_boundary_gate`
 
 Current gate:
 
-`config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate.json`
+`config/scaling_gates/define_verilator_native_option_parser_sidecar_handoff_boundary_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native parser-to-sidecar handoff boundary**: Define the parsed-field handoff contract before any broader native parser support, upstream landing, sidecar execution, timing, or automatic allocation claim.
+1. **Native parser-to-sidecar handoff boundary**: Review the parsed-field adapter boundary before any broader native parser support, upstream landing, sidecar execution, timing, or automatic allocation claim.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,7 +79,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Define the native Verilator option parser-to-sidecar handoff boundary after accepting scoped strict count-token parser smoke.
+Review the native Verilator option parser-to-adapter handoff boundary after accepting scoped strict count-token parser smoke.
 
 Parser boundary definition:
 
@@ -106,11 +106,13 @@ Parser boundary definition:
 - parser-integer hardening implementation gate: `config/scaling_gates/implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json`
 - parser-integer hardening smoke run gate: `config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json`
 - parser-integer hardening smoke review gate: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate.json`
-- selected next gate: `define_verilator_native_option_parser_sidecar_handoff_boundary_gate`
+- parser-to-adapter handoff boundary gate: `config/scaling_gates/define_verilator_native_option_parser_sidecar_handoff_boundary_gate.json`
+- selected next gate: `review_verilator_native_option_parser_sidecar_handoff_boundary_gate`
 - scope: update existing overlay patch in place before public CLI, sidecar support, simulation execution, or timing
 - defined native minimum: `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`
 - wrapper/shim compatibility kept out of native minimum: `--sim-accel-shape <NxS>`, target-first registry lookup, print modes, JSON operator plans, resident modes, and dataset-backed flows
 - parser non-inference: coverage manifests, host-probe metadata, source closure, state paths, and report paths are sidecar handoff-contract fields, not parser-discovered fields
+- handoff boundary: native parser values stop at an adapter payload; the parser preserves ordinary Verilator build inputs and positive state/step schedule fields, while source closure, coverage target, state/report paths, host-probe metadata, and compare details remain sidecar-owned
 - dry-run result: 12 non-executing preview/rejection commands matched expected exits; the two static `filelist_*` targets expose `64x1`, the expanded future Verilator spelling, and `coverage_output_equivalence`; estimate mode is separate
 - accepted caveat: missing shape halves, mixed shape spelling, and non-positive counts reject through the shared mapper, but unknown accelerators currently reject at argparse choices
 - definition assigns unknown-accelerator validation to the parser-stub validation contract and records current argparse choices as wrapper compatibility only
@@ -364,7 +366,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
-- current next task: `define_verilator_native_option_parser_sidecar_handoff_boundary_gate`
+- current next task: `review_verilator_native_option_parser_sidecar_handoff_boundary_gate`
 - reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
@@ -706,13 +708,13 @@ Tracked evidence:
 
 Recommended next gate:
 
-`define_verilator_native_option_parser_sidecar_handoff_boundary_gate`
+`review_verilator_native_option_parser_sidecar_handoff_boundary_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate.json` as the source artifact
-- define the minimum parsed fields that become sidecar handoff input
-- decide whether the handoff targets the existing structured sidecar plan contract or a smaller native-parser adapter
+- use `config/scaling_gates/define_verilator_native_option_parser_sidecar_handoff_boundary_gate.json` as the source artifact
+- decide whether the minimum parsed fields are sufficient as a native-parser adapter payload
+- confirm that the adapter boundary targets the existing structured sidecar plan only after sidecar-owned fields are resolved
 - keep parser-owned validation separate from sidecar-owned source closure, state materialization, execution, and comparison
 - preserve ordinary Verilator args, `-Mdir`, top module, source files, filelists, defines, include dirs, and warning flags without claiming dependency inference
 - keep compact shape, sidecar execution, and timing as deferred unless a review expands scope

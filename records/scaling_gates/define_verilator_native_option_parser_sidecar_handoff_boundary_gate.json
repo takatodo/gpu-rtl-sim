@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_sidecar_handoff_boundary_gate",
+  "status": "defined_verilator_native_option_parser_sidecar_handoff_boundary",
+  "objective": "Define the smallest non-executing boundary that maps accepted native Verilator --sim-accel parser fields into a native-parser adapter before the existing sidecar plan contract, without claiming sidecar execution, runtime/ABI integration, timing, arbitrary RTL/filelist support, automatic allocation, upstream regression success, or upstream landing.",
+  "source_run_review_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate.json",
+  "source_parser_stub_fixture_implementation_gate": "config/scaling_gates/implement_verilator_native_option_parser_stub_fixture_gate.json",
+  "source_parser_stub_fixture_review_gate": "config/scaling_gates/review_verilator_native_option_parser_stub_fixture_implementation_gate.json",
+  "current_priority": "review_verilator_native_option_parser_sidecar_handoff_boundary_gate",
+  "definition_decision": {
+    "selected_surface": "native_parser_values_to_sidecar_plan_adapter_boundary",
+    "operator_goal": "A future Verilator-owned parser path should turn --sim-accel sidecar-gpu plus positive state/step counts and ordinary Verilator build inputs into a small native-parser adapter payload. The sidecar adapter, not the parser, should then resolve the existing inspectable sidecar plan and handoff contract that the wrapper and shim expose today.",
+    "weakest_point": "The parser now accepts and rejects the selected count tokens, but V3Options values are not yet connected to a sidecar plan adapter. Defining the adapter boundary is narrower than adding execution, timing, upstream regression tests, or arbitrary filelist dependency inference."
+  },
+  "native_parser_inputs": {
+    "accepted_accelerator": "sidecar-gpu",
+    "parser_field_candidates": [
+      "V3Options::simAccel()",
+      "V3Options::simAccelStates()",
+      "V3Options::simAccelSteps()"
+    ],
+    "required_expanded_options": [
+      "--sim-accel sidecar-gpu",
+      "--sim-accel-states <positive integer>",
+      "--sim-accel-steps <positive integer>"
+    ],
+    "ordinary_verilator_inputs_to_preserve": [
+      "--cc",
+      "--timing",
+      "-Mdir",
+      "--top-module",
+      "source files",
+      "-f filelists",
+      "defines",
+      "include dirs",
+      "warning flags",
+      "other ordinary Verilator args"
+    ],
+    "parser_input_non_goals": [
+      "--sim-accel-shape <NxS>",
+      "--sim-accel-estimate-efficiency",
+      "target-first registry lookup",
+      "operator print modes",
+      "JSON operator-plan convenience output",
+      "resident workflow orchestration",
+      "dataset-backed host preprocessing"
+    ]
+  },
+  "handoff_boundary": {
+    "selected_contract": "native_parser_adapter_payload_before_existing_sidecar_stage_plan",
+    "contract_modules": [
+      "src/tools/hybrid_benchmark_sidecar_plan.py",
+      "src/tools/hybrid_benchmark_sidecar_operator.py",
+      "src/tools/hybrid_benchmark_sidecar_details.py"
+    ],
+    "current_non_executing_compatibility_entrypoints": [
+      "src/tools/verilator_native_option_parser_stub_fixture.py::parse_verilator_native_option_stub",
+      "src/tools/verilator_sidecar_shim.py::shim_report",
+      "src/tools/hybrid_benchmark_sidecar_operator.py::sidecar_handoff_contract"
+    ],
+    "adapter_kind": "non_executing_native_parser_to_sidecar_plan_adapter_definition",
+    "adapter_not_implemented_by_this_gate": true,
+    "minimum_parser_owned_fields": [
+      "accelerator_mode",
+      "state_count",
+      "step_count",
+      "shape",
+      "ordinary_verilator_args"
+    ],
+    "minimum_preserved_verilator_build_fields": [
+      "mdir",
+      "top_module",
+      "source_files",
+      "filelists",
+      "defines",
+      "include_dirs",
+      "warning_flags"
+    ],
+    "minimum_sidecar_owned_fields_referenced_not_populated_by_parser": [
+      "source_boundary_status",
+      "state_and_report_naming_rules",
+      "coverage_output_target",
+      "coverage_output_gate_or_manifest_ref",
+      "host_probe_build_metadata_ref",
+      "state_authority",
+      "init_state_path_or_rule",
+      "reference_dump_path_or_rule",
+      "candidate_dump_path_or_rule",
+      "compare_report_path_or_rule",
+      "correctness_policy",
+      "non_claims"
+    ],
+    "minimum_adapter_payload_fields": [
+      "schema_version",
+      "surface",
+      "accelerator_mode",
+      "state_count",
+      "step_count",
+      "shape",
+      "ordinary_verilator_args",
+      "mdir",
+      "top_module",
+      "source_files",
+      "filelists",
+      "defines",
+      "include_dirs",
+      "warning_flags",
+      "source_boundary_status",
+      "state_and_report_naming_rules",
+      "correctness_policy",
+      "non_claims"
+    ],
+    "correctness_policy": "coverage_output_equivalence",
+    "source_boundary_status": "preserved_only_not_resolved",
+    "state_and_report_naming_rule": "deterministic_rules_or_explicit_unresolved_status_only",
+    "forbidden_parser_work": [
+      "target registry lookup",
+      "source closure expansion",
+      "filelist dependency inference",
+      "coverage manifest selection",
+      "coverage output word selection",
+      "host-probe builder selection",
+      "state file materialization",
+      "GPU artifact build orchestration",
+      "hybrid sidecar execution",
+      "coverage_output_equivalence comparison execution",
+      "efficiency estimate formatting",
+      "automatic GPU allocation"
+    ]
+  },
+  "first_review_scope": {
+    "review_kind": "definition_review_only",
+    "review_should_check": [
+      "that the handoff uses parser-owned schedule fields and preserved ordinary Verilator build inputs",
+      "that sidecar-owned source closure, coverage manifests, state paths, report paths, and compare policy are not inferred by the parser",
+      "that the selected contract reuses the existing sidecar stage plan and handoff contract instead of inventing a second sidecar plan shape",
+      "that compact shape spelling and estimate-efficiency remain out of the first native handoff boundary",
+      "that resident and dataset-backed paths remain not-ready for direct native-parser handoff"
+    ],
+    "candidate_followup_gate_after_review": "implement_verilator_native_option_parser_sidecar_handoff_fixture_gate",
+    "followup_gate_status": "candidate_only_not_selected_by_this_definition_alone"
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_sidecar_handoff_boundary_gate",
+    "must_decide": [
+      "whether the minimum parser-owned and preserved Verilator build fields are sufficient",
+      "whether the handoff should reuse the existing sidecar stage plan contract rather than a new native-only schema",
+      "whether sidecar-owned fields are correctly separated from parser-owned validation",
+      "whether compact shape spelling and estimate-efficiency should remain deferred",
+      "whether the next action may implement a non-executing handoff fixture or must refine the definition",
+      "whether the definition avoids execution, timing, arbitrary RTL/filelist support, automatic allocation, upstream regression, and upstream landing claims"
+    ],
+    "must_not_claim": [
+      "sidecar runtime or ABI integration",
+      "RTL simulation execution",
+      "coverage-output equivalence for a native-parser flow",
+      "Verilator upstream regression tests pass",
+      "the patch has landed upstream",
+      "arbitrary RTL or filelist support",
+      "automatic optimal GPU allocation",
+      "new simulation timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "handoff_boundary_defined": true,
+    "adapter_implemented_by_this_gate": false,
+    "new_build_executed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "native_verilator_parser_support_claim_allowed_by_gate_alone": false,
+    "sidecar_handoff_claim_allowed_by_gate_alone": false,
+    "rtl_simulation_execution_allowed_by_this_gate": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "upstream_regression_success_claim_allowed_by_gate_alone": false,
+    "upstream_patch_landed_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_sidecar_handoff_boundary_gate",
+  "non_claims": [
+    "not unqualified native Verilator parser support",
+    "not sidecar handoff validation",
+    "not sidecar runtime execution",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a native-parser flow",
+    "not a landed upstream Verilator patch",
+    "not Verilator regression-test success",
+    "not new simulation timing evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
