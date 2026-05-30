@@ -152,6 +152,27 @@ class VerilatorNativeOptionParserSidecarHandoffFixtureTest(unittest.TestCase):
         with self.assertRaises(sidecar_handoff.NativeParserSidecarHandoffError):
             sidecar_handoff.native_parser_values_to_sidecar_adapter_payload(parser_values)
 
+    def test_adapter_rejects_unexpected_correctness_policy_refs(self) -> None:
+        sidecar_handoff, parser_stub = _load_tool_modules(
+            "verilator_native_option_parser_sidecar_handoff",
+            "verilator_native_option_parser_stub_fixture",
+        )
+
+        parser_values = parser_stub.parse_verilator_native_option_stub(
+            [
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "1",
+                "--sim-accel-steps",
+                "1",
+            ]
+        )
+        parser_values["correctness_policy"] = "unexpected_policy"
+
+        with self.assertRaisesRegex(sidecar_handoff.NativeParserSidecarHandoffError, "correctness_policy"):
+            sidecar_handoff.native_parser_values_to_sidecar_adapter_payload(parser_values)
+
 
 if __name__ == "__main__":
     unittest.main()

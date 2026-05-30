@@ -53,7 +53,7 @@
     "adapter_source_surface": "preserve the parser-stub source surface",
     "ordinary_verilator_args": "preserve parser-stub ordinary Verilator arguments without semantic expansion",
     "filelists": "preserve -f inputs as filelist paths only; do not expand source closure",
-    "correctness_policy_ref": "coverage_output_equivalence",
+    "correctness_policy_ref": "coverage_output_equivalence; parser-supplied alternatives are rejected",
     "correctness_policy_reference_status": "adapter_default_reference_only_not_parser_populated_compare_evidence",
     "sidecar_owned_resolution_status": "unresolved_by_native_parser_adapter_fixture"
   },
@@ -97,12 +97,16 @@
     {
       "name": "reject_parser_values_that_already_contain_sidecar_outputs",
       "expected_error": "NativeParserSidecarHandoffError"
+    },
+    {
+      "name": "reject_unexpected_correctness_policy_refs",
+      "expected_error": "NativeParserSidecarHandoffError"
     }
   ],
   "verification": {
     "focused_contract_test_command": "python3 -m unittest tests.contract.test_verilator_native_option_parser_sidecar_handoff_fixture -q",
     "focused_contract_test_exit_code": 0,
-    "focused_contract_test_count": 4
+    "focused_contract_test_count": 5
   },
   "required_next_gate": {
     "name": "review_verilator_native_option_parser_sidecar_handoff_fixture_implementation_gate",

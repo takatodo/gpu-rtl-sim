@@ -85,6 +85,15 @@ def _copy_list(parser_handoff: Mapping[str, object], field: str) -> list[object]
     return list(value)
 
 
+def _correctness_policy_ref(parser_handoff: Mapping[str, object]) -> str:
+    value = parser_handoff.get("correctness_policy", CORRECTNESS_POLICY)
+    if value != CORRECTNESS_POLICY:
+        raise NativeParserSidecarHandoffError(
+            f"parser handoff correctness_policy must remain {CORRECTNESS_POLICY!r}; got {value!r}"
+        )
+    return CORRECTNESS_POLICY
+
+
 def build_native_parser_sidecar_handoff(parser_handoff: Mapping[str, object]) -> dict[str, object]:
     """Build the reviewed non-executing adapter payload from parser-stub output."""
 
@@ -110,7 +119,7 @@ def build_native_parser_sidecar_handoff(parser_handoff: Mapping[str, object]) ->
         "warning_flags": _copy_list(parser_handoff, "warning_flags"),
         "source_boundary_status": parser_handoff.get("source_boundary_status", SOURCE_BOUNDARY_STATUS),
         "state_and_report_naming_rules": _require(parser_handoff, "state_and_report_naming_rules"),
-        "correctness_policy_ref": parser_handoff.get("correctness_policy", CORRECTNESS_POLICY),
+        "correctness_policy_ref": _correctness_policy_ref(parser_handoff),
         "correctness_policy_reference_status": CORRECTNESS_POLICY_REFERENCE_STATUS,
         "sidecar_owned_resolution_status": SIDECAR_OWNED_RESOLUTION_STATUS,
         "unresolved_sidecar_responsibilities": list(UNRESOLVED_SIDECAR_RESPONSIBILITIES),
