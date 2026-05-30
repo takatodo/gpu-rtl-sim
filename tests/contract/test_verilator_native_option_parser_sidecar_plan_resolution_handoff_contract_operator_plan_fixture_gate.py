@@ -16,6 +16,12 @@ REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_implementation_gate.json"
 )
+HARDENING_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPlanFixtureGateTest(
@@ -26,6 +32,9 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
 
     def read_review_gate(self) -> dict[str, object]:
         return json.loads(REVIEW_GATE.read_text(encoding="utf-8"))
+
+    def read_hardening_gate(self) -> dict[str, object]:
+        return json.loads(HARDENING_GATE.read_text(encoding="utf-8"))
 
     def test_gate_records_importable_operator_plan_fixture(self) -> None:
         gate = self.read_gate()
@@ -208,6 +217,75 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
         self.assertFalse(review["acceptance_policy"]["operator_plan_execution_claim_allowed_by_gate_alone"])
         self.assertIn("not operator-plan execution", review["non_claims"])
         self.assertIn("not complete adversarial Mapping schema validation", review["non_claims"])
+
+    def test_hardening_gate_defines_bool_and_mapping_scope(self) -> None:
+        gate = self.read_hardening_gate()
+
+        self.assertEqual(
+            gate["source_fixture_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_implementation_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate",
+        )
+        hardening = gate["positive_integer_hardening"]
+        self.assertEqual(
+            hardening["existing_helper"],
+            "src/tools/verilator_native_option_parser_sidecar_operator_plan.py::_positive_int",
+        )
+        self.assertFalse(hardening["required_rejection"]["true_allowed"])
+        self.assertFalse(hardening["required_rejection"]["false_allowed"])
+        self.assertFalse(hardening["required_rejection"]["zero_allowed"])
+        self.assertFalse(hardening["required_rejection"]["negative_allowed"])
+        field_paths = {item["field_path"] for item in hardening["required_fields"]}
+        self.assertEqual(
+            field_paths,
+            {
+                "handoff_contract.nstates",
+                "handoff_contract.steps",
+                "stage_plan.phases",
+                "stage_plan.limit",
+                "stage_plan.stages[hybrid_sidecar_run].details.nstates",
+                "stage_plan.stages[hybrid_sidecar_run].details.steps",
+                "parser_schedule_cross_check.state_count",
+                "parser_schedule_cross_check.step_count",
+            },
+        )
+
+        mapping = gate["malformed_mapping_boundary"]
+        self.assertFalse(mapping["complete_adversarial_mapping_schema_validation_required"])
+        self.assertIn(
+            "bool nstates, steps, phases, limit, hybrid_sidecar_run nstates/steps, or parser_schedule_cross_check counts",
+            mapping["must_fail_before_authorities"],
+        )
+        self.assertIn(
+            "src/tools/hybrid_benchmark_efficiency.py::efficiency_estimate",
+            mapping["authorities_that_must_not_be_called_before_validation"],
+        )
+        self.assertIn("complete arbitrary Mapping schema validation", mapping["explicitly_not_required"])
+
+    def test_hardening_gate_keeps_estimate_and_execution_non_claims(self) -> None:
+        gate = self.read_hardening_gate()
+        estimate = gate["efficiency_estimate_boundary"]
+
+        self.assertEqual(estimate["metadata_status"], "non_executing_planning_metadata")
+        self.assertTrue(estimate["existing_report_values_allowed_as_references"])
+        self.assertFalse(estimate["new_timing_or_speedup_evidence_allowed"])
+        self.assertIn("not new measured timing", estimate["required_output_wording"])
+        self.assertEqual(
+            gate["required_next_gate"]["name"],
+            "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate",
+        )
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["definition_only"])
+        self.assertFalse(policy["implementation_allowed_by_this_gate"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["next_execution_boundary_definition_allowed"])
+        self.assertFalse(policy["timing_or_speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["complete_adversarial_mapping_schema_validation_claim_allowed_by_gate_alone"])
+        self.assertIn("not timing or speedup evidence", gate["non_claims"])
+        self.assertIn("not complete adversarial Mapping schema validation", gate["non_claims"])
 
 
 if __name__ == "__main__":

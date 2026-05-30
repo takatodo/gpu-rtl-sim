@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate",
+  "status": "defined_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening",
+  "objective": "Define the smallest hardening boundary for the non-executing native-parser handoff-contract-to-operator-plan fixture before any execution-boundary definition: reject bool values in positive-integer fields, fail closed for the scoped malformed Mapping cases before command or operator-plan authorities, and keep efficiency_estimate as planning metadata rather than new timing or speedup evidence.",
+  "source_fixture_review_gate": "config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_implementation_gate.json",
+  "current_priority": "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate",
+  "definition_decision": {
+    "defined": true,
+    "selected_surface": "native_parser_handoff_contract_to_operator_plan_fixture_hardening_boundary",
+    "weakest_point": "The accepted metadata-only operator-plan fixture uses positive integer checks that can accept bool because bool is an int subclass. The fixture also validates only the scoped ready handoff-contract shape and tested malformed/prepopulated cases, not arbitrary adversarial Mapping schemas. Finally, efficiency_estimate may include existing-report-derived values when reports already exist, so it must remain planning metadata and must not become new timing or speedup evidence from this gate.",
+    "operator_goal": "A future implementation may harden the existing importable helper in place, add focused contract tests for bool rejection and estimate-boundary wording, and keep the public wrapper thin while leaving command execution, operator-plan execution, RTL simulation, compare execution, measurement, timing, runtime/ABI, source-closure inference, arbitrary filelist expansion, and automatic allocation absent."
+  },
+  "positive_integer_hardening": {
+    "existing_helper": "src/tools/verilator_native_option_parser_sidecar_operator_plan.py::_positive_int",
+    "allowed_implementation_strategy": "reject bool explicitly before accepting int values",
+    "required_rejection": {
+      "bool_values_are_positive_ints": false,
+      "true_allowed": false,
+      "false_allowed": false,
+      "zero_allowed": false,
+      "negative_allowed": false,
+      "non_int_allowed": false
+    },
+    "required_fields": [
+      {
+        "field_path": "handoff_contract.nstates",
+        "reason": "feeds shape validation and command/operator-plan metadata"
+      },
+      {
+        "field_path": "handoff_contract.steps",
+        "reason": "feeds shape validation and command/operator-plan metadata"
+      },
+      {
+        "field_path": "stage_plan.phases",
+        "reason": "feeds efficiency_estimate phases with a default only when absent"
+      },
+      {
+        "field_path": "stage_plan.limit",
+        "reason": "optional integer passed to efficiency_estimate when present"
+      },
+      {
+        "field_path": "stage_plan.stages[hybrid_sidecar_run].details.nstates",
+        "reason": "feeds the synthesized sidecar command argv and shape cross-check"
+      },
+      {
+        "field_path": "stage_plan.stages[hybrid_sidecar_run].details.steps",
+        "reason": "feeds the synthesized sidecar command argv and shape cross-check"
+      },
+      {
+        "field_path": "parser_schedule_cross_check.state_count",
+        "reason": "must not rely on True == 1 equality when comparing parser schedule to handoff_contract.nstates"
+      },
+      {
+        "field_path": "parser_schedule_cross_check.step_count",
+        "reason": "must not rely on True == 1 equality when comparing parser schedule to handoff_contract.steps"
+      }
+    ],
+    "required_consistency_checks": [
+      "handoff_contract.shape must still equal nstates x steps after strict integer validation",
+      "parser_schedule_cross_check.state_count must still match handoff_contract.nstates",
+      "parser_schedule_cross_check.step_count must still match handoff_contract.steps",
+      "hybrid_sidecar_run nstates/steps must still match handoff_contract.shape"
+    ]
+  },
+  "malformed_mapping_boundary": {
+    "scope": "scoped_ready_handoff_contract_fixture_metadata_only",
+    "complete_adversarial_mapping_schema_validation_required": false,
+    "must_fail_before_authorities": [
+      "missing handoff_contract",
+      "handoff_contract not a mapping",
+      "missing handoff_contract nstates, steps, shape, state_files, compare, generated_reports, or non_claims",
+      "bool nstates, steps, phases, limit, hybrid_sidecar_run nstates/steps, or parser_schedule_cross_check counts",
+      "shape mismatch between handoff_contract and nstates/steps",
+      "stage_plan not a mapping",
+      "stage_plan readiness not ready_for_verilator_option_shim",
+      "missing required stage details",
+      "stage details that do not match handoff_contract state_files, compare, or generated_reports",
+      "prepopulated command, estimate, efficiency_estimate, operator_plan, or timing fields"
+    ],
+    "authorities_that_must_not_be_called_before_validation": [
+      "src/tools/hybrid_benchmark_sidecar_operator.py::synthesized_verilator_command_argv",
+      "src/tools/hybrid_benchmark_sidecar_operator.py::synthesized_verilator_estimate_command_argv",
+      "src/tools/hybrid_benchmark_efficiency.py::efficiency_estimate",
+      "src/tools/hybrid_benchmark_sidecar_operator.py::sidecar_operator_plan"
+    ],
+    "explicitly_not_required": [
+      "complete arbitrary Mapping schema validation",
+      "deep validation of every nested non-operator metadata object",
+      "support for unreviewed external handoff metadata shapes",
+      "validation of sidecar execution outputs"
+    ]
+  },
+  "efficiency_estimate_boundary": {
+    "authority": "src/tools/hybrid_benchmark_efficiency.py::efficiency_estimate",
+    "allowed": true,
+    "allowed_only_after_ready_validation": true,
+    "metadata_status": "non_executing_planning_metadata",
+    "existing_report_values_allowed_as_references": true,
+    "new_timing_or_speedup_evidence_allowed": false,
+    "required_output_wording": "efficiency_estimate is non-executing planning metadata; existing-report-derived values, if present, are not new measured timing or speedup evidence from this gate",
+    "must_not_claim": [
+      "new timing measurement",
+      "new speedup measurement",
+      "coverage-output equivalence",
+      "runtime execution",
+      "operator-plan execution"
+    ]
+  },
+  "allowed_implementation_scope": {
+    "primary_module": "src/tools/verilator_native_option_parser_sidecar_operator_plan.py",
+    "wrapper_module": "src/tools/verilator_native_option_parser_sidecar_plan_resolution.py",
+    "primary_entrypoint_function": "resolve_handoff_contract_to_operator_plan",
+    "in_place_helper_hardening_allowed": true,
+    "new_public_cli_allowed": false,
+    "command_synthesis_invoked_after_validation": true,
+    "operator_plan_invoked_after_validation": true,
+    "efficiency_estimate_invoked_after_validation": true,
+    "command_execution_allowed": false,
+    "operator_plan_execution_allowed": false,
+    "rtl_simulation_allowed": false,
+    "compare_execution_allowed": false,
+    "new_measurement_allowed": false,
+    "runtime_or_abi_change_allowed": false,
+    "source_closure_inference_allowed": false,
+    "filelist_expansion_allowed": false,
+    "automatic_gpu_allocation_allowed": false
+  },
+  "required_tests_for_next_implementation": [
+    "bool handoff_contract.nstates is rejected before command, estimate, efficiency, or operator-plan authorities",
+    "bool handoff_contract.steps is rejected before command, estimate, efficiency, or operator-plan authorities",
+    "bool hybrid_sidecar_run nstates and steps are rejected before command, estimate, efficiency, or operator-plan authorities",
+    "bool parser_schedule_cross_check state_count and step_count are rejected before command, estimate, efficiency, or operator-plan authorities",
+    "bool stage_plan.phases is rejected before efficiency_estimate",
+    "bool stage_plan.limit is rejected before efficiency_estimate",
+    "positive integer nstates, steps, and phases still pass for the accepted ready fixture",
+    "prepopulated operator-plan fields still reject before authorities",
+    "efficiency_estimate boundary wording says existing-report-derived values are not new measured timing or speedup evidence",
+    "closed not-ready and unsupported handoff metadata still avoid command, estimate, efficiency, and operator-plan authorities"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate",
+    "must_decide": [
+      "whether bool rejection for handoff-contract nstates/steps, stage-plan phases/limit, hybrid_sidecar_run nstates/steps, and parser schedule counts is the correct minimum hardening boundary",
+      "whether scoped malformed Mapping rejection is narrow enough without claiming complete adversarial schema validation",
+      "whether efficiency_estimate can remain non-executing planning metadata while explicitly excluding new timing or speedup evidence",
+      "whether the next implementation may harden only the existing helper and focused tests",
+      "whether execution-boundary definition remains deferred until after hardening implementation review"
+    ],
+    "must_not_claim": [
+      "native Verilator parser support",
+      "sidecar runtime handoff validation",
+      "command execution",
+      "operator-plan execution",
+      "RTL simulation execution",
+      "compare execution",
+      "coverage-output equivalence for a native-parser flow",
+      "timing or speedup evidence",
+      "complete adversarial Mapping schema validation",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic optimal GPU allocation"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "hardening_boundary_defined": true,
+    "implementation_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "sidecar_handoff_validation_claim_allowed_by_gate_alone": false,
+    "command_synthesis_execution_claim_allowed_by_gate_alone": false,
+    "operator_plan_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "complete_adversarial_mapping_schema_validation_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "next_execution_boundary_definition_allowed": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not sidecar runtime handoff validation",
+    "not command execution",
+    "not operator-plan execution",
+    "not RTL simulation execution",
+    "not compare execution",
+    "not coverage-output equivalence for a native-parser flow",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not timing or speedup evidence",
+    "not complete adversarial Mapping schema validation",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
