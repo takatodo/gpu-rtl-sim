@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate`
+`define_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_fixture_gate.json`
+`config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -123,6 +123,7 @@ Commit cadence: keep commits small enough to review by one gate or one workflow 
 - Verilator native option parser direct command-path fixture contract defined: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_fixture_gate.json` pins the future importable helper contract, accepted `64x1` expanded spelling, explicit sidecar context, sidecar-plan-boundary reference, and fail-closed cases before implementation. This still adds no helper implementation, native Verilator option support, direct command execution, timing, arbitrary filelist support, automatic allocation, runtime/ABI change, or raw full-state equality.
 - Verilator native option parser direct command-path fixture contract reviewed: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_gate.json` accepts the non-executing fixture contract and advances the current task to implementing the importable helper. The implementation must preserve ordinary Verilator inputs, require explicit sidecar context, return only reference-style sidecar-plan metadata, and still not claim native Verilator option support, direct command execution, timing, arbitrary filelist support, automatic allocation, runtime/ABI change, or raw full-state equality.
 - Verilator native option parser direct command-path fixture implemented: `config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_fixture_gate.json` adds `src/tools/verilator_native_option_parser_direct_command_path_fixture.py` as an importable non-executing helper. It accepts the reviewed expanded `sidecar-gpu 64x1` case, requires explicit sidecar context, returns reference-only sidecar-plan-boundary metadata, and still adds no native Verilator option support, direct command execution, timing, arbitrary filelist support, automatic allocation, runtime/ABI change, or raw full-state equality.
+- Verilator native option parser direct command-path fixture implementation reviewed: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate.json` accepts only the non-executing reference-boundary helper and records a required payload-validation hardening follow-up before materialization or execution. This still adds no native Verilator option support, sidecar stage materialization, direct command execution, timing, arbitrary filelist support, automatic allocation, runtime/ABI change, or raw full-state equality.
 - Public reproduction smoke: `docs/results.md` lists the first dry-run commands to run before attempting full measurements.
 - Public release checklist: `docs/results.md` lists the final source-of-truth, path hygiene, smoke, evidence, non-claim, and contract-test checks before handoff.
 - Externalization readiness audit: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for externalization.
@@ -781,6 +782,7 @@ The paged-attention/KV-cache repeat-median public-pack boundary is complete. The
 - Verilator native option parser direct command-path fixture contract defined: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_fixture_gate.json` advances the current task to `review_verilator_native_option_parser_direct_command_path_fixture_gate`.
 - Verilator native option parser direct command-path fixture contract reviewed: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_gate.json` advances the current task to `implement_verilator_native_option_parser_direct_command_path_fixture_gate`.
 - Verilator native option parser direct command-path fixture implemented: `config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_fixture_gate.json` advances the current task to `review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate`.
+- Verilator native option parser direct command-path fixture implementation reviewed: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate.json` advances the current task to `define_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate`.
 - config-generation validation breadth execution and subsequent candidate measurement/publication gates are summarized by `config/selection.json`, `docs/status.md`, and the tracked public-pack manifest instead of being listed here one gate file at a time
 - local candidate gate files under `records/scaling_gates/` are not public-pack source of truth until they are intentionally tracked and included by `python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run`
 - previous paged-attention/KV-cache dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`

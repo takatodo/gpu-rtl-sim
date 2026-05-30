@@ -13,6 +13,12 @@ IMPLEMENTATION_GATE = (
     / "scaling_gates"
     / "implement_verilator_native_option_parser_direct_command_path_fixture_gate.json"
 )
+REVIEW_IMPLEMENTATION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate.json"
+)
 
 BASE_DIRECT_ARGS = [
     "verilator",
@@ -89,6 +95,31 @@ class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase)
         self.assertFalse(implemented["sidecar_stage_plan_invoked"])
         self.assertFalse(implemented["new_execution_added"])
         self.assertFalse(gate["acceptance_policy"]["coverage_output_equivalence_claim_allowed_by_gate_alone"])
+
+    def test_review_gate_accepts_helper_but_requires_payload_validation_hardening(self) -> None:
+        review = json.loads(REVIEW_IMPLEMENTATION_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_implementation_gate"],
+            "config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_fixture_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate",
+        )
+        self.assertEqual(
+            review["accepted_followup_gap"]["name"],
+            "parser_payload_required_field_validation_gap",
+        )
+        self.assertFalse(
+            review["validated_implementation_decisions"]["parser_payload_required_identity_fields_are_strictly_validated"]
+        )
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "define_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate",
+        )
+        self.assertFalse(review["acceptance_policy"]["new_execution_allowed_by_this_gate"])
 
     def test_accepts_expanded_64x1_and_returns_reference_only_boundary(self) -> None:
         (fixture,) = _load_tool_modules("verilator_native_option_parser_direct_command_path_fixture")
