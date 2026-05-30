@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate",
+  "status": "defined_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary",
+  "objective": "Define the smallest execution boundary after accepted native-parser handoff-contract-to-operator-plan metadata hardening, while keeping this gate definition-only and avoiding command execution, operator-plan execution, RTL simulation, compare execution, measured timing, speedup, arbitrary filelist support, automatic GPU allocation, runtime/ABI change, or native Verilator support claims.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_implementation_gate.json",
+  "current_priority": "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate",
+  "definition_decision": {
+    "defined": true,
+    "selected_surface": "native_parser_operator_plan_metadata_to_reviewed_sidecar_execution_boundary",
+    "weakest_point": "The accepted operator-plan fixture can synthesize a direct-looking Verilator command, but the patched Verilator option path is still parser/metadata oriented and not wired into sidecar runtime execution. A later run gate therefore must execute only a reviewed sidecar build/run/compare sequence derived from accepted metadata, and must not treat command metadata or efficiency_estimate metadata as executed native Verilator support, timing, speedup, arbitrary filelist support, or automatic GPU allocation.",
+    "reason": [
+      "the previous review accepted strict bool/int validation before all command, estimate, efficiency, and operator-plan authorities",
+      "ready operator-plan metadata now has enough reviewed fields to define what a future execution boundary must validate",
+      "the execution boundary still needs explicit stage-order and source-of-truth rules before any command is executed",
+      "direct Verilator command metadata remains preview/planning metadata until a later run gate records actual execution evidence"
+    ]
+  },
+  "eligible_operator_plan_input_preconditions": {
+    "surface": "native_verilator_parser_sidecar_operator_plan_fixture",
+    "status": "ready_for_sidecar_operator_plan_metadata",
+    "operator_plan_metadata_allowed": true,
+    "input_surface": "native_verilator_parser_sidecar_plan_resolution_handoff_contract_fixture",
+    "input_status": "ready_for_sidecar_handoff_contract_metadata",
+    "correctness_policy": "coverage_output_equivalence",
+    "correctness_policy_ref_status": "reference_only_not_compare_evidence",
+    "command_synthesis_invoked": true,
+    "operator_plan_invoked": true,
+    "efficiency_estimate_invoked": true,
+    "execution_performed": false,
+    "measurement_performed": false,
+    "timing_measured": false,
+    "runtime_or_abi_changed": false,
+    "source_closure_inferred": false,
+    "filelists_expanded": false,
+    "automatic_gpu_allocation_used": false
+  },
+  "required_ready_metadata_fields": {
+    "top_level_fields": [
+      "surface",
+      "status",
+      "command_argv",
+      "command",
+      "estimate_command_argv",
+      "estimate_command",
+      "efficiency_estimate",
+      "handoff_contract",
+      "operator_plan",
+      "plan_resolution_readiness",
+      "parser_schedule_cross_check",
+      "parser_preserved_build_inputs",
+      "parser_input_resolution_role"
+    ],
+    "handoff_contract_fields": [
+      "shape",
+      "nstates",
+      "steps",
+      "state_files",
+      "compare",
+      "generated_reports",
+      "non_claims"
+    ],
+    "operator_plan_fields": [
+      "command_argv",
+      "command",
+      "estimate_command_argv",
+      "estimate_command",
+      "estimate_flag",
+      "requested_compatibility_entrypoint",
+      "efficiency_estimate",
+      "handoff_contract",
+      "correctness_policy"
+    ],
+    "parser_preserved_build_inputs_role": {
+      "source_files": "preserved_parser_input_not_source_closure",
+      "filelists": "preserved_parser_input_not_filelist_expansion"
+    }
+  },
+  "future_execution_boundary": {
+    "definition_only": true,
+    "execution_allowed_by_this_gate": false,
+    "allowed_future_run_after_review": [
+      "validate accepted ready operator-plan metadata and all non-execution flags before running anything",
+      "materialize or revalidate a sidecar execution plan with explicit stage order",
+      "execute only reviewed sidecar build/run/compare stages after the execution boundary review accepts them",
+      "write generated execution evidence only under reports/ and artifacts/",
+      "compare CPU and hybrid outputs using coverage_output_equivalence"
+    ],
+    "required_stage_order_for_future_run": [
+      "verilator_build",
+      "host_probe_build",
+      "cpu_init_state",
+      "cpu_reference_output",
+      "gpu_artifact_build",
+      "hybrid_sidecar_run",
+      "coverage_output_compare"
+    ],
+    "direct_verilator_command_status": "command_argv is a future direct-option preview and possible parser/build input; it is not by itself sidecar runtime execution evidence",
+    "stage_plan_source_requirement": "future run gates must recover, preserve, or regenerate a reviewed stage plan before execution; handoff_contract and command_argv alone are not sufficient authority for broad arbitrary RTL execution",
+    "coverage_output_equivalence_status": "allowed only as a future compare result after a reviewed run gate executes the compare command"
+  },
+  "closed_or_rejected_input_behavior": {
+    "not_ready_or_unsupported_operator_plan_metadata": {
+      "execution_allowed": false,
+      "expected_behavior": "fail closed before command execution and preserve the not-ready or unsupported reason"
+    },
+    "prepopulated_execution_result_fields": {
+      "execution_allowed": false,
+      "forbidden_fields": [
+        "execution_result",
+        "run_result",
+        "compare_result",
+        "timing",
+        "speedup",
+        "coverage_output_equivalence_complete"
+      ],
+      "expected_behavior": "reject before command execution because generated evidence cannot be supplied as input authority"
+    },
+    "parser_filelists_without_reviewed_stage_plan": {
+      "execution_allowed": false,
+      "expected_behavior": "preserve filelists as parser inputs only; do not infer dependency closure or automatic allocation"
+    }
+  },
+  "required_tests_for_next_review": [
+    "the definition uses the hardening implementation review gate as its source artifact",
+    "ready operator-plan metadata remains the only eligible input surface",
+    "the future execution boundary requires explicit sidecar stage order before any command can run",
+    "direct Verilator command metadata is not treated as sidecar runtime execution evidence",
+    "coverage_output_equivalence is only a future compare result, not evidence from this gate",
+    "filelists remain preserved parser inputs and are not source closure or automatic allocation authority",
+    "this gate forbids command execution, RTL simulation, compare execution, timing, speedup, runtime/ABI change, arbitrary filelist support, and automatic GPU allocation"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate",
+    "must_decide": [
+      "whether the first execution boundary is narrow enough after accepted metadata hardening",
+      "whether ready operator-plan metadata is sufficient as an input only when paired with a reviewed or regenerated sidecar stage plan",
+      "whether the required stage order is complete enough for a later run gate",
+      "whether direct Verilator command metadata should remain preview/build input rather than sidecar runtime evidence",
+      "whether the future compare policy can be coverage_output_equivalence without claiming raw full-state equality",
+      "whether arbitrary filelist dependency inference and automatic GPU allocation remain blocked"
+    ],
+    "must_not_claim": [
+      "native Verilator parser support",
+      "command execution by this definition gate",
+      "operator-plan execution by this definition gate",
+      "RTL simulation execution by this definition gate",
+      "compare execution by this definition gate",
+      "coverage-output equivalence for a native-parser flow",
+      "timing or speedup evidence",
+      "complete adversarial Mapping schema validation",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic optimal GPU allocation"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "execution_boundary_defined": true,
+    "future_run_gate_allowed_after_review": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "sidecar_handoff_validation_claim_allowed_by_gate_alone": false,
+    "command_execution_claim_allowed_by_gate_alone": false,
+    "operator_plan_execution_claim_allowed_by_gate_alone": false,
+    "rtl_simulation_claim_allowed_by_gate_alone": false,
+    "compare_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "complete_adversarial_mapping_schema_validation_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not native Verilator parser support",
+    "not sidecar runtime handoff validation",
+    "not command execution",
+    "not operator-plan execution",
+    "not RTL simulation execution",
+    "not compare execution",
+    "not coverage-output equivalence for a native-parser flow",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not timing or speedup evidence",
+    "not complete adversarial Mapping schema validation",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

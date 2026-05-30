@@ -40,6 +40,12 @@ REVIEW_IMPLEMENT_HARDENING_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_implementation_gate.json"
 )
+EXECUTION_BOUNDARY_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPlanFixtureGateTest(
@@ -62,6 +68,9 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
 
     def read_review_implement_hardening_gate(self) -> dict[str, object]:
         return json.loads(REVIEW_IMPLEMENT_HARDENING_GATE.read_text(encoding="utf-8"))
+
+    def read_execution_boundary_gate(self) -> dict[str, object]:
+        return json.loads(EXECUTION_BOUNDARY_GATE.read_text(encoding="utf-8"))
 
     def test_gate_records_importable_operator_plan_fixture(self) -> None:
         gate = self.read_gate()
@@ -456,6 +465,60 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
         self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone"])
         self.assertIn("not command execution", review["non_claims"])
         self.assertIn("not coverage-output equivalence for a native-parser flow", review["non_claims"])
+
+    def test_execution_boundary_definition_selects_review_without_execution(self) -> None:
+        gate = self.read_execution_boundary_gate()
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_implementation_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate",
+        )
+        decision = gate["definition_decision"]
+        self.assertTrue(decision["defined"])
+        self.assertEqual(
+            decision["selected_surface"],
+            "native_parser_operator_plan_metadata_to_reviewed_sidecar_execution_boundary",
+        )
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["definition_only"])
+        self.assertTrue(policy["execution_boundary_defined"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["new_measurement_allowed_by_this_gate"])
+        self.assertFalse(policy["timing_or_speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone"])
+
+    def test_execution_boundary_definition_requires_reviewed_stage_plan_before_run(self) -> None:
+        gate = self.read_execution_boundary_gate()
+        boundary = gate["future_execution_boundary"]
+
+        self.assertTrue(boundary["definition_only"])
+        self.assertFalse(boundary["execution_allowed_by_this_gate"])
+        self.assertEqual(
+            boundary["required_stage_order_for_future_run"],
+            [
+                "verilator_build",
+                "host_probe_build",
+                "cpu_init_state",
+                "cpu_reference_output",
+                "gpu_artifact_build",
+                "hybrid_sidecar_run",
+                "coverage_output_compare",
+            ],
+        )
+        self.assertIn("not by itself sidecar runtime execution", boundary["direct_verilator_command_status"])
+        self.assertIn("not sufficient authority", boundary["stage_plan_source_requirement"])
+        self.assertIn("future compare result", boundary["coverage_output_equivalence_status"])
+        roles = gate["required_ready_metadata_fields"]["parser_preserved_build_inputs_role"]
+        self.assertEqual(roles["source_files"], "preserved_parser_input_not_source_closure")
+        self.assertEqual(roles["filelists"], "preserved_parser_input_not_filelist_expansion")
+        self.assertIn(
+            "not coverage-output equivalence for a native-parser flow",
+            gate["non_claims"],
+        )
 
 
 if __name__ == "__main__":
