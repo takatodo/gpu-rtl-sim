@@ -2,7 +2,7 @@
   "schema_version": 1,
   "gate": "review_verilator_native_option_parser_overlay_patch_parser_behavior_run_gate",
   "status": "accepted_verilator_native_option_parser_overlay_patch_parser_behavior_smoke_result",
-  "objective": "Review the built-binary parser-only smoke result for the repaired Verilator native option parser overlay patch, accept only the scoped option accept/reject behavior, and select the next handoff-boundary definition without claiming sidecar execution, timing, arbitrary RTL/filelist support, or automatic allocation.",
+  "objective": "Review the built-binary parser-only smoke result for the repaired Verilator native option parser overlay patch, accept only the scoped option accept/reject behavior, and select the next parser-integer hardening definition without claiming sidecar execution, timing, arbitrary RTL/filelist support, or automatic allocation.",
   "source_run_gate": "config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json",
   "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json",
   "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json",
@@ -54,7 +54,7 @@
   },
   "hardening_decision": {
     "negative_count_inputs": {
-      "decision": "defer_without_blocking_next_handoff_boundary_definition",
+      "decision": "defer_to_parser_integer_hardening_definition",
       "reason": "zero counts already exercised the patched positive-count error path; dash-prefixed negative values can interact with option-token parsing and should be defined before claiming stricter parser quality"
     },
     "non_numeric_suffix_inputs": {

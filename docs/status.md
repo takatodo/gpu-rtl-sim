@@ -6,7 +6,7 @@ The commit-split cleanup is complete, and the repaired Verilator native-option o
 
 Current cleanup policy: keep `config/selection.json` compact (core pointer and operational fields), park bulky historical maps in `config/selection_extensions.json`, keep historical gate records under `records/scaling_gates/` with `config/scaling_gates` as a compatibility link, and keep generated evidence reproducible under `reports/` and `artifacts/` without retaining it as source of truth.
 
-Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `831` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
+Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `832` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
 
 Hybrid usability state: generated templates now carry generic host-probe build metadata and can use `src/tools/build_host_probe.py` without adding a per-target Makefile rule.
 
@@ -52,15 +52,15 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate`
+`review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_behavior_run_gate.json`
+`config/scaling_gates/define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json`
 
 ## 追跡タスク
 
-- `define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate` で、negative count と `std::atoi` suffix 入力を次にどう扱うか定義する。
+- `review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate` で、negative count と `std::atoi` suffix 入力の hardening 定義を受け入れるかレビューする。
 - `docs/migration_notes.md` の「シンプル検証からの乖離」節を、前提変更時に見直す。
 - 新規ゲート完了時は `config/selection_extensions.json` の `completed_goal_evidence` / `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json` の整合を取る。
 - ゲート JSON に残る履歴表記の例: `next_task: select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`（正の源泉は常に `config/selection.json` の `current_priority` を優先）。マージ後の全体像が必要なら `src/tools/selection_state.py` の `load_selection` を参照。
@@ -216,6 +216,8 @@ Verilator native option parser overlay patch parser-behavior review: `config/sca
 Verilator native option parser overlay patch parser-behavior run: `config/scaling_gates/run_verilator_native_option_parser_overlay_patch_parser_behavior_gate.json` records the reused generated `verilator_bin`, `VERILATOR_ROOT` set to the generated checkout root, a generated trivial RTL input, two positive expanded option cases exiting `0`, and six required rejection cases exiting `1` with expected diagnostics. This is a scoped parser-only smoke result; strict `std::atoi` suffix handling, negative counts, sidecar handoff, RTL simulation, timing, coverage-output equivalence, arbitrary RTL/filelist support, automatic allocation, GEM, production-serving, and upstream landing remain non-claims.
 
 Verilator native option parser overlay patch parser-behavior run review: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_behavior_run_gate.json` accepts only the scoped parser-only smoke result and the recorded `VERILATOR_ROOT` mechanical adjustment for a reused generated build artifact. The next gate is defining parser integer hardening for negative counts and `std::atoi` suffix inputs; sidecar handoff, RTL simulation, timing, coverage-output equivalence, arbitrary RTL/filelist support, automatic allocation, GEM, production-serving, and upstream landing remain non-claims.
+
+Verilator native option parser overlay patch parser-integer hardening definition: `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json` selects separate-token negative count cases and non-numeric suffix cases as the next strict-integer boundary. The definition records that dash-prefixed negative values may expose tokenizer behavior, while suffix cases such as `64abc` and `1abc` require replacing the current `std::atoi`-style prefix parsing before any strict integer claim. This adds no patch change, hardening result, sidecar handoff, RTL simulation, timing, coverage-output equivalence, arbitrary RTL/filelist support, automatic allocation, GEM, production-serving, or upstream landing claim.
 
 Public benchmark pack externalization readiness state: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for handing the refreshed pack to an external reader. The status is `ready_for_external_review`; this is a packaging/readiness audit only, not a new measurement result or stronger performance claim.
 
