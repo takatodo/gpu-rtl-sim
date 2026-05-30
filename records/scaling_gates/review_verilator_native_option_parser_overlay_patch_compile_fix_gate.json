@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+  "status": "accepted_verilator_native_option_parser_overlay_patch_compile_fix_boundary",
+  "objective": "Review the contextual patch-repair definition for the Verilator native option overlay patch after build-only validation exposed misplaced V3Options.h and V3Options.cpp hunks.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
+  "current_priority": "implement_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+  "review_decision": {
+    "accepted": true,
+    "weakest_point": "The review accepts only a patch-shape repair boundary. It does not prove that the repaired patch builds, that parser behavior is correct, or that the native Verilator option flow works. The next implementation must avoid zero-context hunks and prove the repaired patch lands in the intended regions before any build-success or parser-support claim.",
+    "accepted_because": [
+      "the run gate recorded an actual compile failure after reaching verilator_bin",
+      "the failure is explained by misplaced zero-context hunks rather than a need for a broader source surface",
+      "fixing the existing repo-owned overlay patch in place keeps one canonical descriptor and patch path",
+      "the selected touched files remain limited to src/V3Options.h and src/V3Options.cpp",
+      "the definition pins contextual anchors for both header members/accessors and C++ notify/parser/registration hunks",
+      "parser behavior, upstream regression, docs, compact-shape spelling, sidecar runtime/ABI, execution, timing, arbitrary filelist support, and automatic allocation remain deferred"
+    ]
+  },
+  "reviewed_source_payload": {
+    "descriptor_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+    "patch_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+    "upstream_repository_url": "https://github.com/verilator/verilator.git",
+    "upstream_ref": "v5.048",
+    "upstream_commit": "d0aa828c217410fffc73d92077b6f4f54830357c",
+    "upstream_commit_kind": "peeled_release_tag_commit",
+    "allowed_touched_files": [
+      "src/V3Options.h",
+      "src/V3Options.cpp"
+    ],
+    "selected_fix_strategy": "fix_existing_overlay_patch_in_place",
+    "replacement_descriptor_required": false
+  },
+  "reviewed_anchor_policy": {
+    "zero_context_hunks_allowed": false,
+    "contextual_hunks_required": true,
+    "v3options_h": {
+      "private_count_fields_anchor": "after m_verilateJobs and before compiler-selection fields",
+      "private_string_field_anchor": "after m_protectKey and before m_topModule",
+      "public_count_accessors_anchor": "after verilateJobs() and before compLimitBlocks()",
+      "public_string_accessor_anchor": "after protectKeyDefaulted() and before topModule()",
+      "accepted": true
+    },
+    "v3options_cpp": {
+      "notify_validation_anchor": "inside V3Options::notify() after the --make/--build conflict check and before backend mutual-exclusion checks",
+      "positive_count_parser_anchor": "inside V3Options::parseOptsList() immediately after callStrSetter and before the DECL_OPTION usage comment",
+      "positive_count_parser_anchor_caveat": "the literal insert_after token is only safe when combined with the recorded callStrSetter prior context and parseOptsList() function bounds; a bare '};' anchor is not accepted",
+      "option_registration_anchor": "inside V3Options::parseOptsList() after -sched-zero-delay and before -skip-identical",
+      "preserve_logic_not_current_hunk_shape": true,
+      "accepted": true
+    }
+  },
+  "required_next_gate": {
+    "name": "implement_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+    "may_modify": [
+      "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+      "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+      "config/selection.json",
+      "config/selection_extensions.json",
+      "docs/status.md",
+      "docs/roadmap.md",
+      "README.md",
+      "src/tools/results_reproduction_manifest.py",
+      "tests/contract"
+    ],
+    "must_preserve": [
+      "the existing descriptor path",
+      "the existing patch path",
+      "the upstream Verilator v5.048 peeled commit",
+      "the touched-file allowlist limited to src/V3Options.h and src/V3Options.cpp",
+      "the undocumented parse/store/validate-only scope"
+    ],
+    "must_run_or_record": [
+      "descriptor JSON validation",
+      "git apply --check against a clean Verilator v5.048 checkout",
+      "actual patch apply against a clean Verilator v5.048 checkout",
+      "post-apply location sanity that sim-accel header additions are before the header guard end",
+      "post-apply location sanity that V3Options.cpp additions are inside notify() and parseOptsList()",
+      "whether build-only validation is deferred to a separate rerun gate or executed and recorded by the implementation gate"
+    ],
+    "must_not_claim": [
+      "Verilator builds with the fixed patch unless make verilator_bin is actually rerun with a fail-fast wrapper and exit code 0 is recorded",
+      "native Verilator parser support works",
+      "parser behavior is correct",
+      "Verilator upstream regression tests pass",
+      "the patch has landed upstream",
+      "sidecar runtime or ABI integration",
+      "arbitrary RTL or filelist support",
+      "automatic optimal GPU allocation",
+      "new simulation timing evidence"
+    ]
+  },
+  "accepted_deferred_scope": {
+    "parser_behavior_execution": [
+      "run the built Verilator binary with --sim-accel sidecar-gpu --sim-accel-states N --sim-accel-steps S",
+      "reject unknown accelerators through the built Verilator binary",
+      "reject missing state/step halves through the built Verilator binary",
+      "fix or explicitly accept the std::atoi non-numeric suffix caveat"
+    ],
+    "upstream_scope": [
+      "docs/guide/exe_verilator.rst",
+      "test_regress/t/",
+      "upstream patch submission or landing"
+    ],
+    "project_scope": [
+      "public CLI changes",
+      "src/V3OptionParser.*",
+      "src/VlcMain.cpp",
+      "--sim-accel-shape <NxS>",
+      "--sim-accel-estimate-efficiency",
+      "sidecar runtime or ABI wiring",
+      "source closure inference",
+      "arbitrary filelist planning",
+      "automatic GPU allocation",
+      "execution or timing measurement"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "definition_accepted": true,
+    "compile_fix_implementation_allowed_next": true,
+    "patch_modified_by_this_gate": false,
+    "descriptor_modified_by_this_gate": false,
+    "build_executed_by_this_gate": false,
+    "verilator_build_success_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_support_claim_allowed_by_gate_alone": false,
+    "parser_behavior_claim_allowed_by_gate_alone": false,
+    "upstream_regression_success_claim_allowed_by_gate_alone": false,
+    "upstream_patch_landed_claim_allowed_by_gate_alone": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "implement_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+  "non_claims": [
+    "not Verilator build success",
+    "not native Verilator parser support",
+    "not parser behavior validation",
+    "not a landed upstream Verilator patch",
+    "not Verilator regression-test success",
+    "not new simulation execution evidence",
+    "not new measurement evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

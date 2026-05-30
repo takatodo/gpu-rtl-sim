@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The commit split is complete and the overlay patch build-only validation run reached `verilator_bin` but failed to compile because the current zero-context patch places `V3Options.h` additions after the header guard and lets `V3Options.cpp` hunks drift out of their intended functions. The weak point is now reviewing a focused contextual patch repair without confusing it with parser behavior, upstream acceptance, arbitrary filelist planning, dependency inference, automatic allocation, or a landed parser patch.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The commit split is complete and the overlay patch build-only validation run reached `verilator_bin` but failed to compile because the current zero-context patch places `V3Options.h` additions after the header guard and lets `V3Options.cpp` hunks drift out of their intended functions. The compile-fix boundary is reviewed; the weak point is now implementing the contextual patch repair without confusing it with parser behavior, upstream acceptance, arbitrary filelist planning, dependency inference, automatic allocation, or a landed parser patch.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the accepted overlay patch compile-fix boundary after the first build-only validation run found a compile failure before any native parser support claim.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is implementing the accepted overlay patch compile-fix boundary after the first build-only validation run found a compile failure before any native parser support claim.
 
 Current priority:
 
-`review_verilator_native_option_parser_overlay_patch_compile_fix_gate`
+`implement_verilator_native_option_parser_overlay_patch_compile_fix_gate`
 
 Current gate:
 
-`config/scaling_gates/define_verilator_native_option_parser_overlay_patch_compile_fix_gate.json`
+`config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native option parser overlay patch compile-fix review**: Review the smallest contextual patch repair for the observed `V3Options.h` / `V3Options.cpp` placement failure before changing the patch, rerunning build-only validation, or making any parser support, upstream landing, execution, timing, or automatic allocation claim.
+1. **Native option parser overlay patch compile-fix implementation**: Repair the existing patch with contextual hunks and record descriptor/apply/location sanity before making any build-success, parser support, upstream landing, execution, timing, or automatic allocation claim.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -93,7 +93,8 @@ Parser boundary definition:
 - build-only validation review gate: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json`
 - build-only validation run gate: `config/scaling_gates/run_verilator_native_option_parser_overlay_patch_build_only_validation_gate.json`
 - compile-fix definition gate: `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_compile_fix_gate.json`
-- selected next gate: `review_verilator_native_option_parser_overlay_patch_compile_fix_gate`
+- compile-fix review gate: `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json`
+- selected next gate: `implement_verilator_native_option_parser_overlay_patch_compile_fix_gate`
 - scope: build-only validation run only, not public CLI, native parser support, parser behavior, simulation execution, or timing
 - defined native minimum: `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`
 - wrapper/shim compatibility kept out of native minimum: `--sim-accel-shape <NxS>`, target-first registry lookup, print modes, JSON operator plans, resident modes, and dataset-backed flows
@@ -116,6 +117,7 @@ Parser boundary definition:
 - build-only validation review accepts the narrow `verilator_bin` build boundary and requires the run gate to record whether `VERILATOR_INSTALL` was supplied or mechanically defaulted
 - build-only validation run records descriptor validation and apply-check success, a checkout-local `VERILATOR_INSTALL` default, `verilator_bin` target reached, and `make` exit code `2`; the failure is patch compile/link, caused by `V3Options.h` additions after `#endif  // guard`
 - compile-fix definition keeps the existing patch path, rejects zero-context hunks, and pins contextual anchors for `V3Options.h` fields/accessors plus `V3Options.cpp` notify/parser/registration hunks
+- compile-fix review accepts the in-place repair boundary, with the caveat that the `V3Options.cpp` `};` helper anchor is valid only with `callStrSetter` prior context and `parseOptsList()` bounds
 - structured handoff fields are pinned before any native parser support claim
 - non-claim: this does not add parser implementation, execution, measurement, runtime/ABI support, arbitrary RTL dependency inference, automatic optimal GPU allocation, GEM comparison, raw full-state equality, or production-serving throughput
 
@@ -691,16 +693,16 @@ Tracked evidence:
 
 Recommended next gate:
 
-`review_verilator_native_option_parser_overlay_patch_compile_fix_gate`
+`implement_verilator_native_option_parser_overlay_patch_compile_fix_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/define_verilator_native_option_parser_overlay_patch_compile_fix_gate.json` as the source artifact
-- decide whether in-place patch repair remains the smallest safe source boundary
-- verify that the `V3Options.h` anchors keep fields/accessors inside the class and before the header guard end
-- verify that the `V3Options.cpp` anchors keep notify, parser helper, and option registrations inside the intended functions
-- decide whether the next implementation may update only the patch/descriptor plus source-of-truth/test/doc alignment
-- keep the rerun path limited to descriptor validation, apply-check, and `verilator_bin` build-only validation after the fix
+- use `config/scaling_gates/review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json` as the source artifact
+- update only the existing overlay patch/descriptor plus source-of-truth/test/doc alignment
+- replace zero-context hunks with contextual hunks at the accepted `V3Options.h` and `V3Options.cpp` anchors
+- run or record descriptor JSON validation and clean-checkout `git apply --check`
+- apply the patch in a clean checkout and record post-apply location sanity for header and cpp hunks
+- record whether `make verilator_bin` is deferred to a separate rerun gate or executed with a fail-fast wrapper
 - keep parser-behavior checks separate unless a later gate explicitly selects them
 - keep `--sim-accel-estimate-efficiency`, compact shape spelling, `src/V3OptionParser.*`, `src/VlcMain.cpp`, docs, and upstream `test_regress/t/` outside scope unless a new review expands scope
 - keep vendored Verilator source, execution, measurement, source closure inference, automatic allocation, and arbitrary RTL/filelist support out of scope

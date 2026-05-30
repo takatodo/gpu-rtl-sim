@@ -75,6 +75,12 @@ OVERLAY_PATCH_COMPILE_FIX_GATE = (
     / "scaling_gates"
     / "define_verilator_native_option_parser_overlay_patch_compile_fix_gate.json"
 )
+OVERLAY_PATCH_COMPILE_FIX_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_overlay_patch_compile_fix_gate.json"
+)
 OVERLAY_DESCRIPTOR_FILE = (
     REPO_ROOT
     / "overlays"
@@ -644,6 +650,46 @@ class VerilatorNativeOptionParserStubFixtureTest(unittest.TestCase):
         self.assertEqual(
             gate["next_task"],
             "review_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+        )
+
+    def test_overlay_patch_compile_fix_review_accepts_implementation_scope(self) -> None:
+        review = json.loads(OVERLAY_PATCH_COMPILE_FIX_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_overlay_patch_compile_fix_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertEqual(
+            review["current_priority"],
+            "implement_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+        )
+        payload = review["reviewed_source_payload"]
+        self.assertEqual(payload["selected_fix_strategy"], "fix_existing_overlay_patch_in_place")
+        self.assertFalse(payload["replacement_descriptor_required"])
+        self.assertEqual(payload["allowed_touched_files"], ["src/V3Options.h", "src/V3Options.cpp"])
+        policy = review["reviewed_anchor_policy"]
+        self.assertFalse(policy["zero_context_hunks_allowed"])
+        self.assertTrue(policy["contextual_hunks_required"])
+        self.assertTrue(policy["v3options_h"]["accepted"])
+        self.assertTrue(policy["v3options_cpp"]["accepted"])
+        self.assertIn("bare '};' anchor is not accepted", policy["v3options_cpp"]["positive_count_parser_anchor_caveat"])
+        next_gate = review["required_next_gate"]
+        self.assertEqual(
+            next_gate["name"],
+            "implement_verilator_native_option_parser_overlay_patch_compile_fix_gate",
+        )
+        self.assertIn(
+            "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+            next_gate["may_modify"],
+        )
+        self.assertIn("post-apply location sanity that sim-accel header additions are before the header guard end", next_gate["must_run_or_record"])
+        self.assertFalse(review["acceptance_policy"]["patch_modified_by_this_gate"])
+        self.assertFalse(review["acceptance_policy"]["verilator_build_success_claim_allowed_by_gate_alone"])
+        self.assertFalse(review["acceptance_policy"]["parser_behavior_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            review["next_task"],
+            "implement_verilator_native_option_parser_overlay_patch_compile_fix_gate",
         )
 
 
