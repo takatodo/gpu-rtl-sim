@@ -6,7 +6,7 @@ The commit-split cleanup is complete, and the repaired Verilator native-option o
 
 Current cleanup policy: keep `config/selection.json` compact (core pointer and operational fields), park bulky historical maps in `config/selection_extensions.json`, keep historical gate records under `records/scaling_gates/` with `config/scaling_gates` as a compatibility link, and keep generated evidence reproducible under `reports/` and `artifacts/` without retaining it as source of truth.
 
-Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `843` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
+Config minimization state: `records/scaling_gates/config_minimal_surface_completion_audit.json` records that the active `config/` file count is `143`, while `844` tracked gate JSON records live under `records/scaling_gates/`. The compatibility path `config/scaling_gates` remains a symlink so existing CLI/test references continue to resolve. `reports/` and `artifacts/` are generated-output directories; generated evidence may be present locally, but current decisions do not depend on those files as source of truth.
 
 Hybrid usability state: generated templates now carry generic host-probe build metadata and can use `src/tools/build_host_probe.py` without adding a per-target Makefile rule.
 
@@ -52,15 +52,15 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`review_verilator_native_option_parser_sidecar_plan_resolution_fixture_implementation_gate`
+`define_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/implement_verilator_native_option_parser_sidecar_plan_resolution_fixture_gate.json`
+`config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_fixture_implementation_gate.json`
 
 ## 追跡タスク
 
-- `review_verilator_native_option_parser_sidecar_plan_resolution_fixture_implementation_gate` で、実装済みの非実行 plan-resolution fixture が explicit context と registry template 照合だけに留まり、parser に source closure、coverage target、host-probe metadata、state/report paths、compare labels を推論させていないことをレビューする。
+- `define_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_gate` で、plan-resolution fixtureの外側statusが `sidecar_stage_plan` の readiness/not-ready 状態を誤読させない境界を定義する。
 - `docs/migration_notes.md` の「シンプル検証からの乖離」節を、前提変更時に見直す。
 - 新規ゲート完了時は `config/selection_extensions.json` の `completed_goal_evidence` / `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json` の整合を取る。
 - ゲート JSON に残る履歴表記の例: `next_task: select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`（正の源泉は常に `config/selection.json` の `current_priority` を優先）。マージ後の全体像が必要なら `src/tools/selection_state.py` の `load_selection` を参照。
@@ -86,6 +86,8 @@ Native parser-to-sidecar plan-resolution boundary state: `config/scaling_gates/d
 Native parser-to-sidecar plan-resolution boundary review state: `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate.json` accepts only the explicit-context, non-executing definition and selects `implement_verilator_native_option_parser_sidecar_plan_resolution_fixture_gate`. The next fixture must reject payload-only resolution and may call or mirror `sidecar_stage_plan` only after explicit sidecar context exists; it must not execute RTL, materialize state files from parser-only input, compare outputs, measure timing, change runtime/ABI, or claim arbitrary RTL/filelist support.
 
 Native parser-to-sidecar plan-resolution fixture implementation state: `config/scaling_gates/implement_verilator_native_option_parser_sidecar_plan_resolution_fixture_gate.json` adds `src/tools/verilator_native_option_parser_sidecar_plan_resolution.py`. The helper accepts reviewed adapter payload plus explicit target/mode/template or registry-entry context and a source gate/manifest reference, validates shape and template consistency, then calls existing `sidecar_stage_plan` as a non-executing plan authority. Parser `source_files`, `filelists`, and ordinary Verilator args remain preserved inputs only; the fixture does not infer source closure, synthesize commands, produce `sidecar_handoff_contract`, execute RTL, compare outputs, measure timing, change runtime/ABI, or claim arbitrary RTL/filelist support or automatic allocation. The next gate is reviewing this implementation boundary.
+
+Native parser-to-sidecar plan-resolution fixture review state: `config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_fixture_implementation_gate.json` accepts only the explicit-context, non-executing template-plan fixture. The accepted weakness is that the helper's outer `status: planned` can obscure `sidecar_stage_plan` not-ready statuses for resident or unsupported modes. The next gate is defining status/readiness hardening before producing `sidecar_handoff_contract`, synthesizing commands, executing RTL, measuring timing, changing runtime/ABI, or claiming arbitrary RTL/filelist support or automatic allocation.
 
 The full ITA/MHA plus larger paged KV-cache goal is complete and held for review. Full MHA was retried through the current hybrid path; the fresh 1x1 run wrote `reports/pulp_ita_mha_hybrid_1x1.txt` and passed coverage-output equivalence in `reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json`.
 
