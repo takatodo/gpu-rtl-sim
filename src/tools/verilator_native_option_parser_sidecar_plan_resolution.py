@@ -20,6 +20,9 @@ from verilator_native_option_parser_sidecar_handoff_contract import (
     HANDOFF_CONTRACT_FIXTURE_SURFACE,
     resolve_plan_resolution_to_handoff_contract,
 )
+from verilator_native_option_parser_sidecar_operator_plan import (
+    resolve_handoff_contract_to_operator_plan,
+)
 from verilator_native_option_parser_sidecar_handoff import (
     ADAPTER_SURFACE,
     CORRECTNESS_POLICY_REFERENCE_STATUS,
@@ -279,4 +282,15 @@ def resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(
         plan_resolution,
         error_factory=NativeParserSidecarPlanResolutionError,
         handoff_builder=sidecar_handoff_contract,
+    )
+
+
+def resolve_native_parser_handoff_contract_to_sidecar_operator_plan(
+    handoff_contract_metadata: Mapping[str, object],
+) -> dict[str, object]:
+    """Build non-executing operator-plan metadata for a ready handoff-contract result."""
+
+    return resolve_handoff_contract_to_operator_plan(
+        handoff_contract_metadata,
+        error_factory=NativeParserSidecarPlanResolutionError,
     )

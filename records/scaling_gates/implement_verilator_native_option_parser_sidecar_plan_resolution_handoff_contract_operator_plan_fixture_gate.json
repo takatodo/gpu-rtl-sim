@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "gate": "implement_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_gate",
+  "status": "implemented_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture",
+  "objective": "Implement the non-executing helper that converts only accepted ready handoff-contract metadata into command argv, estimate-command, efficiency-estimate, and operator-plan metadata, while fail-closing not-ready or unsupported handoff metadata and rejecting malformed or prepopulated metadata before authority calls.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_boundary_gate.json",
+  "current_priority": "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_implementation_gate",
+  "implemented_surface": {
+    "module": "src/tools/verilator_native_option_parser_sidecar_operator_plan.py",
+    "wrapper_module": "src/tools/verilator_native_option_parser_sidecar_plan_resolution.py",
+    "handoff_contract_support_module": "src/tools/verilator_native_option_parser_sidecar_handoff_contract.py",
+    "primary_entrypoint_function": "resolve_handoff_contract_to_operator_plan",
+    "wrapper_entrypoint_function": "resolve_native_parser_handoff_contract_to_sidecar_operator_plan",
+    "input_authority": "src/tools/verilator_native_option_parser_sidecar_handoff_contract.py::resolve_plan_resolution_to_handoff_contract",
+    "command_argv_authority": "src/tools/hybrid_benchmark_sidecar_operator.py::synthesized_verilator_command_argv",
+    "estimate_command_argv_authority": "src/tools/hybrid_benchmark_sidecar_operator.py::synthesized_verilator_estimate_command_argv",
+    "efficiency_estimate_authority": "src/tools/hybrid_benchmark_efficiency.py::efficiency_estimate",
+    "operator_plan_authority": "src/tools/hybrid_benchmark_sidecar_operator.py::sidecar_operator_plan",
+    "surface": "native_verilator_parser_sidecar_operator_plan_fixture",
+    "ready_only": true,
+    "metadata_only": true,
+    "new_public_cli_added": false,
+    "new_execution_added": false,
+    "new_measurement_added": false,
+    "runtime_or_abi_changed": false,
+    "source_closure_inferred": false,
+    "filelists_expanded": false,
+    "automatic_gpu_allocation_used": false
+  },
+  "implemented_ready_checks": {
+    "surface": "native_verilator_parser_sidecar_plan_resolution_handoff_contract_fixture",
+    "status": "ready_for_sidecar_handoff_contract_metadata",
+    "input_status": "ready_for_verilator_option_shim",
+    "sidecar_handoff_contract_invoked": true,
+    "command_synthesis_invoked": false,
+    "operator_plan_invoked": false,
+    "efficiency_estimate_invoked": false,
+    "execution_performed": false,
+    "measurement_performed": false,
+    "timing_measured": false,
+    "runtime_or_abi_changed": false,
+    "source_closure_inferred": false,
+    "filelists_expanded": false,
+    "automatic_gpu_allocation_used": false,
+    "correctness_policy": "coverage_output_equivalence",
+    "correctness_policy_ref_status": "reference_only_not_compare_evidence",
+    "parser_schedule_cross_check.shape_matches_handoff_contract": true,
+    "plan_resolution_readiness.ready_for_direct_verilator_option": true,
+    "plan_resolution_readiness.stage_plan_status": "planned",
+    "plan_resolution_readiness.verilator_option_readiness_status": "ready_for_verilator_option_shim",
+    "stage_plan.status": "planned",
+    "stage_plan.verilator_option_readiness.status": "ready_for_verilator_option_shim",
+    "forbidden_prepopulated_fields": [
+      "operator_plan",
+      "command_argv",
+      "verilator_command_argv",
+      "command",
+      "estimate_command_argv",
+      "estimate_command",
+      "efficiency_estimate",
+      "timing"
+    ]
+  },
+  "required_metadata_validation": {
+    "handoff_contract_fields": [
+      "shape",
+      "nstates",
+      "steps",
+      "state_files",
+      "compare",
+      "generated_reports",
+      "non_claims"
+    ],
+    "handoff_contract_state_files": [
+      "init_state",
+      "reference_dump",
+      "candidate_dump"
+    ],
+    "handoff_contract_compare_fields": [
+      "correctness_policy",
+      "acceptance_policy",
+      "reference_label",
+      "candidate_label",
+      "coverage_output_target"
+    ],
+    "stage_plan_fields_required_before_command_authorities": [
+      "verilator_build.details",
+      "hybrid_sidecar_run.details",
+      "coverage_output_compare.details"
+    ]
+  },
+  "implemented_output_shape": {
+    "surface": "native_verilator_parser_sidecar_operator_plan_fixture",
+    "ready_status": "ready_for_sidecar_operator_plan_metadata",
+    "closed_statuses": [
+      "not_ready_for_sidecar_operator_plan_metadata",
+      "unsupported_for_sidecar_operator_plan_metadata"
+    ],
+    "ready_metadata": [
+      "command_argv",
+      "command",
+      "estimate_command_argv",
+      "estimate_command",
+      "estimate_flag",
+      "requested_compatibility_entrypoint",
+      "efficiency_estimate",
+      "handoff_contract",
+      "operator_plan",
+      "correctness_policy"
+    ],
+    "ready_flags": {
+      "command_synthesis_invoked": true,
+      "operator_plan_invoked": true,
+      "efficiency_estimate_invoked": true,
+      "execution_performed": false,
+      "measurement_performed": false,
+      "timing_measured": false,
+      "runtime_or_abi_changed": false,
+      "source_closure_inferred": false,
+      "filelists_expanded": false,
+      "automatic_gpu_allocation_used": false
+    },
+    "estimate_metadata_boundary": "efficiency_estimate is non-executing planning metadata only, not measured timing or speedup evidence"
+  },
+  "implemented_fail_closed_behavior": {
+    "not_ready_for_sidecar_handoff_contract_metadata": {
+      "returns_structured_closed_result": true,
+      "operator_plan_metadata_allowed": false,
+      "command_authorities_called": false
+    },
+    "unsupported_for_sidecar_handoff_contract_metadata": {
+      "returns_structured_closed_result": true,
+      "operator_plan_metadata_allowed": false,
+      "command_authorities_called": false
+    },
+    "malformed_or_prepopulated_handoff_contract_metadata": {
+      "raises": "NativeParserSidecarPlanResolutionError",
+      "command_authorities_called_before_validation": false,
+      "efficiency_estimate_called_before_validation": false,
+      "operator_plan_called_before_validation": false
+    }
+  },
+  "tested_contract_cases": [
+    {
+      "name": "ready_handoff_contract_builds_operator_plan_metadata_only",
+      "status": "ready_for_sidecar_operator_plan_metadata",
+      "command_synthesis_invoked": true,
+      "operator_plan_invoked": true,
+      "efficiency_estimate_invoked": true,
+      "execution_performed": false,
+      "measurement_performed": false,
+      "timing_measured": false
+    },
+    {
+      "name": "not_ready_and_unsupported_handoff_contracts_fail_closed_before_operator_plan",
+      "operator_plan_metadata_allowed": false,
+      "command_authorities_called": false
+    },
+    {
+      "name": "handoff_contract_operator_plan_rejects_prepopulated_fields_before_authorities",
+      "raises": "NativeParserSidecarPlanResolutionError"
+    },
+    {
+      "name": "handoff_contract_operator_plan_requires_stage_plan_before_authorities",
+      "raises": "NativeParserSidecarPlanResolutionError"
+    },
+    {
+      "name": "handoff_contract_operator_plan_rejects_stage_plan_mismatch_before_authorities",
+      "raises": "NativeParserSidecarPlanResolutionError"
+    }
+  ],
+  "verification": {
+    "focused_contract_test_command": "python3 -m unittest tests.contract.test_verilator_native_option_parser_sidecar_plan_resolution_fixture -q",
+    "focused_contract_test_exit_code": 0,
+    "focused_contract_test_count": 20
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_implementation_gate",
+    "must_decide": [
+      "whether the helper only accepts ready handoff-contract metadata for operator-plan metadata",
+      "whether closed not-ready and unsupported handoff metadata fail closed before command or operator-plan authorities",
+      "whether malformed or prepopulated metadata raises before command, estimate, efficiency, or operator-plan authority calls",
+      "whether efficiency_estimate is clearly planning metadata only and not timing or speedup evidence",
+      "whether parser-preserved source files and filelists remain preserved inputs rather than source closure, dependency expansion, or allocation authorities"
+    ],
+    "must_not_claim": [
+      "native Verilator parser support",
+      "sidecar runtime handoff validation",
+      "executed command synthesis evidence",
+      "operator-plan execution",
+      "RTL simulation execution",
+      "coverage-output equivalence for a native-parser flow",
+      "timing or speedup evidence",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic optimal GPU allocation"
+    ]
+  },
+  "acceptance_policy": {
+    "implementation_only": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "sidecar_handoff_validation_claim_allowed_by_gate_alone": false,
+    "command_synthesis_execution_claim_allowed_by_gate_alone": false,
+    "operator_plan_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_implementation_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not sidecar runtime handoff validation",
+    "not executed command synthesis evidence",
+    "not operator-plan execution",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a native-parser flow",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

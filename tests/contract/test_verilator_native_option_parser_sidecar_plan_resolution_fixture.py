@@ -106,6 +106,20 @@ class VerilatorNativeOptionParserSidecarPlanResolutionFixtureTest(unittest.TestC
         ):
             self.assertNotIn(field, resolved)
 
+    def assert_non_executing_operator_plan_fixture(self, resolved: dict[str, object]) -> None:
+        self.assertTrue(resolved["sidecar_handoff_contract_invoked"])
+        self.assertTrue(resolved["command_synthesis_invoked"])
+        self.assertTrue(resolved["operator_plan_invoked"])
+        self.assertTrue(resolved["efficiency_estimate_invoked"])
+        self.assertFalse(resolved["execution_performed"])
+        self.assertFalse(resolved["measurement_performed"])
+        self.assertFalse(resolved["timing_measured"])
+        self.assertFalse(resolved["runtime_or_abi_changed"])
+        self.assertFalse(resolved["source_closure_inferred"])
+        self.assertFalse(resolved["filelists_expanded"])
+        self.assertFalse(resolved["automatic_gpu_allocation_used"])
+        self.assertEqual(resolved["correctness_policy_ref_status"], "reference_only_not_compare_evidence")
+
     def test_implementation_gate_records_non_executing_fixture_scope(self) -> None:
         gate = json.loads(IMPLEMENTATION_GATE.read_text(encoding="utf-8"))
 
@@ -321,6 +335,168 @@ class VerilatorNativeOptionParserSidecarPlanResolutionFixtureTest(unittest.TestC
         self.assertIn("candidate_dump", contract["state_files"])
         self.assertEqual(contract["compare"]["correctness_policy"], "coverage_output_equivalence")
         self.assertIn("compare_report", contract["generated_reports"])
+        self.assertIn("stage_plan", handoff)
+        self.assertEqual(
+            handoff["parser_input_resolution_role"]["source_files"],
+            "preserved_parser_input_not_source_closure",
+        )
+
+    def test_ready_handoff_contract_builds_operator_plan_metadata_only(self) -> None:
+        (plan_resolution,) = _load_tool_modules("verilator_native_option_parser_sidecar_plan_resolution")
+        resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+            _adapter_payload(),
+            sidecar_context=_sidecar_context(),
+        )
+        handoff = plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+
+        operator_metadata = plan_resolution.resolve_native_parser_handoff_contract_to_sidecar_operator_plan(handoff)
+
+        self.assertEqual(operator_metadata["surface"], "native_verilator_parser_sidecar_operator_plan_fixture")
+        self.assertEqual(operator_metadata["status"], "ready_for_sidecar_operator_plan_metadata")
+        self.assertTrue(operator_metadata["operator_plan_metadata_allowed"])
+        self.assert_non_executing_operator_plan_fixture(operator_metadata)
+        self.assertEqual(operator_metadata["correctness_policy"], "coverage_output_equivalence")
+        self.assertEqual(operator_metadata["handoff_contract"]["shape"], "64x1")
+        self.assertEqual(operator_metadata["efficiency_estimate"]["target"], "pulp_ita_mha")
+        self.assertEqual(operator_metadata["efficiency_estimate"]["shape"], "64x1")
+        self.assertEqual(operator_metadata["efficiency_estimate"]["speedup_class"], "high")
+        self.assertEqual(operator_metadata["operator_plan"]["command_argv"], operator_metadata["command_argv"])
+        self.assertEqual(
+            operator_metadata["operator_plan"]["estimate_command_argv"],
+            operator_metadata["estimate_command_argv"],
+        )
+        self.assertIn("--sim-accel sidecar-gpu", operator_metadata["requested_compatibility_entrypoint"])
+        self.assertIn("--sim-accel-estimate-efficiency", operator_metadata["estimate_command"])
+        self.assertIn("not measured timing", operator_metadata["estimate_metadata_boundary"])
+        self.assertEqual(
+            operator_metadata["parser_input_resolution_role"]["filelists"],
+            "preserved_parser_input_not_filelist_expansion",
+        )
+
+    def test_not_ready_and_unsupported_handoff_contracts_fail_closed_before_operator_plan(self) -> None:
+        (operator_plan_module, plan_resolution) = _load_tool_modules(
+            "verilator_native_option_parser_sidecar_operator_plan",
+            "verilator_native_option_parser_sidecar_plan_resolution",
+        )
+        calls = []
+
+        def fail_authority(*args, **kwargs):
+            calls.append((args, kwargs))
+            raise AssertionError("operator-plan authorities must not be called for closed handoff metadata")
+
+        for mode in ("resident-state-reuse", "persistent-resident-state-abi", "unknown-mode"):
+            context = _sidecar_context()
+            context["mode"] = mode
+            resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+                _adapter_payload(),
+                sidecar_context=context,
+            )
+            handoff = plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+            with self.subTest(mode=mode):
+                closed = operator_plan_module.resolve_handoff_contract_to_operator_plan(
+                    handoff,
+                    command_builder=fail_authority,
+                    estimate_command_builder=fail_authority,
+                    efficiency_builder=fail_authority,
+                    operator_plan_builder=fail_authority,
+                )
+                self.assertFalse(closed["operator_plan_metadata_allowed"])
+                self.assertFalse(closed["command_synthesis_invoked"])
+                self.assertFalse(closed["operator_plan_invoked"])
+                self.assertFalse(closed["efficiency_estimate_invoked"])
+                self.assertIn(closed["status"], {
+                    "not_ready_for_sidecar_operator_plan_metadata",
+                    "unsupported_for_sidecar_operator_plan_metadata",
+                })
+                self.assertIn("handoff-contract metadata is not ready", closed["fail_closed_reason"])
+                self.assertNotIn("operator_plan", closed)
+        self.assertEqual(calls, [])
+
+    def test_handoff_contract_operator_plan_rejects_prepopulated_fields_before_authorities(self) -> None:
+        (operator_plan_module, plan_resolution) = _load_tool_modules(
+            "verilator_native_option_parser_sidecar_operator_plan",
+            "verilator_native_option_parser_sidecar_plan_resolution",
+        )
+        resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+            _adapter_payload(),
+            sidecar_context=_sidecar_context(),
+        )
+        handoff = plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+        handoff["operator_plan"] = {"status": "prepopulated"}
+        calls = []
+
+        def fail_authority(*args, **kwargs):
+            calls.append((args, kwargs))
+            raise AssertionError("operator-plan authorities must not be called for prepopulated metadata")
+
+        with self.assertRaisesRegex(plan_resolution.NativeParserSidecarPlanResolutionError, "already contains"):
+            operator_plan_module.resolve_handoff_contract_to_operator_plan(
+                handoff,
+                error_factory=plan_resolution.NativeParserSidecarPlanResolutionError,
+                command_builder=fail_authority,
+                estimate_command_builder=fail_authority,
+                efficiency_builder=fail_authority,
+                operator_plan_builder=fail_authority,
+            )
+        self.assertEqual(calls, [])
+
+    def test_handoff_contract_operator_plan_requires_stage_plan_before_authorities(self) -> None:
+        (operator_plan_module, plan_resolution) = _load_tool_modules(
+            "verilator_native_option_parser_sidecar_operator_plan",
+            "verilator_native_option_parser_sidecar_plan_resolution",
+        )
+        resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+            _adapter_payload(),
+            sidecar_context=_sidecar_context(),
+        )
+        handoff = plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+        handoff.pop("stage_plan")
+        calls = []
+
+        def fail_authority(*args, **kwargs):
+            calls.append((args, kwargs))
+            raise AssertionError("operator-plan authorities must not be called before stage-plan validation")
+
+        with self.assertRaisesRegex(plan_resolution.NativeParserSidecarPlanResolutionError, "stage_plan"):
+            operator_plan_module.resolve_handoff_contract_to_operator_plan(
+                handoff,
+                error_factory=plan_resolution.NativeParserSidecarPlanResolutionError,
+                command_builder=fail_authority,
+                estimate_command_builder=fail_authority,
+                efficiency_builder=fail_authority,
+                operator_plan_builder=fail_authority,
+            )
+        self.assertEqual(calls, [])
+
+    def test_handoff_contract_operator_plan_rejects_stage_plan_mismatch_before_authorities(self) -> None:
+        (operator_plan_module, plan_resolution) = _load_tool_modules(
+            "verilator_native_option_parser_sidecar_operator_plan",
+            "verilator_native_option_parser_sidecar_plan_resolution",
+        )
+        resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+            _adapter_payload(),
+            sidecar_context=_sidecar_context(),
+        )
+        handoff = plan_resolution.resolve_native_parser_plan_resolution_to_sidecar_handoff_contract(resolved)
+        stage_plan = dict(handoff["stage_plan"])
+        stage_plan["shape"] = "1x64"
+        handoff["stage_plan"] = stage_plan
+        calls = []
+
+        def fail_authority(*args, **kwargs):
+            calls.append((args, kwargs))
+            raise AssertionError("operator-plan authorities must not be called before shape validation")
+
+        with self.assertRaisesRegex(plan_resolution.NativeParserSidecarPlanResolutionError, "stage_plan.shape"):
+            operator_plan_module.resolve_handoff_contract_to_operator_plan(
+                handoff,
+                error_factory=plan_resolution.NativeParserSidecarPlanResolutionError,
+                command_builder=fail_authority,
+                estimate_command_builder=fail_authority,
+                efficiency_builder=fail_authority,
+                operator_plan_builder=fail_authority,
+            )
+        self.assertEqual(calls, [])
 
     def test_not_ready_and_unsupported_results_fail_closed_before_handoff_contract(self) -> None:
         (plan_resolution,) = _load_tool_modules("verilator_native_option_parser_sidecar_plan_resolution")

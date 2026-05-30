@@ -70,6 +70,7 @@ def _closed_result(reason: str, plan_resolution: Mapping[str, object]) -> dict[s
         "sidecar_handoff_contract_invoked": False,
         "command_synthesis_invoked": False,
         "operator_plan_invoked": False,
+        "efficiency_estimate_invoked": False,
         "execution_performed": False,
         "measurement_performed": False,
         "timing_measured": False,
@@ -223,6 +224,7 @@ def resolve_plan_resolution_to_handoff_contract(
         "sidecar_handoff_contract_invoked": True,
         "command_synthesis_invoked": False,
         "operator_plan_invoked": False,
+        "efficiency_estimate_invoked": False,
         "execution_performed": False,
         "measurement_performed": False,
         "timing_measured": False,
@@ -240,6 +242,13 @@ def resolve_plan_resolution_to_handoff_contract(
             "shape_matches_handoff_contract": parser_schedule["shape"] == handoff_contract["shape"],
         },
         "plan_resolution_readiness": dict(readiness),
+        "parser_preserved_build_inputs": dict(plan_resolution.get("parser_preserved_build_inputs", {}))
+        if isinstance(plan_resolution.get("parser_preserved_build_inputs", {}), Mapping)
+        else {},
+        "parser_input_resolution_role": dict(plan_resolution.get("parser_input_resolution_role", {}))
+        if isinstance(plan_resolution.get("parser_input_resolution_role", {}), Mapping)
+        else {},
+        "stage_plan": dict(stage_plan),
         "handoff_contract": handoff_contract,
         "non_claims": [
             "handoff-contract fixture does not execute commands",
