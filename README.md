@@ -12,11 +12,11 @@ Large goal:
 
 Current priority:
 
-`define_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate`
+`review_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/review_verilator_native_option_parser_sidecar_handoff_fixture_implementation_gate.json`
+`config/scaling_gates/define_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate.json`
 
 The larger project question is: identify the conditions where a hybrid CPU/GPU RTL coverage runtime can run modern LLM-serving-like RTL workloads correctly and quickly.
 
@@ -95,6 +95,7 @@ Commit cadence: keep commits small enough to review by one gate or one workflow 
 - Verilator native option parser-to-sidecar handoff boundary reviewed: `config/scaling_gates/review_verilator_native_option_parser_sidecar_handoff_boundary_gate.json` accepts only the adapter boundary and advances the current task to implementing a non-executing handoff fixture. `coverage_output_equivalence` is only a later sidecar correctness-policy reference here, not parser-populated compare evidence. The fixture must not populate resolved state files, generated reports, compare labels, coverage targets, manifest refs, host-probe metadata, runtime handoff, timing, arbitrary source closure, or automatic allocation.
 - Verilator native option parser-to-sidecar handoff fixture implemented: `config/scaling_gates/implement_verilator_native_option_parser_sidecar_handoff_fixture_gate.json` adds `src/tools/verilator_native_option_parser_sidecar_handoff.py`, an importable non-executing adapter helper. It preserves parser-owned Verilator inputs, emits `correctness_policy_ref` only as a later sidecar policy reference, rejects unexpected correctness-policy refs, and rejects parser values that already contain resolved sidecar outputs.
 - Verilator native option parser-to-sidecar handoff fixture reviewed: `config/scaling_gates/review_verilator_native_option_parser_sidecar_handoff_fixture_implementation_gate.json` accepts only the non-executing fixture implementation and advances the current task to defining sidecar plan-resolution boundaries. This still does not claim native parser support, sidecar runtime handoff, RTL simulation, timing, arbitrary source closure, or automatic allocation.
+- Verilator native option parser-to-sidecar plan-resolution boundary defined: `config/scaling_gates/define_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate.json` requires explicit sidecar context such as target, mode, template or registry entry, and source gate/manifest reference before an adapter payload may reach `sidecar_stage_plan`. Parser-owned inputs remain schedule values and preserved Verilator build inputs; source closure, filelist expansion, coverage-output target selection, host-probe metadata, state/report paths, compare labels, final compare policy, execution, timing, and automatic allocation stay sidecar-owned. The current task is reviewing that boundary, not claiming native parser support, runtime handoff, RTL simulation, timing, arbitrary RTL/filelist support, or automatic allocation.
 - Public reproduction smoke: `docs/results.md` lists the first dry-run commands to run before attempting full measurements.
 - Public release checklist: `docs/results.md` lists the final source-of-truth, path hygiene, smoke, evidence, non-claim, and contract-test checks before handoff.
 - Externalization readiness audit: `config/scaling_gates/public_benchmark_pack_externalization_readiness_audit.json` records the minimum review surfaces, smoke commands, release checks, and evidence policy for externalization.
@@ -724,6 +725,7 @@ The paged-attention/KV-cache repeat-median public-pack boundary is complete. The
 - Verilator native option parser-to-sidecar handoff boundary review accepted: `config/scaling_gates/review_verilator_native_option_parser_sidecar_handoff_boundary_gate.json` advances the current task to `implement_verilator_native_option_parser_sidecar_handoff_fixture_gate`.
 - Verilator native option parser-to-sidecar handoff fixture implemented: `config/scaling_gates/implement_verilator_native_option_parser_sidecar_handoff_fixture_gate.json` advances the current task to `review_verilator_native_option_parser_sidecar_handoff_fixture_implementation_gate`.
 - Verilator native option parser-to-sidecar handoff fixture review accepted: `config/scaling_gates/review_verilator_native_option_parser_sidecar_handoff_fixture_implementation_gate.json` advances the current task to `define_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate`.
+- Verilator native option parser-to-sidecar plan-resolution boundary defined: `config/scaling_gates/define_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate.json` advances the current task to `review_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate`.
 - config-generation validation breadth execution and subsequent candidate measurement/publication gates are summarized by `config/selection.json`, `docs/status.md`, and the tracked public-pack manifest instead of being listed here one gate file at a time
 - local candidate gate files under `records/scaling_gates/` are not public-pack source of truth until they are intentionally tracked and included by `python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run`
 - previous paged-attention/KV-cache dry-run commands: `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 256x1 --dry-run`, `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_paged_kv_cache_large.json --shape 1x64 --dry-run`, `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run`, and `python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 1x64 --dry-run`

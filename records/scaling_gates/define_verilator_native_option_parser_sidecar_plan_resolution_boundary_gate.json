@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate",
+  "status": "defined_verilator_native_option_parser_sidecar_plan_resolution_boundary",
+  "objective": "Define how the reviewed native-parser adapter payload may reach the existing sidecar stage-plan surface, without moving target selection, source closure, coverage-output target selection, host-probe metadata, state/report paths, compare labels, execution, timing, arbitrary RTL/filelist support, or automatic allocation into the parser layer.",
+  "source_implementation_review_gate": "config/scaling_gates/review_verilator_native_option_parser_sidecar_handoff_fixture_implementation_gate.json",
+  "current_priority": "review_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate",
+  "definition_decision": {
+    "selected_surface": "native_parser_adapter_payload_to_existing_sidecar_stage_plan_resolution_boundary",
+    "defined": true,
+    "weakest_point": "The accepted adapter payload still has no target, mode, template identity, source gate, coverage manifest, or host-probe metadata. Resolving a sidecar plan from only parser-preserved Verilator inputs would silently infer repo-specific semantics from parser evidence and violate the prior handoff boundary.",
+    "operator_goal": "A future native Verilator parser path should first produce the reviewed adapter payload. A separate sidecar plan-resolution layer may then combine that payload with explicit sidecar context to call or mirror the existing sidecar stage-plan helpers."
+  },
+  "accepted_input_boundary": {
+    "adapter_payload_module": "src/tools/verilator_native_option_parser_sidecar_handoff.py",
+    "adapter_payload_entrypoint": "native_parser_values_to_sidecar_adapter_payload",
+    "parser_owned_inputs_available_to_plan_resolution": [
+      "accelerator_mode",
+      "state_count",
+      "step_count",
+      "shape",
+      "ordinary_verilator_args",
+      "mdir",
+      "top_module",
+      "source_files",
+      "filelists",
+      "defines",
+      "include_dirs",
+      "warning_flags"
+    ],
+    "adapter_metadata_for_guards_only": [
+      "schema_version",
+      "surface",
+      "adapter_source_surface",
+      "source_boundary_status",
+      "state_and_report_naming_rules",
+      "correctness_policy_ref",
+      "correctness_policy_reference_status",
+      "sidecar_owned_resolution_status",
+      "unresolved_sidecar_responsibilities",
+      "non_claims"
+    ],
+    "parser_payload_must_not_supply": [
+      "target",
+      "mode",
+      "limit",
+      "phases",
+      "template",
+      "coverage_manifest",
+      "source_gate",
+      "host_probe_metadata",
+      "state_files",
+      "generated_reports",
+      "compare",
+      "compare_labels",
+      "verilator_command",
+      "verilator_command_argv"
+    ]
+  },
+  "required_explicit_sidecar_context": {
+    "required_before_plan_resolution": [
+      "target",
+      "mode",
+      "template or target registry entry",
+      "source gate or manifest reference when coverage-output target selection needs one"
+    ],
+    "conditional_inputs": [
+      "limit for dataset-backed targets",
+      "phases for resident workflows",
+      "template metadata for generated host-probe and state/report path rules"
+    ],
+    "first_allowed_plan_call_after_context_exists": "src/tools/hybrid_benchmark_sidecar_plan.py::sidecar_stage_plan(target=<explicit>, shape=payload.shape, mode=<explicit>, limit=<explicit_or_none>, phases=<explicit_or_default>)",
+    "filelist_rule": "filelists from parser payload remain preserved input paths until an explicit sidecar policy or reviewed template source-closure gate authorizes expansion."
+  },
+  "sidecar_owned_resolution_fields": {
+    "resolved_only_by_sidecar_plan_or_operator_layer": [
+      "source closure",
+      "filelist expansion",
+      "coverage output target",
+      "coverage gate or manifest reference",
+      "host-probe metadata",
+      "state authority",
+      "init state path",
+      "reference dump path",
+      "candidate dump path",
+      "compare report path",
+      "compare labels",
+      "generated reports",
+      "final compare policy",
+      "sidecar handoff contract"
+    ],
+    "existing_authorities": [
+      "src/tools/hybrid_benchmark_sidecar_plan.py::sidecar_stage_plan",
+      "src/tools/hybrid_benchmark_sidecar_details.py::stage_details",
+      "src/tools/hybrid_benchmark_sidecar_operator.py::sidecar_handoff_contract"
+    ],
+    "correctness_policy_ref_mapping": {
+      "adapter_field": "correctness_policy_ref",
+      "accepted_value": "coverage_output_equivalence",
+      "meaning": "reference-only requirement for the later sidecar compare stage",
+      "not_evidence": true,
+      "must_match_later_sidecar_policy": true
+    }
+  },
+  "forbidden_boundary_crossings": [
+    "target registry lookup from parser-owned fields alone",
+    "source closure inference in the parser or adapter payload",
+    "filelist dependency inference before a reviewed sidecar policy",
+    "coverage manifest selection by the parser",
+    "host-probe metadata selection by the parser",
+    "state or report path materialization by the parser",
+    "compare label generation by the parser",
+    "calling sidecar_handoff_contract from the parser adapter",
+    "calling synthesized_verilator_command_argv from the parser adapter",
+    "calling sidecar_operator_plan from the parser adapter",
+    "calling shim_report or CLI main paths from the parser adapter",
+    "calling efficiency_estimate from the parser adapter",
+    "treating correctness_policy_ref as CPU-vs-hybrid compare evidence",
+    "automatic GPU allocation or optimal block-size selection",
+    "RTL simulation execution",
+    "timing measurement"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate",
+    "must_decide": [
+      "whether the adapter payload is correctly limited to parser-owned inputs plus guard metadata",
+      "whether explicit target/mode/template or registry context is required before sidecar plan resolution",
+      "whether sidecar-owned source closure, coverage-output target selection, host-probe metadata, state/report paths, compare labels, and final compare policy remain outside the parser layer",
+      "whether correctness_policy_ref is only a reference to a later sidecar compare policy and not compare evidence",
+      "whether the definition avoids runtime, execution, timing, arbitrary RTL/filelist support, automatic allocation, upstream regression, and upstream landing claims"
+    ],
+    "must_not_claim": [
+      "native Verilator parser support beyond the scoped parser smoke",
+      "sidecar runtime handoff validation",
+      "RTL simulation execution",
+      "coverage-output equivalence for a native-parser flow",
+      "new timing or speedup evidence",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "arbitrary RTL dependency inference",
+      "automatic optimal GPU allocation",
+      "upstream Verilator regression success",
+      "upstream patch landing"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "sidecar_handoff_validation_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_sidecar_plan_resolution_boundary_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not sidecar runtime handoff validation",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a native-parser flow",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not parser inference of coverage manifests, host-probe metadata, source closure, state paths, or report paths",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
