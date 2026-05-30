@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+  "status": "accepted_verilator_native_option_parser_overlay_patch_parser_integer_hardening_boundary",
+  "objective": "Review the parser integer hardening definition for the repaired Verilator native option parser overlay patch, accept only the strict-integer hardening boundary, and select an in-place overlay patch implementation gate without claiming hardening success, sidecar execution, timing, arbitrary RTL/filelist support, or automatic allocation.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json",
+  "source_behavior_review_gate": "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_behavior_run_gate.json",
+  "current_priority": "implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+  "review_decision": {
+    "accepted": true,
+    "weakest_point": "The definition correctly identifies the strict-integer gap, but no patch has been changed yet. The current overlay still uses std::atoi, so suffix cases such as 64abc and 1abc cannot be proven by a run-only gate; they require replacing prefix parsing with full-token integer validation. Separate-token -1 cases may expose Verilator tokenizer behavior before value validation, so a run gate must classify that explicitly.",
+    "accepted_because": [
+      "the definition is downstream of a scoped parser-only smoke result and does not reinterpret that smoke as strict integer parsing",
+      "the required non-numeric suffix cases target the known std::atoi weakness directly",
+      "the required negative-count cases keep the source-review candidate inputs while recording that tokenizer behavior may be observed separately from integer validation",
+      "compact shape spelling remains outside the native minimum and sidecar handoff remains deferred",
+      "the implementation boundary keeps the existing descriptor and patch paths instead of introducing a second competing patch artifact",
+      "the likely source touch stays limited to V3Options.cpp, with V3Options.h only allowed if a minimal helper signature requires it"
+    ]
+  },
+  "accepted_boundary": {
+    "validation_kind": "built_verilator_binary_parser_integer_hardening_smoke",
+    "required_case_count": 4,
+    "required_case_names": [
+      "reject_negative_states_separate_token",
+      "reject_negative_steps_separate_token",
+      "reject_non_numeric_states_suffix",
+      "reject_non_numeric_steps_suffix"
+    ],
+    "suffix_cases_require_patch_change_before_success_claim": true,
+    "negative_cases_may_report_tokenizer_behavior": true,
+    "equals_form_negative_values_are_optional_control_cases": true,
+    "compact_shape_spelling_outside_native_minimum": true,
+    "sidecar_handoff_deferred": true,
+    "uses_generated_reports_as_source_of_truth": false,
+    "uses_generated_artifacts_as_source_of_truth": false
+  },
+  "accepted_implementation_boundary": {
+    "next_implementation_allowed": true,
+    "allowed_patch_strategy": "update_existing_overlay_patch_in_place",
+    "descriptor_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.json",
+    "patch_path": "overlays/verilator/patches/verilator_native_option_parser_sidecar_gpu_v5_048.patch",
+    "primary_upstream_file": "src/V3Options.cpp",
+    "allowed_extra_upstream_files_if_needed": [
+      "src/V3Options.h"
+    ],
+    "candidate_parser_change": "replace std::atoi prefix parsing with full-token positive integer parsing that rejects empty, negative, zero, and suffix-bearing values",
+    "must_preserve_existing_positive_behavior": [
+      "accept_sidecar_gpu_64x1",
+      "accept_sidecar_gpu_1x64"
+    ],
+    "must_preserve_existing_rejection_behavior": [
+      "reject_unknown_accelerator",
+      "reject_shape_without_accelerator",
+      "reject_missing_states",
+      "reject_missing_steps",
+      "reject_zero_states",
+      "reject_zero_steps"
+    ],
+    "must_keep_out_of_scope": [
+      "src/VlcMain.cpp",
+      "src/V3OptionParser.*",
+      "docs/guide/exe_verilator.rst",
+      "test_regress/t/",
+      "runtime ABI plumbing",
+      "sidecar execution",
+      "--sim-accel-shape",
+      "--sim-accel-estimate-efficiency"
+    ]
+  },
+  "required_next_gate": {
+    "name": "implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+    "must_do": [
+      "update the existing overlay patch in place to replace std::atoi prefix parsing with full-token positive integer validation",
+      "update the existing descriptor metadata only as needed to point at this review gate",
+      "record descriptor JSON validation",
+      "record clean-checkout git apply --check for the patched overlay",
+      "record post-apply location sanity for the changed V3Options.cpp helper",
+      "keep hardening smoke execution and Verilator rebuild evidence for a later run gate unless the implementation gate explicitly remains definition/apply-check only"
+    ],
+    "must_not_claim": [
+      "strict integer parsing passes through a built Verilator binary",
+      "sidecar runtime or ABI integration",
+      "RTL simulation execution",
+      "coverage-output equivalence for a native-parser flow",
+      "Verilator upstream regression tests pass",
+      "the patch has landed upstream",
+      "arbitrary RTL or filelist support",
+      "automatic optimal GPU allocation",
+      "new simulation timing evidence"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "source_definition_gate_accepted": true,
+    "parser_integer_hardening_boundary_accepted": true,
+    "next_implementation_allowed": true,
+    "patch_modified_by_this_gate": false,
+    "descriptor_modified_by_this_gate": false,
+    "hardening_smoke_executed_by_this_gate": false,
+    "strict_integer_parsing_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_support_claim_allowed_by_gate_alone": false,
+    "sidecar_handoff_claim_allowed_by_gate_alone": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "rtl_simulation_execution_allowed_by_this_gate": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "upstream_regression_success_claim_allowed_by_gate_alone": false,
+    "upstream_patch_landed_claim_allowed_by_gate_alone": false,
+    "gem_comparison_claim_allowed_by_gate_alone": false,
+    "production_llm_serving_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+  "non_claims": [
+    "not strict integer parsing implementation",
+    "not strict integer parsing validation through a built Verilator binary",
+    "not native Verilator parser support",
+    "not sidecar handoff validation",
+    "not sidecar runtime execution",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a native-parser flow",
+    "not a landed upstream Verilator patch",
+    "not Verilator regression-test success",
+    "not new simulation timing evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not arbitrary RTL dependency inference",
+    "not automatic optimal GPU allocation",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

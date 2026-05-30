@@ -10,11 +10,20 @@ GATE = (
     / "scaling_gates"
     / "define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json"
 )
+REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json"
+)
 
 
 class VerilatorNativeOptionParserIntegerHardeningGateTest(unittest.TestCase):
     def read_gate(self) -> dict[str, object]:
         return json.loads(GATE.read_text(encoding="utf-8"))
+
+    def read_review_gate(self) -> dict[str, object]:
+        return json.loads(REVIEW_GATE.read_text(encoding="utf-8"))
 
     def test_definition_selects_strict_integer_hardening_boundary(self) -> None:
         gate = self.read_gate()
@@ -71,6 +80,35 @@ class VerilatorNativeOptionParserIntegerHardeningGateTest(unittest.TestCase):
         self.assertEqual(
             gate["next_task"],
             "review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+        )
+
+    def test_review_accepts_implementation_not_run_only_gate(self) -> None:
+        review = self.read_review_gate()
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate.json",
+        )
+        self.assertEqual(
+            review["current_priority"],
+            "implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
+        )
+        self.assertTrue(review["accepted_boundary"]["suffix_cases_require_patch_change_before_success_claim"])
+        self.assertTrue(review["accepted_boundary"]["negative_cases_may_report_tokenizer_behavior"])
+
+        implementation = review["accepted_implementation_boundary"]
+        self.assertTrue(implementation["next_implementation_allowed"])
+        self.assertEqual(implementation["allowed_patch_strategy"], "update_existing_overlay_patch_in_place")
+        self.assertEqual(implementation["primary_upstream_file"], "src/V3Options.cpp")
+        self.assertIn("replace std::atoi", implementation["candidate_parser_change"])
+
+        policy = review["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertFalse(policy["strict_integer_parsing_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["sidecar_handoff_claim_allowed_by_gate_alone"])
+        self.assertEqual(
+            review["next_task"],
+            "implement_verilator_native_option_parser_overlay_patch_parser_integer_hardening_gate",
         )
 
 
