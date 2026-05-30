@@ -19,6 +19,12 @@ REVIEW_IMPLEMENTATION_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate.json"
 )
+PAYLOAD_VALIDATION_HARDENING_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "define_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate.json"
+)
 
 BASE_DIRECT_ARGS = [
     "verilator",
@@ -120,6 +126,44 @@ class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase)
             "define_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate",
         )
         self.assertFalse(review["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+
+    def test_payload_validation_hardening_definition_requires_full_parser_stub_payload(self) -> None:
+        gate = json.loads(PAYLOAD_VALIDATION_HARDENING_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_implementation_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate",
+        )
+        authority = gate["parser_payload_schema_authority"]
+        self.assertEqual(authority["source_field_tuple"], "HANDOFF_FIELDS")
+        self.assertEqual(authority["canonical_surface"], "native_verilator_parser_stub_fixture")
+        self.assertTrue(authority["exact_parser_stub_keyset_required"])
+
+        required = gate["required_parser_payload_fields"]["complete_required_keyset"]
+        for field in (
+            "schema_version",
+            "surface",
+            "mdir",
+            "top_module",
+            "source_boundary_status",
+            "state_and_report_naming_rules",
+            "non_claims",
+        ):
+            self.assertIn(field, required)
+        rejections = gate["required_rejections_before_boundary_metadata"]
+        self.assertIn("missing any complete_required_keyset field", rejections)
+        self.assertIn("unknown parser_payload keys outside the parser-stub handoff keyset", rejections)
+        self.assertIn("mdir or top_module missing, null, empty, or non-string", rejections)
+        self.assertFalse(gate["acceptance_policy"]["implementation_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+        self.assertEqual(
+            gate["required_next_gate"]["name"],
+            "review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate",
+        )
 
     def test_accepts_expanded_64x1_and_returns_reference_only_boundary(self) -> None:
         (fixture,) = _load_tool_modules("verilator_native_option_parser_direct_command_path_fixture")

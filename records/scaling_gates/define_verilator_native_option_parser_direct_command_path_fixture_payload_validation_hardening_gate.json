@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate",
+  "status": "defined_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening",
+  "objective": "Define the smallest parser-payload validation hardening needed for the non-executing direct command-path fixture before any sidecar-plan materialization or direct command execution: require the reviewed parser-stub identity and preserved build-input fields, reject malformed or mismatched hand-built payloads before boundary metadata is returned, and keep the fixture reference-only.",
+  "source_implementation_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_implementation_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate",
+  "definition_decision": {
+    "defined": true,
+    "selected_surface": "direct_command_parser_payload_required_field_validation_boundary",
+    "weakest_point": "The accepted helper already validates argv through the parser-stub fixture, but the parser_payload entrypoint can still accept hand-built payloads missing reviewed parser-owned identity or build-input fields such as schema_version, surface, mdir, or top_module. That must fail closed before returning reference-only sidecar_plan_boundary metadata.",
+    "operator_goal": "A future implementation may harden the existing importable helper in place by validating parser_payload against the parser-stub handoff schema before copying preserved build inputs or constructing sidecar_plan_boundary metadata, while still adding no public CLI, execution, timing, allocation, runtime/ABI change, or broad native Verilator support claim."
+  },
+  "parser_payload_schema_authority": {
+    "source_module": "src/tools/verilator_native_option_parser_stub_fixture.py",
+    "source_function": "parse_verilator_native_option_stub",
+    "source_field_tuple": "HANDOFF_FIELDS",
+    "canonical_surface": "native_verilator_parser_stub_fixture",
+    "canonical_schema_version": 1,
+    "canonical_accelerator_mode": "sidecar-gpu",
+    "canonical_correctness_policy": "coverage_output_equivalence",
+    "canonical_source_boundary_status": "preserved_only_not_resolved",
+    "exact_parser_stub_keyset_required": true,
+    "future_parser_schema_growth_requires_new_gate_or_review": true
+  },
+  "required_parser_payload_fields": {
+    "identity_and_schedule": [
+      "schema_version",
+      "surface",
+      "accelerator_mode",
+      "correctness_policy",
+      "state_count",
+      "step_count",
+      "shape"
+    ],
+    "preserved_build_inputs": [
+      "ordinary_verilator_args",
+      "mdir",
+      "top_module",
+      "source_files",
+      "filelists",
+      "defines",
+      "include_dirs",
+      "warning_flags"
+    ],
+    "parser_stub_reference_fields": [
+      "source_boundary_status",
+      "state_and_report_naming_rules",
+      "non_claims"
+    ],
+    "complete_required_keyset": [
+      "schema_version",
+      "surface",
+      "accelerator_mode",
+      "state_count",
+      "step_count",
+      "shape",
+      "ordinary_verilator_args",
+      "mdir",
+      "top_module",
+      "source_files",
+      "filelists",
+      "defines",
+      "include_dirs",
+      "warning_flags",
+      "source_boundary_status",
+      "state_and_report_naming_rules",
+      "correctness_policy",
+      "non_claims"
+    ]
+  },
+  "required_value_validation": {
+    "schema_version": {
+      "required_value": 1,
+      "reject_missing": true
+    },
+    "surface": {
+      "required_value": "native_verilator_parser_stub_fixture",
+      "reject_missing": true
+    },
+    "accelerator_mode": {
+      "required_value": "sidecar-gpu",
+      "reject_missing": true
+    },
+    "correctness_policy": {
+      "required_value": "coverage_output_equivalence",
+      "meaning": "later sidecar compare policy reference only, not direct fixture compare evidence"
+    },
+    "source_boundary_status": {
+      "required_value": "preserved_only_not_resolved",
+      "meaning": "parser payload preserves Verilator build inputs but does not resolve source closure"
+    },
+    "state_and_report_naming_rules": {
+      "required_type": "non_empty_string",
+      "meaning": "parser-stub provenance only; sidecar-owned state/report paths are still not materialized by this fixture"
+    },
+    "non_claims": {
+      "required_type": "non_empty_list_of_strings",
+      "meaning": "parser-stub provenance field, not an authority to execute or compare"
+    },
+    "state_count": {
+      "required_type": "positive_int",
+      "bool_allowed": false
+    },
+    "step_count": {
+      "required_type": "positive_int",
+      "bool_allowed": false
+    },
+    "shape": {
+      "required_rule": "shape must equal f'{state_count}x{step_count}' after strict positive-int validation"
+    },
+    "mdir": {
+      "required_type": "non_empty_string"
+    },
+    "top_module": {
+      "required_type": "non_empty_string"
+    },
+    "ordinary_verilator_args": {
+      "required_type": "list_of_strings"
+    },
+    "source_files": {
+      "required_type": "list_of_strings"
+    },
+    "filelists": {
+      "required_type": "list_of_strings"
+    },
+    "defines": {
+      "required_type": "list_of_strings"
+    },
+    "include_dirs": {
+      "required_type": "list_of_strings"
+    },
+    "warning_flags": {
+      "required_type": "list_of_strings"
+    }
+  },
+  "required_rejections_before_boundary_metadata": [
+    "missing any complete_required_keyset field",
+    "any required field set to null",
+    "unknown parser_payload keys outside the parser-stub handoff keyset",
+    "schema_version not equal to 1",
+    "surface not equal to native_verilator_parser_stub_fixture",
+    "accelerator_mode not equal to sidecar-gpu",
+    "correctness_policy not equal to coverage_output_equivalence",
+    "source_boundary_status not equal to preserved_only_not_resolved",
+    "state_count or step_count that is bool, zero, negative, or non-int",
+    "shape mismatch after strict positive-int validation",
+    "mdir or top_module missing, null, empty, or non-string",
+    "ordinary_verilator_args, source_files, filelists, defines, include_dirs, or warning_flags missing or not list[str]",
+    "non_claims missing, empty, or not list[str]",
+    "parser_payload containing any sidecar-owned field listed by the direct fixture SIDECAR_OWNED_FIELDS",
+    "missing explicit sidecar_context target, mode, template_or_target_registry_entry, or source_gate_or_manifest_ref"
+  ],
+  "validation_order": [
+    "reject sidecar-owned parser fields",
+    "validate exact parser-stub keyset and required value semantics",
+    "validate state_count, step_count, and shape",
+    "validate preserved build-input field types and non-empty mdir/top_module",
+    "validate explicit sidecar_context",
+    "only then copy parser_payload and return reference-only sidecar_plan_boundary metadata"
+  ],
+  "allowed_implementation_scope": {
+    "module": "src/tools/verilator_native_option_parser_direct_command_path_fixture.py",
+    "primary_entrypoint_function": "define_direct_command_path_sidecar_plan_fixture",
+    "parser_payload_entrypoint_function": "direct_command_parser_payload_to_sidecar_plan_fixture",
+    "in_place_helper_hardening_allowed_by_next_review": true,
+    "split_helper_allowed_if_line_guard_requires_it": true,
+    "new_public_cli_allowed": false,
+    "sidecar_stage_plan_invoked": false,
+    "sidecar_handoff_contract_invoked": false,
+    "command_synthesis_invoked": false,
+    "operator_plan_invoked": false,
+    "efficiency_estimate_invoked": false,
+    "new_execution_allowed": false,
+    "new_measurement_allowed": false,
+    "runtime_or_abi_change_allowed": false,
+    "source_closure_inference_allowed": false,
+    "filelist_expansion_allowed": false,
+    "automatic_gpu_allocation_allowed": false
+  },
+  "required_tests_for_next_implementation": [
+    "parser_payload missing schema_version rejects before sidecar_plan_boundary metadata is returned",
+    "parser_payload missing surface rejects before sidecar_plan_boundary metadata is returned",
+    "parser_payload with surface other than native_verilator_parser_stub_fixture rejects",
+    "parser_payload missing mdir rejects before parser_preserved_build_inputs are returned",
+    "parser_payload missing top_module rejects before parser_preserved_build_inputs are returned",
+    "parser_payload with non-list or non-string build-input list entries rejects",
+    "parser_payload with bool state_count or bool step_count rejects before shape comparison",
+    "parser_payload with unknown non-sidecar keys rejects as outside the parser-stub handoff keyset",
+    "parser_payload with sidecar-owned fields still rejects before all boundary metadata",
+    "valid parser-stub payload from expanded argv still returns reference-only boundary metadata with all execution and measurement flags false"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate",
+    "must_decide": [
+      "whether exact parser-stub handoff keyset validation is the correct minimum hardening boundary",
+      "whether source_boundary_status, state_and_report_naming_rules, and non_claims are classified clearly as parser-stub provenance fields rather than execution authority",
+      "whether list[str] validation and non-empty mdir/top_module checks are sufficient before returning preserved build-input metadata",
+      "whether the next implementation may harden the existing importable helper in place or must split reusable validation to stay under line guards",
+      "whether sidecar stage materialization, command execution, timing, source-closure inference, filelist expansion, runtime/ABI changes, and automatic allocation remain out of scope"
+    ],
+    "must_not_claim": [
+      "native Verilator option support",
+      "native parser integration is complete",
+      "direct Verilator command execution",
+      "sidecar stage materialization",
+      "sidecar stage execution",
+      "RTL simulation execution",
+      "coverage-output equivalence for a direct native-parser flow",
+      "timing or speedup evidence",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "source-closure inference",
+      "automatic optimal GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "payload_validation_hardening_boundary_defined": true,
+    "implementation_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "direct_verilator_command_execution_claim_allowed_by_gate_alone": false,
+    "sidecar_stage_plan_materialization_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate",
+  "non_claims": [
+    "not native Verilator option support",
+    "not native Verilator parser implementation completion",
+    "not direct Verilator command execution",
+    "not sidecar stage-plan materialization",
+    "not sidecar stage execution",
+    "not command_argv runtime authority",
+    "not operator-plan runtime execution",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a direct native-parser flow",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not source-closure or filelist dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
