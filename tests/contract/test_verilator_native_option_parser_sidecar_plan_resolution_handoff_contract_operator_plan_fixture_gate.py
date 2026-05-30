@@ -34,6 +34,12 @@ IMPLEMENT_HARDENING_GATE = (
     / "scaling_gates"
     / "implement_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate.json"
 )
+REVIEW_IMPLEMENT_HARDENING_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_implementation_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPlanFixtureGateTest(
@@ -53,6 +59,9 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
 
     def read_implement_hardening_gate(self) -> dict[str, object]:
         return json.loads(IMPLEMENT_HARDENING_GATE.read_text(encoding="utf-8"))
+
+    def read_review_implement_hardening_gate(self) -> dict[str, object]:
+        return json.loads(REVIEW_IMPLEMENT_HARDENING_GATE.read_text(encoding="utf-8"))
 
     def test_gate_records_importable_operator_plan_fixture(self) -> None:
         gate = self.read_gate()
@@ -407,6 +416,46 @@ class VerilatorNativeOptionParserSidecarPlanResolutionHandoffContractOperatorPla
         self.assertFalse(gate["acceptance_policy"]["complete_adversarial_mapping_schema_validation_claim_allowed_by_gate_alone"])
         self.assertIn("not command execution", gate["non_claims"])
         self.assertIn("not complete adversarial Mapping schema validation", gate["non_claims"])
+
+    def test_hardening_implementation_review_accepts_strict_metadata_boundary(self) -> None:
+        review = self.read_review_implement_hardening_gate()
+
+        self.assertEqual(
+            review["source_implementation_gate"],
+            "config/scaling_gates/implement_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_fixture_hardening_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate",
+        )
+        accepted = review["accepted_hardening"]
+        self.assertTrue(accepted["positive_int_helper_rejects_bool"])
+        self.assertTrue(accepted["optional_int_helper_rejects_bool"])
+        self.assertTrue(accepted["stage_plan_phases_validated_before_authorities"])
+        self.assertTrue(accepted["stage_plan_limit_validated_before_authorities"])
+        self.assertTrue(accepted["hybrid_sidecar_run_details_validated_before_command_builder"])
+        self.assertTrue(accepted["parser_schedule_cross_check_counts_validated_before_equality_comparison"])
+        self.assertIn("stage_plan.limit", accepted["strict_integer_fields"])
+
+    def test_hardening_implementation_review_allows_definition_only_execution_boundary(self) -> None:
+        review = self.read_review_implement_hardening_gate()
+
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "define_verilator_native_option_parser_sidecar_plan_resolution_handoff_contract_operator_plan_execution_boundary_gate",
+        )
+        policy = review["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertTrue(policy["implementation_accepted"])
+        self.assertTrue(policy["next_execution_boundary_definition_allowed"])
+        self.assertTrue(policy["next_gate_must_be_definition_only"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["timing_or_speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["arbitrary_filelist_support_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone"])
+        self.assertIn("not command execution", review["non_claims"])
+        self.assertIn("not coverage-output equivalence for a native-parser flow", review["non_claims"])
 
 
 if __name__ == "__main__":
