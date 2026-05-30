@@ -10,6 +10,10 @@ from hybrid_benchmark_specs import (
     CORRECTNESS_POLICY_COVERAGE_OUTPUT,
     KIND_SLICE_TEMPLATE,
     SIDECAR_ACCEL,
+    STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+    STATUS_PLANNED_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
+    STATUS_READY_FOR_VERILATOR_OPTION_SHIM,
+    STATUS_UNSUPPORTED_FOR_STAGE_PLAN,
 )
 from verilator_native_option_parser_sidecar_handoff import (
     ADAPTER_SURFACE,
@@ -146,6 +150,50 @@ def _preserved_build_inputs(adapter_payload: Mapping[str, object]) -> dict[str, 
     return {field: adapter_payload.get(field) for field in PARSER_PRESERVED_BUILD_INPUT_FIELDS}
 
 
+def _plan_resolution_readiness(plan: Mapping[str, object]) -> tuple[str, dict[str, object]]:
+    stage_status = plan.get("status")
+    if not isinstance(stage_status, str) or not stage_status:
+        raise NativeParserSidecarPlanResolutionError("sidecar plan must include a non-empty status")
+
+    readiness = plan.get("verilator_option_readiness")
+    readiness_status = None
+    missing_readiness_inputs: object = []
+    if isinstance(readiness, Mapping):
+        status = readiness.get("status")
+        if isinstance(status, str) and status:
+            readiness_status = status
+        missing = readiness.get("missing", [])
+        if isinstance(missing, list):
+            missing_readiness_inputs = missing
+
+    reason = plan.get("reason")
+    if not isinstance(reason, str):
+        reason = None
+
+    ready = stage_status == "planned" and readiness_status == STATUS_READY_FOR_VERILATOR_OPTION_SHIM
+    if ready:
+        outer_status = STATUS_READY_FOR_VERILATOR_OPTION_SHIM
+        not_ready_reason = None
+    elif stage_status == STATUS_UNSUPPORTED_FOR_STAGE_PLAN:
+        outer_status = STATUS_UNSUPPORTED_FOR_STAGE_PLAN
+        not_ready_reason = reason
+    elif stage_status == STATUS_PLANNED_NOT_READY_FOR_VERILATOR_OPTION_SHIM:
+        outer_status = STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM
+        not_ready_reason = reason
+    else:
+        outer_status = STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM
+        not_ready_reason = reason or f"sidecar_stage_plan status {stage_status!r} is not direct-Verilator ready"
+
+    return outer_status, {
+        "stage_plan_status": stage_status,
+        "verilator_option_readiness_status": readiness_status,
+        "ready_for_direct_verilator_option": ready,
+        "not_ready_reason": not_ready_reason,
+        "status_source": "sidecar_stage_plan.status plus verilator_option_readiness.status",
+        "missing_readiness_inputs": missing_readiness_inputs,
+    }
+
+
 def resolve_native_parser_adapter_payload_to_sidecar_plan(
     adapter_payload: Mapping[str, object],
     *,
@@ -170,11 +218,12 @@ def resolve_native_parser_adapter_payload_to_sidecar_plan(
         raise NativeParserSidecarPlanResolutionError(
             "sidecar plan correctness policy does not match adapter correctness_policy_ref"
         )
+    outer_status, readiness = _plan_resolution_readiness(plan)
 
     return {
         "schema_version": 1,
         "surface": PLAN_RESOLUTION_SURFACE,
-        "status": "planned",
+        "status": outer_status,
         "adapter_payload_surface": adapter_payload["surface"],
         "sidecar_context": {
             "target": target,
@@ -204,10 +253,12 @@ def resolve_native_parser_adapter_payload_to_sidecar_plan(
         "measurement_performed": False,
         "correctness_policy_ref_status": "reference_only_not_compare_evidence",
         "correctness_policy": plan["correctness_policy"],
+        "plan_resolution_readiness": readiness,
         "stage_plan": plan,
         "non_claims": [
             "plan-resolution fixture does not execute commands",
             "plan-resolution fixture is not coverage-output equivalence evidence",
+            "ready_for_verilator_option_shim is readiness only, not native Verilator execution evidence",
             "parser source files and filelists remain preserved inputs, not inferred source closure",
             "sidecar_handoff_contract, command synthesis, efficiency estimation, timing, and runtime ABI remain out of scope",
         ],

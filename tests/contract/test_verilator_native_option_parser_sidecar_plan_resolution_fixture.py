@@ -70,6 +70,21 @@ def _sidecar_context() -> dict[str, object]:
 
 
 class VerilatorNativeOptionParserSidecarPlanResolutionFixtureTest(unittest.TestCase):
+    def assert_non_executing_plan_resolution(self, resolved: dict[str, object]) -> None:
+        self.assertFalse(resolved["sidecar_handoff_contract_invoked"])
+        self.assertFalse(resolved["command_synthesis_invoked"])
+        self.assertFalse(resolved["execution_performed"])
+        self.assertFalse(resolved["measurement_performed"])
+        self.assertEqual(resolved["correctness_policy_ref_status"], "reference_only_not_compare_evidence")
+        for field in (
+            "sidecar_handoff_contract",
+            "operator_plan",
+            "verilator_command",
+            "verilator_command_argv",
+            "timing",
+        ):
+            self.assertNotIn(field, resolved)
+
     def test_implementation_gate_records_non_executing_fixture_scope(self) -> None:
         gate = json.loads(IMPLEMENTATION_GATE.read_text(encoding="utf-8"))
 
@@ -106,14 +121,15 @@ class VerilatorNativeOptionParserSidecarPlanResolutionFixtureTest(unittest.TestC
         )
 
         self.assertEqual(resolved["surface"], "native_verilator_parser_sidecar_plan_resolution_fixture")
-        self.assertEqual(resolved["status"], "planned")
+        self.assertEqual(resolved["status"], "ready_for_verilator_option_shim")
         self.assertTrue(resolved["sidecar_stage_plan_invoked"])
-        self.assertFalse(resolved["sidecar_handoff_contract_invoked"])
-        self.assertFalse(resolved["command_synthesis_invoked"])
-        self.assertFalse(resolved["execution_performed"])
-        self.assertFalse(resolved["measurement_performed"])
-        self.assertEqual(resolved["correctness_policy_ref_status"], "reference_only_not_compare_evidence")
+        self.assert_non_executing_plan_resolution(resolved)
         self.assertEqual(resolved["stage_plan"]["status"], "planned")
+        readiness = resolved["plan_resolution_readiness"]
+        self.assertEqual(readiness["stage_plan_status"], "planned")
+        self.assertEqual(readiness["verilator_option_readiness_status"], "ready_for_verilator_option_shim")
+        self.assertTrue(readiness["ready_for_direct_verilator_option"])
+        self.assertIsNone(readiness["not_ready_reason"])
         self.assertEqual(resolved["stage_plan"]["target"], "pulp_ita_mha")
         self.assertEqual(resolved["stage_plan"]["shape"], "64x1")
         self.assertEqual(resolved["stage_plan"]["template"], "config/slice_launch_templates/pulp_ita_mha.json")
@@ -208,6 +224,50 @@ class VerilatorNativeOptionParserSidecarPlanResolutionFixtureTest(unittest.TestC
                 wrong_policy,
                 sidecar_context=_sidecar_context(),
             )
+
+    def test_resident_modes_are_not_ready_direct_verilator_plan_resolution(self) -> None:
+        (plan_resolution,) = _load_tool_modules("verilator_native_option_parser_sidecar_plan_resolution")
+
+        for mode in ("resident-state-reuse", "persistent-resident-state-abi"):
+            context = _sidecar_context()
+            context["mode"] = mode
+            with self.subTest(mode=mode):
+                resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+                    _adapter_payload(),
+                    sidecar_context=context,
+                )
+
+                self.assertEqual(resolved["status"], "not_ready_for_verilator_option_shim")
+                self.assert_non_executing_plan_resolution(resolved)
+                self.assertEqual(resolved["stage_plan"]["status"], "planned_not_ready_for_verilator_option_shim")
+                readiness = resolved["plan_resolution_readiness"]
+                self.assertEqual(readiness["stage_plan_status"], "planned_not_ready_for_verilator_option_shim")
+                self.assertEqual(readiness["verilator_option_readiness_status"], "not_ready_for_verilator_option_shim")
+                self.assertFalse(readiness["ready_for_direct_verilator_option"])
+                self.assertIn("direct Verilator resident sidecar handoff is not ready", readiness["not_ready_reason"])
+                self.assertIn(
+                    "direct_verilator_resident_sidecar_handoff",
+                    resolved["stage_plan"]["verilator_option_readiness"]["missing"],
+                )
+
+    def test_unsupported_mode_is_not_planned_native_verilator_evidence(self) -> None:
+        (plan_resolution,) = _load_tool_modules("verilator_native_option_parser_sidecar_plan_resolution")
+        context = _sidecar_context()
+        context["mode"] = "unknown-mode"
+
+        resolved = plan_resolution.resolve_native_parser_adapter_payload_to_sidecar_plan(
+            _adapter_payload(),
+            sidecar_context=context,
+        )
+
+        self.assertEqual(resolved["status"], "unsupported_for_stage_plan")
+        self.assert_non_executing_plan_resolution(resolved)
+        self.assertEqual(resolved["stage_plan"]["status"], "unsupported_for_stage_plan")
+        readiness = resolved["plan_resolution_readiness"]
+        self.assertEqual(readiness["stage_plan_status"], "unsupported_for_stage_plan")
+        self.assertIsNone(readiness["verilator_option_readiness_status"])
+        self.assertFalse(readiness["ready_for_direct_verilator_option"])
+        self.assertIn("not the template sidecar build/run/compare plan", readiness["not_ready_reason"])
 
 
 if __name__ == "__main__":

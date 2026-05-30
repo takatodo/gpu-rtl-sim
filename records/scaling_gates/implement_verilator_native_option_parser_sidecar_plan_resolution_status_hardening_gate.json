@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "gate": "implement_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_gate",
+  "status": "implemented_verilator_native_option_parser_sidecar_plan_resolution_status_hardening",
+  "objective": "Implement in-place status/readiness hardening for the non-executing native-parser adapter-payload to sidecar plan-resolution fixture, so unsupported or not-ready sidecar_stage_plan results cannot be mistaken for ready direct-Verilator plan-resolution evidence before any sidecar handoff contract, command synthesis, execution, timing, runtime/ABI, arbitrary RTL/filelist support, automatic allocation, upstream regression success, or upstream landing claim.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_gate.json",
+  "current_priority": "review_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_implementation_gate",
+  "implemented_surface": {
+    "module": "src/tools/verilator_native_option_parser_sidecar_plan_resolution.py",
+    "primary_entrypoint_function": "resolve_native_parser_adapter_payload_to_sidecar_plan",
+    "helper_added": "_plan_resolution_readiness",
+    "status_authority": "src/tools/hybrid_benchmark_sidecar_plan.py::sidecar_stage_plan",
+    "outer_status_is_readiness_classification": true,
+    "nested_stage_plan_status_preserved": true,
+    "plan_resolution_readiness_added": true,
+    "sidecar_stage_plan_invoked_after_explicit_context": true,
+    "sidecar_handoff_contract_invoked": false,
+    "command_synthesis_invoked": false,
+    "operator_plan_invoked": false,
+    "efficiency_estimate_invoked": false,
+    "new_public_cli_added": false,
+    "runtime_or_abi_changed": false,
+    "new_execution_added": false,
+    "new_measurement_added": false,
+    "source_closure_inferred": false,
+    "filelists_expanded": false,
+    "automatic_gpu_allocation_used": false
+  },
+  "implemented_status_mapping": {
+    "stage_plan_planned_with_ready_readiness": {
+      "outer_status": "ready_for_verilator_option_shim",
+      "ready_for_direct_verilator_option": true
+    },
+    "stage_plan_planned_not_ready_for_verilator_option_shim": {
+      "outer_status": "not_ready_for_verilator_option_shim",
+      "preserved_stage_plan_status": "planned_not_ready_for_verilator_option_shim",
+      "ready_for_direct_verilator_option": false
+    },
+    "stage_plan_unsupported_for_stage_plan": {
+      "outer_status": "unsupported_for_stage_plan",
+      "preserved_stage_plan_status": "unsupported_for_stage_plan",
+      "ready_for_direct_verilator_option": false
+    }
+  },
+  "plan_resolution_readiness_contract": {
+    "field": "plan_resolution_readiness",
+    "fields": [
+      "stage_plan_status",
+      "verilator_option_readiness_status",
+      "ready_for_direct_verilator_option",
+      "not_ready_reason",
+      "status_source",
+      "missing_readiness_inputs"
+    ],
+    "status_source": "sidecar_stage_plan.status plus verilator_option_readiness.status",
+    "readiness_only_non_claim": "ready_for_verilator_option_shim is readiness only, not native Verilator execution evidence"
+  },
+  "tested_contract_cases": [
+    {
+      "name": "resolve_adapter_payload_with_explicit_context_to_non_executing_plan",
+      "outer_status": "ready_for_verilator_option_shim",
+      "stage_plan_status": "planned",
+      "ready_for_direct_verilator_option": true
+    },
+    {
+      "name": "resident_modes_are_not_ready_direct_verilator_plan_resolution",
+      "outer_status": "not_ready_for_verilator_option_shim",
+      "stage_plan_status": "planned_not_ready_for_verilator_option_shim",
+      "ready_for_direct_verilator_option": false
+    },
+    {
+      "name": "unsupported_mode_is_not_planned_native_verilator_evidence",
+      "outer_status": "unsupported_for_stage_plan",
+      "stage_plan_status": "unsupported_for_stage_plan",
+      "ready_for_direct_verilator_option": false
+    }
+  ],
+  "verification": {
+    "focused_contract_test_command": "python3 -m unittest tests.contract.test_verilator_native_option_parser_sidecar_plan_resolution_fixture -q",
+    "focused_contract_test_exit_code": 0,
+    "focused_contract_test_count": 9
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_implementation_gate",
+    "must_decide": [
+      "whether the implemented outer status mapping matches the reviewed readiness contract",
+      "whether plan_resolution_readiness makes not-ready and unsupported cases unambiguous",
+      "whether ready_for_verilator_option_shim remains readiness-only and not execution, correctness, timing, or upstream support evidence",
+      "whether the implementation stayed in-place and avoided CLI, handoff contract, command synthesis, execution, measurement, runtime/ABI, arbitrary filelist, and automatic allocation scope"
+    ],
+    "must_not_claim": [
+      "native Verilator parser support",
+      "sidecar runtime handoff validation",
+      "sidecar_handoff_contract from native parser payload",
+      "command synthesis from native parser payload",
+      "RTL simulation execution",
+      "coverage-output equivalence for a native-parser flow",
+      "timing or speedup evidence",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic optimal GPU allocation"
+    ]
+  },
+  "acceptance_policy": {
+    "implementation_only": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "sidecar_handoff_validation_claim_allowed_by_gate_alone": false,
+    "sidecar_handoff_contract_claim_allowed_by_gate_alone": false,
+    "command_synthesis_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_sidecar_plan_resolution_status_hardening_implementation_gate",
+  "non_claims": [
+    "not a native Verilator parser implementation",
+    "not sidecar runtime handoff validation",
+    "not a sidecar_handoff_contract boundary",
+    "not command synthesis from native parser payload",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a native-parser flow",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation for any design",
+    "not a runtime or ABI change",
+    "not GEM benchmark or comparison evidence",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
