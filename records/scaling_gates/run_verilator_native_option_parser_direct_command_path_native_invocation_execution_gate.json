@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "gate": "run_verilator_native_option_parser_direct_command_path_native_invocation_execution_gate",
+  "status": "failed_local_verilator_native_option_process_parse",
+  "objective": "Run the reviewed direct command-path native-invocation execution boundary far enough to separate accepted fixture metadata from real Verilator process parse evidence, and record the local process rejection without claiming native option support, sidecar execution, compare execution, timing, arbitrary filelist support, automatic GPU allocation, runtime/ABI change, raw full-state equality, or production LLM-serving throughput.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_execution_boundary_gate.json",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_execution_boundary_gate.json",
+  "source_fixture_implementation_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_fixture_implementation_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_execution_run_gate",
+  "metadata_validation": {
+    "fixture_surface": "native_verilator_parser_direct_command_path_native_invocation_fixture",
+    "fixture_status": "native_invocation_metadata_ready_for_review",
+    "target": "pulp_ita_mha",
+    "mode": "template",
+    "template_or_target_registry_entry": "config/slice_launch_templates/pulp_ita_mha.json",
+    "source_gate_or_manifest_ref": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate.json",
+    "shape": "64x1",
+    "correctness_policy_ref": "coverage_output_equivalence",
+    "all_fixture_authority_flags_false": true,
+    "fixture_metadata_is_runtime_authority": false,
+    "generated_command_text_is_source_of_truth": false,
+    "native_command_alone_is_execution_authority": false,
+    "sidecar_stage_plan_metadata_is_execution_authority": false
+  },
+  "real_verilator_process_parse_evidence": {
+    "process_invoked": true,
+    "wrapper_execution_used": false,
+    "binary_identity": {
+      "command": "verilator",
+      "path_resolution_policy": "PATH lookup in the local environment; local absolute path is not source-of-truth",
+      "version_stdout": "Verilator 5.044 2026-01-01 rev vUNKNOWN-built20260114",
+      "help_mentions_sim_accel": false
+    },
+    "accepted_evidence_kind": "minimal_generated_smoke_rtl_option_parse_probe",
+    "generated_smoke_rtl_rel": "artifacts/native_invocation_parse_probe/sim_accel_smoke.sv",
+    "generated_smoke_rtl_contents": "module sim_accel_smoke(input logic clk); endmodule",
+    "command": [
+      "verilator",
+      "--lint-only",
+      "--timing",
+      "--top-module",
+      "sim_accel_smoke",
+      "artifacts/native_invocation_parse_probe/sim_accel_smoke.sv",
+      "--sim-accel",
+      "sidecar-gpu",
+      "--sim-accel-states",
+      "64",
+      "--sim-accel-steps",
+      "1"
+    ],
+    "observed_exit_code": 1,
+    "observed_stderr_summary": "%Error: Invalid option: --sim-accel",
+    "native_option_parse_accepted": false,
+    "native_option_parse_failure_class": "local_verilator_binary_does_not_recognize_sim_accel_option",
+    "expanded_option_spelling_tested": [
+      "--sim-accel",
+      "sidecar-gpu",
+      "--sim-accel-states",
+      "64",
+      "--sim-accel-steps",
+      "1"
+    ],
+    "discarded_mixed_failure_probe": {
+      "command_intent": "attempt the PULP ITA MHA fixture-shaped command directly",
+      "observed_exit_code": 1,
+      "reason_not_used_as_accepted_parse_evidence": "the command mixed the expected invalid --sim-accel option with an unrelated missing filelist-path error, so the accepted parse evidence is the isolated smoke RTL probe above"
+    }
+  },
+  "sidecar_execution_evidence": {
+    "sidecar_stage_authority_reviewed_before_execution": false,
+    "sidecar_stage_execution_performed": false,
+    "build_stage_performed": false,
+    "run_stage_performed": false,
+    "compare_stage_performed": false,
+    "coverage_output_equivalence_recorded": false,
+    "reason": "The real Verilator process rejected the native option before any sidecar stage could be authoritative or executed."
+  },
+  "observed_result": {
+    "metadata_validation_passed": true,
+    "real_verilator_process_invoked": true,
+    "native_option_parse_accepted": false,
+    "execution_reached_sidecar_stage": false,
+    "execution_reached_compare": false,
+    "timing_measured": false,
+    "failure_class": "process_parse_failure",
+    "failure_summary": "The local PATH Verilator 5.044 process rejects --sim-accel as an invalid option, so this run records a scoped native-invocation parse failure rather than native option support or sidecar execution."
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_execution_run_gate",
+    "must_decide": [
+      "whether this scoped parse failure is accepted as honest run evidence for the local unpatched Verilator process",
+      "whether the next step should select a reviewed patched Verilator binary path before retrying native invocation",
+      "whether the direct command path should continue using smoke RTL parse probes until a patched process is selected",
+      "whether any PULP ITA MHA fixture-shaped command may be retried only after its filelist path is generated or avoided",
+      "whether sidecar execution and coverage-output equivalence remain out of scope until native option parsing succeeds"
+    ],
+    "must_not_claim": [
+      "native Verilator option support",
+      "native parser integration is complete",
+      "sidecar stage execution",
+      "coverage-output equivalence for native invocation",
+      "timing or speedup evidence",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic optimal GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "run_executed": true,
+    "metadata_validation_evidence_recorded": true,
+    "real_verilator_process_parse_evidence_recorded": true,
+    "process_parse_failure_recorded": true,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "direct_verilator_command_execution_success_claim_allowed_by_gate_alone": false,
+    "sidecar_stage_execution_claim_allowed_by_gate_alone": false,
+    "compare_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_execution_run_gate",
+  "non_claims": [
+    "not native Verilator option support",
+    "not native Verilator parser implementation completion",
+    "not successful direct Verilator command execution",
+    "not fixture metadata runtime authority",
+    "not generated command text source of truth",
+    "not wrapper execution as native authority",
+    "not sidecar stage execution",
+    "not compare execution",
+    "not coverage-output equivalence evidence for native invocation",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not source-closure or filelist dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
