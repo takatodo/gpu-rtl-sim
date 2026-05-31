@@ -8,7 +8,7 @@ class FullItaMhaLargerPagedKvNextShimTest(unittest.TestCase):
     def test_shim_points_at_tracked_shared_contract(self) -> None:
         self.assertEqual(
             _shared.CURRENT_PRIORITY,
-            "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate",
+            "implement_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_gate",
         )
 
 

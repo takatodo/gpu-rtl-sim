@@ -190,13 +190,13 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         self.assertFalse(completion["acceptance_policy"]["new_execution_allowed_by_this_gate"])
         self.assertEqual(
             selection["current_priority"],
-            "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate",
+            "implement_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_gate",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate.json",
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate.json",
         )
-        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 875)
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 876)
 
     def test_parser_boundary_definition_keeps_native_scope_parser_only(self) -> None:
         gate = self.read_parser_boundary_gate()
@@ -811,6 +811,10 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         )
         self.assertIn(
             "records/scaling_gates/define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate.json",
             PUBLIC_PACK_ARCHIVE_PATHS,
         )
         self.assertIn(

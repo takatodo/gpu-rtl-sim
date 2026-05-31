@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate",
+  "status": "accepted_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary",
+  "objective": "Review the definition for bridging a validated direct command-path fixture result to reviewed sidecar stage-plan materialization or reference metadata, accept only the non-executing adapter-and-plan-resolution route, and select the next implementation gate without claiming native Verilator option support, command execution, compare execution, timing, arbitrary filelist support, automatic allocation, runtime/ABI change, or raw full-state equality.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate.json",
+  "current_priority": "implement_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The definition keeps the direct-looking Verilator argv on the fixture side and requires a reviewed bridge through the existing native-parser adapter payload before the existing plan-resolution helper may reach sidecar_stage_plan. That is the narrowest acceptable route because the direct fixture output surface is not the same as the adapter payload surface already validated by the plan-resolution helper.",
+    "weakest_point": "The bridge is intentionally indirect. A future implementation must not treat the direct fixture result itself as stage-plan authority, and must normalize template_or_target_registry_entry into the explicit plan-resolution context before calling the existing helper.",
+    "accepted_because": [
+      "the source definition is definition-only and makes no execution, compare, timing, speedup, runtime/ABI, allocation, arbitrary filelist, or raw-state claim",
+      "the route requires build_native_parser_sidecar_handoff before resolve_native_parser_adapter_payload_to_sidecar_plan",
+      "the direct fixture is forbidden from calling sidecar_stage_plan directly",
+      "template_or_target_registry_entry normalization is explicit and does not infer target, template, source closure, filelists, host-probe metadata, state paths, or report paths",
+      "ready, not-ready, unsupported, unknown, and malformed sidecar stage-plan statuses are classified before execution authority",
+      "coverage_output_equivalence remains a later sidecar compare policy rather than evidence from this review"
+    ]
+  },
+  "accepted_boundary": {
+    "selected_surface": "validated_direct_command_path_fixture_to_existing_sidecar_stage_plan_resolution_boundary",
+    "direct_fixture_surface": "native_verilator_parser_direct_command_path_fixture",
+    "adapter_payload_surface": "native_verilator_parser_sidecar_handoff_fixture",
+    "plan_resolution_surface": "native_verilator_parser_sidecar_plan_resolution_fixture",
+    "required_bridge_functions": [
+      "src/tools/verilator_native_option_parser_sidecar_handoff.py::build_native_parser_sidecar_handoff(parser_payload)",
+      "src/tools/verilator_native_option_parser_sidecar_plan_resolution.py::resolve_native_parser_adapter_payload_to_sidecar_plan(adapter_payload, sidecar_context=<normalized_context>)"
+    ],
+    "direct_fixture_may_call_sidecar_stage_plan_directly": false,
+    "equivalent_focused_bridge_allowed_after_review": true,
+    "stage_plan_materialization_allowed_after_review": true,
+    "stage_plan_materialization_scope": "non_executing_metadata_only",
+    "new_public_cli_added": false,
+    "new_execution_added": false,
+    "new_measurement_added": false,
+    "runtime_or_abi_changed": false,
+    "source_closure_inferred": false,
+    "filelists_expanded": false,
+    "automatic_gpu_allocation_used": false
+  },
+  "accepted_context_normalization": {
+    "required_direct_fixture_context_fields": [
+      "target",
+      "mode",
+      "template_or_target_registry_entry",
+      "source_gate_or_manifest_ref"
+    ],
+    "string_template_or_target_registry_entry_maps_to": "template",
+    "mapping_template_or_target_registry_entry_maps_to": "target_registry_entry",
+    "source_gate_or_manifest_ref_status": "copied_explicitly_not_inferred",
+    "target_and_mode_status": "copied_explicitly_not_inferred",
+    "optional_limit_and_phases_status": "copied_only_when_explicitly_provided",
+    "forbidden_inference": [
+      "target from top_module",
+      "template from source_files",
+      "source closure",
+      "filelist expansion",
+      "coverage manifest selection from parser payload alone",
+      "host-probe metadata",
+      "state paths",
+      "report paths",
+      "GPU block size or allocation"
+    ]
+  },
+  "accepted_status_mapping": {
+    "authority": "src/tools/verilator_native_option_parser_sidecar_plan_resolution.py::_plan_resolution_readiness",
+    "ready_outer_status": "ready_for_verilator_option_shim",
+    "ready_meaning": "metadata readiness only, not native Verilator execution evidence",
+    "planned_not_ready_outer_status": "not_ready_for_verilator_option_shim",
+    "unsupported_outer_status": "unsupported_for_stage_plan",
+    "unknown_or_malformed_outer_status": "not_ready_for_verilator_option_shim",
+    "fail_closed_before_execution": true
+  },
+  "required_next_implementation": {
+    "name": "implement_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_gate",
+    "must_implement": [
+      "an importable non-public helper or focused extension that accepts a validated direct command-path fixture result",
+      "normalization from template_or_target_registry_entry into template or target_registry_entry for plan-resolution context",
+      "a call path through build_native_parser_sidecar_handoff before resolve_native_parser_adapter_payload_to_sidecar_plan",
+      "structured rejection for direct fixture surface/status mismatch and forbidden true execution or measurement flags",
+      "structured rejection for missing or malformed explicit sidecar context",
+      "ready/not-ready/unsupported/malformed status preservation without command execution"
+    ],
+    "must_test": [
+      "accepted direct fixture output reaches plan-resolution through the reviewed adapter payload",
+      "string template_or_target_registry_entry normalizes to template",
+      "mapping template_or_target_registry_entry normalizes to target_registry_entry",
+      "direct fixture output cannot bypass the adapter surface",
+      "forbidden true execution, timing, allocation, source-closure, or filelist-expansion flags reject",
+      "coverage_output_equivalence remains reference-only and not compare evidence"
+    ],
+    "must_not_claim": [
+      "native Verilator option support",
+      "native parser integration is complete",
+      "direct Verilator command execution",
+      "sidecar stage execution",
+      "RTL simulation execution",
+      "coverage-output equivalence for a direct native-parser flow",
+      "timing or speedup evidence",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "source-closure inference",
+      "automatic optimal GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "definition_accepted": true,
+    "next_non_executing_materialization_implementation_allowed": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "direct_verilator_command_execution_claim_allowed_by_gate_alone": false,
+    "sidecar_stage_plan_materialization_claim_allowed_by_gate_alone": false,
+    "sidecar_stage_execution_claim_allowed_by_gate_alone": false,
+    "compare_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "implement_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_gate",
+  "non_claims": [
+    "not native Verilator option support",
+    "not native Verilator parser implementation completion",
+    "not direct Verilator command execution",
+    "not sidecar stage execution",
+    "not command_argv runtime authority",
+    "not operator-plan runtime execution",
+    "not RTL simulation execution",
+    "not coverage-output equivalence for a direct native-parser flow",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not source-closure or filelist dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not timing or speedup evidence",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
