@@ -85,6 +85,12 @@ SIDECAR_STAGE_PLAN_EXECUTION_RUN_GATE = (
     / "scaling_gates"
     / "run_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_gate.json"
 )
+SIDECAR_STAGE_PLAN_EXECUTION_RUN_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_run_gate.json"
+)
 
 BASE_DIRECT_ARGS = [
     "verilator",
@@ -700,6 +706,95 @@ class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase)
         self.assertEqual(
             gate["required_next_gate"]["name"],
             "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_run_gate",
+        )
+
+    def test_direct_stage_plan_execution_run_review_accepts_scoped_result_only(self) -> None:
+        review = json.loads(SIDECAR_STAGE_PLAN_EXECUTION_RUN_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_gate.json",
+        )
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("not a real native Verilator option invocation", review["review_decision"]["weakest_point"])
+        metadata = review["accepted_metadata_validation"]
+        self.assertEqual(
+            metadata["validation_kind"],
+            "ready_direct_materialization_metadata_before_scoped_sidecar_run",
+        )
+        self.assertEqual(
+            metadata["parser_schedule_constraints"],
+            {
+                "accelerator_mode": "sidecar-gpu",
+                "state_count": 64,
+                "step_count": 1,
+                "shape": "64x1",
+            },
+        )
+        self.assertEqual(metadata["stage_plan_template"], "config/slice_launch_templates/pulp_ita_mha.json")
+        self.assertEqual(metadata["stage_plan_shape"], "64x1")
+        self.assertTrue(metadata["stage_plan_shape_matches_parser_schedule_constraints"])
+        self.assertTrue(metadata["materialization_time_non_execution_flags_preserved"])
+        self.assertFalse(metadata["source_closure_inferred"])
+        self.assertFalse(metadata["filelists_expanded"])
+        self.assertFalse(metadata["automatic_gpu_allocation_used"])
+
+        result = review["accepted_result"]
+        self.assertEqual(result["command"], "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 64x1")
+        self.assertEqual(result["target"], "pulp_ita_mha")
+        self.assertEqual(result["shape"], "64x1")
+        self.assertEqual(result["executed_stage_count"], 7)
+        self.assertTrue(result["selected_acceptance_policy_passed"])
+        self.assertEqual(result["coverage_output_mismatch_count"], 0)
+        self.assertEqual(result["compared_state_pair_count"], 64)
+        self.assertEqual(result["compared_word_count"], 1856)
+        self.assertFalse(result["raw_full_state_match"])
+        self.assertFalse(result["raw_full_state_equality_required"])
+
+    def test_direct_stage_plan_execution_run_review_selects_native_invocation_boundary(self) -> None:
+        review = json.loads(SIDECAR_STAGE_PLAN_EXECUTION_RUN_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        claim_scope = review["accepted_claim_scope"]
+        self.assertTrue(claim_scope["scoped_sidecar_execution_run_accepted"])
+        self.assertTrue(claim_scope["direct_materialization_metadata_validation_accepted"])
+        self.assertTrue(claim_scope["coverage_output_equivalence_for_pulp_ita_mha_64x1_accepted"])
+        self.assertFalse(claim_scope["native_verilator_option_support_accepted"])
+        self.assertFalse(claim_scope["direct_verilator_command_execution_accepted"])
+        self.assertFalse(claim_scope["arbitrary_rtl_or_filelist_support_accepted"])
+        self.assertFalse(claim_scope["automatic_gpu_allocation_accepted"])
+        self.assertFalse(claim_scope["runtime_or_abi_change_accepted"])
+        self.assertFalse(claim_scope["raw_full_state_equality_accepted"])
+
+        self.assertEqual(
+            review["selected_next_workstream"]["name"],
+            "define_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate",
+        )
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "define_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate",
+        )
+        self.assertIn(
+            "what exact Verilator-facing invocation is considered native runtime authority rather than wrapper execution",
+            review["required_next_gate"]["must_define"],
+        )
+        policy = review["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertTrue(policy["source_run_gate_accepted"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["native_verilator_option_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["direct_verilator_command_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["timing_or_speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["arbitrary_filelist_support_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["runtime_or_abi_change_allowed_by_this_gate"])
+        self.assertFalse(policy["reports_and_artifacts_are_source_of_truth"])
+        self.assertEqual(
+            review["next_task"],
+            "define_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate",
         )
 
     def test_materializes_direct_fixture_through_adapter_and_plan_resolution(self) -> None:
