@@ -55,9 +55,9 @@ def read_combined_docs(*paths: Path) -> str:
     return "\n".join(path.read_text(encoding="utf-8") for path in selected_paths)
 
 
-CURRENT_PRIORITY = "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_implementation_gate"
+CURRENT_PRIORITY = "define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate"
 CURRENT_PRIORITY_SOURCE_ARTIFACT = (
-    "config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_gate.json"
+    "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_implementation_gate.json"
 )
 
 
