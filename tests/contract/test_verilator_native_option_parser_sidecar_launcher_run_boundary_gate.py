@@ -16,6 +16,12 @@ REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_boundary_gate.json"
 )
+RUN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarLauncherRunBoundaryGateTest(unittest.TestCase):
@@ -100,3 +106,64 @@ class VerilatorNativeOptionParserSidecarLauncherRunBoundaryGateTest(unittest.Tes
         self.assertFalse(policy["new_execution_allowed_by_this_gate"])
         self.assertFalse(policy["sidecar_launcher_invocation_claim_allowed_by_gate_alone"])
         self.assertEqual(review["required_next_gate"]["name"], review["next_task"])
+
+    def test_run_records_bridge_failure_without_launcher_invocation_claim(self) -> None:
+        run = json.loads(RUN_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            run["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_boundary_gate.json",
+        )
+        self.assertEqual(
+            run["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_gate",
+        )
+        self.assertEqual(run["status"], "failed_before_sidecar_launcher_invocation_from_native_path")
+        self.assertTrue(run["patched_verilator_process_parse_evidence"]["native_option_parse_accepted"])
+        bridge = run["sidecar_launcher_bridge_fixture_evidence"]
+        self.assertEqual(
+            (
+                bridge["entrypoint"],
+                bridge["surface"],
+                bridge["bridge_ready"],
+                bridge["sidecar_launcher_entrypoint"],
+                bridge["sidecar_launcher_entrypoint_role"],
+                bridge["sidecar_launch_reached_from_native_path"],
+                bridge["coverage_output_compare_reached_from_native_path"],
+                bridge["native_path_compare_reached"],
+                bridge["execution_performed"],
+                bridge["measurement_performed"],
+                bridge["timing_measured"],
+            ),
+            (
+                "define_sidecar_launcher_bridge_fixture",
+                "native_verilator_parser_direct_command_path_sidecar_launcher_bridge_fixture",
+                True,
+                "src/tools/run_hybrid_template.py",
+                "reference_only_not_invoked_by_fixture",
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+            ),
+        )
+        self.assertIn("sidecar_launcher_bridge_failure", bridge["preserved_failure_classes"])
+        attempt = run["native_path_launcher_attempt"]
+        self.assertEqual(attempt["native_path_failure_class"], "sidecar_launcher_bridge_failure")
+        self.assertFalse(attempt["sidecar_launcher_invoked_from_native_path"])
+        self.assertFalse(attempt["coverage_output_compare_reached_from_native_path"])
+        self.assertTrue(run["separate_reviewed_sidecar_execution_evidence"]["coverage_output_compare_stage_executed"])
+        compare = run["compare_result"]
+        self.assertFalse(compare["compare_reached_from_native_path"])
+        self.assertTrue(compare["coverage_output_equivalence_passed"])
+        self.assertEqual(compare["coverage_output_mismatch_count"], 0)
+        self.assertEqual(compare["compared_state_pair_count"], 64)
+        policy = run["acceptance_policy"]
+        self.assertTrue(policy["run_executed"])
+        self.assertTrue(policy["bridge_fixture_evaluated"])
+        self.assertFalse(policy["sidecar_launcher_invocation_claim_allowed"])
+        self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_native_path"])
+        self.assertFalse(policy["direct_verilator_sidecar_execution_claim_allowed"])
+        self.assertEqual(run["required_next_gate"]["name"], run["next_task"])
