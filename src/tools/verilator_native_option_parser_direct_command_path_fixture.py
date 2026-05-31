@@ -11,12 +11,18 @@ try:
         NativeOptionParserStubError,
         parse_verilator_native_option_stub,
     )
+    from .verilator_native_option_parser_direct_command_payload_validation import (
+        validate_direct_command_parser_payload,
+    )
 except ImportError:  # pragma: no cover - exercised when imported via sys.path.
     from verilator_native_option_parser_stub_fixture import (
         CORRECTNESS_POLICY,
         SOURCE_BOUNDARY_STATUS,
         NativeOptionParserStubError,
         parse_verilator_native_option_stub,
+    )
+    from verilator_native_option_parser_direct_command_payload_validation import (
+        validate_direct_command_parser_payload,
     )
 
 
@@ -27,9 +33,6 @@ GENERATED_EVIDENCE_POLICY = "reports/ and artifacts/ are generated evidence only
 STATE_AND_REPORT_NAMING_RULES = "sidecar_owned_not_materialized_by_direct_command_path_fixture"
 
 REQUIRED_CONTEXT_FIELDS = tuple("target mode template_or_target_registry_entry source_gate_or_manifest_ref".split())
-PARSER_PRESERVED_BUILD_INPUT_FIELDS = tuple(
-    "ordinary_verilator_args mdir top_module source_files filelists defines include_dirs warning_flags".split()
-)
 DIRECT_COMMAND_STAGE_ORDER = tuple(
     "verilator_build host_probe_build cpu_init_state cpu_reference_output gpu_artifact_build "
     "hybrid_sidecar_run coverage_output_compare".split()
@@ -137,43 +140,9 @@ def _reject_sidecar_owned_parser_fields(parser_payload: Mapping[str, object]) ->
         )
 
 
-def _require_positive_int(parser_payload: Mapping[str, object], field: str) -> int:
-    value = parser_payload.get(field)
-    if type(value) is not int or value <= 0:
-        raise _error("invalid_parser_payload", f"parser payload field {field!r} must be a positive integer")
-    return value
-
-
-def _require_list(parser_payload: Mapping[str, object], field: str) -> list[object]:
-    value = parser_payload.get(field)
-    if not isinstance(value, list):
-        raise _error("invalid_parser_payload", f"parser payload field {field!r} must be a list")
-    return list(value)
-
-
-def _validate_parser_payload(parser_payload: Mapping[str, object]) -> tuple[int, int, str]:
+def _validate_parser_payload(parser_payload: Mapping[str, object]) -> tuple[int, int, str, dict[str, object]]:
     _reject_sidecar_owned_parser_fields(parser_payload)
-    if parser_payload.get("accelerator_mode") != "sidecar-gpu":
-        raise _error("invalid_parser_payload", "parser payload accelerator_mode must be 'sidecar-gpu'")
-    if parser_payload.get("correctness_policy") != CORRECTNESS_POLICY:
-        raise _error("invalid_parser_payload", f"parser payload correctness_policy must be {CORRECTNESS_POLICY!r}")
-    state_count = _require_positive_int(parser_payload, "state_count")
-    step_count = _require_positive_int(parser_payload, "step_count")
-    shape = parser_payload.get("shape")
-    expected_shape = f"{state_count}x{step_count}"
-    if shape != expected_shape:
-        raise _error("invalid_parser_payload", f"parser payload shape must be {expected_shape!r}")
-    return state_count, step_count, expected_shape
-
-
-def _preserved_build_inputs(parser_payload: Mapping[str, object]) -> dict[str, object]:
-    preserved: dict[str, object] = {}
-    for field in PARSER_PRESERVED_BUILD_INPUT_FIELDS:
-        if field in ("mdir", "top_module"):
-            preserved[field] = parser_payload.get(field)
-        else:
-            preserved[field] = _require_list(parser_payload, field)
-    return preserved
+    return validate_direct_command_parser_payload(parser_payload, error_factory=_error)
 
 
 def _sidecar_plan_boundary(sidecar_context: Mapping[str, object]) -> dict[str, object]:
@@ -205,9 +174,8 @@ def define_direct_command_path_sidecar_plan_fixture(
     else:
         parser_payload = dict(parser_payload)
 
-    state_count, step_count, shape = _validate_parser_payload(parser_payload)
+    state_count, step_count, shape, preserved = _validate_parser_payload(parser_payload)
     normalized_context = _require_context(sidecar_context)
-    preserved = _preserved_build_inputs(parser_payload)
 
     output = {
         "schema_version": 1,

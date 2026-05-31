@@ -25,6 +25,18 @@ PAYLOAD_VALIDATION_HARDENING_GATE = (
     / "scaling_gates"
     / "define_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate.json"
 )
+PAYLOAD_VALIDATION_HARDENING_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate.json"
+)
+PAYLOAD_VALIDATION_HARDENING_IMPLEMENT_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "implement_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate.json"
+)
 
 BASE_DIRECT_ARGS = [
     "verilator",
@@ -165,6 +177,58 @@ class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase)
             "review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate",
         )
 
+    def test_payload_validation_hardening_review_accepts_implementation_gate(self) -> None:
+        review = json.loads(PAYLOAD_VALIDATION_HARDENING_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("Exact parser-stub keyset validation is deliberately rigid", review["review_decision"]["weakest_point"])
+        self.assertEqual(
+            review["current_priority"],
+            "implement_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate",
+        )
+        accepted = review["accepted_definition"]
+        self.assertEqual(accepted["parser_payload_schema_authority"], "src/tools/verilator_native_option_parser_stub_fixture.py::HANDOFF_FIELDS")
+        self.assertTrue(accepted["exact_parser_stub_keyset_required"])
+        required = review["required_next_implementation"]
+        self.assertEqual(
+            required["name"],
+            "implement_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate",
+        )
+        self.assertIn("src/tools/verilator_native_option_parser_direct_command_payload_validation.py", required["allowed_files"])
+        self.assertIn("missing schema_version rejects before sidecar_plan_boundary metadata", required["must_test"])
+        self.assertFalse(review["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+        self.assertFalse(review["acceptance_policy"]["native_verilator_option_claim_allowed_by_gate_alone"])
+
+    def test_payload_validation_hardening_implementation_records_split_helper(self) -> None:
+        gate = json.loads(PAYLOAD_VALIDATION_HARDENING_IMPLEMENT_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_implementation_gate",
+        )
+        implemented = gate["implemented_surface"]
+        self.assertEqual(
+            implemented["validation_module"],
+            "src/tools/verilator_native_option_parser_direct_command_payload_validation.py",
+        )
+        self.assertFalse(implemented["new_public_cli_added"])
+        self.assertFalse(implemented["new_execution_added"])
+        decisions = gate["implementation_decisions"]
+        self.assertTrue(decisions["split_validation_helper_added"])
+        self.assertTrue(decisions["exact_parser_stub_handoff_keyset_required"])
+        self.assertTrue(decisions["unknown_non_sidecar_parser_payload_keys_reject"])
+        self.assertTrue(decisions["bool_state_count_and_step_count_reject_before_shape_compare"])
+        self.assertEqual(gate["verified_commands"]["focused_contract_test_count"], 11)
+        self.assertFalse(gate["acceptance_policy"]["native_verilator_option_claim_allowed_by_gate_alone"])
+
     def test_accepts_expanded_64x1_and_returns_reference_only_boundary(self) -> None:
         (fixture,) = _load_tool_modules("verilator_native_option_parser_direct_command_path_fixture")
 
@@ -200,6 +264,58 @@ class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase)
         self.assertFalse(result["source_closure_inferred"])
         self.assertFalse(result["filelists_expanded"])
         self.assertFalse(result["automatic_gpu_allocation_used"])
+
+    def test_accepts_exact_parser_stub_payload_directly(self) -> None:
+        fixture, parser_stub = _load_tool_modules(
+            "verilator_native_option_parser_direct_command_path_fixture",
+            "verilator_native_option_parser_stub_fixture",
+        )
+        parser_payload = parser_stub.parse_verilator_native_option_stub(_expanded_argv())
+
+        result = fixture.direct_command_parser_payload_to_sidecar_plan_fixture(
+            parser_payload,
+            sidecar_context=_sidecar_context(),
+        )
+
+        self.assertEqual(result["parser_payload"]["surface"], "native_verilator_parser_stub_fixture")
+        self.assertEqual(result["parser_payload"]["source_boundary_status"], "preserved_only_not_resolved")
+        self.assertEqual(result["parser_preserved_build_inputs"]["mdir"], "artifacts/pulp_ita_mha_obj_dir")
+        self.assertEqual(result["parser_preserved_build_inputs"]["top_module"], "pulp_ita_mha_gpu_cov_tb")
+        self.assertEqual(result["shape"], "64x1")
+        self.assertFalse(result["execution_performed"])
+        self.assertFalse(result["measurement_performed"])
+        self.assertFalse(result["source_closure_inferred"])
+
+    def test_rejects_malformed_parser_payloads_before_boundary_metadata(self) -> None:
+        fixture, parser_stub = _load_tool_modules(
+            "verilator_native_option_parser_direct_command_path_fixture",
+            "verilator_native_option_parser_stub_fixture",
+        )
+        base_payload = parser_stub.parse_verilator_native_option_stub(_expanded_argv())
+
+        cases = {
+            "missing_schema_version": lambda payload: payload.pop("schema_version"),
+            "wrong_surface": lambda payload: payload.__setitem__("surface", "wrong_surface"),
+            "missing_mdir": lambda payload: payload.pop("mdir"),
+            "empty_top_module": lambda payload: payload.__setitem__("top_module", ""),
+            "bool_state_count": lambda payload: payload.__setitem__("state_count", True),
+            "bool_step_count": lambda payload: payload.__setitem__("step_count", True),
+            "bad_source_files": lambda payload: payload.__setitem__("source_files", [1]),
+            "unknown_field": lambda payload: payload.__setitem__("unexpected_parser_field", "x"),
+            "missing_non_claims": lambda payload: payload.pop("non_claims"),
+        }
+
+        for name, mutate in cases.items():
+            malformed = dict(base_payload)
+            mutate(malformed)
+            with self.subTest(name=name):
+                with self.assertRaises(fixture.NativeParserDirectCommandPathFixtureError) as raised:
+                    fixture.direct_command_parser_payload_to_sidecar_plan_fixture(
+                        malformed,
+                        sidecar_context=_sidecar_context(),
+                    )
+                self.assertEqual(raised.exception.code, "invalid_parser_payload")
+                self.assertEqual(raised.exception.rejection_layer, "direct_command_path_fixture_contract")
 
     def test_shape_rejections_use_direct_fixture_layer(self) -> None:
         (fixture,) = _load_tool_modules("verilator_native_option_parser_direct_command_path_fixture")
