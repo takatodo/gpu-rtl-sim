@@ -79,6 +79,12 @@ SIDECAR_STAGE_PLAN_EXECUTION_BOUNDARY_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate.json"
 )
+SIDECAR_STAGE_PLAN_EXECUTION_RUN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "run_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_gate.json"
+)
 
 BASE_DIRECT_ARGS = [
     "verilator",
@@ -587,6 +593,114 @@ class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase)
         self.assertFalse(policy["coverage_output_equivalence_claim_allowed_by_gate_alone"])
         self.assertFalse(policy["timing_or_speedup_claim_allowed_by_gate_alone"])
         self.assertFalse(policy["raw_full_state_equality_claim_allowed_by_gate_alone"])
+
+    def test_direct_stage_plan_execution_run_records_metadata_validated_scope(self) -> None:
+        gate = json.loads(SIDECAR_STAGE_PLAN_EXECUTION_RUN_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_run_gate",
+        )
+        validation = gate["metadata_validation"]
+        self.assertTrue(validation["materialization_reconstructed_before_run"])
+        self.assertEqual(
+            validation["fixture_surface"],
+            "native_verilator_parser_direct_command_path_sidecar_stage_plan_materialization_fixture",
+        )
+        self.assertEqual(validation["fixture_status"], "ready_for_verilator_option_shim")
+        self.assertEqual(validation["direct_fixture_surface"], "native_verilator_parser_direct_command_path_fixture")
+        self.assertEqual(validation["adapter_payload_surface"], "native_verilator_parser_sidecar_handoff_fixture")
+        self.assertEqual(validation["plan_resolution_surface"], "native_verilator_parser_sidecar_plan_resolution_fixture")
+        self.assertEqual(validation["correctness_policy"], "coverage_output_equivalence")
+        self.assertEqual(validation["correctness_policy_ref_status"], "reference_only_not_compare_evidence")
+        self.assertEqual(
+            validation["parser_schedule_constraints"],
+            {
+                "accelerator_mode": "sidecar-gpu",
+                "state_count": 64,
+                "step_count": 1,
+                "shape": "64x1",
+            },
+        )
+        self.assertEqual(validation["stage_plan_template"], "config/slice_launch_templates/pulp_ita_mha.json")
+        self.assertEqual(validation["stage_plan_shape"], "64x1")
+        self.assertEqual(
+            validation["stage_order"],
+            [
+                "verilator_build",
+                "host_probe_build",
+                "cpu_init_state",
+                "cpu_reference_output",
+                "gpu_artifact_build",
+                "hybrid_sidecar_run",
+                "coverage_output_compare",
+            ],
+        )
+        for flag in (
+            "sidecar_handoff_contract_invoked_by_materialization",
+            "command_synthesis_invoked_by_materialization",
+            "operator_plan_invoked_by_materialization",
+            "efficiency_estimate_invoked_by_materialization",
+            "execution_performed_by_metadata_fixture",
+            "measurement_performed_by_metadata_fixture",
+            "timing_measured_by_metadata_fixture",
+            "runtime_or_abi_changed_by_metadata_fixture",
+            "source_closure_inferred",
+            "filelists_expanded",
+            "automatic_gpu_allocation_used",
+        ):
+            self.assertFalse(validation[flag])
+
+        scope = gate["executed_scope"]
+        self.assertEqual(scope["target"], "pulp_ita_mha")
+        self.assertEqual(scope["template"], "config/slice_launch_templates/pulp_ita_mha.json")
+        self.assertEqual(scope["shape"], "64x1")
+        self.assertEqual(scope["nstates"], 64)
+        self.assertEqual(scope["steps"], 1)
+        self.assertEqual(
+            scope["command"],
+            "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 64x1",
+        )
+        self.assertEqual(scope["exit_code"], 0)
+        self.assertEqual(scope["executed_stage_count"], 7)
+
+    def test_direct_stage_plan_execution_run_accepts_scoped_coverage_output_only(self) -> None:
+        gate = json.loads(SIDECAR_STAGE_PLAN_EXECUTION_RUN_GATE.read_text(encoding="utf-8"))
+        result = gate["execution_result"]
+
+        self.assertTrue(result["command_exit_zero"])
+        self.assertTrue(result["all_reviewed_sidecar_stages_executed"])
+        self.assertTrue(result["all_expected_reports_present"])
+        self.assertEqual(result["selected_acceptance_policy"], "coverage_output_equivalence")
+        self.assertTrue(result["coverage_output_equivalence_passed"])
+        self.assertEqual(result["coverage_output_mismatch_count"], 0)
+        self.assertEqual(result["compared_state_pair_count"], 64)
+        self.assertEqual(result["strict_output_word_count_per_state"], 29)
+        self.assertEqual(result["strict_output_byte_count_per_state"], 116)
+        self.assertEqual(result["compared_word_count"], 1856)
+        self.assertFalse(result["raw_full_state_match"])
+        self.assertFalse(result["raw_full_state_equality_required"])
+
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["run_executed"])
+        self.assertTrue(policy["scoped_sidecar_build_run_compare_claim_allowed"])
+        self.assertTrue(policy["direct_materialization_metadata_validation_claim_allowed"])
+        self.assertTrue(policy["coverage_output_equivalence_claim_allowed_for_this_scoped_run"])
+        self.assertFalse(policy["native_verilator_option_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["direct_verilator_command_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["timing_or_speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["arbitrary_filelist_support_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["runtime_or_abi_change_allowed_by_this_gate"])
+        self.assertFalse(policy["reports_and_artifacts_are_source_of_truth"])
+        self.assertEqual(
+            gate["required_next_gate"]["name"],
+            "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_run_gate",
+        )
 
     def test_materializes_direct_fixture_through_adapter_and_plan_resolution(self) -> None:
         fixture, materializer = _load_tool_modules(
