@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate",
+  "status": "defined_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary",
+  "objective": "Define the smallest execution boundary after accepted direct command-path sidecar stage-plan materialization metadata, while keeping this gate definition-only and avoiding direct command execution, sidecar stage execution, RTL simulation, compare execution, measured timing, speedup, arbitrary filelist support, automatic GPU allocation, runtime/ABI change, or native Verilator option support claims.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_implementation_gate.json",
+  "source_implementation_gate": "config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate",
+  "definition_decision": {
+    "defined": true,
+    "selected_surface": "direct_command_path_stage_plan_metadata_to_reviewed_sidecar_execution_boundary",
+    "weakest_point": "The accepted materialization fixture exposes a reviewed sidecar stage plan, but it is still metadata reached from a direct parser fixture. A later run gate therefore must validate the ready materialization fixture, preserve or regenerate the reviewed sidecar stage order, and execute only scoped sidecar build/run/compare stages after a separate execution-boundary review accepts them. The metadata must not be treated as native Verilator option support, direct command execution, measured timing, arbitrary filelist support, automatic allocation, runtime/ABI change, or raw full-state equality evidence.",
+    "reason": [
+      "the previous review accepted parser payload revalidation, direct field cross-checks, explicit sidecar context normalization, and adapter-plus-plan-resolution routing",
+      "ready materialization metadata now has enough reviewed fields to define what a future execution boundary must validate",
+      "the execution boundary still needs explicit stage-order and generated-evidence rules before any command is executed",
+      "coverage_output_equivalence remains a future compare result, not evidence from this definition gate"
+    ]
+  },
+  "eligible_materialization_input_preconditions": {
+    "surface": "native_verilator_parser_direct_command_path_sidecar_stage_plan_materialization_fixture",
+    "status": "ready_for_verilator_option_shim",
+    "direct_fixture_surface": "native_verilator_parser_direct_command_path_fixture",
+    "adapter_payload_surface": "native_verilator_parser_sidecar_handoff_fixture",
+    "plan_resolution_surface": "native_verilator_parser_sidecar_plan_resolution_fixture",
+    "correctness_policy": "coverage_output_equivalence",
+    "correctness_policy_ref_status": "reference_only_not_compare_evidence",
+    "sidecar_stage_plan_invoked": true,
+    "sidecar_handoff_contract_invoked": false,
+    "command_synthesis_invoked": false,
+    "efficiency_estimate_invoked": false,
+    "execution_performed": false,
+    "measurement_performed": false,
+    "timing_measured": false,
+    "runtime_or_abi_changed": false,
+    "source_closure_inferred": false,
+    "filelists_expanded": false,
+    "automatic_gpu_allocation_used": false
+  },
+  "required_ready_metadata_fields": {
+    "top_level_fields": [
+      "surface",
+      "status",
+      "direct_fixture_surface",
+      "adapter_payload_surface",
+      "plan_resolution_surface",
+      "sidecar_context",
+      "parser_schedule_constraints",
+      "parser_preserved_build_inputs",
+      "adapter_payload",
+      "plan_resolution",
+      "stage_plan",
+      "correctness_policy",
+      "correctness_policy_ref_status",
+      "non_claims"
+    ],
+    "stage_plan_fields": [
+      "status",
+      "mode",
+      "template",
+      "stages",
+      "nstates",
+      "steps",
+      "shape",
+      "correctness_policy"
+    ],
+    "stage_plan_required_stage_names": [
+      "verilator_build",
+      "host_probe_build",
+      "cpu_init_state",
+      "cpu_reference_output",
+      "gpu_artifact_build",
+      "hybrid_sidecar_run",
+      "coverage_output_compare"
+    ],
+    "parser_preserved_build_inputs_role": {
+      "source_files": "preserved_parser_input_not_source_closure",
+      "filelists": "preserved_parser_input_not_filelist_expansion",
+      "defines": "preserved_parser_input_not_build_semantics_expansion",
+      "include_dirs": "preserved_parser_input_not_dependency_closure"
+    }
+  },
+  "future_execution_boundary": {
+    "definition_only": true,
+    "execution_allowed_by_this_gate": false,
+    "allowed_future_run_after_review": [
+      "validate accepted ready direct materialization metadata and all non-execution flags before running anything",
+      "require the reviewed sidecar stage plan or regenerate an equivalent reviewed stage order from the materialization fixture",
+      "execute only reviewed sidecar build/run/compare stages after the execution boundary review accepts them",
+      "write generated execution evidence only under reports/ and artifacts/",
+      "compare CPU and hybrid outputs using coverage_output_equivalence"
+    ],
+    "required_stage_order_for_future_run": [
+      "verilator_build",
+      "host_probe_build",
+      "cpu_init_state",
+      "cpu_reference_output",
+      "gpu_artifact_build",
+      "hybrid_sidecar_run",
+      "coverage_output_compare"
+    ],
+    "direct_command_path_status": "direct parser inputs and materialized stage-plan metadata are future execution inputs only after a separate review; they are not command execution evidence by themselves",
+    "stage_plan_source_requirement": "future run gates must preserve or regenerate a reviewed stage plan before execution; direct fixture parser payload, adapter payload, and plan-resolution metadata alone are not sufficient authority for broad arbitrary RTL execution",
+    "coverage_output_equivalence_status": "allowed only as a future compare result after a reviewed run gate executes the compare command"
+  },
+  "closed_or_rejected_input_behavior": {
+    "not_ready_or_unsupported_materialization": {
+      "execution_allowed": false,
+      "expected_behavior": "fail closed before command execution and preserve the not-ready or unsupported reason"
+    },
+    "prepopulated_execution_result_fields": {
+      "execution_allowed": false,
+      "forbidden_fields": [
+        "execution_result",
+        "run_result",
+        "compare_result",
+        "timing",
+        "speedup",
+        "coverage_output_equivalence_complete",
+        "raw_full_state_equality_complete"
+      ],
+      "expected_behavior": "reject before command execution because generated evidence cannot be supplied as input authority"
+    },
+    "parser_filelists_without_reviewed_stage_plan": {
+      "execution_allowed": false,
+      "expected_behavior": "preserve filelists as parser inputs only; do not infer dependency closure or automatic allocation"
+    }
+  },
+  "required_tests_for_next_review": [
+    "the definition uses the materialization implementation review gate as its source artifact",
+    "ready direct materialization metadata remains the only eligible input surface",
+    "the future execution boundary requires explicit sidecar stage order before any command can run",
+    "direct parser inputs and stage-plan metadata are not treated as runtime execution evidence",
+    "coverage_output_equivalence is only a future compare result, not evidence from this gate",
+    "filelists remain preserved parser inputs and are not source closure or automatic allocation authority",
+    "this gate forbids command execution, sidecar stage execution, RTL simulation, compare execution, timing, speedup, runtime/ABI change, arbitrary filelist support, and automatic GPU allocation"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate",
+    "must_decide": [
+      "whether the direct command-path sidecar stage-plan execution boundary is narrow enough after accepted materialization metadata",
+      "whether ready materialization metadata is sufficient as input only when paired with the reviewed sidecar stage plan",
+      "whether the required stage order is complete enough for a later run gate",
+      "whether direct parser inputs and stage-plan metadata should remain future execution inputs rather than runtime evidence",
+      "whether the future compare policy can be coverage_output_equivalence without claiming raw full-state equality",
+      "whether arbitrary filelist dependency inference and automatic GPU allocation remain blocked"
+    ],
+    "must_not_claim": [
+      "native Verilator option support",
+      "native parser integration is complete",
+      "direct command execution by this definition gate",
+      "sidecar stage execution by this definition gate",
+      "RTL simulation execution by this definition gate",
+      "compare execution by this definition gate",
+      "coverage-output equivalence for a direct native-parser flow",
+      "timing or speedup evidence",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "source-closure inference",
+      "automatic optimal GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "execution_boundary_defined": true,
+    "future_run_gate_allowed_after_review": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "direct_verilator_command_execution_claim_allowed_by_gate_alone": false,
+    "sidecar_stage_execution_claim_allowed_by_gate_alone": false,
+    "rtl_simulation_claim_allowed_by_gate_alone": false,
+    "compare_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate",
+  "non_claims": [
+    "not native Verilator option support",
+    "not native Verilator parser implementation completion",
+    "not direct Verilator command execution",
+    "not sidecar stage execution",
+    "not RTL simulation execution",
+    "not compare execution",
+    "not coverage-output equivalence for a direct native-parser flow",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not source-closure or filelist dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

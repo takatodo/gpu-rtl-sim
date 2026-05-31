@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The repaired overlay patch now applies cleanly, passes post-apply location sanity, has accepted `verilator_bin` build-only evidence, reviewed parser-only smoke, reviewed rebuilt parser integer-hardening smoke, a reviewed native parser-to-adapter handoff boundary, a reviewed non-executing adapter fixture, a reviewed adapter-payload to sidecar plan-resolution boundary, an implemented non-executing plan-resolution fixture, a review accepting only the explicit-context template-plan fixture, a definition for status/readiness hardening, a review accepting that definition, an implementation of the in-place helper hardening, a review accepting that implementation, a definition of the ready-only handoff-contract metadata boundary, a review accepting that boundary, an implemented non-executing handoff-contract metadata fixture, an accepted implementation review after adding the explicit `efficiency_estimate_invoked` guard, a defined command/operator-plan metadata boundary, a review accepting that boundary, an implemented importable operator-plan fixture, a review accepting that fixture as metadata only, a defined hardening boundary for bool/int validation plus the `efficiency_estimate` non-timing claim, a review accepting that hardening definition, an in-place implementation of the hardening, a review accepting that implementation, a definition of the first execution boundary, a review accepting that boundary, a scoped sidecar execution run, a review accepting that run only as scoped sidecar build/run/compare evidence, a definition of the direct command-path boundary, a review accepting that boundary only as fixture-contract preparation, a definition of the direct command-path fixture contract, a review accepting that contract for implementation, an implemented importable direct command-path fixture helper, a review accepting that helper only as non-executing reference-boundary metadata, a definition of parser-payload validation hardening, a review accepting that hardening definition, an implementation of that hardening, a review accepting that implementation, a definition of the direct command-path sidecar stage-plan materialization boundary, a review accepting only the adapter-and-plan-resolution bridge route, an implementation of that non-executing bridge, and a review accepting it as metadata-only stage-plan materialization. The weak point is defining the execution boundary without letting materialized metadata become execution, compare, timing, arbitrary filelist, automatic allocation, runtime/ABI, or raw full-state equality evidence.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The repaired overlay patch now applies cleanly, passes post-apply location sanity, has accepted `verilator_bin` build-only evidence, reviewed parser-only smoke, reviewed rebuilt parser integer-hardening smoke, a reviewed native parser-to-adapter handoff boundary, a reviewed non-executing adapter fixture, a reviewed adapter-payload to sidecar plan-resolution boundary, an implemented non-executing plan-resolution fixture, a review accepting only the explicit-context template-plan fixture, a definition for status/readiness hardening, a review accepting that definition, an implementation of the in-place helper hardening, a review accepting that implementation, a definition of the ready-only handoff-contract metadata boundary, a review accepting that boundary, an implemented non-executing handoff-contract metadata fixture, an accepted implementation review after adding the explicit `efficiency_estimate_invoked` guard, a defined command/operator-plan metadata boundary, a review accepting that boundary, an implemented importable operator-plan fixture, a review accepting that fixture as metadata only, a defined hardening boundary for bool/int validation plus the `efficiency_estimate` non-timing claim, a review accepting that hardening definition, an in-place implementation of the hardening, a review accepting that implementation, a definition of the first execution boundary, a review accepting that boundary, a scoped sidecar execution run, a review accepting that run only as scoped sidecar build/run/compare evidence, a definition of the direct command-path boundary, a review accepting that boundary only as fixture-contract preparation, a definition of the direct command-path fixture contract, a review accepting that contract for implementation, an implemented importable direct command-path fixture helper, a review accepting that helper only as non-executing reference-boundary metadata, a definition of parser-payload validation hardening, a review accepting that hardening definition, an implementation of that hardening, a review accepting that implementation, a definition of the direct command-path sidecar stage-plan materialization boundary, a review accepting only the adapter-and-plan-resolution bridge route, an implementation of that non-executing bridge, a review accepting it as metadata-only stage-plan materialization, and a definition of the direct command-path sidecar stage-plan execution boundary. The weak point is reviewing that boundary before allowing any direct command-path sidecar run, compare, timing evidence, arbitrary filelist support, automatic allocation, runtime/ABI change, or raw full-state equality claim.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is defining the direct command-path sidecar stage-plan execution boundary after accepting metadata-only materialization.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the direct command-path sidecar stage-plan execution boundary after defining it as future-run metadata only.
 
 Current priority:
 
-`define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate`
+`review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate`
 
 Current gate:
 
-`config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_implementation_gate.json`
+`config/scaling_gates/define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, `README.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native parser direct command path**: Define the execution boundary from reviewed direct command-path stage-plan metadata before any command run, compare, timing, arbitrary filelists, allocation, and broad native claims.
+1. **Native parser direct command path**: Review the execution boundary from reviewed direct command-path stage-plan metadata before any command run, compare, timing, arbitrary filelists, allocation, and broad native claims.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,7 +79,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Define the direct command-path sidecar stage-plan execution boundary. The accepted implementation review allows metadata-only `sidecar_stage_plan` materialization, but the next gate must define which ready materialization fields and stage order are required before any command, compare, timing, arbitrary filelist inference, automatic allocation, or runtime/ABI change.
+Review the direct command-path sidecar stage-plan execution boundary. The definition allows only a future run after review, and requires ready materialization metadata plus the reviewed seven-stage sidecar order before any command, compare, timing, arbitrary filelist inference, automatic allocation, or runtime/ABI change.
 
 Parser boundary definition:
 
@@ -148,7 +148,8 @@ Parser boundary definition:
 - direct command-path sidecar stage-plan materialization boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate.json`
 - direct command-path sidecar stage-plan materialization fixture implementation gate: `config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_gate.json`
 - direct command-path sidecar stage-plan materialization fixture implementation review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_implementation_gate.json`
-- selected next gate: `define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate`
+- direct command-path sidecar stage-plan execution boundary definition gate: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate.json`
+- selected next gate: `review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate`
 - scope: update existing overlay patch in place before public CLI, sidecar support, simulation execution, or timing
 - defined native minimum: `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`
 - wrapper/shim compatibility kept out of native minimum: `--sim-accel-shape <NxS>`, target-first registry lookup, print modes, JSON operator plans, resident modes, and dataset-backed flows
@@ -415,7 +416,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
-- current next task: `define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate`
+- current next task: `review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate`
 - reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
@@ -586,8 +587,8 @@ PULP ITA softmax-top dependency/template boundary gate:
 Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
-- active `config/` file count: `143`
-- tracked gate JSON records under `records/scaling_gates/`: `878`
+- active `config/` file count: `145`
+- tracked gate JSON records under `records/scaling_gates/`: `879`
 - compatibility link: `config/scaling_gates -> ../records/scaling_gates`
 - generated files under `reports/` and `artifacts/`: reproducible evidence only, never source of truth
 
@@ -757,15 +758,15 @@ Tracked evidence:
 
 Recommended next gate:
 
-`define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate`
+`review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_implementation_gate.json` as the source artifact
-- define which ready materialization fixture fields may become execution-boundary inputs
-- define the reviewed sidecar stage order required before any command can run
-- keep generated execution evidence under `reports/` and `artifacts/`
-- keep execution, compare, timing, runtime/ABI, arbitrary filelists, and automatic allocation outside this definition gate
+- use `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate.json` as the source artifact
+- verify ready materialization fixture fields are the only execution-boundary inputs
+- verify the reviewed seven-stage sidecar order is required before any command can run
+- verify generated execution evidence remains under `reports/` and `artifacts/`
+- keep execution, compare, timing, runtime/ABI, arbitrary filelists, and automatic allocation outside this review gate
 - keep `coverage_output_equivalence` as a later sidecar compare policy, not fixture evidence
 - accept no command execution, new measurement, timing, speedup, runtime/ABI change, arbitrary filelist support, automatic allocation, GEM, production-serving, or raw full-state equality claim
 
