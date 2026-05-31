@@ -55,6 +55,12 @@ SIDECAR_STAGE_PLAN_MATERIALIZATION_BOUNDARY_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate.json"
 )
+SIDECAR_STAGE_PLAN_MATERIALIZATION_IMPLEMENT_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "implement_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_gate.json"
+)
 
 BASE_DIRECT_ARGS = [
     "verilator",
@@ -107,6 +113,15 @@ def _sidecar_context() -> dict[str, object]:
             "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_gate.json"
         ),
     }
+
+
+def _sidecar_context_with_registry_entry() -> dict[str, object]:
+    context = _sidecar_context()
+    context["template_or_target_registry_entry"] = {
+        "target": "pulp_ita_mha",
+        "template": "config/slice_launch_templates/pulp_ita_mha.json",
+    }
+    return context
 
 
 class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase):
@@ -351,6 +366,158 @@ class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase)
         self.assertFalse(review["acceptance_policy"]["new_execution_allowed_by_this_gate"])
         self.assertFalse(review["acceptance_policy"]["sidecar_stage_plan_materialization_claim_allowed_by_gate_alone"])
         self.assertFalse(review["acceptance_policy"]["coverage_output_equivalence_claim_allowed_by_gate_alone"])
+
+    def test_sidecar_stage_plan_materialization_implementation_records_bridge_helper(self) -> None:
+        gate = json.loads(SIDECAR_STAGE_PLAN_MATERIALIZATION_IMPLEMENT_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_fixture_implementation_gate",
+        )
+        implemented = gate["implemented_surface"]
+        self.assertEqual(
+            implemented["materialization_module"],
+            "src/tools/verilator_native_option_parser_direct_stage_plan_materialization.py",
+        )
+        self.assertEqual(
+            implemented["entrypoint_function"],
+            "materialize_direct_command_path_sidecar_stage_plan_fixture",
+        )
+        self.assertTrue(implemented["sidecar_stage_plan_invoked"])
+        self.assertFalse(implemented["new_public_cli_added"])
+        self.assertFalse(implemented["new_execution_added"])
+        decisions = gate["implementation_decisions"]
+        self.assertTrue(decisions["direct_fixture_result_surface_and_status_validated"])
+        self.assertTrue(decisions["direct_fixture_result_exact_keyset_required"])
+        self.assertTrue(decisions["parser_payload_revalidated_before_adapter_bridge"])
+        self.assertTrue(decisions["direct_top_level_fields_cross_checked_against_parser_payload"])
+        self.assertTrue(decisions["template_or_target_registry_entry_normalized"])
+        self.assertTrue(decisions["adapter_payload_bridge_required"])
+        self.assertEqual(gate["verified_commands"]["focused_contract_test_count"], 19)
+        self.assertFalse(gate["acceptance_policy"]["coverage_output_equivalence_claim_allowed_by_gate_alone"])
+
+    def test_materializes_direct_fixture_through_adapter_and_plan_resolution(self) -> None:
+        fixture, materializer = _load_tool_modules(
+            "verilator_native_option_parser_direct_command_path_fixture",
+            "verilator_native_option_parser_direct_stage_plan_materialization",
+        )
+        direct_result = fixture.define_direct_command_path_sidecar_plan_fixture(
+            _expanded_argv(),
+            sidecar_context=_sidecar_context(),
+        )
+
+        result = materializer.materialize_direct_command_path_sidecar_stage_plan_fixture(direct_result)
+
+        self.assertEqual(tuple(result), materializer.MATERIALIZATION_FIELDS)
+        self.assertEqual(
+            result["surface"],
+            "native_verilator_parser_direct_command_path_sidecar_stage_plan_materialization_fixture",
+        )
+        self.assertEqual(result["status"], "ready_for_verilator_option_shim")
+        self.assertEqual(result["direct_fixture_surface"], "native_verilator_parser_direct_command_path_fixture")
+        self.assertEqual(result["adapter_payload_surface"], "native_verilator_parser_sidecar_handoff_fixture")
+        self.assertEqual(result["plan_resolution_surface"], "native_verilator_parser_sidecar_plan_resolution_fixture")
+        self.assertEqual(result["sidecar_context"]["template"], "config/slice_launch_templates/pulp_ita_mha.json")
+        self.assertEqual(result["parser_schedule_constraints"]["shape"], "64x1")
+        self.assertEqual(result["adapter_payload"]["adapter_source_surface"], "native_verilator_parser_stub_fixture")
+        self.assertTrue(result["sidecar_stage_plan_invoked"])
+        self.assertTrue(result["plan_resolution"]["sidecar_stage_plan_invoked"])
+        self.assertFalse(result["sidecar_handoff_contract_invoked"])
+        self.assertFalse(result["command_synthesis_invoked"])
+        self.assertFalse(result["efficiency_estimate_invoked"])
+        self.assertFalse(result["execution_performed"])
+        self.assertFalse(result["measurement_performed"])
+        self.assertFalse(result["timing_measured"])
+        self.assertFalse(result["source_closure_inferred"])
+        self.assertFalse(result["filelists_expanded"])
+        self.assertFalse(result["automatic_gpu_allocation_used"])
+        self.assertEqual(result["correctness_policy_ref_status"], "reference_only_not_compare_evidence")
+
+    def test_materializes_direct_fixture_with_registry_entry_context(self) -> None:
+        fixture, materializer = _load_tool_modules(
+            "verilator_native_option_parser_direct_command_path_fixture",
+            "verilator_native_option_parser_direct_stage_plan_materialization",
+        )
+        direct_result = fixture.define_direct_command_path_sidecar_plan_fixture(
+            _expanded_argv(),
+            sidecar_context=_sidecar_context_with_registry_entry(),
+        )
+
+        result = materializer.materialize_direct_command_path_sidecar_stage_plan_fixture(direct_result)
+
+        self.assertEqual(
+            result["sidecar_context"]["target_registry_entry"],
+            {"target": "pulp_ita_mha", "template": "config/slice_launch_templates/pulp_ita_mha.json"},
+        )
+        self.assertTrue(result["plan_resolution"]["sidecar_context"]["target_registry_entry_supplied"])
+        self.assertEqual(
+            result["plan_resolution"]["sidecar_context"]["template"],
+            "config/slice_launch_templates/pulp_ita_mha.json",
+        )
+
+    def test_materialization_rejects_bypass_inputs_and_enabled_reference_flags(self) -> None:
+        fixture, materializer = _load_tool_modules(
+            "verilator_native_option_parser_direct_command_path_fixture",
+            "verilator_native_option_parser_direct_stage_plan_materialization",
+        )
+        direct_result = fixture.define_direct_command_path_sidecar_plan_fixture(
+            _expanded_argv(),
+            sidecar_context=_sidecar_context(),
+        )
+
+        cases = {
+            "wrong_surface": ("surface", "native_verilator_parser_sidecar_handoff_fixture", "invalid_direct_fixture_result"),
+            "already_executed": ("execution_performed", True, "direct_fixture_result_not_reference_only"),
+            "source_closure": ("source_closure_inferred", True, "direct_fixture_result_not_reference_only"),
+        }
+        for name, (field, value, code) in cases.items():
+            mutated = dict(direct_result)
+            mutated[field] = value
+            with self.subTest(name=name):
+                with self.assertRaises(fixture.NativeParserDirectCommandPathFixtureError) as raised:
+                    materializer.materialize_direct_command_path_sidecar_stage_plan_fixture(mutated)
+                self.assertEqual(raised.exception.code, code)
+                self.assertEqual(raised.exception.rejection_layer, "direct_command_path_fixture_contract")
+
+    def test_materialization_revalidates_payload_and_cross_checks_direct_fields(self) -> None:
+        fixture, materializer = _load_tool_modules(
+            "verilator_native_option_parser_direct_command_path_fixture",
+            "verilator_native_option_parser_direct_stage_plan_materialization",
+        )
+        direct_result = fixture.define_direct_command_path_sidecar_plan_fixture(
+            _expanded_argv(),
+            sidecar_context=_sidecar_context(),
+        )
+
+        cases = {
+            "extra_stage_plan": lambda payload: payload.__setitem__("stage_plan", {}),
+            "parser_payload_mismatch": lambda payload: payload.__setitem__(
+                "parser_payload",
+                {**payload["parser_payload"], "shape": "1x64"},
+            ),
+            "direct_field_mismatch": lambda payload: payload.__setitem__("shape", "1x64"),
+            "bool_optional_phase": lambda payload: payload["sidecar_context"].__setitem__("phases", True),
+        }
+        expected_codes = {
+            "extra_stage_plan": "invalid_direct_fixture_result",
+            "parser_payload_mismatch": "invalid_parser_payload",
+            "direct_field_mismatch": "direct_fixture_result_parser_payload_mismatch",
+            "bool_optional_phase": "missing_explicit_sidecar_context",
+        }
+        for name, mutate in cases.items():
+            mutated = dict(direct_result)
+            mutated["parser_payload"] = dict(direct_result["parser_payload"])
+            mutated["sidecar_context"] = dict(direct_result["sidecar_context"])
+            mutate(mutated)
+            with self.subTest(name=name):
+                with self.assertRaises(fixture.NativeParserDirectCommandPathFixtureError) as raised:
+                    materializer.materialize_direct_command_path_sidecar_stage_plan_fixture(mutated)
+                self.assertEqual(raised.exception.code, expected_codes[name])
+                self.assertEqual(raised.exception.rejection_layer, "direct_command_path_fixture_contract")
 
     def test_accepts_expanded_64x1_and_returns_reference_only_boundary(self) -> None:
         (fixture,) = _load_tool_modules("verilator_native_option_parser_direct_command_path_fixture")
