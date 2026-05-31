@@ -190,13 +190,216 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         self.assertFalse(completion["acceptance_policy"]["new_execution_allowed_by_this_gate"])
         self.assertEqual(
             selection["current_priority"],
-            "define_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate",
+            "run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_gate",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_run_gate.json",
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_boundary_gate.json",
         )
-        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 882)
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 918)
+
+    def test_native_invocation_execution_boundary_review_selects_scoped_run(self) -> None:
+        review = json.loads(
+            (
+                REPO_ROOT
+                / "config"
+                / "scaling_gates"
+                / "review_verilator_native_option_parser_direct_command_path_native_invocation_execution_boundary_gate.json"
+            ).read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_execution_boundary_gate.json",
+        )
+        self.assertEqual(
+            review["current_priority"],
+            "run_verilator_native_option_parser_direct_command_path_native_invocation_execution_gate",
+        )
+        self.assertTrue(review["accepted_boundary"]["real_verilator_process_parse_result_required"])
+        self.assertFalse(review["accepted_boundary"]["fixture_argv_is_execution_authority"])
+        self.assertFalse(review["accepted_boundary"]["generated_command_text_is_source_of_truth"])
+        self.assertFalse(review["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+        self.assertFalse(review["acceptance_policy"]["coverage_output_equivalence_claim_allowed_by_gate_alone"])
+
+    def test_native_invocation_execution_run_records_local_parse_failure_only(self) -> None:
+        gate = json.loads(
+            (
+                REPO_ROOT
+                / "config"
+                / "scaling_gates"
+                / "run_verilator_native_option_parser_direct_command_path_native_invocation_execution_gate.json"
+            ).read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_execution_boundary_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_native_invocation_execution_run_gate",
+        )
+        metadata = gate["metadata_validation"]
+        self.assertTrue(metadata["all_fixture_authority_flags_false"])
+        self.assertFalse(metadata["fixture_metadata_is_runtime_authority"])
+        evidence = gate["real_verilator_process_parse_evidence"]
+        self.assertTrue(evidence["process_invoked"])
+        self.assertFalse(evidence["wrapper_execution_used"])
+        self.assertFalse(evidence["native_option_parse_accepted"])
+        self.assertIn("--sim-accel", evidence["observed_stderr_summary"])
+        self.assertFalse(gate["sidecar_execution_evidence"]["sidecar_stage_execution_performed"])
+        self.assertFalse(gate["sidecar_execution_evidence"]["compare_stage_performed"])
+        self.assertEqual(gate["observed_result"]["failure_class"], "process_parse_failure")
+        self.assertEqual(
+            gate["required_next_gate"]["name"],
+            "review_verilator_native_option_parser_direct_command_path_native_invocation_execution_run_gate",
+        )
+        self.assertFalse(gate["acceptance_policy"]["native_verilator_option_claim_allowed_by_gate_alone"])
+        self.assertFalse(gate["acceptance_policy"]["coverage_output_equivalence_claim_allowed_by_gate_alone"])
+
+    def test_native_invocation_execution_run_review_selects_patched_binary_definition(self) -> None:
+        review = json.loads(
+            (
+                REPO_ROOT
+                / "config"
+                / "scaling_gates"
+                / "review_verilator_native_option_parser_direct_command_path_native_invocation_execution_run_gate.json"
+            ).read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(
+            review["source_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_execution_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_selection_gate",
+        )
+        result = review["accepted_result"]
+        self.assertEqual(result["failure_class"], "process_parse_failure")
+        self.assertFalse(result["native_option_parse_accepted"])
+        self.assertFalse(result["sidecar_stage_execution_performed"])
+        self.assertFalse(result["compare_stage_performed"])
+        self.assertFalse(result["timing_measured"])
+        self.assertFalse(review["accepted_claim_scope"]["patched_verilator_binary_selected"])
+        self.assertFalse(review["accepted_claim_scope"]["coverage_output_equivalence_accepted"])
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "define_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_selection_gate",
+        )
+        self.assertIn(
+            "the presence of Verilator's --timing option is ordinary parser/build input and is not timing or speedup evidence",
+            review["review_decision"]["accepted_because"],
+        )
+        self.assertFalse(review["acceptance_policy"]["build_or_run_stage_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(review["acceptance_policy"]["generated_command_text_authority_claim_allowed_by_gate_alone"])
+
+    def test_native_invocation_patched_binary_selection_definition_records_candidate_only(self) -> None:
+        gate = json.loads(
+            (
+                REPO_ROOT
+                / "config"
+                / "scaling_gates"
+                / "define_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_selection_gate.json"
+            ).read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_execution_run_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_selection_gate",
+        )
+        candidate = gate["selected_patched_binary_candidate"]
+        self.assertEqual(candidate["selection_role"], "candidate_for_next_native_invocation_parse_retry")
+        self.assertIn(
+            "parser_integer_hardening_run_v1/verilator-v5.048-clean/bin/verilator_bin",
+            candidate["binary_rel"],
+        )
+        self.assertFalse(candidate["generated_artifact_is_source_of_truth"])
+        self.assertTrue(candidate["must_exist_or_be_rebuilt_before_retry"])
+        self.assertEqual(
+            gate["provenance_chain"]["parser_integer_hardening_run_review"],
+            "config/scaling_gates/review_verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_gate.json",
+        )
+        retry = gate["retry_boundary"]
+        self.assertTrue(retry["definition_only"])
+        self.assertFalse(retry["new_command_executed_by_this_gate"])
+        self.assertTrue(retry["timing_option_is_parser_build_input_not_timing_evidence"])
+        self.assertFalse(retry["sidecar_execution_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["native_verilator_option_claim_allowed_by_gate_alone"])
+        self.assertFalse(gate["acceptance_policy"]["coverage_output_equivalence_claim_allowed_by_gate_alone"])
+
+    def test_native_invocation_patched_binary_selection_review_authorizes_parser_only_retry(self) -> None:
+        review = json.loads(
+            (
+                REPO_ROOT
+                / "config"
+                / "scaling_gates"
+                / "review_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_selection_gate.json"
+            ).read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_selection_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("generated evidence, not source of truth", review["review_decision"]["weakest_point"])
+        self.assertEqual(
+            review["current_priority"],
+            "run_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_gate",
+        )
+        candidate = review["accepted_candidate"]
+        self.assertFalse(candidate["generated_artifact_is_source_of_truth"])
+        self.assertTrue(candidate["must_exist_or_be_rebuilt_before_retry"])
+        self.assertTrue(candidate["accepted_for_parser_only_retry"])
+        self.assertFalse(candidate["accepted_for_sidecar_execution"])
+        retry = review["accepted_retry_boundary"]
+        self.assertEqual(retry["next_retry_kind"], "patched_binary_parser_only_smoke")
+        self.assertTrue(retry["must_use_isolated_smoke_rtl"])
+        self.assertFalse(retry["sidecar_execution_allowed"])
+        self.assertFalse(retry["compare_allowed"])
+        self.assertFalse(review["accepted_claim_scope"]["native_verilator_option_support_accepted"])
+        self.assertFalse(review["accepted_claim_scope"]["coverage_output_equivalence_accepted"])
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "run_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_gate",
+        )
+
+    def test_native_invocation_patched_binary_retry_records_parser_only_acceptance(self) -> None:
+        path = REPO_ROOT / "config" / "scaling_gates" / "run_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_gate.json"
+        gate = json.loads(path.read_text(encoding="utf-8"))
+
+        self.assertEqual(gate["source_review_gate"], "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_selection_gate.json")
+        self.assertEqual(gate["current_priority"], "review_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_run_gate")
+        setup = gate["setup_evidence"]
+        self.assertTrue(setup["patched_binary_exists_and_is_executable"])
+        self.assertTrue(setup["verilator_root_set_for_run"])
+        self.assertFalse(setup["generated_artifact_is_source_of_truth"])
+        smoke = gate["smoke_rtl_evidence"]
+        self.assertEqual(smoke["top_module"], "sim_accel_smoke")
+        evidence = gate["real_patched_verilator_process_parse_evidence"]
+        self.assertFalse(evidence["wrapper_execution_used"])
+        self.assertFalse(evidence["path_verilator_used"])
+        self.assertEqual(evidence["observed_exit_code"], 0)
+        self.assertTrue(evidence["native_option_parse_accepted"])
+        self.assertTrue(evidence["timing_option_is_parser_build_input_not_timing_evidence"])
+        self.assertIn("--sim-accel", evidence["expanded_option_spelling_tested"])
+        self.assertFalse(gate["sidecar_execution_evidence"]["sidecar_stage_execution_performed"])
+        self.assertEqual(gate["observed_result"]["failure_class"], "none")
+        self.assertTrue(
+            {"verilator_root_missing_or_invalid", "smoke_rtl_setup_failure"}.issubset(
+                set(gate["failure_classes_reserved"])
+            )
+        )
+        self.assertEqual(gate["required_next_gate"]["name"], "review_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_run_gate")
+        self.assertFalse(gate["acceptance_policy"]["sidecar_stage_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(gate["acceptance_policy"]["coverage_output_equivalence_claim_allowed_by_gate_alone"])
 
     def test_parser_boundary_definition_keeps_native_scope_parser_only(self) -> None:
         gate = self.read_parser_boundary_gate()
@@ -839,6 +1042,50 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         )
         self.assertIn(
             "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_run_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_fixture_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_fixture_implementation_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_execution_boundary_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_execution_boundary_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_execution_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_execution_run_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_selection_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_selection_gate.json",
+            PUBLIC_PACK_ARCHIVE_PATHS,
+        )
+        self.assertIn(
+            "records/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_gate.json",
             PUBLIC_PACK_ARCHIVE_PATHS,
         )
         self.assertIn(

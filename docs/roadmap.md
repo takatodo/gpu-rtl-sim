@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The repaired overlay patch now applies cleanly, passes post-apply location sanity, has accepted `verilator_bin` build-only evidence, reviewed parser-only smoke, reviewed rebuilt parser integer-hardening smoke, a reviewed native parser-to-adapter handoff boundary, a reviewed non-executing adapter fixture, a reviewed adapter-payload to sidecar plan-resolution boundary, an implemented non-executing plan-resolution fixture, a review accepting only the explicit-context template-plan fixture, a definition for status/readiness hardening, a review accepting that definition, an implementation of the in-place helper hardening, a review accepting that implementation, a definition of the ready-only handoff-contract metadata boundary, a review accepting that boundary, an implemented non-executing handoff-contract metadata fixture, an accepted implementation review after adding the explicit `efficiency_estimate_invoked` guard, a defined command/operator-plan metadata boundary, a review accepting that boundary, an implemented importable operator-plan fixture, a review accepting that fixture as metadata only, a defined hardening boundary for bool/int validation plus the `efficiency_estimate` non-timing claim, a review accepting that hardening definition, an in-place implementation of the hardening, a review accepting that implementation, a definition of the first execution boundary, a review accepting that boundary, a scoped sidecar execution run, a review accepting that run only as scoped sidecar build/run/compare evidence, a definition of the direct command-path boundary, a review accepting that boundary only as fixture-contract preparation, a definition of the direct command-path fixture contract, a review accepting that contract for implementation, an implemented importable direct command-path fixture helper, a review accepting that helper only as non-executing reference-boundary metadata, a definition of parser-payload validation hardening, a review accepting that hardening definition, an implementation of that hardening, a review accepting that implementation, a definition of the direct command-path sidecar stage-plan materialization boundary, a review accepting only the adapter-and-plan-resolution bridge route, an implementation of that non-executing bridge, a review accepting it as metadata-only stage-plan materialization, a definition of the direct command-path sidecar stage-plan execution boundary, a review accepting that boundary for a scoped future run, a scoped direct command-path sidecar stage-plan run, and a review accepting that run only as scoped sidecar build/run/compare evidence. The weak point is defining true native Verilator invocation authority without allowing direct command-path metadata or generated evidence to become native Verilator option support, direct command execution, arbitrary filelist support, timing evidence, automatic allocation, runtime/ABI change, or raw full-state equality.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The chain now includes a reviewed patched-binary parser-only retry, an accepted sidecar authority boundary, a first scoped native sidecar run, a review accepting only separated parser-success plus reviewed `pulp_ita_mha 64x1` sidecar build/run/compare evidence, a definition of the direct launch authority chain, a review accepting that definition only for a scoped future run, a run record that stops at `direct_launch_handoff_failure`, a review accepting that failure as honest, a definition of the minimal direct-launch handoff implementation boundary, a review accepting only that narrow boundary, a metadata-only direct-launch handoff fixture implementation, a review accepting that fixture only as readiness metadata, a definition of the first real handoff run boundary, a review accepting that boundary only for a scoped future run, a scoped handoff run that still records `direct_launch_handoff_failure`, a review accepting that failure as honest, a native-process to sidecar-launcher bridge boundary definition/review, a metadata-only bridge fixture implementation, a review accepting that fixture only as metadata, and a scoped sidecar-launcher run boundary definition/review. The weak point is now running that boundary without treating launcher invocation, native-path compare, or timing as proven until the run records them.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is defining the true native Verilator invocation boundary after accepting the scoped direct command-path sidecar stage-plan execution run.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is running the first scoped sidecar-launcher attempt after the non-executing bridge fixture review and boundary review.
 
 Current priority:
 
-`define_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate`
+`run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_gate`
 
 Current gate:
 
-`config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_run_gate.json`
+`config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_boundary_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, `README.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native parser direct command path**: Define the true native invocation boundary after accepting the scoped sidecar build/run/compare result, without broad native, direct command execution, timing, arbitrary filelist, allocation, or raw-state claims.
+1. **Native parser direct command path**: Run the scoped sidecar-launcher attempt from reviewed bridge fixture metadata into the existing launcher before claiming that the command itself executes sidecar stages.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,7 +79,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Run the scoped direct command-path sidecar stage-plan execution gate. The accepted review allows only a future sidecar build/run/compare run from ready materialization metadata plus the reviewed seven-stage order; it still forbids native option support, arbitrary filelist inference, automatic allocation, timing, or runtime/ABI claims.
+Review the scoped sidecar-launcher run boundary. The defined boundary may later allow reviewed bridge metadata to invoke the existing launcher and reach coverage-output compare; timing, arbitrary filelist support, automatic allocation, runtime/ABI changes, direct sidecar execution, and raw-state equality remain out of scope unless a later run explicitly proves them.
 
 Parser boundary definition:
 
@@ -152,8 +152,44 @@ Parser boundary definition:
 - direct command-path sidecar stage-plan execution boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate.json`
 - direct command-path sidecar stage-plan execution run gate: `config/scaling_gates/run_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_gate.json`
 - direct command-path sidecar stage-plan execution run review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_run_gate.json`
-- selected next gate: `define_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate`
-- scope: update existing overlay patch in place before public CLI, sidecar support, simulation execution, or timing
+- direct command-path native invocation boundary definition gate: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate.json`
+- direct command-path native invocation boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate.json`
+- direct command-path native invocation fixture implementation gate: `config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_fixture_gate.json`
+- direct command-path native invocation fixture implementation review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_fixture_implementation_gate.json`
+- direct command-path native invocation execution boundary definition gate: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_execution_boundary_gate.json`
+- direct command-path native invocation execution boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_execution_boundary_gate.json`
+- direct command-path native invocation execution run gate: `config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_execution_gate.json`
+- direct command-path native invocation execution run review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_execution_run_gate.json`
+- direct command-path native invocation patched-binary selection definition gate: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_selection_gate.json`
+- direct command-path native invocation patched-binary selection review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_selection_gate.json`
+- direct command-path native invocation patched-binary retry run gate: `config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_gate.json`
+- direct command-path native invocation patched-binary retry run review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_run_gate.json`
+- direct command-path native invocation sidecar authority boundary definition gate: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate.json`
+- direct command-path native invocation sidecar authority boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate.json`
+- direct command-path native invocation first scoped sidecar execution boundary definition gate: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_boundary_gate.json`
+- direct command-path native invocation first scoped sidecar execution boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_boundary_gate.json`
+- direct command-path native invocation first scoped sidecar execution run gate: `config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_gate.json`
+- direct command-path native invocation first scoped sidecar execution run review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_run_gate.json`
+- direct command-path native invocation direct sidecar launch boundary definition gate: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_sidecar_launch_boundary_gate.json`
+- direct command-path native invocation direct sidecar launch boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_sidecar_launch_boundary_gate.json`
+- direct command-path native invocation direct sidecar launch run gate: `config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_sidecar_launch_gate.json`
+- direct command-path native invocation direct sidecar launch run review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_sidecar_launch_run_gate.json`
+- direct command-path native invocation direct-launch handoff implementation boundary definition gate: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_implementation_boundary_gate.json`
+- direct command-path native invocation direct-launch handoff implementation boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_implementation_boundary_gate.json`
+- direct command-path native invocation direct-launch handoff fixture implementation gate: `config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_fixture_gate.json`
+- direct command-path native invocation direct-launch handoff fixture implementation review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_fixture_implementation_gate.json`
+- direct command-path native invocation direct-launch handoff run boundary definition gate: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_run_boundary_gate.json`
+- direct command-path native invocation direct-launch handoff run boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_run_boundary_gate.json`
+- direct command-path native invocation direct-launch handoff run gate: `config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_gate.json`
+- direct command-path native invocation direct-launch handoff run review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_run_gate.json`
+- direct command-path native invocation sidecar-launcher bridge boundary definition gate: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_bridge_boundary_gate.json`
+- direct command-path native invocation sidecar-launcher bridge boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_bridge_boundary_gate.json`
+- direct command-path native invocation sidecar-launcher bridge fixture implementation gate: `config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_bridge_fixture_gate.json`
+- direct command-path native invocation sidecar-launcher bridge fixture implementation review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_bridge_fixture_implementation_gate.json`
+- direct command-path native invocation sidecar-launcher run boundary definition gate: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_boundary_gate.json`
+- direct command-path native invocation sidecar-launcher run boundary review gate: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_boundary_gate.json`
+- selected next gate: `run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_gate`
+- scope: attempt only the reviewed `pulp_ita_mha` / `64x1` direct-launch handoff path before public CLI broadening, automatic allocation, arbitrary filelist support, or timing
 - defined native minimum: `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`
 - wrapper/shim compatibility kept out of native minimum: `--sim-accel-shape <NxS>`, target-first registry lookup, print modes, JSON operator plans, resident modes, and dataset-backed flows
 - parser non-inference: coverage manifests, host-probe metadata, source closure, state paths, and report paths are sidecar handoff-contract fields, not parser-discovered fields
@@ -419,7 +455,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
-- current next task: `define_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate`
+- current next task: `run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_gate`
 - reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
@@ -591,7 +627,7 @@ Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
 - active `config/` file count: `145`
-- tracked gate JSON records under `records/scaling_gates/`: `882`
+- tracked gate JSON records under `records/scaling_gates/`: `918`
 - compatibility link: `config/scaling_gates -> ../records/scaling_gates`
 - generated files under `reports/` and `artifacts/`: reproducible evidence only, never source of truth
 
@@ -761,16 +797,17 @@ Tracked evidence:
 
 Recommended next gate:
 
-`define_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate`
+`run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_run_gate.json` as the source artifact
-- define what exact Verilator-facing invocation counts as native runtime authority rather than wrapper execution
-- define how direct parser metadata, materialized sidecar stage plans, and generated commands are connected or deliberately separated
-- keep dry-run, preview, and execution modes distinguishable before implementation
-- keep source files and filelists as inputs rather than inferred dependency closure
-- accept no direct Verilator command execution, new measurement, timing, speedup, runtime/ABI change, arbitrary filelist support, automatic allocation, GEM, production-serving, or raw full-state equality claim
+- use `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_boundary_gate.json` as the source artifact
+- record whether reviewed bridge metadata invokes the existing sidecar launcher from the native path
+- keep patched-parser success, fixture readiness, and reviewed sidecar execution as prerequisites, not broad native-Verilator authority
+- preserve the `pulp_ita_mha` / `64x1` scope until a later run broadens it
+- record the exact failure class if the chain stops before launcher invocation, sidecar stage completion, or compare
+- keep timing, arbitrary filelist support, automatic allocation, runtime/ABI changes, raw-state equality, and production throughput out of scope
+- keep direct-Verilator sidecar execution, timing, arbitrary RTL/filelist inference, automatic GPU allocation, runtime/ABI change, production-serving, and raw full-state equality out of scope unless separately proven
 
 Deferred technical workstreams:
 
