@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_direct_command_path_native_invocation_direct_sidecar_launch_boundary_gate",
+  "status": "defined_direct_sidecar_launch_authority_boundary",
+  "objective": "Define what must be true before a Verilator-facing native invocation may be treated as direct sidecar stage launch authority, while keeping this gate definition-only and avoiding direct execution, timing, arbitrary RTL/filelist support, automatic allocation, runtime/ABI change, raw full-state equality, or production LLM-serving throughput claims.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_run_gate.json",
+  "source_run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_sidecar_launch_boundary_gate",
+  "definition_decision": {
+    "defined": true,
+    "definition_only": true,
+    "selected_surface": "real_verilator_process_to_sidecar_stage_launch_authority_boundary",
+    "weakest_point": "The source review accepted parser success plus a scoped reviewed sidecar execution, but those two facts are still separated. This boundary defines the missing direct-launch authority chain; it does not prove that a Verilator process launched sidecar stages.",
+    "reason": [
+      "the first scoped run review accepted patched-parser success and sidecar execution as separated evidence",
+      "the next usability gap is connecting a Verilator-facing process invocation to sidecar stage launch authority",
+      "the boundary must keep generated command text, wrapper execution, and stage-plan metadata non-authoritative unless a later run explicitly proves the chain",
+      "coverage_output_equivalence remains a scoped compare policy and not a raw-state equality claim"
+    ]
+  },
+  "required_authority_chain_for_future_run": {
+    "single_native_invocation_record_required": true,
+    "real_verilator_facing_process_invoked": true,
+    "expanded_native_option_parse_required": true,
+    "expanded_option_spelling": [
+      "--sim-accel",
+      "sidecar-gpu",
+      "--sim-accel-states",
+      "64",
+      "--sim-accel-steps",
+      "1"
+    ],
+    "explicit_sidecar_context_required": true,
+    "sidecar_context": {
+      "target": "pulp_ita_mha",
+      "template": "config/slice_launch_templates/pulp_ita_mha.json",
+      "shape": "64x1",
+      "source_gate_or_manifest_ref_required": true
+    },
+    "reviewed_stage_authority_required": true,
+    "required_stage_order": [
+      "verilator_build",
+      "host_probe_build",
+      "cpu_init_state",
+      "cpu_reference_output",
+      "gpu_artifact_build",
+      "hybrid_sidecar_run",
+      "coverage_output_compare"
+    ],
+    "sidecar_launch_must_be_recorded_as_reached_from_native_path": true,
+    "wrapper_execution_alone_is_native_launch_authority": false,
+    "generated_command_text_is_launch_authority": false,
+    "stage_plan_metadata_alone_is_launch_authority": false,
+    "parser_success_alone_is_launch_authority": false
+  },
+  "future_compare_boundary": {
+    "correctness_policy": "coverage_output_equivalence",
+    "coverage_output_target": "pulp_ita_mha",
+    "shape_scope": "64x1",
+    "compare_output_words_must_be_explicit": true,
+    "strict_output_word_count_per_state": 29,
+    "raw_full_state_equality_required": false,
+    "compare_claim_allowed_by_definition_gate": false
+  },
+  "future_generated_evidence_boundary": {
+    "reports_allowed_as_generated_evidence_only": true,
+    "artifacts_allowed_as_generated_evidence_only": true,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "local_absolute_paths_allowed_as_source_of_truth": false
+  },
+  "failure_class_boundary": {
+    "process_parse_failure": "the real Verilator-facing process rejects or fails before the expanded accelerator options are accepted",
+    "direct_launch_handoff_failure": "the native invocation parse succeeds, but explicit sidecar context or launch handoff is not connected to the run record",
+    "sidecar_authority_failure": "reviewed stage authority is absent or mismatched for the scoped target/template/shape",
+    "sidecar_stage_failure": "one of the scoped sidecar build/run stages fails before compare",
+    "compare_failure": "coverage_output_equivalence compare runs and records a mismatch",
+    "timing_claim_without_measurement": "timing or speedup is claimed without a separate timing gate"
+  },
+  "required_tests_for_next_review": [
+    "the definition uses the first scoped sidecar execution run review as its source artifact",
+    "direct launch authority requires one native invocation record that links process parse, sidecar context, reviewed stage authority, sidecar launch, and compare",
+    "parser success, wrapper execution, generated command text, and stage-plan metadata alone are not launch authority",
+    "the selected scope remains pulp_ita_mha 64x1",
+    "coverage_output_equivalence output words remain explicit and raw full-state equality remains non-required",
+    "generated reports and artifacts stay evidence-only",
+    "timing, arbitrary filelist support, automatic allocation, runtime/ABI change, and production throughput remain blocked"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_sidecar_launch_boundary_gate",
+    "must_decide": [
+      "whether the direct-launch authority chain is narrow enough after the separated parser-success plus sidecar-execution review",
+      "whether one run record must connect process parse, sidecar context, reviewed stage authority, sidecar launch, and compare",
+      "whether generated command text, wrapper execution, parser success, and stage-plan metadata remain non-authoritative",
+      "whether the pulp_ita_mha 64x1 scope remains explicit",
+      "whether coverage_output_equivalence remains the scoped output policy without raw-state equality",
+      "whether timing, arbitrary filelists, automatic allocation, runtime/ABI, and production throughput remain non-claims"
+    ],
+    "must_not_claim": [
+      "direct Verilator sidecar execution by this definition",
+      "broad native Verilator option support",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic optimal GPU allocation",
+      "timing or speedup evidence",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "direct_sidecar_launch_boundary_defined": true,
+    "future_review_gate_allowed": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_gate_alone": false,
+    "native_verilator_option_claim_allowed_beyond_scoped_parser_parse": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_sidecar_launch_boundary_gate",
+  "non_claims": [
+    "not direct Verilator sidecar execution",
+    "not broad native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation for any design",
+    "not timing or speedup evidence",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

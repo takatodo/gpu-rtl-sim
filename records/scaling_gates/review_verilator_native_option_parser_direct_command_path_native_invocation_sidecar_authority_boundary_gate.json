@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate",
+  "status": "accepted_native_invocation_sidecar_authority_boundary_definition",
+  "objective": "Review the native-invocation sidecar authority boundary definition, accept only the non-executing authority criteria, and select a later execution-boundary definition before any sidecar build/run/compare, timing, arbitrary RTL/filelist, automatic GPU allocation, runtime/ABI, raw full-state equality, or production LLM-serving throughput claim.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate.json",
+  "source_parser_retry_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_run_gate.json",
+  "current_priority": "define_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_boundary_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The definition keeps parser-only patched-binary success separate from execution authority and requires explicit sidecar context, reviewed stage authority, non-canonical artifact provenance, separated failure classes, and an explicit coverage-output compare policy before any native sidecar handoff.",
+    "weakest_point": "The upstream evidence remains parser-only success for a generated patched binary artifact. The authority definition prepares a future execution boundary but does not itself prove sidecar execution, compare, timing, arbitrary filelist support, automatic allocation, runtime/ABI behavior, raw-state equality, or production throughput.",
+    "accepted_because": [
+      "the definition starts from the reviewed parser-only patched-binary retry",
+      "parser success alone is explicitly non-authoritative for sidecar execution, compare, and timing",
+      "explicit sidecar context fields are required before any handoff",
+      "stage authority and compare policy are separated from parser acceptance",
+      "the patched binary remains generated evidence rather than source of truth",
+      "process parse, sidecar authority, sidecar stage, compare, and timing-claim failure classes remain separate"
+    ]
+  },
+  "accepted_authority_boundary": {
+    "definition_only": true,
+    "parser_retry_review_accepted_as_precondition": true,
+    "sidecar_authority_boundary_defined": true,
+    "native_option_parse_success_is_execution_authority": false,
+    "reviewed_sidecar_context_required": true,
+    "reviewed_sidecar_stage_order_required": true,
+    "compare_output_words_must_be_explicit": true,
+    "correctness_policy": "coverage_output_equivalence",
+    "generated_command_text_is_authority": false,
+    "reports_and_artifacts_are_source_of_truth": false,
+    "future_execution_allowed_by_this_gate": false,
+    "future_execution_boundary_definition_allowed": true
+  },
+  "accepted_artifact_policy": {
+    "patched_binary_is_generated_evidence": true,
+    "generated_artifact_is_source_of_truth": false,
+    "future_execution_must_record_artifact_presence_or_equivalent_rebuild": true,
+    "digest_or_rebuild_policy_must_be_reviewed_before_broadening": true,
+    "verilator_root_is_mechanical_run_environment": true
+  },
+  "accepted_failure_class_boundary": {
+    "process_parse_failure": true,
+    "sidecar_authority_failure": true,
+    "sidecar_stage_failure": true,
+    "compare_failure": true,
+    "timing_claim_without_measurement": true
+  },
+  "selected_next_workstream": {
+    "name": "define_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_boundary_gate",
+    "reason": "The authority criteria are defined and accepted, so the next step is still a definition gate: specify a first scoped native sidecar execution boundary without running it yet.",
+    "execution_not_selected_first": "This review accepts prerequisites only; a future execution run needs a separate definition and review.",
+    "timing_not_selected_first": "No simulation timing is measured by this definition or review.",
+    "arbitrary_filelist_not_selected_first": "The first execution boundary should remain one reviewed target/template shape rather than arbitrary source closure inference."
+  },
+  "required_next_gate": {
+    "name": "define_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_boundary_gate",
+    "must_define": [
+      "which single target/template and shape may be used for the first scoped native sidecar execution attempt",
+      "how the reviewed patched binary or equivalent rebuild is selected for the execution attempt",
+      "which explicit sidecar context and stage authority are required before build/run/compare",
+      "which output words are compared under coverage_output_equivalence",
+      "which generated reports and artifacts may be produced as evidence only",
+      "how process_parse_failure, sidecar_authority_failure, sidecar_stage_failure, and compare_failure are reported separately"
+    ],
+    "must_not_claim": [
+      "sidecar stage execution by this review",
+      "build/run stage execution by this review",
+      "compare execution by this review",
+      "coverage-output equivalence evidence by this review",
+      "timing or speedup evidence",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic optimal GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "source_definition_gate_accepted": true,
+    "sidecar_authority_boundary_accepted": true,
+    "next_execution_boundary_definition_allowed": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "sidecar_stage_execution_claim_allowed_by_gate_alone": false,
+    "build_or_run_stage_execution_claim_allowed_by_gate_alone": false,
+    "compare_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "define_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_boundary_gate",
+  "non_claims": [
+    "not sidecar stage execution",
+    "not build/run stage execution",
+    "not compare execution",
+    "not coverage-output equivalence evidence",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

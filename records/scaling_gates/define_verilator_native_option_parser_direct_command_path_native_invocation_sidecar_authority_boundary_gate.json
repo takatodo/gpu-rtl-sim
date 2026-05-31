@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate",
+  "status": "defined_native_invocation_sidecar_authority_boundary",
+  "objective": "Define the authority boundary that must be satisfied after patched Verilator native option parse success and before any native-invocation sidecar build, run, compare, timing, arbitrary RTL/filelist support, automatic GPU allocation, runtime/ABI change, raw full-state equality, or production LLM-serving throughput claim.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_run_gate.json",
+  "source_scoped_sidecar_execution_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_run_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate",
+  "definition_decision": {
+    "definition_only": true,
+    "selected_surface": "patched_binary_parser_success_to_reviewed_sidecar_authority_boundary",
+    "weakest_point": "Parser-only success plus generated patched binary evidence is not sidecar execution authority.",
+    "future_execution_allowed_after_review_only": true
+  },
+  "accepted_input_scope": {
+    "patched_binary_parser_only_success_available": true,
+    "accepted_parser_success_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_run_gate.json",
+    "expanded_option_spelling": [
+      "--sim-accel",
+      "sidecar-gpu",
+      "--sim-accel-states",
+      "<N>",
+      "--sim-accel-steps",
+      "<S>"
+    ],
+    "parser_success_alone_authorizes_sidecar_execution": false,
+    "parser_success_alone_authorizes_compare": false,
+    "parser_success_alone_authorizes_timing": false
+  },
+  "required_sidecar_authority_before_execution": {
+    "explicit_sidecar_context_required": true,
+    "required_context_fields": [
+      "target",
+      "mode",
+      "template_or_target_registry_entry",
+      "source_gate_or_manifest_ref"
+    ],
+    "validated_native_invocation_metadata_required": true,
+    "reviewed_stage_authority_required": true,
+    "allowed_first_execution_scope": "single reviewed target/template shape only",
+    "generated_command_text_execution_authority": false,
+    "native_command_alone_execution_authority": false,
+    "fixture_metadata_runtime_authority": false,
+    "wrapper_execution_native_authority": false
+  },
+  "artifact_provenance_boundary": {
+    "patched_binary_rel": "artifacts/verilator_native_option_parser_overlay_patch_parser_integer_hardening_run_v1/verilator-v5.048-clean/bin/verilator_bin",
+    "patched_binary_is_generated_evidence": true,
+    "patched_binary_is_source_of_truth": false,
+    "future_execution_must_record_artifact_presence_or_equivalent_rebuild": true,
+    "digest_or_rebuild_policy_must_be_reviewed_before_broadening": true,
+    "verilator_root_is_mechanical_run_environment": true
+  },
+  "compare_authority_boundary": {
+    "coverage_output_equivalence_policy_required_before_compare_claim": true,
+    "raw_full_state_equality_policy_allowed": false,
+    "output_words_must_be_named_by_gate_or_manifest": true,
+    "generated_compare_report_is_source_of_truth": false,
+    "compare_claim_allowed_by_definition_gate": false
+  },
+  "failure_class_boundary": {
+    "process_parse_failure": "Verilator process does not accept the native option spelling or setup fails before sidecar authority.",
+    "sidecar_authority_failure": "Parser success exists but explicit sidecar context, artifact provenance, reviewed stage authority, or compare policy is incomplete.",
+    "sidecar_stage_failure": "Reviewed authority exists but build or run stage fails.",
+    "compare_failure": "Build/run completes but the declared compare policy fails.",
+    "timing_claim_without_measurement": "A command includes parser/build timing input or runtime logs without an accepted timing measurement gate."
+  },
+  "defined_next_run_prerequisites": [
+    "start from the reviewed parser-only patched-binary success gate",
+    "use a reviewed patched binary artifact or record an equivalent rebuild",
+    "keep VERILATOR_ROOT as mechanical process setup, not source of truth",
+    "validate explicit sidecar context before any sidecar handoff",
+    "use one reviewed target/template and shape for the first native-invocation sidecar execution run",
+    "record build, run, and compare as separate stage evidence",
+    "compare only named coverage-output words under coverage_output_equivalence",
+    "keep timing, speedup, arbitrary filelist inference, automatic GPU allocation, runtime/ABI change, and raw full-state equality out of scope unless a later gate defines them"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate",
+    "must_decide": [
+      "whether parser-only success plus this authority definition is sufficient to prepare a first scoped sidecar execution run",
+      "whether artifact provenance remains non-canonical enough for a future execution boundary",
+      "whether explicit sidecar context and reviewed stage authority are complete enough",
+      "whether compare-output words and coverage_output_equivalence are sufficiently separated from raw full-state equality",
+      "whether all timing, speedup, arbitrary RTL/filelist, automatic allocation, runtime/ABI, raw-state, and production throughput claims remain out of scope"
+    ],
+    "must_not_claim": [
+      "sidecar stage execution",
+      "build/run stage execution",
+      "compare execution",
+      "coverage-output equivalence evidence",
+      "timing or speedup evidence",
+      "broad native Verilator option support",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "source-closure or dependency inference",
+      "automatic optimal GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "sidecar_stage_execution_claim_allowed_by_gate_alone": false,
+    "build_or_run_stage_execution_claim_allowed_by_gate_alone": false,
+    "compare_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "source_closure_or_dependency_inference_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate",
+  "non_claims": [
+    "not sidecar stage execution",
+    "not build/run stage execution",
+    "not compare execution",
+    "not coverage-output equivalence evidence",
+    "not timing or speedup evidence",
+    "not broad native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not source-closure or filelist dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

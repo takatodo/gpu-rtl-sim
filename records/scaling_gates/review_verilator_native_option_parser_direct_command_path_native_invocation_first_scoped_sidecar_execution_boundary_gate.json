@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_boundary_gate",
+  "status": "accepted_first_scoped_native_invocation_sidecar_execution_boundary_definition",
+  "objective": "Review the first scoped native-invocation sidecar execution boundary definition, accept only the narrow future-run boundary, and select a later run gate without claiming sidecar execution, compare execution, coverage-output equivalence evidence, timing, arbitrary RTL/filelist support, automatic allocation, runtime/ABI change, raw full-state equality, or production LLM-serving throughput.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_boundary_gate.json",
+  "source_authority_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate.json",
+  "current_priority": "run_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The definition keeps the first native sidecar attempt scoped to one reviewed target/template/shape, requires reviewed patched-binary or equivalent rebuild provenance, requires explicit sidecar context and seven-stage authority, keeps coverage_output_equivalence as a future compare policy, and keeps generated reports and artifacts non-canonical.",
+    "weakest_point": "The gate name contains execution_boundary, so it can be over-read as sidecar execution evidence. This review accepts only the definition and permits a future run gate; it does not execute sidecar build/run/compare or prove correctness, timing, arbitrary filelist support, automatic allocation, runtime/ABI behavior, raw-state equality, or production throughput.",
+    "accepted_because": [
+      "the source definition is explicitly definition-only",
+      "the selected future scope is exactly pulp_ita_mha 64x1",
+      "the prior scoped sidecar execution review is marked reference-only for native invocation",
+      "parser-only success and generated command text remain non-authoritative",
+      "patched-binary or equivalent rebuild provenance is required before a future run",
+      "future compare evidence is separated from this review"
+    ]
+  },
+  "accepted_boundary": {
+    "definition_only_boundary_confirmed": true,
+    "first_scoped_native_sidecar_execution_boundary_defined": true,
+    "selected_target": "pulp_ita_mha",
+    "selected_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "selected_shape": "64x1",
+    "future_run_gate_allowed": true,
+    "execution_allowed_by_this_gate": false,
+    "native_command_alone_is_execution_authority": false,
+    "generated_command_text_is_authority": false,
+    "generated_reports_and_artifacts_are_source_of_truth": false
+  },
+  "accepted_future_run_preconditions": {
+    "reviewed_patched_binary_or_equivalent_rebuild_required": true,
+    "explicit_sidecar_context_required": true,
+    "reviewed_stage_authority_required": true,
+    "required_stage_order": [
+      "verilator_build",
+      "host_probe_build",
+      "cpu_init_state",
+      "cpu_reference_output",
+      "gpu_artifact_build",
+      "hybrid_sidecar_run",
+      "coverage_output_compare"
+    ],
+    "correctness_policy": "coverage_output_equivalence",
+    "compare_output_words_must_be_explicit": true,
+    "raw_full_state_equality_policy_allowed": false
+  },
+  "required_next_gate": {
+    "name": "run_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_gate",
+    "must_record": [
+      "reviewed patched binary presence or equivalent rebuild",
+      "real patched Verilator process parse result for expanded native option spelling",
+      "explicit sidecar context for pulp_ita_mha 64x1",
+      "seven-stage scoped sidecar execution status",
+      "generated reports and artifacts as evidence only",
+      "coverage_output_equivalence compare result if compare stage executes",
+      "separate failure class if process parse, sidecar authority, sidecar stage, compare, or timing-claim guard fails"
+    ],
+    "must_not_claim": [
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic optimal GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput",
+      "timing or speedup unless a separate timing gate is selected"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "source_definition_gate_accepted": true,
+    "future_run_gate_allowed": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "sidecar_stage_execution_claim_allowed_by_gate_alone": false,
+    "build_or_run_stage_execution_claim_allowed_by_gate_alone": false,
+    "compare_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "run_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_gate",
+  "non_claims": [
+    "not sidecar stage execution",
+    "not build/run stage execution",
+    "not compare execution",
+    "not coverage-output equivalence evidence",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
