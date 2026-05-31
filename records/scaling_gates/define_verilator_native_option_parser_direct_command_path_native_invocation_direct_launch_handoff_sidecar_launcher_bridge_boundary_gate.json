@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_bridge_boundary_gate",
+  "status": "defined_sidecar_launcher_bridge_boundary",
+  "objective": "Define the smallest future implementation boundary that may bridge reviewed native parser metadata and direct-launch handoff readiness into the existing sidecar launcher after the accepted direct_launch_handoff_failure run, while keeping this gate definition-only.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_run_gate.json",
+  "source_run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_bridge_boundary_gate",
+  "definition_decision": {
+    "defined": true,
+    "definition_only": true,
+    "selected_surface": "native_process_to_existing_sidecar_launcher_bridge_boundary",
+    "weakest_point": "The accepted source run still did not enter the sidecar launcher from the Verilator-facing process. This gate only defines the bridge boundary; it does not implement launch, run compare, or prove native-path execution.",
+    "reason": [
+      "the previous review accepted direct_launch_handoff_failure as honest evidence",
+      "patched parser success and handoff fixture readiness are necessary but insufficient",
+      "the next useful step is to constrain the launcher bridge before changing code",
+      "coverage_output_equivalence remains the only scoped correctness policy"
+    ]
+  },
+  "bridge_boundary": {
+    "may_connect": [
+      "validated native parser payload",
+      "reviewed direct-launch handoff fixture metadata",
+      "explicit sidecar context",
+      "existing sidecar launcher entrypoint"
+    ],
+    "minimal_code_surface": [
+      "src/tools/verilator_native_option_parser_direct_native_invocation_fixture.py",
+      "src/tools/run_hybrid_template.py",
+      "src/tools/verilator_sidecar_options.py"
+    ],
+    "future_primary_launcher_entrypoint": "src/tools/run_hybrid_template.py",
+    "future_bridge_may_invoke_existing_launcher_logic": true,
+    "new_public_cli_allowed_by_this_definition_gate": false,
+    "new_runtime_or_abi_surface_allowed_by_this_definition_gate": false,
+    "new_verilator_upstream_patch_allowed_by_this_definition_gate": false,
+    "execution_allowed_by_this_definition_gate": false,
+    "measurement_allowed_by_this_definition_gate": false
+  },
+  "required_inputs_for_future_bridge": {
+    "native_parser_payload": {
+      "accelerator": "sidecar-gpu",
+      "state_count": 64,
+      "step_count": 1,
+      "expanded_option_spelling": [
+        "--sim-accel",
+        "sidecar-gpu",
+        "--sim-accel-states",
+        "64",
+        "--sim-accel-steps",
+        "1"
+      ],
+      "positive_state_count_required": true,
+      "positive_step_count_required": true
+    },
+    "handoff_fixture_metadata": {
+      "required_entrypoint": "define_direct_launch_handoff_fixture",
+      "required_status": "direct_launch_handoff_metadata_ready_for_review",
+      "handoff_ready_required": true,
+      "sidecar_launch_reached_from_native_path_before_bridge": false,
+      "coverage_output_compare_reached_from_native_path_before_bridge": false
+    },
+    "explicit_sidecar_context": {
+      "target": "pulp_ita_mha",
+      "template": "config/slice_launch_templates/pulp_ita_mha.json",
+      "shape": "64x1",
+      "source_gate_or_manifest_ref_required": true
+    },
+    "reviewed_stage_authority": {
+      "required": true,
+      "required_stage_order": [
+        "verilator_build",
+        "host_probe_build",
+        "cpu_init_state",
+        "cpu_reference_output",
+        "gpu_artifact_build",
+        "hybrid_sidecar_run",
+        "coverage_output_compare"
+      ]
+    }
+  },
+  "future_bridge_success_boundary": {
+    "must_start_from_verilator_facing_parse_result": true,
+    "must_validate_exact_reviewed_handoff_authority": true,
+    "must_enter_sidecar_launcher_from_native_path": true,
+    "must_reach_coverage_output_compare_from_native_path": true,
+    "coverage_output_mismatch_count_required": 0,
+    "compared_state_pair_count": 64,
+    "strict_output_word_count_per_state": 29,
+    "raw_full_state_equality_required": false,
+    "timing_or_speedup_claim_requires_separate_gate": true
+  },
+  "non_authoritative_inputs": [
+    "generated command text",
+    "stage-plan metadata alone",
+    "parser success alone",
+    "handoff fixture readiness alone",
+    "separate sidecar execution alone",
+    "generated reports",
+    "generated artifacts"
+  ],
+  "failure_class_boundary": {
+    "process_parse_failure": "the Verilator-facing process rejects or fails before the expanded accelerator options are accepted",
+    "missing_explicit_sidecar_context": "native parser output exists but target/template/shape/source context is missing or ambiguous",
+    "sidecar_authority_failure": "reviewed handoff or stage authority is absent or mismatched for pulp_ita_mha 64x1",
+    "sidecar_launcher_bridge_failure": "validated native metadata and reviewed handoff readiness exist, but the bridge cannot enter the existing sidecar launcher",
+    "sidecar_stage_failure": "the sidecar launcher is reached, but a scoped build/run stage fails before compare",
+    "compare_failure": "coverage_output_equivalence compare runs and records a mismatch",
+    "timing_claim_without_measurement": "timing or speedup is claimed without a separate timing gate"
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_bridge_boundary_gate",
+    "must_decide": [
+      "whether the bridge boundary is narrow enough to review before implementation",
+      "whether the future implementation may stay inside existing importable tooling without adding a public CLI",
+      "whether sidecar_launcher_bridge_failure is a clearer next failure class than reusing direct_launch_handoff_failure after fixture readiness",
+      "whether the future run remains scoped to pulp_ita_mha 64x1 and coverage_output_equivalence",
+      "whether timing, arbitrary filelists, automatic allocation, runtime/ABI changes, raw-state equality, and production throughput remain non-claims"
+    ],
+    "must_not_claim": [
+      "direct Verilator sidecar execution by this definition",
+      "native-path coverage-output compare",
+      "broad native Verilator option support",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic optimal GPU allocation",
+      "timing or speedup evidence",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "future_review_gate_allowed": true,
+    "implementation_allowed_only_after_review": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_reached_from_native_path": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_bridge_boundary_gate",
+  "non_claims": [
+    "not direct Verilator sidecar execution",
+    "not native-path coverage-output compare",
+    "not broad native Verilator option support",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation for any design",
+    "not timing or speedup evidence",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_boundary_gate",
+  "status": "defined_sidecar_launcher_run_boundary_after_bridge_fixture_review",
+  "objective": "Define the scoped run boundary that may prove reviewed native-path bridge metadata can invoke the existing sidecar launcher and reach coverage-output compare, without executing that run in this gate.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_bridge_fixture_implementation_gate.json",
+  "source_implementation_gate": "config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_bridge_fixture_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_boundary_gate",
+  "definition_decision": {
+    "defined": true,
+    "definition_only": true,
+    "selected_surface": "reviewed_bridge_metadata_to_existing_sidecar_launcher_scoped_run_boundary",
+    "weakest_point": "The accepted bridge fixture proves only metadata readiness. A later run may still fail before launcher invocation, inside a sidecar stage, or during coverage-output compare, so sidecar_launcher_bridge_failure, sidecar_stage_failure, and compare_failure must remain distinct.",
+    "reason": [
+      "the previous review accepted define_sidecar_launcher_bridge_fixture only as metadata",
+      "the bridge fixture marks src/tools/run_hybrid_template.py as reference_only_not_invoked_by_fixture",
+      "the next useful step is defining exactly when a later run may invoke the existing launcher",
+      "coverage_output_equivalence remains the only scoped correctness policy"
+    ]
+  },
+  "future_run_boundary": {
+    "eligible_input_surface": "native_verilator_parser_direct_command_path_sidecar_launcher_bridge_fixture",
+    "eligible_input_status": "sidecar_launcher_bridge_metadata_ready_for_review",
+    "required_bridge_entrypoint": "define_sidecar_launcher_bridge_fixture",
+    "required_handoff_surface": "native_verilator_parser_direct_command_path_direct_launch_handoff_fixture",
+    "required_sidecar_launcher_entrypoint": "src/tools/run_hybrid_template.py",
+    "required_sidecar_launcher_entrypoint_role_before_run": "reference_only_not_invoked_by_fixture",
+    "required_target": "pulp_ita_mha",
+    "required_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "required_shape": "64x1",
+    "required_state_count": 64,
+    "required_step_count": 1,
+    "required_correctness_policy": "coverage_output_equivalence",
+    "required_stage_order": [
+      "verilator_build",
+      "host_probe_build",
+      "cpu_init_state",
+      "cpu_reference_output",
+      "gpu_artifact_build",
+      "hybrid_sidecar_run",
+      "coverage_output_compare"
+    ],
+    "must_start_from_verilator_facing_parse_result": true,
+    "must_validate_reviewed_bridge_fixture_metadata": true,
+    "must_validate_explicit_sidecar_context": true,
+    "must_invoke_sidecar_launcher_from_native_path": true,
+    "must_run_coverage_output_compare_after_sidecar_path": true,
+    "must_keep_generated_outputs_noncanonical": true
+  },
+  "future_compare_boundary": {
+    "correctness_policy": "coverage_output_equivalence",
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "compared_state_pair_count": 64,
+    "required_mismatch_count_for_success": 0,
+    "raw_full_state_equality_required": false
+  },
+  "future_run_success_criteria": {
+    "sidecar_launcher_invoked_from_native_path_required": true,
+    "sidecar_launch_reached_from_native_path_required": true,
+    "coverage_output_compare_reached_from_native_path_required": true,
+    "coverage_output_mismatch_count_required": 0,
+    "compared_output_words_must_be_explicit": true,
+    "raw_full_state_equality_required": false,
+    "timing_or_speedup_claim_allowed": false
+  },
+  "allowed_generated_outputs_for_future_run": {
+    "reports": [
+      "scoped sidecar launcher stdout/stderr summary",
+      "coverage-output compare JSON summary",
+      "optional native launcher handoff summary"
+    ],
+    "artifacts": [
+      "Verilator obj_dir outputs",
+      "host-probe binaries",
+      "GPU cubin or PTX outputs",
+      "raw state dumps used by compare"
+    ],
+    "source_of_truth": false
+  },
+  "failure_class_boundary": {
+    "process_parse_failure": "the Verilator-facing process rejects or fails before the expanded accelerator options are accepted",
+    "missing_explicit_sidecar_context": "native parser or bridge metadata exists but target/template/shape/source context is missing or ambiguous",
+    "sidecar_authority_failure": "reviewed bridge or stage authority is absent or mismatched for pulp_ita_mha 64x1",
+    "sidecar_launcher_bridge_failure": "bridge metadata exists, but the future run does not invoke the sidecar launcher from the native path",
+    "sidecar_stage_failure": "the sidecar launcher is invoked, but a scoped build/run stage fails before compare",
+    "compare_failure": "coverage_output_equivalence compare runs and records a mismatch",
+    "timing_claim_without_measurement": "timing or speedup is claimed without a separate timing gate"
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_boundary_gate",
+    "must_decide": [
+      "whether the future run boundary is narrow enough for a first sidecar-launcher invocation attempt",
+      "whether the boundary correctly distinguishes bridge failure, sidecar stage failure, and compare failure",
+      "whether generated reports and artifacts remain noncanonical",
+      "whether the boundary keeps timing, arbitrary filelists, automatic allocation, runtime/ABI changes, raw-state equality, and production throughput out of scope"
+    ],
+    "must_not_claim": [
+      "direct Verilator sidecar execution",
+      "native-path coverage-output compare",
+      "sidecar launcher invocation evidence",
+      "timing or speedup evidence",
+      "arbitrary RTL or filelist support",
+      "automatic GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "sidecar_launcher_run_boundary_defined": true,
+    "future_review_gate_allowed": true,
+    "future_run_gate_allowed_after_review": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_gate_alone": false,
+    "sidecar_launcher_invocation_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_reached_from_native_path": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_boundary_gate",
+  "non_claims": [
+    "not direct Verilator sidecar execution",
+    "not native-path coverage-output compare",
+    "not sidecar launcher invocation evidence",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
