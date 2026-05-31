@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate",
+  "status": "defined_verilator_native_option_parser_direct_command_path_native_invocation_boundary",
+  "objective": "Define the smallest native Verilator invocation boundary after accepting the scoped direct command-path sidecar stage-plan run, while keeping this gate definition-only and avoiding native option support, direct Verilator command execution, new execution, timing, speedup, arbitrary filelist support, automatic GPU allocation, runtime/ABI change, or raw full-state equality claims.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_run_gate.json",
+  "source_run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_gate.json",
+  "source_execution_boundary_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate",
+  "definition_decision": {
+    "defined": true,
+    "selected_surface": "native_verilator_process_invocation_to_reviewed_sidecar_stage_executor_boundary",
+    "weakest_point": "The previous accepted run executed the existing Python template runner after validating direct materialization metadata. A native invocation boundary must therefore start from a real Verilator-facing command and patched Verilator option parser values, not from the wrapper command, generated command text, or fixture metadata. Until a later implementation and run gate execute that command through a built Verilator binary, this gate proves only the boundary definition.",
+    "reason": [
+      "the source review accepted only a scoped pulp_ita_mha 64x1 sidecar build/run/compare result",
+      "the remaining usability gap is defining what counts as native runtime authority before implementing or executing it",
+      "the expanded option spelling is already the accepted native minimum for the parser boundary",
+      "direct command-path fixtures and materialized sidecar stage plans are useful preview inputs, but they are not runtime authority by themselves"
+    ]
+  },
+  "native_invocation_boundary": {
+    "definition_only": true,
+    "native_runtime_authority_requires_real_verilator_process": true,
+    "native_runtime_authority_source": "patched_verilator_v3options_values_from_a_real_verilator_invocation",
+    "minimum_future_invocation_form": [
+      "verilator",
+      "--cc",
+      "<ordinary Verilator build inputs>",
+      "--sim-accel",
+      "sidecar-gpu",
+      "--sim-accel-states",
+      "<positive N>",
+      "--sim-accel-steps",
+      "<positive S>"
+    ],
+    "minimum_future_invocation_example": "verilator --cc <rtl-or-filelist inputs> --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1",
+    "ordinary_verilator_inputs_preserved": [
+      "source_files",
+      "filelists",
+      "defines",
+      "include_dirs",
+      "warning_flags",
+      "mdir",
+      "top_module"
+    ],
+    "native_minimum_exclusions": [
+      "--sim-accel-shape <NxS>",
+      "target-first registry lookup",
+      "operator-plan JSON",
+      "Python wrapper command execution",
+      "resident execution modes",
+      "dataset-backed flows",
+      "automatic source-closure inference",
+      "automatic optimal GPU allocation"
+    ]
+  },
+  "authority_separation": {
+    "parser_payload_role": "schedule_and_preserved_verilator_build_inputs_only",
+    "direct_fixture_metadata_role": "non_executing_reference_boundary_for_tests_and_preview",
+    "materialized_stage_plan_role": "reviewed_sidecar_execution_plan_input_only",
+    "generated_command_text_role": "operator_preview_or_later_execution_detail_not_source_of_truth",
+    "execution_authority_role": "later_built_verilator_invocation_may_call_a_reviewed_sidecar_stage_executor_after_validation",
+    "required_validation_before_future_execution": [
+      "real Verilator invocation parsed --sim-accel sidecar-gpu",
+      "state_count and step_count are positive and paired",
+      "ordinary Verilator build inputs remain inputs rather than inferred source closure",
+      "explicit sidecar context resolves to one reviewed target/template boundary",
+      "reviewed seven-stage sidecar order is preserved or regenerated",
+      "generated reports and artifacts are written only under reports/ and artifacts/"
+    ]
+  },
+  "sidecar_context_boundary": {
+    "native_verilator_command_alone_is_sufficient": false,
+    "reason": "Ordinary Verilator inputs such as source files, -f filelists, defines, include directories, mdir, and top module do not by themselves identify the repo-specific target, template, coverage manifest, host-probe metadata, or source gate needed by the sidecar plan resolver.",
+    "required_context_before_future_execution": [
+      "target",
+      "mode",
+      "template_or_target_registry_entry",
+      "source_gate_or_manifest_ref"
+    ],
+    "allowed_future_context_sources_after_review": [
+      "an explicit reviewed Verilator-to-sidecar adapter context",
+      "a reviewed static target registry entry",
+      "a reviewed template boundary"
+    ],
+    "forbidden_context_sources": [
+      "implicit dependency inference from arbitrary filelists",
+      "generated command text",
+      "reports or artifacts",
+      "unreviewed wrapper defaults"
+    ]
+  },
+  "mode_boundary": {
+    "dry_run": {
+      "allowed": true,
+      "meaning": "parse and validate the native option surface, then expose intended sidecar handoff metadata without building or running"
+    },
+    "preview": {
+      "allowed": true,
+      "meaning": "materialize a reviewed sidecar stage plan or command preview for operator inspection without execution"
+    },
+    "execution": {
+      "allowed_by_this_gate": false,
+      "future_allowed_after_review_and_implementation": "only a later run gate may execute the reviewed stage order from a real Verilator-facing invocation"
+    },
+    "timing": {
+      "allowed_by_this_gate": false,
+      "future_allowed_after_separate_measurement_gate": true
+    }
+  },
+  "future_executor_boundary": {
+    "eligible_executor": "repo-owned sidecar stage executor reachable from the patched Verilator invocation after adapter validation",
+    "required_stage_order": [
+      "verilator_build",
+      "host_probe_build",
+      "cpu_init_state",
+      "cpu_reference_output",
+      "gpu_artifact_build",
+      "hybrid_sidecar_run",
+      "coverage_output_compare"
+    ],
+    "correctness_policy": "coverage_output_equivalence",
+    "correctness_policy_status": "future_compare_result_only",
+    "generated_evidence_policy": "reports/ and artifacts/ are generated evidence only, not source of truth",
+    "source_closure_policy": "filelists and source files are preserved inputs; dependency closure must be reviewed separately before arbitrary filelist support"
+  },
+  "required_tests_for_next_review": [
+    "the definition uses the scoped sidecar execution run review as its source artifact",
+    "the minimum future invocation form starts with a real Verilator command and the expanded --sim-accel spelling",
+    "native runtime authority is not granted to Python wrapper execution, fixture metadata, materialized stage plans, or generated command text alone",
+    "dry-run, preview, execution, and timing modes remain distinguishable",
+    "filelists and source files remain preserved inputs instead of inferred dependency closure",
+    "generated reports and artifacts remain noncanonical",
+    "this gate forbids new execution, timing, speedup, runtime/ABI change, arbitrary filelist support, automatic allocation, and raw full-state equality"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate",
+    "must_decide": [
+      "whether the exact native invocation boundary is narrow enough to distinguish a real Verilator-facing command from wrapper execution",
+      "whether direct parser metadata, materialized sidecar stage plans, and generated command text are correctly separated from runtime authority",
+      "whether the future sidecar executor boundary is explicit enough before implementation",
+      "whether dry-run, preview, execution, and timing modes remain separate",
+      "whether source files and filelists are still inputs rather than inferred dependency closure",
+      "whether the next implementation can be tested without claiming arbitrary RTL support or automatic optimal allocation"
+    ],
+    "must_not_claim": [
+      "native Verilator option support",
+      "native parser integration is complete",
+      "direct Verilator command execution",
+      "new sidecar stage execution",
+      "new compare execution",
+      "timing or speedup evidence",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "source-closure inference",
+      "automatic optimal GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "native_invocation_boundary_defined": true,
+    "future_review_gate_allowed": true,
+    "future_implementation_gate_allowed_after_review": true,
+    "new_public_cli_allowed_by_this_gate": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "native_verilator_option_claim_allowed_by_gate_alone": false,
+    "native_verilator_parser_claim_allowed_by_gate_alone": false,
+    "direct_verilator_command_execution_claim_allowed_by_gate_alone": false,
+    "direct_command_path_metadata_runtime_authority_claim_allowed_by_gate_alone": false,
+    "sidecar_stage_plan_metadata_execution_authority_claim_allowed_by_gate_alone": false,
+    "wrapper_execution_promoted_to_native_authority": false,
+    "fixture_metadata_promoted_to_runtime_authority": false,
+    "materialized_stage_plan_promoted_to_runtime_authority": false,
+    "generated_command_text_promoted_to_source_of_truth": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_boundary_gate",
+  "non_claims": [
+    "not native Verilator option support",
+    "not native Verilator parser implementation completion",
+    "not direct Verilator command execution",
+    "not direct command-path metadata runtime authority",
+    "not sidecar stage-plan metadata execution authority",
+    "not new sidecar stage execution",
+    "not new compare execution",
+    "not coverage-output equivalence for a direct native Verilator invocation",
+    "not a new public CLI or workflow",
+    "not a new measurement result",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not source-closure or filelist dependency inference",
+    "not automatic optimal GPU allocation for any design",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
