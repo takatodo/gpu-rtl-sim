@@ -33,7 +33,7 @@ class ReducedActiveSurfaceContractTest(ResidentRuntimeContractHelpers, unittest.
         )
         self.assertEqual(completed.returncode, 0, msg=completed.stderr)
         self.assertIn(
-            "define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate",
+            "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate",
             completed.stdout,
         )
 
@@ -54,11 +54,11 @@ class ReducedActiveSurfaceContractTest(ResidentRuntimeContractHelpers, unittest.
         self.assertEqual(selection["top_level_goal"], "modern_llm_serving_rtl_hybrid_conditions")
         self.assertEqual(
             selection["current_priority"],
-            "define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate",
+            "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_implementation_gate.json",
+            "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate.json",
         )
         self._assert_selection_evidence_paths(selection)
         self.assertEqual(selection["candidate_targets"], [])

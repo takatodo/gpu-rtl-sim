@@ -43,6 +43,12 @@ PAYLOAD_VALIDATION_HARDENING_IMPLEMENT_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_implementation_gate.json"
 )
+SIDECAR_STAGE_PLAN_MATERIALIZATION_BOUNDARY_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate.json"
+)
 
 BASE_DIRECT_ARGS = [
     "verilator",
@@ -264,6 +270,44 @@ class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase)
         self.assertFalse(review["acceptance_policy"]["new_execution_allowed_by_this_gate"])
         self.assertFalse(review["acceptance_policy"]["sidecar_stage_execution_claim_allowed_by_gate_alone"])
         self.assertFalse(review["acceptance_policy"]["timing_or_speedup_claim_allowed_by_gate_alone"])
+
+    def test_sidecar_stage_plan_materialization_boundary_requires_reviewed_bridge(self) -> None:
+        gate = json.loads(SIDECAR_STAGE_PLAN_MATERIALIZATION_BOUNDARY_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_implementation_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_implementation_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate",
+        )
+        route = gate["allowed_materialization_route"]
+        self.assertTrue(route["direct_fixture_must_not_call_sidecar_stage_plan_directly"])
+        self.assertIn(
+            "src/tools/verilator_native_option_parser_sidecar_handoff.py::build_native_parser_sidecar_handoff(parser_payload)",
+            route["first_allowed_bridge"],
+        )
+        self.assertIn(
+            "src/tools/verilator_native_option_parser_sidecar_plan_resolution.py::resolve_native_parser_adapter_payload_to_sidecar_plan(adapter_payload, sidecar_context=<normalized_context>)",
+            route["first_allowed_bridge"],
+        )
+        normalization = gate["sidecar_context_normalization_boundary"]
+        self.assertIn("template_or_target_registry_entry", normalization["required_direct_fixture_context_fields"])
+        self.assertEqual(
+            normalization["normalization_rules"]["template_or_target_registry_entry_string"],
+            "map to plan-resolution context field template",
+        )
+        status_mapping = gate["materialized_stage_plan_status_mapping"]
+        self.assertEqual(status_mapping["ready_mapping"]["outer_status"], "ready_for_verilator_option_shim")
+        self.assertEqual(status_mapping["unsupported_mapping"]["outer_status"], "unsupported_for_stage_plan")
+        self.assertEqual(
+            gate["required_next_gate"]["name"],
+            "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate",
+        )
+        self.assertFalse(gate["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+        self.assertFalse(gate["acceptance_policy"]["sidecar_stage_plan_materialization_claim_allowed_by_gate_alone"])
+        self.assertFalse(gate["acceptance_policy"]["coverage_output_equivalence_claim_allowed_by_gate_alone"])
 
     def test_accepts_expanded_64x1_and_returns_reference_only_boundary(self) -> None:
         (fixture,) = _load_tool_modules("verilator_native_option_parser_direct_command_path_fixture")
