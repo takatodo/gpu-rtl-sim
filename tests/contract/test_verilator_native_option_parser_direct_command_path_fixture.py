@@ -73,6 +73,12 @@ SIDECAR_STAGE_PLAN_EXECUTION_BOUNDARY_GATE = (
     / "scaling_gates"
     / "define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate.json"
 )
+SIDECAR_STAGE_PLAN_EXECUTION_BOUNDARY_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate.json"
+)
 
 BASE_DIRECT_ARGS = [
     "verilator",
@@ -507,6 +513,12 @@ class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase)
         roles = gate["required_ready_metadata_fields"]["parser_preserved_build_inputs_role"]
         self.assertEqual(roles["source_files"], "preserved_parser_input_not_source_closure")
         self.assertEqual(roles["filelists"], "preserved_parser_input_not_filelist_expansion")
+        self.assertNotIn("nstates", gate["required_ready_metadata_fields"]["stage_plan_fields"])
+        self.assertNotIn("steps", gate["required_ready_metadata_fields"]["stage_plan_fields"])
+        self.assertEqual(
+            gate["required_ready_metadata_fields"]["parser_schedule_constraint_fields"],
+            ["accelerator_mode", "state_count", "step_count", "shape"],
+        )
         policy = gate["acceptance_policy"]
         self.assertTrue(policy["definition_only"])
         self.assertTrue(policy["execution_boundary_defined"])
@@ -519,6 +531,62 @@ class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase)
             gate["required_next_gate"]["name"],
             "review_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate",
         )
+
+    def test_direct_stage_plan_execution_boundary_review_selects_scoped_run(self) -> None:
+        review = json.loads(SIDECAR_STAGE_PLAN_EXECUTION_BOUNDARY_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_boundary_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertEqual(
+            review["current_priority"],
+            "run_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_gate",
+        )
+        boundary = review["accepted_boundary"]
+        self.assertEqual(
+            boundary["input_surface"],
+            "native_verilator_parser_direct_command_path_sidecar_stage_plan_materialization_fixture",
+        )
+        self.assertTrue(boundary["reviewed_stage_plan_required_before_run"])
+        self.assertTrue(boundary["stage_plan_shape_field_required"])
+        self.assertEqual(boundary["state_and_step_counts_source"], "parser_schedule_constraints")
+        self.assertFalse(boundary["direct_command_path_metadata_is_runtime_evidence"])
+        self.assertFalse(boundary["parser_filelists_are_source_closure_authority"])
+        self.assertFalse(boundary["automatic_gpu_allocation_allowed"])
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "run_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_execution_gate",
+        )
+
+    def test_direct_stage_plan_execution_boundary_review_remains_review_only(self) -> None:
+        review = json.loads(SIDECAR_STAGE_PLAN_EXECUTION_BOUNDARY_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        preconditions = review["accepted_input_preconditions"]
+        self.assertEqual(
+            preconditions["parser_schedule_constraints_required"],
+            {
+                "accelerator_mode": "sidecar-gpu",
+                "state_count": "positive_integer",
+                "step_count": "positive_integer",
+                "shape": "matches_stage_plan_shape",
+            },
+        )
+        self.assertFalse(preconditions["execution_performed"])
+        self.assertFalse(preconditions["timing_measured"])
+        self.assertFalse(preconditions["automatic_gpu_allocation_used"])
+        policy = review["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertTrue(policy["definition_accepted"])
+        self.assertTrue(policy["next_execution_run_allowed"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["direct_verilator_command_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["sidecar_stage_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["compare_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["coverage_output_equivalence_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["timing_or_speedup_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["raw_full_state_equality_claim_allowed_by_gate_alone"])
 
     def test_materializes_direct_fixture_through_adapter_and_plan_resolution(self) -> None:
         fixture, materializer = _load_tool_modules(

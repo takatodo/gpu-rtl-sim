@@ -59,10 +59,14 @@
       "mode",
       "template",
       "stages",
-      "nstates",
-      "steps",
       "shape",
       "correctness_policy"
+    ],
+    "parser_schedule_constraint_fields": [
+      "accelerator_mode",
+      "state_count",
+      "step_count",
+      "shape"
     ],
     "stage_plan_required_stage_names": [
       "verilator_build",
@@ -100,7 +104,7 @@
       "coverage_output_compare"
     ],
     "direct_command_path_status": "direct parser inputs and materialized stage-plan metadata are future execution inputs only after a separate review; they are not command execution evidence by themselves",
-    "stage_plan_source_requirement": "future run gates must preserve or regenerate a reviewed stage plan before execution; direct fixture parser payload, adapter payload, and plan-resolution metadata alone are not sufficient authority for broad arbitrary RTL execution",
+    "stage_plan_source_requirement": "future run gates must preserve or regenerate a reviewed stage plan before execution; state_count and step_count must be validated from parser_schedule_constraints rather than assumed as direct stage_plan fields; direct fixture parser payload, adapter payload, and plan-resolution metadata alone are not sufficient authority for broad arbitrary RTL execution",
     "coverage_output_equivalence_status": "allowed only as a future compare result after a reviewed run gate executes the compare command"
   },
   "closed_or_rejected_input_behavior": {
