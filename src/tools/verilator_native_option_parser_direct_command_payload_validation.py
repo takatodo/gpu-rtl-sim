@@ -43,7 +43,6 @@ def _reject(error_factory: ErrorFactory, message: str) -> NoReturn:
 
 def _require_exact_keyset(parser_payload: Mapping[str, object], error_factory: ErrorFactory) -> None:
     required = set(HANDOFF_FIELDS)
-    present = set(parser_payload)
     missing = [field for field in HANDOFF_FIELDS if field not in parser_payload]
     unknown = [key for key in parser_payload if key not in required]
     if missing or unknown:

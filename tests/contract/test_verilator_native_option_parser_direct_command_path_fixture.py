@@ -37,6 +37,12 @@ PAYLOAD_VALIDATION_HARDENING_IMPLEMENT_GATE = (
     / "scaling_gates"
     / "implement_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate.json"
 )
+PAYLOAD_VALIDATION_HARDENING_IMPLEMENT_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_implementation_gate.json"
+)
 
 BASE_DIRECT_ARGS = [
     "verilator",
@@ -228,6 +234,36 @@ class VerilatorNativeOptionParserDirectCommandPathFixtureTest(unittest.TestCase)
         self.assertTrue(decisions["bool_state_count_and_step_count_reject_before_shape_compare"])
         self.assertEqual(gate["verified_commands"]["focused_contract_test_count"], 11)
         self.assertFalse(gate["acceptance_policy"]["native_verilator_option_claim_allowed_by_gate_alone"])
+
+    def test_payload_validation_hardening_implementation_review_selects_materialization_boundary(self) -> None:
+        review = json.loads(PAYLOAD_VALIDATION_HARDENING_IMPLEMENT_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_implementation_gate"],
+            "config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_fixture_payload_validation_hardening_gate.json",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("Exact parser-stub keyset validation", review["review_decision"]["weakest_point"])
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate",
+        )
+        accepted = review["accepted_surface"]
+        self.assertEqual(
+            accepted["validation_module"],
+            "src/tools/verilator_native_option_parser_direct_command_payload_validation.py",
+        )
+        self.assertFalse(accepted["sidecar_stage_plan_invoked"])
+        contract = review["reviewed_validation_contract"]
+        self.assertTrue(contract["exact_parser_stub_handoff_keyset_required"])
+        self.assertTrue(contract["bool_state_count_and_step_count_reject_before_shape_compare"])
+        self.assertEqual(
+            review["required_next_gate"]["name"],
+            "define_verilator_native_option_parser_direct_command_path_sidecar_stage_plan_materialization_boundary_gate",
+        )
+        self.assertFalse(review["acceptance_policy"]["new_execution_allowed_by_this_gate"])
+        self.assertFalse(review["acceptance_policy"]["sidecar_stage_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(review["acceptance_policy"]["timing_or_speedup_claim_allowed_by_gate_alone"])
 
     def test_accepts_expanded_64x1_and_returns_reference_only_boundary(self) -> None:
         (fixture,) = _load_tool_modules("verilator_native_option_parser_direct_command_path_fixture")
