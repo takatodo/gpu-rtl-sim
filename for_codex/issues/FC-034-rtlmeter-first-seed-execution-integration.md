@@ -1,7 +1,7 @@
 # FC-034: RTLMeter First Seed Execution Integration
 
-Status: open
-Owner: unassigned
+Status: blocked
+Owner: Codex
 Target file: `src/tools/rtlmeter_*`, `reports/`, `tests/contract/test_rtlmeter_*`
 
 ## Objective
@@ -43,6 +43,21 @@ python3 -m unittest tests.contract.test_rtlmeter_cpu_gpu_compare_integration -q
 Add or extend an executing-path contract test that is skipped or fail-closed when
 real Verilator or the GPU sidecar is unavailable, so the suite stays green in a
 non-GPU environment.
+
+## Current State
+
+- Added `src/tools/rtlmeter_cpu_gpu_compare_integration.py` as the first opt-in executing helper.
+- Added `tests/contract/test_rtlmeter_cpu_gpu_compare_integration.py` for non-executing default behavior, fail-closed prerequisite handling, observable compare logic, report schema safety, and CLI JSON output.
+- Ran `python3 src/tools/rtlmeter_cpu_gpu_compare_integration.py --execute --write-report`.
+- The generated report status is `cannot_execute`; no CPU command was run as a GPU fallback.
+
+## Blocker
+
+- `third_party/rtlmeter/venv/bin/python3` is missing.
+- `RTLMETER_SIDECAR_VERILATOR_WRAPPER` is not set to an executable named `verilator`.
+
+Unblock by creating the RTLMeter venv and providing a PATH-selectable sidecar
+wrapper named `verilator`, then rerun the validation command above.
 
 ## Non-Goals
 

@@ -31,6 +31,9 @@ fail closed, and any RTLMeter JSON capture remains debug/inspection metadata.
 RTLMeter helpers under `src/tools/rtlmeter_*` are not routine entrypoints yet.
 They exist to capture RTLMeter's Verilator command shape and preserve the future
 RTLMeter user path while the sidecar contract is hardened.
+`src/tools/rtlmeter_cpu_gpu_compare_integration.py` is the first executing
+RTLMeter gate: it is opt-in, writes generated evidence under `reports/`, and
+fails closed when RTLMeter or the sidecar Verilator wrapper is unavailable.
 
 ## Runtime Building Blocks
 

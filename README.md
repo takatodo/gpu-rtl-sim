@@ -40,6 +40,20 @@ selecting a repo-specific `config/slice_launch_templates/*.json` file is not
 enough to claim RTLMeter acceleration. Unsupported RTLMeter cases should fail
 closed with a clear diagnostic.
 
+The first executing RTLMeter gate is intentionally opt-in and fail-closed:
+
+```sh
+python3 src/tools/rtlmeter_cpu_gpu_compare_integration.py --write-report
+RTLMETER_CPU_GPU_COMPARE_EXECUTE=1 \
+RTLMETER_SIDECAR_VERILATOR_WRAPPER=/path/to/verilator \
+  python3 src/tools/rtlmeter_cpu_gpu_compare_integration.py --execute --write-report
+```
+
+The default command emits a non-executing report schema. The opt-in command
+writes `reports/rtlmeter_example_kind_hello_cpu_gpu_compare.json` when it can
+honestly run both CPU and GPU-sidecar paths; missing RTLMeter or sidecar
+prerequisites produce `cannot_execute`, not a CPU-as-GPU fallback.
+
 ## Quickstart
 
 Use the repo tools directly while the native GPU UX is still being hardened:
