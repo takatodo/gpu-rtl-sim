@@ -47,17 +47,23 @@ non-GPU environment.
 ## Current State
 
 - Added `src/tools/rtlmeter_cpu_gpu_compare_integration.py` as the first opt-in executing helper.
+- Added `src/tools/rtlmeter_verilator_wrapper_runtime.py` as the explicit execution-authority boundary for a PATH-selected wrapper named `verilator`; the prior path-wrapper helper remains inspect-only.
 - Added `tests/contract/test_rtlmeter_cpu_gpu_compare_integration.py` for non-executing default behavior, fail-closed prerequisite handling, observable compare logic, report schema safety, and CLI JSON output.
-- Ran `python3 src/tools/rtlmeter_cpu_gpu_compare_integration.py --execute --write-report`.
-- The generated report status is `cannot_execute`; no CPU command was run as a GPU fallback.
+- Created the local ignored RTLMeter venv and verified RTLMeter's normal CPU reference command for `Example:kind:hello`.
+- CPU reference evidence: `Example:kind:hello` completes with RTLMeter cycle count `1000000` and the expected `Hello World!` transcript under `artifacts/rtlmeter_example_kind_hello_cpu_gpu_compare/cpu/`.
+- The compare integration now prepends `third_party/rtlmeter` to `PYTHONPATH` for repo-root launches and can materialize an ignored fail-closed wrapper under `artifacts/.../wrapper/verilator`.
+- Ran `python3 src/tools/rtlmeter_cpu_gpu_compare_integration.py --execute --write-report`; the generated report status is `gpu_execution_failed` after a successful CPU reference run.
+- The GPU Verilate log records wrapper runtime status `use_gpu_requires_explicit_sidecar_schedule`, with `cpu_as_gpu_fallback: false` and `sidecar_execution_invoked: false`.
+- The generated compare report remains generated evidence only; no CPU command is reported as GPU execution.
 
 ## Blocker
 
-- `third_party/rtlmeter/venv/bin/python3` is missing.
-- `RTLMETER_SIDECAR_VERILATOR_WRAPPER` is not set to an executable named `verilator`.
+- The generated wrapper correctly fails closed for `--compileArgs "--use-gpu"` because no explicit sidecar schedule or RTLMeter sidecar execution handoff is implemented yet.
+- A sidecar-capable PATH wrapper or an expanded `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` execution handoff is still required before the GPU candidate can run.
 
-Unblock by creating the RTLMeter venv and providing a PATH-selectable sidecar
-wrapper named `verilator`, then rerun the validation command above.
+Unblock by wiring the expanded RTLMeter Verilator argv to a sidecar execution
+path, then rerun the validation command above and compare normalized stdout plus
+RTLMeter cycle count against the CPU reference.
 
 ## Non-Goals
 

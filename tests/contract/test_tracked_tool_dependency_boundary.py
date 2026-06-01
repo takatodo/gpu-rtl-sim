@@ -56,6 +56,7 @@ TRACKED_TOOL_ROOTS = (
     "rtlmeter_sidecar_contract_mapping",
     "rtlmeter_verilator_command_capture",
     "rtlmeter_verilator_path_wrapper",
+    "rtlmeter_verilator_wrapper_runtime",
 )
 TRACKED_REFERENCE_PREFIXES = (
     "AGENTS.md",

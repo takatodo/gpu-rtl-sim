@@ -45,14 +45,17 @@ The first executing RTLMeter gate is intentionally opt-in and fail-closed:
 ```sh
 python3 src/tools/rtlmeter_cpu_gpu_compare_integration.py --write-report
 RTLMETER_CPU_GPU_COMPARE_EXECUTE=1 \
-RTLMETER_SIDECAR_VERILATOR_WRAPPER=/path/to/verilator \
   python3 src/tools/rtlmeter_cpu_gpu_compare_integration.py --execute --write-report
 ```
 
 The default command emits a non-executing report schema. The opt-in command
-writes `reports/rtlmeter_example_kind_hello_cpu_gpu_compare.json` when it can
-honestly run both CPU and GPU-sidecar paths; missing RTLMeter or sidecar
-prerequisites produce `cannot_execute`, not a CPU-as-GPU fallback.
+writes `reports/rtlmeter_example_kind_hello_cpu_gpu_compare.json`. If
+`RTLMETER_SIDECAR_VERILATOR_WRAPPER=/path/to/verilator` is omitted, it
+materializes an ignored wrapper under `artifacts/` that delegates non-GPU
+Verilator argv to the real Verilator and fails closed for GPU intent. A
+sidecar-capable wrapper can be supplied with that env var when available.
+Missing RTLMeter or sidecar prerequisites produce `cannot_execute` or
+`gpu_execution_failed`, not a CPU-as-GPU fallback.
 
 ## Quickstart
 
@@ -115,6 +118,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-s
 - Optional JSON plans for debug and review inspection.
 - CPU-vs-hybrid correctness checking with `coverage_output_equivalence`.
 - Non-executing RTLMeter command-shape inspection for preserving the future RTLMeter user path.
+- An opt-in RTLMeter first-seed CPU reference run with a fail-closed generated Verilator wrapper boundary.
 
 ## What Is Not Yet Claimed
 
@@ -135,6 +139,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-s
 - If CPU-vs-hybrid compare reports raw state mismatch, check whether `coverage_output_equivalence` still passes; raw full-state equality is not the supported correctness policy.
 - If `verilator --use-gpu` style commands are needed, use `src/tools/verilator_sidecar_shim.py` as a preview path for now.
 - If an RTLMeter command with `--compileArgs "--use-gpu"` only reports wrapper metadata, that is expected for the current public surface. It proves GPU intent reached the Verilator command path, not GPU execution or speedup.
+- If `third_party/rtlmeter/rtlmeter` fails from the repo root with `No module named 'src.rtlmeter'`, use the documented compare helper; it prepends `third_party/rtlmeter` to `PYTHONPATH` for RTLMeter execution.
 - If an RTLMeter wrapper request fails closed, check that the captured Verilator argv includes `--cc`, `-f <filelist>`, `--top-module <top>`, and either `--use-gpu` or expanded `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`.
 - If RTLMeter speedup is the goal, keep compile success, GPU sidecar execution, CPU/GPU compare, and measured acceleration as separate milestones.
 

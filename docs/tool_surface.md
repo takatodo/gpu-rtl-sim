@@ -34,6 +34,13 @@ RTLMeter user path while the sidecar contract is hardened.
 `src/tools/rtlmeter_cpu_gpu_compare_integration.py` is the first executing
 RTLMeter gate: it is opt-in, writes generated evidence under `reports/`, and
 fails closed when RTLMeter or the sidecar Verilator wrapper is unavailable.
+When no `RTLMETER_SIDECAR_VERILATOR_WRAPPER` is supplied, it creates an ignored
+`artifacts/.../wrapper/verilator` shim backed by
+`src/tools/rtlmeter_verilator_wrapper_runtime.py`. That shim is an explicit
+execution boundary: no-GPU argv delegates to the real Verilator after excluding
+itself from PATH lookup, while GPU intent fails closed until a sidecar execution
+path is wired. The older `src/tools/rtlmeter_verilator_path_wrapper.py` remains
+inspect-only metadata and is not promoted to execution authority.
 
 ## Runtime Building Blocks
 
