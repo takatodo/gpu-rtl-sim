@@ -50,6 +50,7 @@ TRACKED_TOOL_ROOTS = (
     "verilator_native_option_parser_direct_stage_plan_materialization",
     "verilator_native_option_parser_stub_fixture",
     "rtlmeter_cpu_gpu_compare_policy",
+    "rtlmeter_overlay_audit",
     "rtlmeter_seed_selection",
     "rtlmeter_sidecar_contract_mapping",
     "rtlmeter_verilator_command_capture",

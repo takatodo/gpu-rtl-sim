@@ -1,8 +1,8 @@
 # FC-031: RTLMeter Overlays Audit
 
-Status: open
-Owner: unassigned
-Target file: `overlays/rtlmeter/`, `config/slice_launch_templates/`
+Status: done
+Owner: Codex
+Target file: `src/tools/rtlmeter_overlay_audit.py`, `tests/contract/test_rtlmeter_overlays_audit.py`
 
 ## Objective
 
@@ -24,7 +24,12 @@ Audit the existing RTLMeter overlays and templates against the user-path goal. K
 ## Validation
 
 ```sh
-python3 -m unittest tests.contract.test_filelist_public_pack_manifest_paths -q
+python3 -m unittest tests.contract.test_rtlmeter_overlays_audit -q
 ```
 
-Use a narrower test if this audit changes only documentation.
+## Resolution
+
+- Added a dynamic audit helper that reads tracked paths from `git ls-files`, with injectable tracked paths used by contract tests.
+- Reused `rtlmeter_seed_selection.SELECTED_SEED` and recorded that this audit does not change canonical project state.
+- Classified tracked `overlays/rtlmeter/`, tracked `overlays/generated/`, and legacy `config/slice_launch_templates/{prim,tlul,nvdla}_*.json` paths by count plus bounded examples.
+- Kept deletion/archive candidates empty; this issue records audit metadata only and makes no broad RTLMeter acceleration support claim.
