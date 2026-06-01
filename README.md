@@ -68,6 +68,10 @@ The compare helper now builds an RTLMeter sidecar context candidate from the
 selected seed and passes it to the wrapper through `RTLMETER_SIDECAR_CONTEXT_JSON`.
 That narrows the missing context list, but the env payload is still diagnostic
 handoff metadata, not a runtime ABI.
+For `Example:kind:hello`, the RTLMeter compile closure is known from the
+descriptor, but it is kept separate from the hybrid execution closure because
+the existing host-probe/template flow is not yet valid for stdout/cycles RTLMeter
+evidence.
 
 ## Quickstart
 

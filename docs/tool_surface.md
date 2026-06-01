@@ -61,6 +61,10 @@ not the stable sidecar ABI and does not authorize execution.
 The RTLMeter launcher materializer can only produce `run_hybrid_template.py`
 argv after metadata-ready handoff plus a reviewed template path; it still does
 not invoke the launcher.
+RTLMeter context candidates distinguish compile source closure from hybrid
+execution source closure; `Example:kind:hello` has known compile inputs, but the
+current host-probe contract is not execution-compatible with its stdout/cycles
+evidence.
 
 ## Runtime Building Blocks
 

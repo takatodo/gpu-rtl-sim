@@ -244,7 +244,10 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
             "Example:kind:hello",
             compile_args=("--sim-accel", "sidecar-gpu", "--sim-accel-states", "64", "--sim-accel-steps", "1"),
         )
-        context = build_rtlmeter_sidecar_context_candidate(contract)
+        context = build_rtlmeter_sidecar_context_candidate(
+            contract,
+            template_or_target_registry_entry="config/slice_launch_templates/rtlmeter_example_kind_hello.json",
+        )
         handoff = build_rtlmeter_sidecar_handoff(
             [
                 "--cc",
@@ -265,9 +268,19 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         )
 
         self.assertEqual(context["target"], "rtlmeter_example_kind_hello")
+        self.assertEqual(
+            context["template_or_target_registry_entry"],
+            "config/slice_launch_templates/rtlmeter_example_kind_hello.json",
+        )
         self.assertEqual(context["host_probe_metadata"]["main_clock"], "top.clk")
+        self.assertEqual(context["compile_source_closure"]["status"], "complete")
+        self.assertIn("third_party/rtlmeter/designs/Example/src/top.v", context["compile_source_closure"]["source_files"])
+        self.assertIn("third_party/rtlmeter/rtl/__rtlmeter_utils.sv", context["compile_source_closure"]["source_files"])
+        self.assertIn("third_party/rtlmeter/rtl/__rtlmeter_top_include.vh", context["compile_source_closure"]["include_files"])
+        self.assertEqual(context["source_closure"]["status"], "frontend_metadata_only_not_source_closure")
+        self.assertEqual(context["source_closure"]["execution_blocker"], "blocked_host_probe_contract_mismatch")
         self.assertEqual(handoff["status"], "rtlmeter_sidecar_handoff_blocked_missing_context")
-        self.assertIn("template_or_target_registry_entry", handoff["missing_sidecar_context"])
+        self.assertNotIn("template_or_target_registry_entry", handoff["missing_sidecar_context"])
         self.assertIn("source_closure", handoff["missing_sidecar_context"])
         self.assertNotIn("host_probe_metadata", handoff["missing_sidecar_context"])
         self.assertFalse(handoff["sidecar_context_metadata_ready"])
@@ -339,16 +352,134 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
                 "--sim-accel-steps",
                 "1",
             ],
-            sidecar_context=build_rtlmeter_sidecar_context_candidate(contract),
+            sidecar_context=build_rtlmeter_sidecar_context_candidate(
+                contract,
+                template_or_target_registry_entry="config/slice_launch_templates/rtlmeter_example_kind_hello.json",
+            ),
         )
         invocation = build_rtlmeter_sidecar_launcher_invocation(handoff)
 
         self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_blocked")
         self.assertIn("handoff_metadata_ready", invocation["missing_invocation_context"])
-        self.assertIn("sidecar_context.template_or_target_registry_entry", invocation["missing_invocation_context"])
+        self.assertIn("sidecar_context.source_closure", invocation["missing_invocation_context"])
+        self.assertIn("template_file", invocation["missing_invocation_context"])
         self.assertIsNone(invocation["launcher_command_argv"])
         self.assertFalse(invocation["sidecar_launcher_invoked"])
         self.assertFalse(invocation["execution_performed"])
+
+    def test_rtlmeter_launcher_invocation_does_not_trust_forged_metadata_ready_with_incomplete_closure(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_contract_mapping import map_rtlmeter_case_to_sidecar_contract
+        from rtlmeter_sidecar_handoff import (
+            build_rtlmeter_sidecar_context_candidate,
+            build_rtlmeter_sidecar_handoff,
+            build_rtlmeter_sidecar_launcher_invocation,
+        )
+
+        contract = map_rtlmeter_case_to_sidecar_contract("Example:kind:hello")
+        context = build_rtlmeter_sidecar_context_candidate(
+            contract,
+            template_or_target_registry_entry="config/slice_launch_templates/rtlmeter_example_kind_hello.json",
+        )
+        handoff = build_rtlmeter_sidecar_handoff(
+            [
+                "--cc",
+                "-Mdir",
+                "obj_dir",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            sidecar_context=context,
+        )
+        handoff["status"] = "rtlmeter_sidecar_handoff_metadata_ready"
+        invocation = build_rtlmeter_sidecar_launcher_invocation(handoff)
+
+        self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_blocked")
+        self.assertIn("sidecar_context.source_closure", invocation["missing_invocation_context"])
+        self.assertIsNone(invocation["launcher_command_argv"])
+
+    def test_rtlmeter_launcher_invocation_blocks_missing_template_file(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_handoff import (
+            build_rtlmeter_sidecar_handoff,
+            build_rtlmeter_sidecar_launcher_invocation,
+        )
+
+        context = self._minimal_sidecar_context()
+        context["template_or_target_registry_entry"] = (
+            "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+        )
+        handoff = build_rtlmeter_sidecar_handoff(
+            [
+                "--cc",
+                "-Mdir",
+                "obj_dir",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            sidecar_context=context,
+        )
+        invocation = build_rtlmeter_sidecar_launcher_invocation(handoff)
+
+        self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_blocked")
+        self.assertIn("template_file", invocation["missing_invocation_context"])
+        self.assertIsNone(invocation["launcher_command_argv"])
+
+    def test_rtlmeter_launcher_invocation_blocks_template_target_mismatch(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_handoff import (
+            build_rtlmeter_sidecar_handoff,
+            build_rtlmeter_sidecar_launcher_invocation,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            template = root / "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            template.parent.mkdir(parents=True)
+            template.write_text(json.dumps({"target": "wrong_target"}), encoding="utf-8")
+            context = self._minimal_sidecar_context()
+            context["template_or_target_registry_entry"] = (
+                "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            )
+            handoff = build_rtlmeter_sidecar_handoff(
+                [
+                    "--cc",
+                    "-Mdir",
+                    "obj_dir",
+                    "--top-module",
+                    "top",
+                    "-f",
+                    "filelist",
+                    "--sim-accel",
+                    "sidecar-gpu",
+                    "--sim-accel-states",
+                    "64",
+                    "--sim-accel-steps",
+                    "1",
+                ],
+                sidecar_context=context,
+            )
+            invocation = build_rtlmeter_sidecar_launcher_invocation(handoff, repo_root=root)
+
+        self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_blocked")
+        self.assertIn("template_target_match", invocation["missing_invocation_context"])
+        self.assertIsNone(invocation["launcher_command_argv"])
 
     def test_rtlmeter_sidecar_launcher_invocation_materializes_argv_without_execution(self) -> None:
         self.add_tools_to_path()

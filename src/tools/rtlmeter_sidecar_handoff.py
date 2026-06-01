@@ -103,11 +103,9 @@ def _missing_context_fields(sidecar_context: Mapping[str, object] | None) -> lis
 
 
 def _status(*, ready: bool, missing_context: Sequence[str]) -> str:
-    if ready and not missing_context:
-        return STATUS_METADATA_READY
-    if ready:
-        return STATUS_BLOCKED_MISSING_CONTEXT
-    return STATUS_UNSUPPORTED
+    if not ready:
+        return STATUS_UNSUPPORTED
+    return STATUS_METADATA_READY if not missing_context else STATUS_BLOCKED_MISSING_CONTEXT
 
 
 def build_rtlmeter_sidecar_handoff(
@@ -158,23 +156,23 @@ def build_rtlmeter_sidecar_context_candidate(
     sidecar_contract: Mapping[str, object],
     *,
     source_gate_or_manifest_ref: str = DEFAULT_SOURCE_GATE_OR_MANIFEST_REF,
+    template_or_target_registry_entry: str | None = None,
 ) -> dict[str, object]:
-    """Build explicit RTLMeter sidecar context candidate without claiming source closure."""
-
     frontend_metadata = sidecar_contract.get("frontend_owned_build_metadata")
     if not isinstance(frontend_metadata, Mapping):
         raise ValueError("RTLMeter sidecar contract is missing frontend_owned_build_metadata")
     case = sidecar_contract.get("case")
     target = _target_name_from_case(case)
-    source_files = list(frontend_metadata.get("verilog_source_files", []))
+    source_files = [f"third_party/rtlmeter/{item}" for item in frontend_metadata.get("verilog_source_files", [])]
+    include_files = [f"third_party/rtlmeter/{item}" for item in frontend_metadata.get("verilog_include_files", [])]
     filelist_entries = list(frontend_metadata.get("filelist_entries", []))
     return {
         "schema_version": 1,
         "surface": "rtlmeter_sidecar_context_candidate",
-        "status": "candidate_context_without_source_closure_or_template",
+        "status": "candidate_context_without_source_closure",
         "target": target,
         "mode": "rtlmeter_first_seed",
-        "template_or_target_registry_entry": None,
+        "template_or_target_registry_entry": template_or_target_registry_entry,
         "source_gate_or_manifest_ref": source_gate_or_manifest_ref,
         "host_probe_metadata": {
             "top_module": frontend_metadata.get("top_module"),
@@ -190,11 +188,20 @@ def build_rtlmeter_sidecar_context_candidate(
             "status": "path_rules_declared_not_executed",
         },
         "compare_labels": {"cpu": "rtlmeter_cpu_reference", "gpu": "rtlmeter_sidecar_candidate"},
+        "compile_source_closure": {
+            "status": "complete",
+            "source_files": source_files,
+            "include_files": include_files,
+            "defines": _copy_value(frontend_metadata.get("verilog_defines") or {}),
+            "provenance": "rtlmeter_descriptor_capture",
+        },
         "source_closure": {
             "status": SOURCE_CLOSURE_INCOMPLETE_STATUS,
             "source_files": source_files,
+            "include_files": include_files,
             "filelist_entries": filelist_entries,
-            "source_files_are_preserved_frontend_inputs_not_closure": True,
+            "execution_blocker": "blocked_host_probe_contract_mismatch",
+            "compile_source_closure_is_not_hybrid_execution_closure": True,
         },
         "non_claims": [
             "context candidate does not provide a reviewed RTLMeter launch template",
@@ -202,12 +209,6 @@ def build_rtlmeter_sidecar_context_candidate(
             "context candidate does not execute sidecar stages or compare outputs",
         ],
     }
-
-
-def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
-
-
 def _relative_template_path(value: object) -> str | None:
     if not isinstance(value, str) or not value:
         return None
@@ -236,9 +237,7 @@ def build_rtlmeter_sidecar_launcher_invocation(
     *,
     repo_root: str | Path | None = None,
 ) -> dict[str, object]:
-    """Materialize RTLMeter sidecar launcher argv metadata without executing it."""
-
-    root = Path(repo_root) if repo_root is not None else _repo_root()
+    root = Path(repo_root) if repo_root is not None else Path(__file__).resolve().parents[2]
     missing: list[str] = []
     if handoff_metadata.get("surface") != SURFACE:
         missing.append("handoff_surface")
@@ -254,6 +253,9 @@ def build_rtlmeter_sidecar_launcher_invocation(
     target = context.get("target") if isinstance(context, Mapping) else None
     if not isinstance(target, str) or not target:
         missing.append("sidecar_context.target")
+    source_closure = context.get("source_closure") if isinstance(context, Mapping) else None
+    if not _source_closure_is_complete(source_closure):
+        missing.append("sidecar_context.source_closure")
 
     template = _relative_template_path(
         context.get("template_or_target_registry_entry") if isinstance(context, Mapping) else None

@@ -60,12 +60,14 @@ non-GPU environment.
 - The handoff now accepts optional sidecar context and can mark complete context as `sidecar_context_metadata_ready` while keeping `sidecar_context_ready`, `sidecar_launcher_invoked`, `sidecar_execution_invoked`, and `coverage_output_compare_reached` false.
 - The compare helper now builds an RTLMeter sidecar context candidate from the selected seed and passes it to the wrapper through `RTLMETER_SIDECAR_CONTEXT_JSON`. The candidate fills known metadata such as target, host-probe candidate, coverage-output policy, path rules, and compare labels, but it deliberately keeps template/source-closure unresolved.
 - Added a non-executing RTLMeter launcher invocation materializer. It can build `run_hybrid_template.py` argv only from metadata-ready handoff plus a reviewed template path, and otherwise reports the missing invocation context.
+- The context candidate now separates `compile_source_closure` from hybrid execution `source_closure`: `Example:kind:hello` compile inputs are known from the RTLMeter descriptor, but hybrid execution closure remains blocked by the host-probe/template contract mismatch.
 - The generated compare report remains generated evidence only; no CPU command is reported as GPU execution.
 
 ## Blocker
 
 - The generated wrapper can capture the expanded schedule and handoff metadata but still fails closed because no real RTLMeter-compatible launcher handoff is implemented yet.
 - Sidecar-owned context for host-probe candidate, coverage-output target/manifest, state/report paths, and compare labels is now produced from the RTLMeter seed and passed to the wrapper, but source closure and a reviewed RTLMeter launch template are still unresolved.
+- The precise compile source closure is not enough to call `run_hybrid_template.py`; RTLMeter `Example` needs a compatible execution path for stdout/cycles evidence or a reviewed wrapper that does not pretend to be the existing TL-UL-style host-probe flow.
 
 Unblock by wiring the expanded RTLMeter Verilator argv to a sidecar execution
 path, then rerun the validation command above and compare normalized stdout plus
