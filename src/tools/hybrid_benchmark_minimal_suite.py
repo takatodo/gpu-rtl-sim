@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 RUN_BENCHMARK = "python3 src/tools/run_hybrid_benchmark.py"
 RUN_TEMPLATE = "python3 src/tools/run_hybrid_template.py"
 MHA_TEMPLATE = "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json"
-OPERATOR_PLAN_COMMAND = f"{RUN_BENCHMARK} paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json"
+DEBUG_OPERATOR_PLAN_COMMAND = f"{RUN_BENCHMARK} paged_attention_kv_score --sim-accel-shape 64x1 --operator-plan-json"
 STATE_PARALLEL_COMMAND = f"{RUN_BENCHMARK} paged_attention_kv_score --sim-accel-shape 64x1 --dry-run --estimate-efficiency-json"
 SINGLE_STATE_COMMAND = f"{RUN_BENCHMARK} paged_attention_kv_score --sim-accel-shape 1x64 --dry-run --estimate-efficiency-json"
 RESIDENT_COMMAND = f"{RUN_BENCHMARK} pulp_ita_mha --shape 16x64 --mode persistent-resident-state-abi --dry-run --estimate-efficiency"
@@ -21,7 +21,7 @@ MHA_COPY_EVIDENCE = "config/scaling_gates/known_template_source_closure_copy_bre
 
 
 def minimal_bench_suite_report() -> dict[str, object]:
-    """Return the minimal suite for judging automation and GPU-hybrid fit."""
+    """Return the minimal suite for judging debug surfaces and GPU-hybrid fit."""
     return {
         "schema_version": 1,
         "schema_role": "verilator_compatible_gpu_hybrid_minimal_bench_suite",
@@ -34,8 +34,8 @@ def minimal_bench_suite_report() -> dict[str, object]:
         "input_surfaces": [
             {
                 "name": "target_first_verilator_compatible_option",
-                "example": OPERATOR_PLAN_COMMAND,
-                "purpose": "shortest operator-facing path toward a future Verilator option",
+                "example": DEBUG_OPERATOR_PLAN_COMMAND,
+                "purpose": "debug inspection of the target-first path toward a future Verilator option",
             },
             {
                 "name": "filelist_materialized_template",
@@ -45,10 +45,10 @@ def minimal_bench_suite_report() -> dict[str, object]:
         ],
         "benchmarks": [
             {
-                "name": "operator_plan_preview",
-                "command": OPERATOR_PLAN_COMMAND,
+                "name": "operator_plan_debug_json",
+                "command": DEBUG_OPERATOR_PLAN_COMMAND,
                 "executes": False,
-                "measures": ["automation_surface", "verilator_compatible_command_preview"],
+                "measures": ["debug_inspection_surface", "verilator_compatible_command_preview"],
                 "expected_efficiency_class": "high",
             },
             {
@@ -88,7 +88,7 @@ def minimal_bench_suite_report() -> dict[str, object]:
         ],
         "acceptance_metrics": [
             "every executing benchmark must pass coverage_output_equivalence with mismatch count 0",
-            "operator-plan commands must exit 0 and expose a Verilator-compatible sidecar command",
+            "debug JSON commands must exit 0 and expose a Verilator-compatible sidecar command",
             "high and low efficiency classes must remain distinguishable by shape",
             "filelist-derived execution evidence must stay tied to explicit source closure",
         ],
@@ -166,15 +166,17 @@ def _summarize_command_result(
         summary["stderr_excerpt"] = completed.stderr[:400]
         return summary
 
-    if name == "operator_plan_preview":
+    if name == "operator_plan_debug_json":
         payload = json.loads(completed.stdout)
         summary["observed"] = {
             "schema_role": payload.get("schema_role"),
+            "json_flow_role": payload.get("json_flow_role"),
+            "runtime_abi": payload.get("runtime_abi"),
             "status": payload.get("status"),
             "correctness_policy": payload.get("correctness_policy"),
             "command_has_sim_accel": "--sim-accel sidecar-gpu" in payload.get("command", ""),
         }
-        if not summary["observed"]["command_has_sim_accel"]:
+        if not summary["observed"]["command_has_sim_accel"] or summary["observed"]["runtime_abi"] is not False:
             summary["status"] = "failed"
         return summary
 
@@ -232,6 +234,12 @@ def run_minimal_bench_suite(*, repo_root: Path = REPO_ROOT) -> dict[str, object]
     passed = all(item.get("status") == "passed" for item in results)
     high = _observed_result_value(results, "state_parallel_dry_run_estimate", "cpu_to_hybrid_wall_speedup")
     low = _observed_result_value(results, "single_state_repeated_step_dry_run_estimate", "cpu_to_hybrid_wall_speedup")
+    high_class = _observed_result_value(results, "state_parallel_dry_run_estimate", "speedup_class")
+    low_class = _observed_result_value(results, "single_state_repeated_step_dry_run_estimate", "speedup_class")
+    shape_classes_distinguishable = (
+        (high is not None and low is not None and high > low)
+        or (high_class == "high" and low_class == "low")
+    )
     return {
         "schema_version": 1,
         "schema_role": "verilator_compatible_gpu_hybrid_minimal_bench_suite_run",
@@ -240,10 +248,10 @@ def run_minimal_bench_suite(*, repo_root: Path = REPO_ROOT) -> dict[str, object]
         "benchmark_count": len(results),
         "results": results,
         "summary": {
-            "automation_preview_passed": results[0].get("status") == "passed" if results else False,
+            "debug_json_preview_passed": results[0].get("status") == "passed" if results else False,
             "state_parallel_speedup": high,
             "single_state_repeated_step_speedup": low,
-            "shape_classes_distinguishable": high is not None and low is not None and high > low,
+            "shape_classes_distinguishable": shape_classes_distinguishable,
             "filelist_execution_evidence_validated": results[-1].get("status") == "passed" if results else False,
         },
         "non_claims": suite["non_claims"],

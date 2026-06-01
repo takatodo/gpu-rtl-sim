@@ -14,6 +14,7 @@ from hybrid_benchmark_sidecar_plan import (
 )
 from hybrid_benchmark_specs import (
     CORRECTNESS_POLICY_COVERAGE_OUTPUT,
+    JSON_FLOW_ROLE_DEBUG_INSPECTION,
     SCHEMA_ROLE_TARGET_FIRST_OPERATOR_PLAN,
     STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
     STATUS_READY_FOR_VERILATOR_OPTION_SHIM,
@@ -64,12 +65,15 @@ def operator_plan_json_report(
         report = operator_plan_report(target=target, shape=shape, limit=limit, mode=mode, phases=phases)
         report["operator_entrypoint"] = operator_entrypoint
         report["schema_role"] = SCHEMA_ROLE_TARGET_FIRST_OPERATOR_PLAN
+        report["json_flow_role"] = JSON_FLOW_ROLE_DEBUG_INSPECTION
+        report["runtime_abi"] = False
+        report["execution_authority"] = False
         report["tool"] = "src/tools/run_hybrid_benchmark.py"
         report["discovery_hint"] = operator_discovery_hint(target=target, requested_shape=shape)
         report["use_when"] = [
-            "automation starts from run_hybrid_benchmark.py --list-targets",
-            "automation needs the synthesized Verilator command and efficiency estimate",
-            "full sidecar stage details are not required",
+            "debugging the target-first sidecar plan",
+            "inspecting the synthesized Verilator command and efficiency estimate",
+            "checking not-yet-runtime handoff metadata without executing commands",
         ]
         report["shim_boundary"] = shim_boundary()
         report["exit_code"] = 0
@@ -78,6 +82,9 @@ def operator_plan_json_report(
     report = {
         "schema_version": 1,
         "schema_role": SCHEMA_ROLE_TARGET_FIRST_OPERATOR_PLAN,
+        "json_flow_role": JSON_FLOW_ROLE_DEBUG_INSPECTION,
+        "runtime_abi": False,
+        "execution_authority": False,
         "tool": "src/tools/run_hybrid_benchmark.py",
         "status": STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
         "target": target,
@@ -96,12 +103,14 @@ def operator_plan_json_report(
         ),
         "sidecar_stage_plan": plan,
         "use_when": [
-            "automation starts from run_hybrid_benchmark.py --list-targets",
-            "automation needs a stable not-ready JSON result without parsing stderr",
+            "debugging why a target is not ready for the sidecar path",
+            "inspecting a stable not-ready JSON result without parsing stderr",
         ],
         "shim_boundary": shim_boundary(),
         "non_claims": [
+            "operator plan JSON is debug/inspection output only",
             "operator plan JSON does not execute commands",
+            "operator plan JSON is not the runtime ABI",
             "not-ready status is not correctness or timing evidence",
             "coverage-output equivalence remains separate from performance estimates",
         ],

@@ -23,6 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 notes:
   --print-verilator-command, --print-verilator-estimate-command, --print-efficiency-estimate, --print-operator-plan, and --operator-plan-json do not execute commands.
+  --operator-plan-json is for debug/inspection. It is not the runtime ABI.
   --sim-accel-estimate-efficiency follows the normal execution or --dry-run path; use --print-efficiency-estimate for estimate-only preview.
   coverage_output_equivalence remains the correctness policy; efficiency output is separate.
 """,
@@ -116,7 +117,10 @@ notes:
     parser.add_argument(
         "--operator-plan-json",
         action="store_true",
-        help="Print the synthesized Verilator sidecar operator plan as JSON without executing commands.",
+        help=(
+            "Debug: print the synthesized Verilator sidecar operator plan as JSON "
+            "without executing commands. This is not the runtime ABI."
+        ),
     )
     parser.add_argument(
         "--list-targets",

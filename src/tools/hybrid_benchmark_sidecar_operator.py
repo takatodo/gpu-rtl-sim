@@ -91,6 +91,7 @@ def sidecar_handoff_contract(plan: dict[str, object]) -> dict[str, object]:
         "non_claims": [
             "handoff contract does not execute commands",
             "handoff contract is not correctness or timing evidence",
+            "JSON serialization of this contract is debug output, not the runtime ABI",
             "coverage-output equivalence remains separate from raw full-state equality",
         ],
     }
@@ -117,8 +118,13 @@ def sidecar_operator_plan(
         "efficiency_estimate": efficiency_estimate,
         "handoff_contract": handoff_contract,
         "correctness_policy": CORRECTNESS_POLICY_COVERAGE_OUTPUT,
+        "json_flow_role": "debug_inspection",
+        "runtime_abi": False,
+        "execution_authority": False,
         "non_claims": [
+            "operator plan JSON is debug/inspection output only",
             "operator plan does not execute commands",
+            "operator plan JSON is not the runtime ABI",
             "operator plan is not correctness or timing evidence",
             "coverage-output equivalence remains separate from performance estimates",
         ],

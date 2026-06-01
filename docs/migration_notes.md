@@ -33,7 +33,7 @@ What stays comparatively simple: **dry-run-only** CLI checks, **`run_hybrid_benc
 | P0 | `selection` は `load_selection` / `read_selection()` でマージ読み。証跡マップを生 `selection.json` に置かない。 | 完了 |
 | P1 | **`active_scope.targets` は `config/targets.json` からのみ注入**（`selection.json` には永続化しない）。 | 完了 |
 | P2 | `verification.commands` の外部化（`config/selection_verification_commands.json`）、README / `jq` / 本ドキュメントの同時更新。 | 完了 |
-| P3 | `artifacts/mobile_vit/venv` や未使用 `*_obj_dir` の整理（再現手順は README **Artifact Policy → Local disk hygiene** と MobileViT 節）。 | 完了 |
+| P3 | `artifacts/mobile_vit/venv` や未使用 `*_obj_dir` の整理（再現手順は README **Local disk hygiene** と MobileViT 節）。 | 完了 |
 | P4 | 日常操作: 既存 CLI をそのまま呼ぶ薄い `Makefile` のみ（統合 Python オペレータは置かない）。 | 完了 |
 | （続き） | `active_scope` の数値・claim と `targets.json` の整合をさらに機械化する場合は P1 の延長で検討。 | 任意 |
 

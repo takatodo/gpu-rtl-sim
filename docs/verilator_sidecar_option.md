@@ -1,6 +1,8 @@
 # Verilator Sidecar Option Target
 
-The long-term usability target is a direct Verilator option, not a project-specific wrapper.
+This document covers the Verilator frontend of the broader GPU sidecar experiment. It is not the whole project goal: CIRCT should be able to provide an equivalent sidecar metadata boundary later, without copying Verilator-specific assumptions into the runtime.
+
+The long-term Verilator usability target is a direct Verilator option, not a project-specific wrapper. Normal Verilator build semantics should stay visible, while the GPU sidecar owns GPU artifact generation, hybrid execution, and CPU/GPU compare. JSON plans are debug and review inspection output; they are not execution authority or the required runtime ABI.
 
 ## Target Spelling
 
@@ -68,6 +70,34 @@ python3 src/tools/run_hybrid_benchmark.py <target> \
   --sim-accel-steps 1 \
   --dry-run
 ```
+
+## RTLMeter User Path
+
+RTLMeter should stay a RTLMeter workflow. The intended user path is to keep
+RTLMeter's case selection and let the Verilator command path carry GPU intent:
+
+```bash
+./rtlmeter run --cases <design>:<config>:<test> --compileArgs "--use-gpu"
+PATH=/path/to/gpu-verilator-wrapper:$PATH ./rtlmeter run --cases <design>:<config>:<test>
+```
+
+The current RTLMeter support is non-executing metadata only. The helper surface
+under `src/tools/rtlmeter_*` captures the Verilator argv RTLMeter would emit,
+classifies whether GPU intent reached a PATH-selected wrapper, and maps the
+frontend-owned build metadata into sidecar contract metadata. It does not run
+RTLMeter, invoke Verilator, build GPU artifacts, run sidecar stages, compare
+outputs, or measure timing.
+
+The first wrapper-visible surface is intentionally fail-closed. A GPU-intent
+request must preserve normal Verilator build inputs such as `--cc`, `-f
+<filelist>`, and `--top-module <top>`. Expanded sidecar requests must also carry
+`--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`. A bare
+`--use-gpu` proves only that RTLMeter `--compileArgs` reached the wrapper-visible
+argv; it is not a GPU execution, compare, timing, or acceleration claim.
+
+Do not route RTLMeter users through `config/slice_launch_templates/*.json` as the
+normal path. Those templates remain useful for existing repo experiments, but
+they are not a simple RTLMeter acceleration UX.
 
 ## Source Patch Descriptor Boundary
 
@@ -187,7 +217,7 @@ The adapter payload is intentionally smaller than `sidecar_handoff_contract()`. 
 
 `src/tools/verilator_sidecar_options.py` is the current shared mapping authority for `--sim-accel-states`, `--sim-accel-steps`, and compact `--sim-accel-shape`. On the wrapper, those `--sim-accel-*` shape spellings are enough to enter the sidecar preview path even if the explicit `--sim-accel sidecar-gpu` selector is omitted. The mapper rejects mixed shape spellings so the eventual Verilator implementation does not inherit ambiguous behavior.
 
-`run_hybrid_benchmark.py --list-targets` exposes the same spellings under `sidecar_gpu.shape_spellings` for ready slice-template targets. The older `sidecar_gpu.requires` field remains the minimum expanded option pair for compatibility, while `sidecar_gpu.recommended_entrypoint` names the compact operator path (`--sim-accel-shape <NxS>`) and `sidecar_gpu.compatibility_entrypoint` names the expanded future-Verilator form. The focused `--list-targets sidecar_gpu` view also exposes `shortest_operator_path`, matching the documented three-command flow. `sidecar_gpu.operator_plan_command_template`, `sidecar_gpu.verilator_estimate_command_template`, and `sidecar_gpu.operator_plan_json_command_template` give the parameterized target-first preview commands; `sidecar_gpu.operator_plan_example_command`, `sidecar_gpu.verilator_estimate_example_command`, and `sidecar_gpu.operator_plan_json_example_command` give concrete non-executing `64x1` preview commands operators can try immediately. Those preview commands use the compact `--sim-accel-shape` entrypoint. Wrapper operator-plan JSON repeats the same recommended and compatibility entrypoints in `discovery_hint` and adds `requested_compatibility_entrypoint`, the concrete expanded spelling for the requested shape, so automation does not need to re-run discovery to preserve that distinction. The example shape is a starting point, not timing evidence by itself.
+`run_hybrid_benchmark.py --list-targets` exposes the same spellings under `sidecar_gpu.shape_spellings` for ready slice-template targets. The older `sidecar_gpu.requires` field remains the minimum expanded option pair for compatibility, while `sidecar_gpu.recommended_entrypoint` names the compact operator path (`--sim-accel-shape <NxS>`) and `sidecar_gpu.compatibility_entrypoint` names the expanded future-Verilator form. The focused `--list-targets sidecar_gpu` view exposes `shortest_operator_path` for the terminal operator flow and `debug_json_path` for JSON inspection. `sidecar_gpu.operator_plan_command_template`, `sidecar_gpu.verilator_estimate_command_template`, and `sidecar_gpu.operator_plan_json_command_template` give the parameterized target-first preview commands; `sidecar_gpu.operator_plan_example_command`, `sidecar_gpu.verilator_estimate_example_command`, and `sidecar_gpu.operator_plan_json_example_command` give concrete non-executing `64x1` preview commands operators can try immediately. Those preview commands use the compact `--sim-accel-shape` entrypoint. Wrapper operator-plan JSON repeats the same recommended and compatibility entrypoints in `discovery_hint` and adds `requested_compatibility_entrypoint`, the concrete expanded spelling for the requested shape, so debug inspection does not need to re-run discovery to preserve that distinction. The example shape is a starting point, not timing evidence by itself.
 
 `--preflight` on the wrapper emits `sidecar_stage_plan` for template targets. This is the current implementation boundary for moving into Verilator: the stages are `verilator_build`, `host_probe_build`, `cpu_init_state`, `cpu_reference_output`, `gpu_artifact_build`, `hybrid_sidecar_run`, and `coverage_output_compare`. The printable command is kept for operators, while structured `details` keep the Verilator build inputs (`mdir`, `top_module`, source files, defines, and Verilator args), sidecar launch shape, state files, and compare policy machine-readable. The final stage must continue to use `coverage_output_equivalence`.
 
@@ -228,7 +258,7 @@ python3 src/tools/verilator_sidecar_shim.py \
 
 This adds top-level `verilator_command_argv` and `verilator_command` fields synthesized from the structured `verilator_build` and `hybrid_sidecar_run` stage details. `verilator_command_argv` is the machine-readable form; `verilator_command` is shell-quoted for human inspection. It is a future handoff preview only; it is not executed and is not a claim that Verilator already accepts the option.
 
-When the shim can synthesize the command, the JSON report also includes `operator_plan`. This groups `command_argv`, shell-quoted `command`, concrete `requested_compatibility_entrypoint`, `efficiency_estimate`, `handoff_contract`, `discovery_hint`, and `correctness_policy: coverage_output_equivalence` in one machine-readable object for automation that wants the same information as the terminal operator view. The same `discovery_hint` is also repeated at the shim report top level, matching wrapper operator-plan JSON so automation can preserve the compact entrypoint and expanded future-Verilator spelling from either entrypoint. The handoff contract is non-executing metadata for the future Verilator-owned boundary: state authority, init/reference/candidate dumps, generated compare report path, and compare policy.
+When the shim can synthesize the command, the JSON report also includes `operator_plan`. This groups `command_argv`, shell-quoted `command`, concrete `requested_compatibility_entrypoint`, `efficiency_estimate`, `handoff_contract`, `discovery_hint`, and `correctness_policy: coverage_output_equivalence` in one machine-readable debug object with the same information as the terminal operator view. The same `discovery_hint` is also repeated at the shim report top level, matching wrapper operator-plan JSON so inspection tools can preserve the compact entrypoint and expanded future-Verilator spelling from either entrypoint. The handoff contract is non-executing metadata for the future Verilator-owned boundary: state authority, init/reference/candidate dumps, generated compare report path, and compare policy.
 
 For terminal use, `--print-verilator-command` prints only the shell-quoted command when the shim is ready:
 
@@ -265,7 +295,7 @@ python3 src/tools/verilator_sidecar_shim.py \
   --print-operator-plan
 ```
 
-This prints the synthesized command, the matching future Verilator command with `--sim-accel-estimate-efficiency`, and the same human-readable efficiency estimate. It still does not execute either command, and it does not replace the JSON form for automation.
+This prints the synthesized command, the matching future Verilator command with `--sim-accel-estimate-efficiency`, and the same human-readable efficiency estimate. It still does not execute either command, and it does not replace the JSON form for debug inspection.
 
 The primary benchmark wrapper exposes the same terminal operator view with the target-first spelling:
 
@@ -277,7 +307,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score \
 
 For a command-only target-first preview, replace `--print-operator-plan` with `--print-verilator-command`. For the matching estimate-command-only preview, use `--print-verilator-estimate-command`; it prints the same future Verilator command with `--sim-accel-estimate-efficiency` appended and nothing else. For the matching estimate-only target-first preview, use `--print-efficiency-estimate`. Use these compact wrapper paths when starting from `run_hybrid_benchmark.py --list-targets`; not-ready command and operator-plan previews return JSON with exit code `2`, while ready terminal output stays concise. The operator-plan terminal view prints `requested_compatibility_entrypoint` next to the synthesized command so the concrete future-Verilator suffix is visible without JSON. The expanded `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` spelling remains the explicit future-Verilator form and is still accepted by the wrapper for compatibility. The command-only preview stays command-only even when the short `--sidecar-gpu` alias is used.
 
-The machine-readable operator plan keeps both command forms separate: `command` is the plain future Verilator sidecar command, while `estimate_command` appends `--sim-accel-estimate-efficiency`. This keeps command-only previews clean while still giving automation the exact future Verilator spelling for an estimate-annotated run.
+The machine-readable operator plan is a debug view. It keeps both command forms separate: `command` is the plain future Verilator sidecar command, while `estimate_command` appends `--sim-accel-estimate-efficiency`. This keeps command-only previews clean while still exposing the exact future Verilator spelling for an estimate-annotated run.
 
 On `run_hybrid_benchmark.py`, `--sim-accel-estimate-efficiency` follows the normal execution or `--dry-run` path and then prints the estimate. It is the wrapper-side compatibility spelling for the future Verilator option flag, not the non-executing preview selector. Use `--print-efficiency-estimate` for estimate-only preview output.
 
@@ -288,7 +318,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score \
   --dry-run
 ```
 
-The same wrapper path can emit machine-readable JSON:
+The same wrapper path can emit debug JSON:
 
 ```bash
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score \
@@ -296,9 +326,9 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score \
   --operator-plan-json
 ```
 
-This is still a non-executing operator plan. It carries the synthesized command, concrete `requested_compatibility_entrypoint`, efficiency estimate, handoff contract, `coverage_output_equivalence`, discovery hint, and non-claims without turning the estimate into correctness or timing evidence. The discovery hint records the requested shape separately from the recommended starting shape. The wrapper JSON declares `schema_role: target_first_operator_plan`; use the shim JSON for readiness/stage-detail handoff fields. If the target is not ready for the direct-option preview, the wrapper returns `status: not_ready_for_verilator_option_shim` JSON with exit code `2`, plus top-level `missing` and `fallback_command` fields for quick automation handling.
+This is still a non-executing debug view of the operator plan. It carries the synthesized command, concrete `requested_compatibility_entrypoint`, efficiency estimate, handoff contract, `coverage_output_equivalence`, discovery hint, and non-claims without turning the estimate into correctness or timing evidence. The discovery hint records the requested shape separately from the recommended starting shape. The wrapper JSON keeps `schema_role: target_first_operator_plan` for compatibility and adds `json_flow_role: debug_inspection`, `runtime_abi: false`, and `execution_authority: false`; use the shim JSON for readiness/stage-detail debug fields. If the target is not ready for the direct-option preview, the wrapper returns `status: not_ready_for_verilator_option_shim` JSON with exit code `2`, plus top-level `missing` and `fallback_command` fields for debug handling.
 
-Readiness status strings are shared across discovery and JSON entrypoints: `ready_for_template_shape`, `ready_for_verilator_option_shim`, and `not_ready_for_verilator_option_shim`.
+Readiness status strings are shared across discovery and debug JSON entrypoints: `ready_for_template_shape`, `ready_for_verilator_option_shim`, and `not_ready_for_verilator_option_shim`.
 
 Resident modes are not direct Verilator option handoffs yet. Their not-ready stage plan exposes a `resident_state_reuse_workflow` or `persistent_resident_state_abi_workflow` fallback command, preserving the efficiency guidance for low-parallelism `1xN` shapes while keeping shim readiness separate from higher-level orchestration.
 

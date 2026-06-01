@@ -1,5 +1,11 @@
 # Roadmap
 
+## Goal Frame
+
+The roadmap should be read as a GPU sidecar roadmap, not a Verilator-only roadmap. Verilator is the first frontend and the near-term native UX target; CIRCT is a planned second frontend. The shared target is a sidecar contract that carries frontend-owned RTL/build metadata into sidecar-owned GPU build, execution, and compare stages.
+
+JSON is an inspection format for that contract. Automation may read it for diagnostics, but it should not become execution authority or the mandatory runtime ABI.
+
 ## Weakest Point
 
 Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The chain now includes a reviewed patched-binary parser-only retry, an accepted sidecar authority boundary, a first scoped native sidecar run, a review accepting only separated parser-success plus reviewed `pulp_ita_mha 64x1` sidecar build/run/compare evidence, a definition of the direct launch authority chain, a review accepting that definition only for a scoped future run, a run record that stops at `direct_launch_handoff_failure`, a review accepting that failure as honest, a definition of the minimal direct-launch handoff implementation boundary, a review accepting only that narrow boundary, a metadata-only direct-launch handoff fixture implementation, a review accepting that fixture only as readiness metadata, a definition of the first real handoff run boundary, a review accepting that boundary only for a scoped future run, a scoped handoff run that still records `direct_launch_handoff_failure`, a review accepting that failure as honest, a native-process to sidecar-launcher bridge boundary definition/review, a metadata-only bridge fixture implementation, a review accepting that fixture only as metadata, a scoped sidecar-launcher run boundary definition/review, a scoped sidecar-launcher run that stops at `sidecar_launcher_bridge_failure`, a review accepting that failure as honest, a definition of the launcher-invocation implementation boundary, a review accepting that boundary only for a scoped fixture implementation, a non-executing launcher-invocation fixture implementation, a review accepting that fixture only as argv materialization metadata, a definition of the launcher-invocation run boundary, a review accepting that boundary for a scoped future run, and a scoped launcher-invocation run that starts the reviewed structured `run_hybrid_template.py` argv and reaches coverage-output compare with mismatch count `0`. The weak point is now reviewing that run without treating it as direct Verilator sidecar execution, broad native option support, timing evidence, automatic allocation, runtime/ABI change, or production throughput.
@@ -32,7 +38,7 @@ Current alignment check: `config/selection.json`, `docs/status.md`, `README.md`,
 2. Keep `config/selection.json` compact (core pointer) and historical maps in `config/selection_extensions.json`; merge via `src/tools/selection_state.py` when tooling needs the full selection.
 3. Keep `config/README.md` as the map for config roles and add/move rules.
 4. Keep generated evidence reproducible under `reports/` and build outputs under `artifacts/`, but do not retain them as source of truth.
-5. Make hybrid launch as close as possible to Verilator usage.
+5. Make hybrid launch as close as possible to Verilator usage first, while keeping the sidecar boundary frontend-neutral enough for CIRCT.
 6. Generate config from target/top/overlay metadata.
 7. Keep the public benchmark pack aligned with the latest correctness, timing, and non-claim evidence.
 8. Validate generated host-probe metadata across more target shapes.
@@ -464,7 +470,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
 - current next task: `run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate`
-- reason: the compact suite validates automation surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
+- reason: the compact suite validates debug inspection surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
 
@@ -635,7 +641,7 @@ Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
 - active `config/` file count: `145`
-- tracked gate JSON records under `records/scaling_gates/`: `918`
+- tracked gate JSON records under `records/scaling_gates/`: `927`
 - compatibility link: `config/scaling_gates -> ../records/scaling_gates`
 - generated files under `reports/` and `artifacts/`: reproducible evidence only, never source of truth
 

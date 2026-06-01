@@ -25,6 +25,7 @@ from hybrid_benchmark_sidecar_commands import (
     SIDECAR_COMPATIBILITY_ENTRYPOINT,
     SIDECAR_RECOMMENDED_ENTRYPOINT,
     compatibility_entrypoint_for_shape,
+    debug_json_path,
     operator_discovery_hint,
     operator_plan_command,
     operator_plan_json_command,
@@ -150,6 +151,7 @@ def target_list_report() -> dict[str, object]:
                 "operator_plan_json_command_template": (
                     operator_plan_json_command(target=name, shape="<NxS>")
                 ),
+                "operator_plan_json_role": "debug_inspection",
                 "recommended_shape": OPERATOR_PLAN_EXAMPLE_SHAPE,
                 "operator_plan_example_command": (
                     operator_plan_command(target=name, shape=OPERATOR_PLAN_EXAMPLE_SHAPE)
@@ -188,6 +190,7 @@ def target_list_report() -> dict[str, object]:
                 "non_claims": [
                     "readiness is a discovery hint, not execution evidence",
                     "readiness does not mean Verilator itself implements --sim-accel",
+                    "operator plan JSON is debug/inspection output, not the runtime ABI",
                 ],
             }
         else:
@@ -223,6 +226,7 @@ def sidecar_target_list_report() -> dict[str, object]:
         "tool": "src/tools/run_hybrid_benchmark.py",
         "view": "sidecar_gpu",
         "shortest_operator_path": shortest_operator_path(),
+        "debug_json_path": debug_json_path(),
         "targets": [
             {
                 "name": target["name"],
@@ -236,5 +240,6 @@ def sidecar_target_list_report() -> dict[str, object]:
         "non_claims": [
             "sidecar discovery is not execution evidence",
             "sidecar discovery does not mean Verilator itself implements --sim-accel",
+            "JSON paths are debug/inspection surfaces and are not the runtime ABI",
         ],
     }

@@ -77,6 +77,9 @@ class HybridVerilatorSidecarShimExamplesCliTest(HybridCliTestCase):
 
         compact_payload = json.loads(compact.stdout)
         expanded_payload = json.loads(expanded.stdout)
+        self.assertEqual(compact_payload["json_flow_role"], "debug_inspection")
+        self.assertIs(compact_payload["runtime_abi"], False)
+        self.assertIs(compact_payload["execution_authority"], False)
         self.assertEqual(compact_payload["shape"], "64x1")
         self.assertEqual(compact_payload["verilator_command"], expanded_payload["verilator_command"])
         self.assertEqual(compact_payload["discovery_hint"], expanded_payload["discovery_hint"])
@@ -182,6 +185,8 @@ class HybridVerilatorSidecarShimExamplesCliTest(HybridCliTestCase):
         elif "--emit-verilator-command" in command:
             self.assertEqual(command_result.returncode, 0)
             payload = json.loads(command_result.stdout)
+            self.assertEqual(payload["json_flow_role"], "debug_inspection")
+            self.assertIs(payload["runtime_abi"], False)
             self.assertEqual(payload["verilator_command_emitted"], True)
             self.assertEqual(
                 payload["operator_plan"]["requested_compatibility_entrypoint"],
@@ -201,5 +206,7 @@ class HybridVerilatorSidecarShimExamplesCliTest(HybridCliTestCase):
         else:
             self.assertEqual(command_result.returncode, 2)
             payload = json.loads(command_result.stdout)
+            self.assertEqual(payload["json_flow_role"], "debug_inspection")
+            self.assertIs(payload["runtime_abi"], False)
             self.assertTrue(payload["command_emitted"])
             self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")

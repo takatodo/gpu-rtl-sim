@@ -77,6 +77,9 @@ class HybridBenchmarkDiscoveryExamplesCliTest(HybridCliTestCase):
         plan = self.run_command(argv)
         report = json.loads(plan.stdout)
         self.assertEqual(report["schema_role"], "target_first_operator_plan")
+        self.assertEqual(report["json_flow_role"], "debug_inspection")
+        self.assertIs(report["runtime_abi"], False)
+        self.assertIs(report["execution_authority"], False)
         self.assertEqual(report["discovery_hint"]["source"], "src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu")
         self.assertEqual(report["discovery_hint"]["recommended_entrypoint"], sidecar["recommended_entrypoint"])
         self.assertEqual(report["discovery_hint"]["compatibility_entrypoint"], sidecar["compatibility_entrypoint"])
@@ -155,6 +158,8 @@ class HybridBenchmarkDiscoveryExamplesCliTest(HybridCliTestCase):
     def _assert_operator_plan_json_example(self, stdout: str) -> None:
         report = json.loads(stdout)
         self.assertEqual(report["schema_role"], "target_first_operator_plan")
+        self.assertEqual(report["json_flow_role"], "debug_inspection")
+        self.assertIs(report["runtime_abi"], False)
         self.assertEqual(report["status"], "planned")
         self.assertEqual(report["correctness_policy"], "coverage_output_equivalence")
         self.assertEqual(report["exit_code"], 0)

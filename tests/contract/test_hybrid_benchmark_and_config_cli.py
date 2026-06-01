@@ -38,14 +38,14 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         )
         self.assertEqual(payload["status"], "passed")
         self.assertEqual(payload["benchmark_count"], 5)
-        self.assertTrue(payload["summary"]["automation_preview_passed"])
+        self.assertTrue(payload["summary"]["debug_json_preview_passed"])
         self.assertTrue(payload["summary"]["shape_classes_distinguishable"])
         self.assertTrue(payload["summary"]["filelist_execution_evidence_validated"])
         names = [item["name"] for item in payload["results"]]
         self.assertEqual(
             names,
             [
-                "operator_plan_preview",
+                "operator_plan_debug_json",
                 "state_parallel_dry_run_estimate",
                 "single_state_repeated_step_dry_run_estimate",
                 "resident_decode_like_dry_run",
@@ -332,6 +332,9 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         payload = json.loads(result.stdout)
         self.assertEqual(payload["schema_version"], 1)
         self.assertEqual(payload["schema_role"], "target_first_operator_plan")
+        self.assertEqual(payload["json_flow_role"], "debug_inspection")
+        self.assertIs(payload["runtime_abi"], False)
+        self.assertIs(payload["execution_authority"], False)
         self.assertEqual(payload["tool"], "src/tools/run_hybrid_benchmark.py")
         self.assertEqual(payload["status"], "planned")
         self.assertEqual(payload["exit_code"], 0)
@@ -356,10 +359,11 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("cpu_repeat_64x1", handoff["state_files"]["reference_dump"])
         self.assertIn("gpu_from_cpu_init_64x1", handoff["state_files"]["candidate_dump"])
         self.assertIn("compare_report", handoff["generated_reports"])
-        self.assertIn("raw full-state equality", handoff["non_claims"][2])
-        self.assertIn("run_hybrid_benchmark.py --list-targets", payload["use_when"][0])
+        self.assertTrue(any("raw full-state equality" in claim for claim in handoff["non_claims"]))
+        self.assertIn("debugging", payload["use_when"][0])
         self.assertEqual(payload["shim_boundary"]["tool"], "src/tools/verilator_sidecar_shim.py")
         self.assertIn("stage details", payload["shim_boundary"]["use_when"])
+        self.assertIn("operator plan JSON is debug/inspection output only", payload["non_claims"])
         self.assertIn("operator plan does not execute commands", payload["non_claims"])
 
     def test_run_hybrid_benchmark_operator_plan_json_reports_not_ready(self) -> None:
@@ -375,6 +379,9 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertEqual(result.stderr, "")
         payload = json.loads(result.stdout)
         self.assertEqual(payload["schema_role"], "target_first_operator_plan")
+        self.assertEqual(payload["json_flow_role"], "debug_inspection")
+        self.assertIs(payload["runtime_abi"], False)
+        self.assertIs(payload["execution_authority"], False)
         self.assertEqual(payload["tool"], "src/tools/run_hybrid_benchmark.py")
         self.assertEqual(payload["status"], "not_ready_for_verilator_option_shim")
         self.assertEqual(payload["exit_code"], 2)
@@ -395,6 +402,7 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         self.assertIn("mobile_vit --limit 128 --dry-run", readiness["fallback_command"])
         self.assertIn("stable not-ready JSON", payload["use_when"][1])
         self.assertEqual(payload["shim_boundary"]["tool"], "src/tools/verilator_sidecar_shim.py")
+        self.assertIn("operator plan JSON is debug/inspection output only", payload["non_claims"])
         self.assertIn("operator plan JSON does not execute commands", payload["non_claims"])
 
     def test_sidecar_readiness_vocabulary_matches_across_entrypoints(self) -> None:
@@ -636,7 +644,9 @@ class HybridBenchmarkAndConfigCliTest(HybridCliTestCase):
         readiness = payload["sidecar_stage_plan"]["verilator_option_readiness"]
         self.assertEqual(readiness["status"], "ready_for_verilator_option_shim")
         self.assertEqual(readiness["missing"], [])
-        self.assertIn("coverage-output equivalence remains separate", payload["non_claims"][2])
+        self.assertTrue(
+            any("coverage-output equivalence remains separate" in item for item in payload["non_claims"])
+        )
 
     def test_verilator_sidecar_shim_reports_not_ready_exit_two_for_dataset_target(self) -> None:
         result = self.run_python_tool(

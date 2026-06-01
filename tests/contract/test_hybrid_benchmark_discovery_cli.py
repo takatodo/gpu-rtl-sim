@@ -38,12 +38,19 @@ class HybridBenchmarkDiscoveryCliTest(HybridCliTestCase):
                     "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score "
                     "--sim-accel-shape 64x1 --print-operator-plan"
                 ),
+            ],
+        )
+        self.assertEqual(
+            payload["debug_json_path"],
+            [
+                "python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu",
                 (
                     "python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score "
                     "--sim-accel-shape 64x1 --operator-plan-json"
                 ),
             ],
         )
+        self.assertTrue(any("JSON paths are debug/inspection surfaces" in claim for claim in payload["non_claims"]))
         self.assertIn("sidecar discovery is not execution evidence", payload["non_claims"])
         self.assertGreater(len(payload["targets"]), 0)
 
@@ -66,6 +73,7 @@ class HybridBenchmarkDiscoveryCliTest(HybridCliTestCase):
             self.assertIn("operator_plan_example_command", sidecar)
             self.assertIn("verilator_estimate_example_command", sidecar)
             self.assertIn("operator_plan_json_example_command", sidecar)
+            self.assertEqual(sidecar["operator_plan_json_role"], "debug_inspection")
             self.assertIn(sidecar["recommended_entrypoint"], sidecar["operator_plan_command_template"])
             self.assertIn(sidecar["recommended_entrypoint"], sidecar["verilator_estimate_command_template"])
             self.assertNotIn(sidecar["compatibility_entrypoint"], sidecar["operator_plan_command_template"])

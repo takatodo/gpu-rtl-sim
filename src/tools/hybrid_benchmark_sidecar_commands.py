@@ -35,6 +35,13 @@ def operator_plan_json_command(*, target: str, shape: str) -> str:
     )
 
 
+def debug_json_path() -> list[str]:
+    return [
+        "python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu",
+        operator_plan_json_command(target=OPERATOR_PLAN_EXAMPLE_TARGET, shape=OPERATOR_PLAN_EXAMPLE_SHAPE),
+    ]
+
+
 def compatibility_entrypoint_for_shape(shape: str | None) -> str | None:
     if shape is None:
         return None
@@ -46,7 +53,6 @@ def shortest_operator_path() -> list[str]:
     return [
         "python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu",
         operator_plan_command(target=OPERATOR_PLAN_EXAMPLE_TARGET, shape=OPERATOR_PLAN_EXAMPLE_SHAPE),
-        operator_plan_json_command(target=OPERATOR_PLAN_EXAMPLE_TARGET, shape=OPERATOR_PLAN_EXAMPLE_SHAPE),
     ]
 
 
@@ -71,8 +77,10 @@ def operator_discovery_hint(*, target: str, requested_shape: str | None) -> dict
             target=target,
             shape=OPERATOR_PLAN_EXAMPLE_SHAPE,
         ),
+        "operator_plan_json_role": "debug_inspection",
         "non_claims": [
             "recommended shape is an operator starting point, not timing evidence",
             "example command is non-executing unless the operator runs it explicitly",
+            "JSON output is a debug/inspection view, not the runtime ABI",
         ],
     }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""JSON shim for the planned Verilator --sim-accel sidecar-gpu option."""
+"""Debug JSON shim for the planned Verilator --sim-accel sidecar-gpu option."""
 
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ from hybrid_benchmark_sidecar_plan import (
     synthesized_verilator_command_argv,
 )
 from hybrid_benchmark_specs import (
+    JSON_FLOW_ROLE_DEBUG_INSPECTION,
     SIDECAR_ACCEL,
     STATUS_NOT_READY_FOR_VERILATOR_OPTION_SHIM,
     STATUS_READY_FOR_VERILATOR_OPTION_SHIM,
@@ -32,8 +33,8 @@ TOOL = "src/tools/verilator_sidecar_shim.py"
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Emit the non-executing JSON plan a future Verilator --sim-accel "
-            "sidecar-gpu implementation would need."
+            "Emit debug JSON for the non-executing plan a future Verilator "
+            "--sim-accel sidecar-gpu implementation would need."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""examples:
@@ -48,6 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
 notes:
   Ready template targets return exit code 0 for command previews.
   Not-ready stage examples still emit JSON stage commands and return exit code 2.
+  JSON output is for debug/inspection, not the runtime ABI.
   No mode executes benchmark commands from this shim.
 """,
     )
@@ -143,6 +145,10 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
     emit_verilator_command = sidecar_options.emit_verilator_command
     report = {
         "schema_version": 1,
+        "schema_role": "verilator_sidecar_debug_plan",
+        "json_flow_role": JSON_FLOW_ROLE_DEBUG_INSPECTION,
+        "runtime_abi": False,
+        "execution_authority": False,
         "tool": TOOL,
         "status": status,
         "target": args.target,
@@ -165,6 +171,8 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
         ),
         "sidecar_stage_plan": plan,
         "non_claims": [
+            "shim JSON is debug/inspection output only",
+            "shim JSON is not the runtime ABI",
             "shim emits a non-executing plan only",
             "shim readiness does not mean Verilator itself implements --sim-accel",
             "coverage-output equivalence remains separate from performance estimates",
@@ -198,11 +206,17 @@ def shim_report(args: argparse.Namespace) -> tuple[int, dict[str, object]]:
 def error_report(exc: Exception) -> dict[str, object]:
     return {
         "schema_version": 1,
+        "schema_role": "verilator_sidecar_debug_error",
+        "json_flow_role": "debug_inspection",
+        "runtime_abi": False,
+        "execution_authority": False,
         "tool": TOOL,
         "status": "error",
         "exit_code": 1,
         "error": str(exc),
         "non_claims": [
+            "error JSON is debug/inspection output only",
+            "error JSON is not the runtime ABI",
             "error output is not a sidecar execution result",
             "error output is not correctness or timing evidence",
         ],
