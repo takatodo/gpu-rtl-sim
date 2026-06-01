@@ -1,8 +1,8 @@
 # FC-030: RTLMeter CPU/GPU Compare Integration
 
-Status: open
-Owner: unassigned
-Target file: `src/tools/rtlmeter_*`, `reports/`
+Status: done
+Owner: Codex
+Target file: `src/tools/rtlmeter_cpu_gpu_compare_policy.py`, `tests/contract/test_rtlmeter_cpu_gpu_compare_policy.py`
 
 ## Objective
 
@@ -23,8 +23,16 @@ Define how RTLMeter CPU execution and GPU sidecar execution produce a comparable
 
 ## Validation
 
-Future validation command after the compare-policy helper/test is staged:
-
 ```sh
-python3 -m unittest tests.contract.test_rtlmeter_cpu_gpu_compare_integration -q
+python3 -m unittest tests.contract.test_rtlmeter_cpu_gpu_compare_policy -q
 ```
+
+Result: passed on 2026-06-01.
+
+## Resolution
+
+- Added `src/tools/rtlmeter_cpu_gpu_compare_policy.py` as policy-only metadata, not execution integration.
+- The helper is parameterized by RTLMeter seed and compile args, defaulting to the FC-029 seed.
+- The policy preserves RTLMeter as CPU execution owner and sidecar as GPU candidate owner.
+- Generated report paths are constrained under `reports/` and are not source of truth.
+- The regeneration command is planned documentation only; no RTLMeter run, sidecar run, compare report, timing, or speedup is claimed.
