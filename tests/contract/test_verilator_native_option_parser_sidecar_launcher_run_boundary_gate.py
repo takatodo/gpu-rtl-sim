@@ -58,6 +58,12 @@ DEFINE_INVOCATION_RUN_BOUNDARY_GATE = (
     / "scaling_gates"
     / "define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json"
 )
+REVIEW_INVOCATION_RUN_BOUNDARY_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarLauncherRunBoundaryGateTest(unittest.TestCase):
@@ -495,3 +501,64 @@ class VerilatorNativeOptionParserSidecarLauncherRunBoundaryGateTest(unittest.Tes
         self.assertFalse(policy["runtime_or_abi_change_allowed_by_this_gate"])
         self.assertFalse(policy["reports_and_artifacts_are_source_of_truth"])
         self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
+
+    def test_invocation_run_boundary_review_allows_scoped_run_without_execution_claims(self) -> None:
+        review = json.loads(REVIEW_INVOCATION_RUN_BOUNDARY_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json",
+        )
+        self.assertEqual(
+            review["current_priority"],
+            "run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("review-only", review["review_decision"]["weakest_point"])
+        accepted = review["accepted_boundary"]
+        self.assertEqual(
+            (
+                accepted["selected_target"],
+                accepted["selected_template"],
+                accepted["selected_shape"],
+                accepted["required_invocation_entrypoint"],
+                accepted["required_sidecar_launcher_entrypoint"],
+            ),
+            (
+                "pulp_ita_mha",
+                "config/slice_launch_templates/pulp_ita_mha.json",
+                "64x1",
+                "define_sidecar_launcher_invocation_fixture",
+                "src/tools/run_hybrid_template.py",
+            ),
+        )
+        self.assertEqual(
+            accepted["required_launcher_command_argv"],
+            ["python3", "src/tools/run_hybrid_template.py", "config/slice_launch_templates/pulp_ita_mha.json", "--shape", "64x1"],
+        )
+        self.assertEqual(accepted["required_launcher_command_role_before_run"], "materialized_for_later_run_not_invoked_by_fixture")
+        self.assertTrue(accepted["future_run_gate_allowed"])
+        self.assertTrue(accepted["success_requires_sidecar_launcher_start_from_materialized_argv"])
+        self.assertFalse(accepted["generated_reports_and_artifacts_are_source_of_truth"])
+        compare = review["accepted_compare_boundary"]
+        self.assertEqual(
+            (
+                compare["correctness_policy"],
+                compare["total_words_per_state"],
+                compare["total_bytes_per_state"],
+                compare["compared_state_pair_count"],
+                compare["required_mismatch_count_for_success"],
+            ),
+            ("coverage_output_equivalence", 29, 116, 64, 0),
+        )
+        failures = review["accepted_failure_classes"]
+        for name in ("sidecar_launcher_invocation_failure", "sidecar_stage_failure", "compare_failure", "timing_claim_without_measurement"):
+            self.assertTrue(failures[name])
+        policy = review["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertTrue(policy["future_run_gate_allowed"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["sidecar_launcher_invocation_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_native_path"])
+        self.assertFalse(policy["reports_and_artifacts_are_source_of_truth"])
+        self.assertEqual(review["required_next_gate"]["name"], review["next_task"])
