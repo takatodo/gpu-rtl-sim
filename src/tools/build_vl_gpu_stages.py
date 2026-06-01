@@ -24,7 +24,7 @@ from build_vl_gpu_state import (
     reuse_launch_sequence,
 )
 from build_vl_gpu_workarounds import maybe_prepare_gpu_opt_input
-from build_vl_gpu_stage_env import PASSES_DIR, PASSES_SO, VLGPUGEN, run
+from build_vl_gpu_stage_env import PASSES_DIR, PASSES_SO, VLGPUGEN, ensure_pass_tools_built, run
 from build_vl_gpu_stage_metadata import analyze_phase_ir, resolve_build_storage_size
 
 
@@ -79,6 +79,7 @@ def prepare_gpu_patched_ir(
     kernel_split_phases: bool,
     kernel_probe_act_sequent_chunk_size: int,
 ) -> tuple[Path, list[str] | None]:
+    ensure_pass_tools_built()
     return prepare_gpu_patched_ir_impl(
         mdir=mdir,
         merged_ll=merged_ll,
@@ -108,6 +109,7 @@ def optimize_gpu_ir_to_ptx(
     gpu_opt_level: str,
     sm: str,
 ) -> tuple[Path, list[str]]:
+    ensure_pass_tools_built()
     return optimize_gpu_ir_to_ptx_impl(
         mdir=mdir,
         prefix=prefix,

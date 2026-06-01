@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -46,6 +47,24 @@ def _resolve_meta_cubins(mdir: Path, meta: dict[str, object]) -> list[Path]:
     if isinstance(cubins, list) and cubins:
         return [(mdir / str(item)).resolve() for item in cubins]
     return [(mdir / str(meta["cubin"])).resolve()]
+
+
+def ensure_hybrid_runtime_built() -> None:
+    if HYBRID_BIN.is_file():
+        return
+    command = ["make", "-C", str(HYBRID_BIN.parent), "--no-print-directory"]
+    print(f"info: building missing hybrid runtime: {' '.join(command)}", file=sys.stderr)
+    try:
+        subprocess.run(command, cwd=REPO_ROOT, check=True)
+    except FileNotFoundError:
+        print("error: make not found while building hybrid runtime", file=sys.stderr)
+        sys.exit(1)
+    except subprocess.CalledProcessError as exc:
+        print(
+            f"error: failed to build hybrid runtime with exit code {exc.returncode}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 
 def resolve_launch_inputs(
@@ -94,6 +113,7 @@ def require_launch_files(resolution: LaunchResolution) -> None:
         if not cubin_path.is_file():
             print(f"error: cubin not found: {cubin_path}", file=sys.stderr)
             sys.exit(1)
+    ensure_hybrid_runtime_built()
     if not HYBRID_BIN.is_file():
         print(
             f"error: {HYBRID_BIN} not found — run: make -C {HYBRID_BIN.parent}",

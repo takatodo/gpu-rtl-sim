@@ -50,6 +50,10 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 
 python3 src/tools/verilator_sidecar_shim.py --target pulp_ita_mha --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command
 ```
 
+After `git clean -fdX`, template and hybrid runs rebuild the local GPU pass
+tools and hybrid runtime binary on demand. Generated material remains under
+ignored build/report locations.
+
 For a broad smoke of the documented reproduction surface:
 
 ```sh

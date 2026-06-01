@@ -2,7 +2,8 @@
 """
 run_vl_hybrid.py — launch vl_eval_batch_gpu via src/hybrid/run_vl_hybrid (Phase D).
 
-Requires: build_vl_gpu.py output (cubin + vl_batch_gpu.meta.json) and `make -C src/hybrid`.
+Requires: build_vl_gpu.py output (cubin + vl_batch_gpu.meta.json).
+The runtime binary is built on demand when missing after a clean.
 
 Usage:
   python3 run_vl_hybrid.py --mdir <verilator-cc-dir> [--nstates N] [--steps S] [--patch O:V ...]

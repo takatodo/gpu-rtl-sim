@@ -3,12 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 
 from build_vl_gpu_inputs import detect_storage_size
-from build_vl_gpu_stage_env import VLGPUGEN, run
+from build_vl_gpu_stage_env import VLGPUGEN, ensure_pass_tools_built, run
 from build_vl_gpu_state import resolve_existing_storage_size
 
 
 def analyze_phase_ir(*, mdir: Path, merged_ll: Path) -> None:
     phase_json = (mdir / "vl_phase_analysis.json").resolve()
+    ensure_pass_tools_built()
     print("  [analyze-phases] vlgpugen --analyze-phases merged.ll", flush=True)
     run(
         [

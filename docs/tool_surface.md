@@ -115,8 +115,8 @@ These are still public enough to appear in generated command plans, but they are
 | Tool | Role |
 | --- | --- |
 | `src/tools/build_host_probe.py` | Build the generic Verilator host probe used by template plans. |
-| `src/tools/build_vl_gpu.py` | Build GPU artifacts from a Verilator object directory. |
-| `src/tools/run_vl_hybrid.py` | Launch the hybrid host/GPU runtime for an existing object directory and state dump. |
+| `src/tools/build_vl_gpu.py` | Build GPU artifacts from a Verilator object directory; missing local pass tools are rebuilt on demand after clean. |
+| `src/tools/run_vl_hybrid.py` | Launch the hybrid host/GPU runtime for an existing object directory and state dump; the local runtime binary is rebuilt on demand after clean. |
 | `src/tools/compare_vl_hybrid_modes.py` | Compare CPU and hybrid dumps, normally with `coverage_output_equivalence`. |
 
 ## Helper Modules
