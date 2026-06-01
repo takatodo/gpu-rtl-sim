@@ -61,7 +61,9 @@ sidecar prerequisites produce `cannot_execute` or `gpu_execution_failed`, not a
 CPU-as-GPU fallback.
 Expanded-schedule failures include metadata for the captured schedule, preserved
 parser inputs, and missing sidecar-owned context. That metadata is diagnostic
-only and does not launch a repo-owned template as RTLMeter GPU evidence.
+only and does not launch a repo-owned template as RTLMeter GPU evidence. A
+complete RTLMeter sidecar context can be validated as metadata-ready, but the
+actual launcher handoff remains a separate step and is still not execution-ready.
 
 ## Quickstart
 

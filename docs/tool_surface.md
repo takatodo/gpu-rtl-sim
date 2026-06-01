@@ -51,6 +51,10 @@ captured schedule, preserved parser inputs, and the missing sidecar-owned
 context such as template/source-closure/host-probe/coverage metadata. It does
 not call `run_hybrid_template.py`; launching an unrelated template would not be
 RTLMeter GPU evidence.
+The handoff can validate an explicitly supplied RTLMeter sidecar context and
+mark it metadata-ready, but `sidecar_context_ready` remains false until a real
+launcher boundary exists. The actual launcher handoff remains a separate
+execution boundary.
 
 ## Runtime Building Blocks
 

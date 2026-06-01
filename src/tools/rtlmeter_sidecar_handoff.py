@@ -26,6 +26,7 @@ except ImportError:  # pragma: no cover - exercised when imported via sys.path.
 
 SURFACE = "rtlmeter_sidecar_handoff"
 STATUS_BLOCKED_MISSING_CONTEXT = "rtlmeter_sidecar_handoff_blocked_missing_context"
+STATUS_METADATA_READY = "rtlmeter_sidecar_handoff_metadata_ready"
 STATUS_UNSUPPORTED = "unsupported_rtlmeter_sidecar_handoff_request"
 REQUIRED_SIDECAR_CONTEXT = (
     "target",
@@ -78,21 +79,44 @@ def _parser_payload(argv: Sequence[str]) -> tuple[dict[str, object] | None, dict
         return None, exc.to_dict()
 
 
-def build_rtlmeter_sidecar_handoff(argv: Sequence[str]) -> dict[str, object]:
+def _missing_context_fields(sidecar_context: Mapping[str, object] | None) -> list[str]:
+    if sidecar_context is None:
+        return list(REQUIRED_SIDECAR_CONTEXT)
+    missing: list[str] = []
+    for field in REQUIRED_SIDECAR_CONTEXT:
+        value = sidecar_context.get(field)
+        if value is None or value == "" or value == {} or value == []:
+            missing.append(field)
+    return missing
+
+
+def _status(*, ready: bool, missing_context: Sequence[str]) -> str:
+    if ready and not missing_context:
+        return STATUS_METADATA_READY
+    if ready:
+        return STATUS_BLOCKED_MISSING_CONTEXT
+    return STATUS_UNSUPPORTED
+
+
+def build_rtlmeter_sidecar_handoff(
+    argv: Sequence[str],
+    *,
+    sidecar_context: Mapping[str, object] | None = None,
+) -> dict[str, object]:
     """Return metadata for the next RTLMeter sidecar handoff without executing it."""
 
     inspection = inspect_rtlmeter_verilator_wrapper_argv(argv)
     schedule = _schedule_from_inspection(inspection)
     parser_payload, parser_error = _parser_payload(argv)
     ready = inspection["status"] == STATUS_READY_FOR_RTL_METER_SIDECAR_PLANNING and schedule is not None
-    missing_context = list(REQUIRED_SIDECAR_CONTEXT)
+    missing_context = _missing_context_fields(sidecar_context)
     if parser_payload is None or parser_payload.get("mdir") in (None, ""):
         missing_context.append("mdir")
 
     return {
         "schema_version": 1,
         "surface": SURFACE,
-        "status": STATUS_BLOCKED_MISSING_CONTEXT if ready else STATUS_UNSUPPORTED,
+        "status": _status(ready=ready, missing_context=missing_context),
         "json_flow_role": "runtime_diagnostic",
         "runtime_abi": False,
         "execution_authority": False,
@@ -101,7 +125,9 @@ def build_rtlmeter_sidecar_handoff(argv: Sequence[str]) -> dict[str, object]:
         "schedule": schedule,
         "parser_payload": _copy_value(parser_payload) if parser_payload is not None else None,
         "parser_error": parser_error,
+        "sidecar_context": _copy_value(sidecar_context) if sidecar_context is not None else None,
         "missing_sidecar_context": missing_context,
+        "sidecar_context_metadata_ready": ready and not missing_context,
         "sidecar_context_ready": False,
         "sidecar_launcher_invoked": False,
         "sidecar_execution_invoked": False,

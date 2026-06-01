@@ -13,6 +13,20 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         path.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
         path.chmod(0o755)
 
+    def _minimal_sidecar_context(self) -> dict[str, object]:
+        return {
+            "target": "rtlmeter_example_kind_hello",
+            "mode": "rtlmeter_first_seed",
+            "template_or_target_registry_entry": "rtlmeter-owned-context-not-template-yet",
+            "source_gate_or_manifest_ref": "for_codex/issues/FC-034-rtlmeter-first-seed-execution-integration.md",
+            "host_probe_metadata": {"clock_field": "top__DOT__clk", "reset_field": "none"},
+            "coverage_output_target": "rtlmeter_stdout_and_cycles_equivalence",
+            "coverage_manifest": {"outputs": ["normalized_stdout", "rtlmeter_cycles"]},
+            "state_and_report_path_rules": {"root": "artifacts/rtlmeter_example_kind_hello_cpu_gpu_compare"},
+            "compare_labels": {"cpu": "rtlmeter_cpu", "gpu": "rtlmeter_sidecar_candidate"},
+            "source_closure": {"status": "declared_for_test"},
+        }
+
     def test_no_gpu_intent_delegates_to_real_verilator_without_reselecting_wrapper(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_verilator_wrapper_runtime import run_rtlmeter_verilator_wrapper
@@ -150,6 +164,73 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         self.assertFalse(handoff["execution_authority"])
         self.assertFalse(handoff["sidecar_launcher_invoked"])
         self.assertFalse(handoff["coverage_output_compare_reached"])
+
+    def test_rtlmeter_sidecar_handoff_marks_complete_context_metadata_ready_without_executing(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_handoff
+
+        handoff = build_rtlmeter_sidecar_handoff(
+            [
+                "--cc",
+                "--main",
+                "-Mdir",
+                "obj_dir",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            sidecar_context=self._minimal_sidecar_context(),
+        )
+
+        self.assertEqual(handoff["status"], "rtlmeter_sidecar_handoff_metadata_ready")
+        self.assertEqual(handoff["missing_sidecar_context"], [])
+        self.assertTrue(handoff["sidecar_context_metadata_ready"])
+        self.assertFalse(handoff["sidecar_context_ready"])
+        self.assertEqual(handoff["parser_payload"]["mdir"], "obj_dir")
+        self.assertEqual(handoff["sidecar_context"]["target"], "rtlmeter_example_kind_hello")
+        self.assertFalse(handoff["sidecar_launcher_invoked"])
+        self.assertFalse(handoff["sidecar_execution_invoked"])
+        self.assertFalse(handoff["coverage_output_compare_reached"])
+
+    def test_rtlmeter_sidecar_handoff_lists_partial_context_gaps(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_handoff
+
+        context = self._minimal_sidecar_context()
+        context.pop("host_probe_metadata")
+        context["source_closure"] = {}
+
+        handoff = build_rtlmeter_sidecar_handoff(
+            [
+                "--cc",
+                "-Mdir",
+                "obj_dir",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            sidecar_context=context,
+        )
+
+        self.assertEqual(handoff["status"], "rtlmeter_sidecar_handoff_blocked_missing_context")
+        self.assertIn("host_probe_metadata", handoff["missing_sidecar_context"])
+        self.assertIn("source_closure", handoff["missing_sidecar_context"])
+        self.assertFalse(handoff["sidecar_context_metadata_ready"])
+        self.assertFalse(handoff["sidecar_context_ready"])
 
     def test_materialized_wrapper_is_named_verilator_and_executable(self) -> None:
         self.add_tools_to_path()

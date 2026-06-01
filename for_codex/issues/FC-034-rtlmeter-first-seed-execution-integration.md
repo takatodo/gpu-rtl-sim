@@ -57,12 +57,13 @@ non-GPU environment.
 - Updated the compare helper's default GPU candidate from `--use-gpu` alone to the expanded native-minimum schedule `--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1`.
 - GPU failures now copy the sanitized Verilate diagnostic log into the generated compare report so the fail-closed wrapper status is visible without treating the report as source of truth.
 - Added metadata-only RTLMeter sidecar handoff diagnostics for expanded schedules. They preserve schedule/parser inputs and list missing sidecar-owned context, but still do not execute a sidecar launcher.
+- The handoff now accepts optional sidecar context and can mark complete context as `sidecar_context_metadata_ready` while keeping `sidecar_context_ready`, `sidecar_launcher_invoked`, `sidecar_execution_invoked`, and `coverage_output_compare_reached` false.
 - The generated compare report remains generated evidence only; no CPU command is reported as GPU execution.
 
 ## Blocker
 
-- The generated wrapper can capture the expanded schedule and handoff metadata but still fails closed because RTLMeter sidecar execution context is not implemented yet.
-- Sidecar-owned context for source closure, host-probe metadata, coverage-output target/manifest, state/report paths, compare labels, and a real RTLMeter-compatible launcher handoff is still required before the GPU candidate can run.
+- The generated wrapper can capture the expanded schedule and handoff metadata but still fails closed because no real RTLMeter-compatible launcher handoff is implemented yet.
+- Sidecar-owned context for source closure, host-probe metadata, coverage-output target/manifest, state/report paths, and compare labels can now be contract-validated, but it still needs to be produced from the RTLMeter seed and wired to a real launcher boundary.
 
 Unblock by wiring the expanded RTLMeter Verilator argv to a sidecar execution
 path, then rerun the validation command above and compare normalized stdout plus
