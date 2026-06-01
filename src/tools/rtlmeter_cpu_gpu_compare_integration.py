@@ -18,8 +18,9 @@ from pathlib import Path
 from rtlmeter_cpu_gpu_compare_policy import rtlmeter_cpu_gpu_compare_policy
 from rtlmeter_seed_selection import SELECTED_SEED
 from rtlmeter_sidecar_contract_mapping import map_rtlmeter_case_to_sidecar_contract
+from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_context_candidate
 from rtlmeter_verilator_command_capture import RtlmeterCommandCaptureError
-from rtlmeter_verilator_wrapper_runtime import write_rtlmeter_verilator_wrapper
+from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, write_rtlmeter_verilator_wrapper
 
 
 SURFACE = "rtlmeter_cpu_gpu_compare_integration"
@@ -180,6 +181,7 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         "commands": {"cpu": cpu_command, "gpu": gpu_command},
         "compare_policy": policy["compare_policy"],
         "sidecar_contract": None,
+        "sidecar_context_candidate": None,
         "missing_prerequisites": [],
         "ran_commands": False,
         "comparison": None,
@@ -199,7 +201,10 @@ def run_rtlmeter_cpu_gpu_compare_integration(
             seed,
             compile_args=_compile_arg_tokens(compile_args),
         )
-    except RtlmeterCommandCaptureError as exc:
+        report["sidecar_context_candidate"] = build_rtlmeter_sidecar_context_candidate(
+            report["sidecar_contract"]
+        )
+    except (RtlmeterCommandCaptureError, ValueError) as exc:
         report["status"] = "cannot_execute"
         report["missing_prerequisites"] = [_sanitize(str(exc))]
         return _maybe_write_report(report, root, write_report, report_rel)
@@ -228,6 +233,8 @@ def run_rtlmeter_cpu_gpu_compare_integration(
     gpu_env = dict(base_env)
     assert sidecar_wrapper is not None
     gpu_env["PATH"] = f"{Path(sidecar_wrapper).parent}{os.pathsep}{gpu_env.get('PATH', '')}"
+    if report["sidecar_context_candidate"] is not None:
+        gpu_env[SIDECAR_CONTEXT_JSON_ENV] = json.dumps(report["sidecar_context_candidate"], sort_keys=True)
     gpu_result = _run(gpu_command, repo_root=root, env=gpu_env, runner=runner)
     report["ran_commands"] = True
     report["command_results"] = {"cpu": cpu_result, "gpu": gpu_result}

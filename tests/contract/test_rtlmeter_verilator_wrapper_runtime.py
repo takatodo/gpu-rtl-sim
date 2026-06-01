@@ -24,7 +24,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
             "coverage_manifest": {"outputs": ["normalized_stdout", "rtlmeter_cycles"]},
             "state_and_report_path_rules": {"root": "artifacts/rtlmeter_example_kind_hello_cpu_gpu_compare"},
             "compare_labels": {"cpu": "rtlmeter_cpu", "gpu": "rtlmeter_sidecar_candidate"},
-            "source_closure": {"status": "declared_for_test"},
+            "source_closure": {"status": "complete"},
         }
 
     def test_no_gpu_intent_delegates_to_real_verilator_without_reselecting_wrapper(self) -> None:
@@ -231,6 +231,176 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         self.assertIn("source_closure", handoff["missing_sidecar_context"])
         self.assertFalse(handoff["sidecar_context_metadata_ready"])
         self.assertFalse(handoff["sidecar_context_ready"])
+
+    def test_rtlmeter_context_candidate_preserves_known_fields_but_blocks_unresolved_context(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_contract_mapping import map_rtlmeter_case_to_sidecar_contract
+        from rtlmeter_sidecar_handoff import (
+            build_rtlmeter_sidecar_context_candidate,
+            build_rtlmeter_sidecar_handoff,
+        )
+
+        contract = map_rtlmeter_case_to_sidecar_contract(
+            "Example:kind:hello",
+            compile_args=("--sim-accel", "sidecar-gpu", "--sim-accel-states", "64", "--sim-accel-steps", "1"),
+        )
+        context = build_rtlmeter_sidecar_context_candidate(contract)
+        handoff = build_rtlmeter_sidecar_handoff(
+            [
+                "--cc",
+                "-Mdir",
+                "obj_dir",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            sidecar_context=context,
+        )
+
+        self.assertEqual(context["target"], "rtlmeter_example_kind_hello")
+        self.assertEqual(context["host_probe_metadata"]["main_clock"], "top.clk")
+        self.assertEqual(handoff["status"], "rtlmeter_sidecar_handoff_blocked_missing_context")
+        self.assertIn("template_or_target_registry_entry", handoff["missing_sidecar_context"])
+        self.assertIn("source_closure", handoff["missing_sidecar_context"])
+        self.assertNotIn("host_probe_metadata", handoff["missing_sidecar_context"])
+        self.assertFalse(handoff["sidecar_context_metadata_ready"])
+
+    def test_runtime_wrapper_reads_sidecar_context_json_but_still_does_not_execute(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_verilator_wrapper_runtime import (
+            SIDECAR_CONTEXT_JSON_ENV,
+            run_rtlmeter_verilator_wrapper,
+        )
+
+        stderr = io.StringIO()
+        code = run_rtlmeter_verilator_wrapper(
+            [
+                "--cc",
+                "-Mdir",
+                "obj_dir",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            environ={SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._minimal_sidecar_context()), "PATH": ""},
+            runner=lambda *args, **kwargs: self.fail("sidecar execution is not implemented in this wrapper"),
+            stderr=stderr,
+        )
+        report = json.loads(stderr.getvalue())
+
+        self.assertEqual(code, 2)
+        handoff = report["handoff_metadata"]
+        self.assertIsNone(report["sidecar_context_parse_error"])
+        self.assertEqual(handoff["status"], "rtlmeter_sidecar_handoff_metadata_ready")
+        self.assertTrue(handoff["sidecar_context_metadata_ready"])
+        self.assertFalse(handoff["sidecar_context_ready"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+
+    def test_rtlmeter_sidecar_launcher_invocation_blocks_unresolved_context(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_contract_mapping import map_rtlmeter_case_to_sidecar_contract
+        from rtlmeter_sidecar_handoff import (
+            build_rtlmeter_sidecar_context_candidate,
+            build_rtlmeter_sidecar_handoff,
+            build_rtlmeter_sidecar_launcher_invocation,
+        )
+
+        contract = map_rtlmeter_case_to_sidecar_contract(
+            "Example:kind:hello",
+            compile_args=("--sim-accel", "sidecar-gpu", "--sim-accel-states", "64", "--sim-accel-steps", "1"),
+        )
+        handoff = build_rtlmeter_sidecar_handoff(
+            [
+                "--cc",
+                "-Mdir",
+                "obj_dir",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            sidecar_context=build_rtlmeter_sidecar_context_candidate(contract),
+        )
+        invocation = build_rtlmeter_sidecar_launcher_invocation(handoff)
+
+        self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_blocked")
+        self.assertIn("handoff_metadata_ready", invocation["missing_invocation_context"])
+        self.assertIn("sidecar_context.template_or_target_registry_entry", invocation["missing_invocation_context"])
+        self.assertIsNone(invocation["launcher_command_argv"])
+        self.assertFalse(invocation["sidecar_launcher_invoked"])
+        self.assertFalse(invocation["execution_performed"])
+
+    def test_rtlmeter_sidecar_launcher_invocation_materializes_argv_without_execution(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_handoff import (
+            build_rtlmeter_sidecar_handoff,
+            build_rtlmeter_sidecar_launcher_invocation,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            template = root / "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            template.parent.mkdir(parents=True)
+            template.write_text(json.dumps({"target": "rtlmeter_example_kind_hello"}), encoding="utf-8")
+            context = self._minimal_sidecar_context()
+            context["template_or_target_registry_entry"] = (
+                "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            )
+            handoff = build_rtlmeter_sidecar_handoff(
+                [
+                    "--cc",
+                    "-Mdir",
+                    "obj_dir",
+                    "--top-module",
+                    "top",
+                    "-f",
+                    "filelist",
+                    "--sim-accel",
+                    "sidecar-gpu",
+                    "--sim-accel-states",
+                    "64",
+                    "--sim-accel-steps",
+                    "1",
+                ],
+                sidecar_context=context,
+            )
+            invocation = build_rtlmeter_sidecar_launcher_invocation(handoff, repo_root=root)
+
+        self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_metadata_ready")
+        self.assertEqual(
+            invocation["launcher_command_argv"],
+            [
+                "python3",
+                "src/tools/run_hybrid_template.py",
+                "config/slice_launch_templates/rtlmeter_example_kind_hello.json",
+                "--shape",
+                "64x1",
+            ],
+        )
+        self.assertFalse(invocation["sidecar_launcher_invoked"])
+        self.assertFalse(invocation["sidecar_execution_invoked"])
+        self.assertFalse(invocation["coverage_output_compare_reached"])
+        self.assertFalse(invocation["execution_performed"])
 
     def test_materialized_wrapper_is_named_verilator_and_executable(self) -> None:
         self.add_tools_to_path()

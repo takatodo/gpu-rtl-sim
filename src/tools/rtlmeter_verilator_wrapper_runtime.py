@@ -32,6 +32,7 @@ except ImportError:  # pragma: no cover - exercised when invoked as a script.
 
 SURFACE = "rtlmeter_verilator_wrapper_runtime"
 REAL_VERILATOR_ENV = "RTLMETER_REAL_VERILATOR"
+SIDECAR_CONTEXT_JSON_ENV = "RTLMETER_SIDECAR_CONTEXT_JSON"
 STATUS_DELEGATED = "delegated_to_real_verilator"
 STATUS_REAL_VERILATOR_MISSING = "real_verilator_missing"
 STATUS_USE_GPU_NEEDS_SCHEDULE = "use_gpu_requires_explicit_sidecar_schedule"
@@ -78,7 +79,25 @@ def resolve_real_verilator(*, environ: Mapping[str, str], wrapper_path: Path) ->
     return None
 
 
-def fail_closed_report(argv: Sequence[str]) -> dict[str, object]:
+def _sidecar_context_from_env(environ: Mapping[str, str]) -> tuple[dict[str, object] | None, dict[str, object] | None]:
+    raw = environ.get(SIDECAR_CONTEXT_JSON_ENV)
+    if not raw:
+        return None, None
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        return None, {"env": SIDECAR_CONTEXT_JSON_ENV, "error": str(exc)}
+    if not isinstance(parsed, dict):
+        return None, {"env": SIDECAR_CONTEXT_JSON_ENV, "error": "value must be a JSON object"}
+    return {str(key): value for key, value in parsed.items()}, None
+
+
+def fail_closed_report(
+    argv: Sequence[str],
+    *,
+    sidecar_context: Mapping[str, object] | None = None,
+    sidecar_context_parse_error: Mapping[str, object] | None = None,
+) -> dict[str, object]:
     inspection = inspect_rtlmeter_verilator_wrapper_argv(argv)
     status = str(inspection["status"])
     handoff_metadata = None
@@ -88,7 +107,7 @@ def fail_closed_report(argv: Sequence[str]) -> dict[str, object]:
     elif status == STATUS_READY_FOR_RTL_METER_SIDECAR_PLANNING:
         runtime_status = STATUS_SIDECAR_EXECUTION_NOT_IMPLEMENTED
         diagnostic = "expanded sidecar schedule was captured, but RTLMeter sidecar execution is not wired yet"
-        handoff_metadata = build_rtlmeter_sidecar_handoff(argv)
+        handoff_metadata = build_rtlmeter_sidecar_handoff(argv, sidecar_context=sidecar_context)
     else:
         runtime_status = STATUS_UNSUPPORTED_GPU_REQUEST
         diagnostic = str(inspection["diagnostic"])
@@ -104,6 +123,9 @@ def fail_closed_report(argv: Sequence[str]) -> dict[str, object]:
         "sidecar_execution_invoked": False,
         "inspection_status": status,
         "handoff_metadata": handoff_metadata,
+        "sidecar_context_parse_error": (
+            dict(sidecar_context_parse_error) if sidecar_context_parse_error is not None else None
+        ),
         "diagnostic": diagnostic,
         "non_claims": [
             "GPU intent is never delegated to CPU Verilator as a fake GPU run",
@@ -146,7 +168,18 @@ def run_rtlmeter_verilator_wrapper(
         completed = runner([str(real_verilator), *map(str, argv)], env=env)
         return int(completed.returncode)
 
-    print(json.dumps(fail_closed_report(argv), indent=2), file=stderr or sys.stderr)
+    sidecar_context, context_error = _sidecar_context_from_env(env)
+    print(
+        json.dumps(
+            fail_closed_report(
+                argv,
+                sidecar_context=sidecar_context,
+                sidecar_context_parse_error=context_error,
+            ),
+            indent=2,
+        ),
+        file=stderr or sys.stderr,
+    )
     return 2
 
 

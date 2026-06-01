@@ -64,6 +64,10 @@ parser inputs, and missing sidecar-owned context. That metadata is diagnostic
 only and does not launch a repo-owned template as RTLMeter GPU evidence. A
 complete RTLMeter sidecar context can be validated as metadata-ready, but the
 actual launcher handoff remains a separate step and is still not execution-ready.
+The compare helper now builds an RTLMeter sidecar context candidate from the
+selected seed and passes it to the wrapper through `RTLMETER_SIDECAR_CONTEXT_JSON`.
+That narrows the missing context list, but the env payload is still diagnostic
+handoff metadata, not a runtime ABI.
 
 ## Quickstart
 

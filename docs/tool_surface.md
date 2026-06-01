@@ -55,6 +55,12 @@ The handoff can validate an explicitly supplied RTLMeter sidecar context and
 mark it metadata-ready, but `sidecar_context_ready` remains false until a real
 launcher boundary exists. The actual launcher handoff remains a separate
 execution boundary.
+For RTLMeter, `RTLMETER_SIDECAR_CONTEXT_JSON` is a wrapper-to-handoff diagnostic
+channel used by the compare helper to pass the current context candidate. It is
+not the stable sidecar ABI and does not authorize execution.
+The RTLMeter launcher materializer can only produce `run_hybrid_template.py`
+argv after metadata-ready handoff plus a reviewed template path; it still does
+not invoke the launcher.
 
 ## Runtime Building Blocks
 

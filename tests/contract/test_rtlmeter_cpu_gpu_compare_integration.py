@@ -74,6 +74,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.add_tools_to_path()
         from rtlmeter_cpu_gpu_compare_integration import (
             OPT_IN_ENV,
+            SIDECAR_CONTEXT_JSON_ENV,
             WRAPPER_ENV,
             run_rtlmeter_cpu_gpu_compare_integration,
         )
@@ -118,11 +119,14 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
             ["--sim-accel", "sidecar-gpu", "--sim-accel-states", "64", "--sim-accel-steps", "1"],
         )
         self.assertIn("--sim-accel", metadata["verilator_command_argv"])
+        self.assertEqual(report["sidecar_context_candidate"]["target"], "rtlmeter_example_kind_hello")
+        self.assertNotIn(SIDECAR_CONTEXT_JSON_ENV, calls[0][1]["env"])
 
     def test_gpu_failure_includes_sanitized_verilate_diagnostic_log(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_cpu_gpu_compare_integration import (
             OPT_IN_ENV,
+            SIDECAR_CONTEXT_JSON_ENV,
             WRAPPER_ENV,
             run_rtlmeter_cpu_gpu_compare_integration,
         )
@@ -150,7 +154,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
             calls = []
 
             def fake_runner(command, **kwargs):
-                calls.append(command)
+                calls.append((command, kwargs))
                 return subprocess.CompletedProcess(command, 0 if len(calls) == 1 else 2, stdout="", stderr="")
 
             report = run_rtlmeter_cpu_gpu_compare_integration(
@@ -160,6 +164,10 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
             )
 
         self.assertEqual(report["status"], "gpu_execution_failed")
+        gpu_context = json.loads(calls[1][1]["env"][SIDECAR_CONTEXT_JSON_ENV])
+        self.assertEqual(gpu_context["target"], "rtlmeter_example_kind_hello")
+        self.assertEqual(gpu_context["source_closure"]["status"], "frontend_metadata_only_not_source_closure")
+        self.assertIsNotNone(report["sidecar_context_candidate"])
         self.assertIn("<local-absolute-path>", report["gpu_failure_diagnostic_log"])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 

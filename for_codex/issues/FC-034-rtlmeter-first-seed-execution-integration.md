@@ -58,12 +58,14 @@ non-GPU environment.
 - GPU failures now copy the sanitized Verilate diagnostic log into the generated compare report so the fail-closed wrapper status is visible without treating the report as source of truth.
 - Added metadata-only RTLMeter sidecar handoff diagnostics for expanded schedules. They preserve schedule/parser inputs and list missing sidecar-owned context, but still do not execute a sidecar launcher.
 - The handoff now accepts optional sidecar context and can mark complete context as `sidecar_context_metadata_ready` while keeping `sidecar_context_ready`, `sidecar_launcher_invoked`, `sidecar_execution_invoked`, and `coverage_output_compare_reached` false.
+- The compare helper now builds an RTLMeter sidecar context candidate from the selected seed and passes it to the wrapper through `RTLMETER_SIDECAR_CONTEXT_JSON`. The candidate fills known metadata such as target, host-probe candidate, coverage-output policy, path rules, and compare labels, but it deliberately keeps template/source-closure unresolved.
+- Added a non-executing RTLMeter launcher invocation materializer. It can build `run_hybrid_template.py` argv only from metadata-ready handoff plus a reviewed template path, and otherwise reports the missing invocation context.
 - The generated compare report remains generated evidence only; no CPU command is reported as GPU execution.
 
 ## Blocker
 
 - The generated wrapper can capture the expanded schedule and handoff metadata but still fails closed because no real RTLMeter-compatible launcher handoff is implemented yet.
-- Sidecar-owned context for source closure, host-probe metadata, coverage-output target/manifest, state/report paths, and compare labels can now be contract-validated, but it still needs to be produced from the RTLMeter seed and wired to a real launcher boundary.
+- Sidecar-owned context for host-probe candidate, coverage-output target/manifest, state/report paths, and compare labels is now produced from the RTLMeter seed and passed to the wrapper, but source closure and a reviewed RTLMeter launch template are still unresolved.
 
 Unblock by wiring the expanded RTLMeter Verilator argv to a sidecar execution
 path, then rerun the validation command above and compare normalized stdout plus
