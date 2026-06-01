@@ -52,15 +52,15 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_boundary_gate`
+`review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_boundary_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_gate.json`
+`config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_boundary_gate.json`
 
 ## 追跡タスク
 
-- `define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_boundary_gate` で、native path から既存 launcher を呼ぶ実装境界を過大主張なしに定義する。
+- `review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_boundary_gate` で、native path から既存 launcher を呼ぶ実装境界が十分に狭いかを確認する。
 - `docs/migration_notes.md` の「シンプル検証からの乖離」節を、前提変更時に見直す。
 - 新規ゲート完了時は `config/selection_extensions.json` の `completed_goal_evidence` / `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json` の整合を取る。
 - ゲート JSON に残る履歴表記の例: `next_task: select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`（正の源泉は常に `config/selection.json` の `current_priority` を優先）。マージ後の全体像が必要なら `src/tools/selection_state.py` の `load_selection` を参照。
@@ -238,6 +238,8 @@ Native parser direct command-path sidecar-launcher run boundary review state: `c
 Native parser direct command-path sidecar-launcher run state: `config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_gate.json` records patched Verilator parser success, reviewed bridge fixture readiness, and separate `pulp_ita_mha 64x1` sidecar coverage-output equivalence with mismatch count `0`. The native path is still classified as `sidecar_launcher_bridge_failure` because the bridge fixture does not invoke `src/tools/run_hybrid_template.py` from the native process; launcher invocation, native-path compare, timing, arbitrary filelist support, automatic allocation, runtime/ABI change, raw-state equality, and production-throughput evidence remain non-claims pending review.
 
 Native parser direct command-path sidecar-launcher run review state: `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_gate.json` accepts that `sidecar_launcher_bridge_failure` classification as honest evidence. The selected next task is `define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_boundary_gate`; direct Verilator sidecar execution, native-path launcher invocation, native-path compare, timing, arbitrary filelist support, automatic allocation, runtime/ABI change, raw-state equality, and production-throughput evidence remain non-claims.
+
+Native parser direct command-path sidecar-launcher invocation boundary definition state: `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_boundary_gate.json` defines the minimal implementation boundary from reviewed parser payload and bridge metadata to the existing `src/tools/run_hybrid_template.py` launcher. The selected next task is `review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_boundary_gate`; this definition still adds no direct Verilator sidecar execution, native-path launcher invocation, native-path compare, timing, arbitrary filelist support, automatic allocation, runtime/ABI change, raw-state equality, or production-throughput evidence.
 
 The full ITA/MHA plus larger paged KV-cache goal is complete and held for review. Full MHA was retried through the current hybrid path; the fresh 1x1 run wrote `reports/pulp_ita_mha_hybrid_1x1.txt` and passed coverage-output equivalence in `reports/pulp_ita_mha_cpu_vs_hybrid_1x1_coverage_output_compare.json`.
 
