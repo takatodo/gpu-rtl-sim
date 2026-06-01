@@ -38,9 +38,10 @@ Status values: `open`, `claimed`, `blocked`, `review`, `done`.
 | FC-028 | [RTLMeter sidecar contract mapping](issues/FC-028-rtlmeter-sidecar-contract-mapping.md) | `src/tools/rtlmeter_*` |
 | FC-029 | [RTLMeter first seed selection](issues/FC-029-rtlmeter-first-seed-selection.md) | `config/selection.json`, `config/targets.json` |
 | FC-030 | [RTLMeter CPU/GPU compare integration](issues/FC-030-rtlmeter-cpu-gpu-compare-integration.md) | `src/tools/rtlmeter_*`, `reports/` |
-| FC-031 | [RTLMeter overlays audit](issues/FC-031-rtlmeter-overlays-audit.md) | `overlays/rtlmeter/`, `config/slice_launch_templates/` |
+| FC-031 | [RTLMeter overlays audit](issues/FC-031-rtlmeter-overlays-audit.md) | `src/tools/rtlmeter_overlay_audit.py`, `tests/contract/test_rtlmeter_overlays_audit.py` |
 | FC-032 | [RTLMeter public contract tests](issues/FC-032-rtlmeter-public-contract-tests.md) | `tests/contract/test_rtlmeter_*` |
 | FC-033 | [RTLMeter docs and troubleshooting](issues/FC-033-rtlmeter-docs-troubleshooting.md) | `README.md`, `docs/verilator_sidecar_option.md` |
+| FC-034 | [RTLMeter first seed execution integration](issues/FC-034-rtlmeter-first-seed-execution-integration.md) | `src/tools/rtlmeter_*`, `reports/`, `tests/contract/test_rtlmeter_*` |
 
 ## Parallel Split
 
@@ -48,7 +49,7 @@ Status values: `open`, `claimed`, `blocked`, `review`, `done`.
 - Agent B: FC-007 through FC-013, CLI and JSON/debug implementation.
 - Agent C: FC-014 through FC-017, contract tests.
 - Agent D: FC-018 through FC-023, Codex memory and source-of-truth alignment.
-- Agent E: FC-024 through FC-033, RTLMeter user-path exploration. Keep this separate from current sidecar cleanup unless a file is explicitly owned.
+- Agent E: FC-024 through FC-034, RTLMeter user-path exploration. Keep this separate from current sidecar cleanup unless a file is explicitly owned. FC-034 is the first executing issue; keep it isolated from non-executing FC-024 through FC-033.
 
 ## Guardrails
 
