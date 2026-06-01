@@ -97,6 +97,91 @@ class VerilatorNativeOptionParserNativeInvocationFixtureTest(unittest.TestCase):
         for flag in native.FALSE_AUTHORITY_FLAGS:
             self.assertIs(result[flag], False)
 
+    def test_materializes_sidecar_launcher_invocation_argv_without_execution(self) -> None:
+        native, = _load_tool_modules("verilator_native_option_parser_direct_native_invocation_fixture")
+        bridge = native.define_sidecar_launcher_bridge_fixture(_argv(), sidecar_context=_sidecar_context())
+
+        result = native.define_sidecar_launcher_invocation_fixture(
+            _argv(),
+            sidecar_context=_sidecar_context(),
+            source_review_gate=native.REVIEWED_SIDECAR_LAUNCHER_RUN_CONTEXT_REF,
+            bridge_metadata=bridge,
+        )
+
+        self.assertEqual(tuple(result.keys()), native.SIDECAR_LAUNCHER_INVOCATION_FIELDS)
+        self.assertEqual(result["surface"], native.SIDECAR_LAUNCHER_INVOCATION_FIXTURE_SURFACE)
+        self.assertEqual(result["status"], native.SIDECAR_LAUNCHER_INVOCATION_STATUS)
+        self.assertTrue(result["invocation_ready"])
+        self.assertEqual(result["bridge_surface"], native.SIDECAR_LAUNCHER_BRIDGE_FIXTURE_SURFACE)
+        self.assertEqual(
+            result["launcher_command_argv"],
+            [
+                "python3",
+                "src/tools/run_hybrid_template.py",
+                "config/slice_launch_templates/pulp_ita_mha.json",
+                "--shape",
+                "64x1",
+            ],
+        )
+        self.assertEqual(result["launcher_command_role"], "materialized_for_later_run_not_invoked_by_fixture")
+        self.assertEqual(
+            result["parser_schedule"],
+            {
+                "accelerator_mode": "sidecar-gpu",
+                "state_count": 64,
+                "step_count": 1,
+                "shape": "64x1",
+                "correctness_policy": "coverage_output_equivalence",
+            },
+        )
+        self.assertIn("sidecar_launcher_invocation_failure", result["preserved_failure_classes"])
+        self.assertFalse(result["sidecar_launcher_invoked_from_native_path"])
+        self.assertFalse(result["sidecar_launch_reached_from_native_path"])
+        self.assertFalse(result["coverage_output_compare_reached_from_native_path"])
+        self.assertFalse(result["native_path_compare_reached"])
+        self.assertFalse(result["execution_performed"])
+        self.assertFalse(result["measurement_performed"])
+        self.assertFalse(result["timing_measured"])
+        self.assertFalse(result["runtime_or_abi_changed"])
+        self.assertFalse(result["automatic_gpu_allocation_used"])
+        self.assertFalse(result["generated_reports_and_artifacts_source_of_truth"])
+        status = result["invocation_status"]
+        self.assertEqual(status["state"], "launcher_command_argv_materialized_for_later_run")
+        for flag in (
+            "bridge_failure",
+            "launcher_invocation_construction_failure",
+            "sidecar_stage_failure",
+            "compare_failure",
+            "timing_claim_without_measurement",
+        ):
+            self.assertFalse(status[flag])
+        self.assertIn("does not start the launcher", " ".join(result["non_claims"]))
+
+    def test_rejects_unreviewed_or_mutated_sidecar_launcher_invocation_metadata(self) -> None:
+        native, = _load_tool_modules("verilator_native_option_parser_direct_native_invocation_fixture")
+        bridge = native.define_sidecar_launcher_bridge_fixture(_argv(), sidecar_context=_sidecar_context())
+        mutated = dict(bridge)
+        mutated["bridge_ready"] = False
+
+        self.assert_error_code(
+            lambda: native.define_sidecar_launcher_invocation_fixture(
+                _argv(),
+                sidecar_context=_sidecar_context(),
+                source_review_gate=native.REVIEWED_SIDECAR_LAUNCHER_RUN_CONTEXT_REF,
+                bridge_metadata=mutated,
+            ),
+            "sidecar_launcher_bridge_failure",
+        )
+        self.assert_error_code(
+            lambda: native.define_sidecar_launcher_invocation_fixture(
+                _argv(),
+                sidecar_context=_sidecar_context(),
+                source_review_gate="config/scaling_gates/review_fake_sidecar_launcher_run_gate.json",
+                bridge_metadata=bridge,
+            ),
+            "sidecar_launcher_bridge_failure",
+        )
+
     def test_accepts_parser_payload_without_command_text_authority(self) -> None:
         native, direct = _load_tool_modules(
             "verilator_native_option_parser_direct_native_invocation_fixture",

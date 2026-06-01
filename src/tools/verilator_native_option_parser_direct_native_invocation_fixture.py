@@ -3,8 +3,24 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 try:
     from . import verilator_native_option_parser_direct_command_path_fixture as _direct
+    from .verilator_native_option_parser_sidecar_launcher_invocation import (
+        INVOCATION_FAILURE_CLASSES,
+        REVIEWED_SIDECAR_LAUNCHER_RUN_CONTEXT_REF,
+        SIDECAR_LAUNCHER_INVOCATION_FIELDS,
+        SIDECAR_LAUNCHER_INVOCATION_FIXTURE_SURFACE,
+        SIDECAR_LAUNCHER_INVOCATION_STATUS,
+        build_sidecar_launcher_invocation_fixture,
+    )
 except ImportError:  # pragma: no cover - exercised when imported via sys.path.
     import verilator_native_option_parser_direct_command_path_fixture as _direct
+    from verilator_native_option_parser_sidecar_launcher_invocation import (
+        INVOCATION_FAILURE_CLASSES,
+        REVIEWED_SIDECAR_LAUNCHER_RUN_CONTEXT_REF,
+        SIDECAR_LAUNCHER_INVOCATION_FIELDS,
+        SIDECAR_LAUNCHER_INVOCATION_FIXTURE_SURFACE,
+        SIDECAR_LAUNCHER_INVOCATION_STATUS,
+        build_sidecar_launcher_invocation_fixture,
+    )
 DIRECT_COMMAND_PATH_FIXTURE_FIELDS = _direct.DIRECT_COMMAND_PATH_FIXTURE_FIELDS
 DIRECT_COMMAND_PATH_FIXTURE_SURFACE = _direct.DIRECT_COMMAND_PATH_FIXTURE_SURFACE
 DIRECT_COMMAND_PATH_STATUS = _direct.DIRECT_COMMAND_PATH_STATUS
@@ -241,4 +257,32 @@ def define_sidecar_launcher_bridge_fixture(argv: Sequence[str] | None = None, *,
         "non_claims": list(BRIDGE_NON_CLAIMS),
     }
     assert tuple(output.keys()) == SIDECAR_LAUNCHER_BRIDGE_FIELDS
+    return output
+def define_sidecar_launcher_invocation_fixture(
+    argv: Sequence[str] | None = None,
+    *,
+    sidecar_context: Mapping[str, object],
+    source_review_gate: str,
+    parser_payload: Mapping[str, object] | None = None,
+    bridge_metadata: Mapping[str, object] | None = None,
+) -> dict[str, object]:
+    """Materialize the reviewed sidecar-launcher argv without executing it."""
+    native_result = define_direct_command_path_native_invocation_fixture(
+        argv,
+        sidecar_context=sidecar_context,
+        parser_payload=parser_payload,
+    )
+    bridge = (
+        {str(key): _copy_value(value) for key, value in bridge_metadata.items()}
+        if bridge_metadata is not None
+        else define_sidecar_launcher_bridge_fixture(argv, sidecar_context=sidecar_context, parser_payload=parser_payload)
+    )
+    output = build_sidecar_launcher_invocation_fixture(
+        native_result=native_result,
+        bridge_metadata=bridge,
+        source_review_gate=source_review_gate,
+        required_stage_order=DIRECT_COMMAND_STAGE_ORDER,
+        error_factory=_error,
+    )
+    assert tuple(output.keys()) == SIDECAR_LAUNCHER_INVOCATION_FIELDS
     return output

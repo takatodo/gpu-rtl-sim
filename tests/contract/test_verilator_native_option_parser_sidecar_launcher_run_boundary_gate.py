@@ -40,6 +40,12 @@ REVIEW_INVOCATION_BOUNDARY_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_boundary_gate.json"
 )
+IMPLEMENT_INVOCATION_FIXTURE_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "implement_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarLauncherRunBoundaryGateTest(unittest.TestCase):
@@ -329,3 +335,49 @@ class VerilatorNativeOptionParserSidecarLauncherRunBoundaryGateTest(unittest.Tes
         self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_native_path"])
         self.assertFalse(policy["reports_and_artifacts_are_source_of_truth"])
         self.assertEqual(review["required_next_gate"]["name"], review["next_task"])
+
+    def test_invocation_fixture_implementation_materializes_argv_without_execution(self) -> None:
+        gate = json.loads(IMPLEMENT_INVOCATION_FIXTURE_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_boundary_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_implementation_gate",
+        )
+        implemented = gate["implemented_surface"]
+        self.assertEqual(implemented["primary_entrypoint_function"], "define_sidecar_launcher_invocation_fixture")
+        self.assertEqual(
+            implemented["command_materialization_helper"],
+            "src/tools/results_reproduction_legacy_commands.py::hybrid_template_command",
+        )
+        self.assertFalse(implemented["new_public_cli_added"])
+        self.assertFalse(implemented["sidecar_launcher_invocation_execution_added"])
+        output = gate["output_contract"]
+        self.assertEqual(output["surface"], "native_verilator_parser_direct_command_path_sidecar_launcher_invocation_fixture")
+        self.assertTrue(output["invocation_ready"])
+        self.assertEqual(
+            output["launcher_command_argv"],
+            ["python3", "src/tools/run_hybrid_template.py", "config/slice_launch_templates/pulp_ita_mha.json", "--shape", "64x1"],
+        )
+        self.assertEqual(output["launcher_command_role"], "materialized_for_later_run_not_invoked_by_fixture")
+        self.assertEqual(output["invocation_status"]["state"], "launcher_command_argv_materialized_for_later_run")
+        for flag in (
+            "sidecar_launcher_invoked_from_native_path",
+            "sidecar_launch_reached_from_native_path",
+            "coverage_output_compare_reached_from_native_path",
+            "native_path_compare_reached",
+            "execution_performed",
+            "measurement_performed",
+            "timing_measured",
+            "runtime_or_abi_changed",
+            "automatic_gpu_allocation_used",
+            "generated_reports_and_artifacts_source_of_truth",
+        ):
+            self.assertFalse(output[flag])
+        failures = gate["preserved_failure_classes"]
+        for name in ("sidecar_launcher_bridge_failure", "sidecar_launcher_invocation_failure", "sidecar_stage_failure", "compare_failure"):
+            self.assertIn(name, failures)
+        self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
