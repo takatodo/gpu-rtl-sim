@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "gate": "run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate",
+  "status": "passed_structured_sidecar_launcher_invocation_from_reviewed_metadata",
+  "objective": "Run the scoped launcher-invocation boundary after reviewed argv materialization metadata, recording whether the structured argv starts the existing sidecar launcher and reaches coverage-output compare without over-claiming direct Verilator sidecar execution.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json",
+  "source_invocation_fixture_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_implementation_gate.json",
+  "source_invocation_fixture_implementation_gate": "config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate",
+  "native_invocation_scope": {
+    "target": "pulp_ita_mha",
+    "template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "shape": "64x1",
+    "nstates": 64,
+    "steps": 1,
+    "expanded_option_spelling": [
+      "--sim-accel",
+      "sidecar-gpu",
+      "--sim-accel-states",
+      "64",
+      "--sim-accel-steps",
+      "1"
+    ],
+    "fixture_argv_shape": [
+      "verilator",
+      "--cc",
+      "--timing",
+      "-Mdir",
+      "artifacts/pulp_ita_mha_obj_dir",
+      "--top-module",
+      "pulp_ita_mha_gpu_cov_tb",
+      "-DTRACE=1",
+      "-Wno-fatal",
+      "-Ioverlays/ITA/src",
+      "-f",
+      "config/slice_launch_templates/pulp_ita_mha.filelist",
+      "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv",
+      "--sim-accel",
+      "sidecar-gpu",
+      "--sim-accel-states",
+      "64",
+      "--sim-accel-steps",
+      "1"
+    ]
+  },
+  "patched_verilator_process_parse_evidence": {
+    "source_run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_gate.json",
+    "native_option_parse_accepted": true,
+    "expanded_option_spelling_previously_accepted": true,
+    "reused_as_prerequisite_not_rerun_for_this_gate": true,
+    "direct_verilator_command_executed_sidecar": false,
+    "generated_artifact_is_source_of_truth": false,
+    "equivalent_rebuild_required_if_artifact_missing": true
+  },
+  "sidecar_launcher_invocation_fixture_evidence": {
+    "entrypoint": "define_sidecar_launcher_invocation_fixture",
+    "surface": "native_verilator_parser_direct_command_path_sidecar_launcher_invocation_fixture",
+    "status": "sidecar_launcher_invocation_metadata_ready_for_review",
+    "invocation_ready": true,
+    "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_gate.json",
+    "parser_schedule": {
+      "accelerator_mode": "sidecar-gpu",
+      "state_count": 64,
+      "step_count": 1,
+      "shape": "64x1",
+      "correctness_policy": "coverage_output_equivalence"
+    },
+    "sidecar_context": {
+      "target": "pulp_ita_mha",
+      "mode": "template",
+      "template_or_target_registry_entry": "config/slice_launch_templates/pulp_ita_mha.json",
+      "source_gate_or_manifest_ref": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_implementation_boundary_gate.json"
+    },
+    "sidecar_launcher_entrypoint": "src/tools/run_hybrid_template.py",
+    "launcher_command_argv": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ],
+    "launcher_command_role_before_run": "materialized_for_later_run_not_invoked_by_fixture",
+    "required_stage_order": [
+      "verilator_build",
+      "host_probe_build",
+      "cpu_init_state",
+      "cpu_reference_output",
+      "gpu_artifact_build",
+      "hybrid_sidecar_run",
+      "coverage_output_compare"
+    ],
+    "preserved_failure_classes": [
+      "process_parse_failure",
+      "missing_explicit_sidecar_context",
+      "sidecar_launcher_bridge_failure",
+      "sidecar_launcher_invocation_failure",
+      "sidecar_stage_failure",
+      "compare_failure",
+      "timing_claim_without_measurement"
+    ],
+    "fixture_execution_performed": false,
+    "fixture_generated_reports_and_artifacts_source_of_truth": false
+  },
+  "native_path_launcher_invocation_attempt": {
+    "reviewed_invocation_fixture_metadata_ready": true,
+    "structured_launcher_argv_matched_boundary": true,
+    "launcher_command_started_from_materialized_argv": true,
+    "launcher_command_exit_code": 0,
+    "sidecar_launcher_invoked_from_reviewed_metadata_path": true,
+    "full_native_verilator_process_to_launcher_cli_exists": false,
+    "direct_verilator_command_executed_sidecar": false,
+    "direct_verilator_sidecar_execution_proven": false,
+    "native_path_compare_claim_requires_review": true,
+    "failure_class": "none"
+  },
+  "sidecar_launcher_execution_evidence": {
+    "target": "pulp_ita_mha",
+    "template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "shape": "64x1",
+    "command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 64x1",
+    "exit_code": 0,
+    "used_as_structured_launcher_invocation_evidence": true,
+    "direct_verilator_command_executed_sidecar": false,
+    "verilator_build_stage_executed": true,
+    "host_probe_build_stage_executed": true,
+    "cpu_init_state_stage_executed": true,
+    "cpu_reference_stage_executed": true,
+    "gpu_artifact_build_stage_executed": true,
+    "hybrid_sidecar_run_stage_executed": true,
+    "coverage_output_compare_stage_executed": true,
+    "compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+    "generated_reports_and_artifacts_are_source_of_truth": false
+  },
+  "compare_result": {
+    "compare_reached_from_structured_launcher_invocation": true,
+    "compare_reached_from_direct_verilator_sidecar_execution": false,
+    "compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+    "acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_equivalence_passed": true,
+    "coverage_output_mismatch_count": 0,
+    "compared_state_pair_count": 64,
+    "strict_output_word_count_per_state": 29,
+    "expected_total_words_per_state": 29,
+    "expected_total_bytes_per_state": 116,
+    "compared_word_count": 1856,
+    "compared_byte_count": 7424,
+    "raw_full_state_equality_required": false,
+    "raw_full_state_match": false,
+    "coverage_output_equivalence_claim_reached_from_direct_verilator_sidecar_execution": false
+  },
+  "generated_evidence_paths": {
+    "reports": [
+      "reports/pulp_ita_mha_cpu_repeat_1x1.json",
+      "reports/pulp_ita_mha_cpu_repeat_64x1.json",
+      "reports/pulp_ita_mha_hybrid_64x1.txt",
+      "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json"
+    ],
+    "artifacts": [
+      "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_cpu_repeat_1x1.bin",
+      "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_cpu_repeat_64x1.bin",
+      "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_gpu_from_cpu_init_64x1.bin",
+      "artifacts/pulp_ita_mha_obj_dir/vl_batch_gpu.cubin"
+    ],
+    "source_of_truth": false
+  },
+  "observed_result": {
+    "native_option_parse_precondition_accepted": true,
+    "sidecar_launcher_invocation_fixture_ready": true,
+    "launcher_command_started_from_materialized_argv": true,
+    "sidecar_launch_reached": true,
+    "coverage_output_compare_reached": true,
+    "coverage_output_equivalence_passed": true,
+    "failure_class": "none",
+    "success_scope": "structured launcher argv from reviewed invocation fixture metadata; direct Verilator sidecar execution and broad native option support remain unproven"
+  },
+  "failure_classes_reserved": [
+    "process_parse_failure",
+    "missing_explicit_sidecar_context",
+    "sidecar_launcher_bridge_failure",
+    "sidecar_launcher_invocation_failure",
+    "sidecar_stage_failure",
+    "compare_failure",
+    "timing_claim_without_measurement"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate",
+    "must_review": [
+      "the structured launcher argv was started from reviewed invocation fixture metadata",
+      "the existing sidecar launcher executed all expected stages for pulp_ita_mha 64x1",
+      "coverage-output compare passed with mismatch count 0",
+      "the result is not over-read as direct Verilator sidecar execution or arbitrary native option support",
+      "generated reports and artifacts remain noncanonical evidence"
+    ],
+    "must_not_claim": [
+      "direct Verilator sidecar execution",
+      "broad native Verilator option support",
+      "native-path coverage-output compare beyond this reviewed metadata path",
+      "timing or speedup evidence",
+      "arbitrary RTL or filelist support",
+      "automatic GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "run_executed": true,
+    "reviewed_invocation_fixture_metadata_evaluated": true,
+    "structured_launcher_argv_started": true,
+    "sidecar_launcher_stage_execution_recorded": true,
+    "coverage_output_equivalence_passed": true,
+    "sidecar_launcher_invocation_claim_requires_review": true,
+    "direct_verilator_sidecar_execution_claim_allowed": false,
+    "broad_native_verilator_option_support_claim_allowed": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate",
+  "non_claims": [
+    "does not prove direct Verilator sidecar execution",
+    "does not prove broad native Verilator option support",
+    "does not prove native-path coverage-output compare beyond this reviewed metadata path",
+    "does not measure timing or speedup",
+    "does not broaden beyond pulp_ita_mha 64x1",
+    "does not add arbitrary filelist support",
+    "does not add automatic GPU allocation",
+    "does not change runtime or ABI behavior",
+    "does not require raw full-state equality",
+    "does not claim production LLM-serving throughput"
+  ]
+}

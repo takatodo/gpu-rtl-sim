@@ -2,25 +2,25 @@
 
 ## Weakest Point
 
-Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The chain now includes a reviewed patched-binary parser-only retry, an accepted sidecar authority boundary, a first scoped native sidecar run, a review accepting only separated parser-success plus reviewed `pulp_ita_mha 64x1` sidecar build/run/compare evidence, a definition of the direct launch authority chain, a review accepting that definition only for a scoped future run, a run record that stops at `direct_launch_handoff_failure`, a review accepting that failure as honest, a definition of the minimal direct-launch handoff implementation boundary, a review accepting only that narrow boundary, a metadata-only direct-launch handoff fixture implementation, a review accepting that fixture only as readiness metadata, a definition of the first real handoff run boundary, a review accepting that boundary only for a scoped future run, a scoped handoff run that still records `direct_launch_handoff_failure`, a review accepting that failure as honest, a native-process to sidecar-launcher bridge boundary definition/review, a metadata-only bridge fixture implementation, a review accepting that fixture only as metadata, a scoped sidecar-launcher run boundary definition/review, a scoped sidecar-launcher run that stops at `sidecar_launcher_bridge_failure`, a review accepting that failure as honest, a definition of the launcher-invocation implementation boundary, a review accepting that boundary only for a scoped fixture implementation, a non-executing launcher-invocation fixture implementation, a review accepting that fixture only as argv materialization metadata, a definition of the launcher-invocation run boundary, and a review accepting that boundary for a scoped future run. The weak point is now running that boundary without treating the review itself as native-path launcher invocation, native-path compare, or timing evidence.
+Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The chain now includes a reviewed patched-binary parser-only retry, an accepted sidecar authority boundary, a first scoped native sidecar run, a review accepting only separated parser-success plus reviewed `pulp_ita_mha 64x1` sidecar build/run/compare evidence, a definition of the direct launch authority chain, a review accepting that definition only for a scoped future run, a run record that stops at `direct_launch_handoff_failure`, a review accepting that failure as honest, a definition of the minimal direct-launch handoff implementation boundary, a review accepting only that narrow boundary, a metadata-only direct-launch handoff fixture implementation, a review accepting that fixture only as readiness metadata, a definition of the first real handoff run boundary, a review accepting that boundary only for a scoped future run, a scoped handoff run that still records `direct_launch_handoff_failure`, a review accepting that failure as honest, a native-process to sidecar-launcher bridge boundary definition/review, a metadata-only bridge fixture implementation, a review accepting that fixture only as metadata, a scoped sidecar-launcher run boundary definition/review, a scoped sidecar-launcher run that stops at `sidecar_launcher_bridge_failure`, a review accepting that failure as honest, a definition of the launcher-invocation implementation boundary, a review accepting that boundary only for a scoped fixture implementation, a non-executing launcher-invocation fixture implementation, a review accepting that fixture only as argv materialization metadata, a definition of the launcher-invocation run boundary, a review accepting that boundary for a scoped future run, and a scoped launcher-invocation run that starts the reviewed structured `run_hybrid_template.py` argv and reaches coverage-output compare with mismatch count `0`. The weak point is now reviewing that run without treating it as direct Verilator sidecar execution, broad native option support, timing evidence, automatic allocation, runtime/ABI change, or production throughput.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is running the launcher-invocation boundary.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the launcher-invocation run.
 
 Current priority:
 
-`run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate`
+`review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate`
 
 Current gate:
 
-`config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json`
+`config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate.json`
 
 Current alignment check: `config/selection.json`, `docs/status.md`, `README.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native parser direct command path**: Run the scoped launcher-invocation boundary from reviewed fixture output.
+1. **Native parser direct command path**: Review the scoped launcher-invocation run from reviewed fixture output.
 2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -79,7 +79,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Review the scoped sidecar-launcher run boundary. The defined boundary may later allow reviewed bridge metadata to invoke the existing launcher and reach coverage-output compare; timing, arbitrary filelist support, automatic allocation, runtime/ABI changes, direct sidecar execution, and raw-state equality remain out of scope unless a later run explicitly proves them.
+Review the scoped sidecar-launcher invocation run. The run starts the reviewed structured `run_hybrid_template.py` argv for `pulp_ita_mha 64x1` and reaches coverage-output compare with mismatch count `0`; timing, arbitrary filelist support, automatic allocation, runtime/ABI changes, direct Verilator sidecar execution, broad native option support, and raw-state equality remain out of scope unless a later review/run explicitly proves them.
 
 Parser boundary definition:
 
@@ -805,16 +805,15 @@ Tracked evidence:
 
 Recommended next gate:
 
-`run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate`
+`review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json` as the source artifact
-- record whether reviewed invocation fixture metadata starts the existing sidecar launcher from structured argv from the native path
-- record whether sidecar stages execute and whether coverage-output compare is reached from the native path
-- record the exact failure class if the chain stops
-- keep timing, arbitrary filelist support, automatic allocation, runtime/ABI change, raw-state equality, production throughput, and broad direct-Verilator claims as non-claims for the run gate unless explicitly proven
-- keep separate `pulp_ita_mha 64x1` sidecar coverage-output equivalence as prerequisite evidence, not native-path launcher authority
+- use `config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate.json` as the source artifact
+- review whether reviewed invocation fixture metadata started the existing launcher from the structured argv
+- review whether sidecar stages executed and whether coverage-output compare reached mismatch count `0`
+- verify the run is not over-claimed as direct Verilator sidecar execution, broad native option support, timing evidence, automatic allocation, runtime/ABI change, raw-state equality, or production throughput
+- preserve the distinction between structured launcher invocation evidence and direct Verilator sidecar execution
 - preserve the `pulp_ita_mha` / `64x1` scope until a later reviewed run broadens it
 - keep timing, arbitrary filelist support, automatic allocation, runtime/ABI changes, raw-state equality, and production throughput out of scope
 - keep direct-Verilator sidecar execution, timing, arbitrary RTL/filelist inference, automatic GPU allocation, runtime/ABI change, production-serving, and raw full-state equality out of scope unless separately proven

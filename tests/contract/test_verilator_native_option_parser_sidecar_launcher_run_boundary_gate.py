@@ -64,6 +64,12 @@ REVIEW_INVOCATION_RUN_BOUNDARY_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json"
 )
+RUN_INVOCATION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarLauncherRunBoundaryGateTest(unittest.TestCase):
@@ -562,3 +568,54 @@ class VerilatorNativeOptionParserSidecarLauncherRunBoundaryGateTest(unittest.Tes
         self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_native_path"])
         self.assertFalse(policy["reports_and_artifacts_are_source_of_truth"])
         self.assertEqual(review["required_next_gate"]["name"], review["next_task"])
+
+    def test_invocation_run_records_structured_launcher_execution_without_broad_claims(self) -> None:
+        gate = json.loads(RUN_INVOCATION_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate",
+        )
+        fixture = gate["sidecar_launcher_invocation_fixture_evidence"]
+        self.assertEqual(fixture["status"], "sidecar_launcher_invocation_metadata_ready_for_review")
+        self.assertEqual(
+            fixture["launcher_command_argv"],
+            ["python3", "src/tools/run_hybrid_template.py", "config/slice_launch_templates/pulp_ita_mha.json", "--shape", "64x1"],
+        )
+        attempt = gate["native_path_launcher_invocation_attempt"]
+        self.assertTrue(attempt["launcher_command_started_from_materialized_argv"])
+        self.assertTrue(attempt["sidecar_launcher_invoked_from_reviewed_metadata_path"])
+        self.assertFalse(attempt["full_native_verilator_process_to_launcher_cli_exists"])
+        self.assertFalse(attempt["direct_verilator_sidecar_execution_proven"])
+        self.assertEqual(attempt["failure_class"], "none")
+        execution = gate["sidecar_launcher_execution_evidence"]
+        self.assertEqual(execution["exit_code"], 0)
+        for flag in (
+            "verilator_build_stage_executed",
+            "host_probe_build_stage_executed",
+            "cpu_init_state_stage_executed",
+            "cpu_reference_stage_executed",
+            "gpu_artifact_build_stage_executed",
+            "hybrid_sidecar_run_stage_executed",
+            "coverage_output_compare_stage_executed",
+        ):
+            self.assertTrue(execution[flag])
+        compare = gate["compare_result"]
+        self.assertTrue(compare["compare_reached_from_structured_launcher_invocation"])
+        self.assertFalse(compare["compare_reached_from_direct_verilator_sidecar_execution"])
+        self.assertTrue(compare["coverage_output_equivalence_passed"])
+        self.assertEqual(compare["coverage_output_mismatch_count"], 0)
+        self.assertEqual(compare["compared_state_pair_count"], 64)
+        self.assertFalse(compare["raw_full_state_match"])
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["structured_launcher_argv_started"])
+        self.assertTrue(policy["coverage_output_equivalence_passed"])
+        self.assertTrue(policy["sidecar_launcher_invocation_claim_requires_review"])
+        self.assertFalse(policy["direct_verilator_sidecar_execution_claim_allowed"])
+        self.assertFalse(policy["broad_native_verilator_option_support_claim_allowed"])
+        self.assertFalse(policy["reports_and_artifacts_are_source_of_truth"])
+        self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
