@@ -54,8 +54,14 @@ writes `reports/rtlmeter_example_kind_hello_cpu_gpu_compare.json`. If
 materializes an ignored wrapper under `artifacts/` that delegates non-GPU
 Verilator argv to the real Verilator and fails closed for GPU intent. A
 sidecar-capable wrapper can be supplied with that env var when available.
-Missing RTLMeter or sidecar prerequisites produce `cannot_execute` or
-`gpu_execution_failed`, not a CPU-as-GPU fallback.
+The helper's default GPU candidate uses the current native-minimum schedule
+spelling, `--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1`;
+`--compile-args` can override it for compatibility checks. Missing RTLMeter or
+sidecar prerequisites produce `cannot_execute` or `gpu_execution_failed`, not a
+CPU-as-GPU fallback.
+Expanded-schedule failures include metadata for the captured schedule, preserved
+parser inputs, and missing sidecar-owned context. That metadata is diagnostic
+only and does not launch a repo-owned template as RTLMeter GPU evidence.
 
 ## Quickstart
 

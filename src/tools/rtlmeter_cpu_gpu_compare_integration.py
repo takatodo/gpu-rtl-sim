@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -24,6 +25,7 @@ from rtlmeter_verilator_wrapper_runtime import write_rtlmeter_verilator_wrapper
 SURFACE = "rtlmeter_cpu_gpu_compare_integration"
 OPT_IN_ENV = "RTLMETER_CPU_GPU_COMPARE_EXECUTE"
 WRAPPER_ENV = "RTLMETER_SIDECAR_VERILATOR_WRAPPER"
+DEFAULT_COMPILE_ARGS = "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1"
 DEFAULT_ARTIFACT_ROOT = Path("artifacts/rtlmeter_example_kind_hello_cpu_gpu_compare")
 TIMESTAMP_PREFIX_RE = re.compile(r"^\s*[0-9]+(?:\.[0-9]+)?\s+\|\s?")
 
@@ -48,6 +50,11 @@ def _execute_dir(work_root: Path, seed: str) -> Path:
     return work_root / design / config / "execute-0" / test
 
 
+def _compile_dir(work_root: Path, seed: str) -> Path:
+    design, config, _test = _split_seed(seed)
+    return work_root / design / config / "compile-0"
+
+
 def _rtlmeter_command(seed: str, work_root: Path, compile_args: str = "") -> list[str]:
     command = [
         "third_party/rtlmeter/rtlmeter",
@@ -60,6 +67,10 @@ def _rtlmeter_command(seed: str, work_root: Path, compile_args: str = "") -> lis
     if compile_args:
         command.append(f"--compileArgs={compile_args}")
     return command
+
+
+def _compile_arg_tokens(compile_args: str) -> tuple[str, ...]:
+    return tuple(shlex.split(compile_args))
 
 
 def normalized_rtlmeter_stdout(text: str) -> str:
@@ -116,6 +127,12 @@ def _rtlmeter_execution_env(repo_root: Path, env_source: Mapping[str, str]) -> d
     return env
 
 
+def _read_optional_log(path: Path) -> str | None:
+    if not path.is_file():
+        return None
+    return _sanitize(path.read_text(encoding="utf-8"))
+
+
 def _run(command: list[str], *, repo_root: Path, env: Mapping[str, str], runner) -> dict[str, object]:
     completed = runner(command, cwd=repo_root, env=dict(env), text=True, capture_output=True)
     return {
@@ -129,7 +146,7 @@ def _run(command: list[str], *, repo_root: Path, env: Mapping[str, str], runner)
 def run_rtlmeter_cpu_gpu_compare_integration(
     *,
     seed: str = SELECTED_SEED,
-    compile_args: str = "--use-gpu",
+    compile_args: str = DEFAULT_COMPILE_ARGS,
     execute: bool = False,
     write_report: bool = False,
     report_path: str | Path | None = None,
@@ -178,7 +195,10 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         return _maybe_write_report(report, root, write_report, report_rel)
 
     try:
-        report["sidecar_contract"] = map_rtlmeter_case_to_sidecar_contract(seed, compile_args=(compile_args,))
+        report["sidecar_contract"] = map_rtlmeter_case_to_sidecar_contract(
+            seed,
+            compile_args=_compile_arg_tokens(compile_args),
+        )
     except RtlmeterCommandCaptureError as exc:
         report["status"] = "cannot_execute"
         report["missing_prerequisites"] = [_sanitize(str(exc))]
@@ -213,6 +233,9 @@ def run_rtlmeter_cpu_gpu_compare_integration(
     report["command_results"] = {"cpu": cpu_result, "gpu": gpu_result}
     if gpu_result["returncode"] != 0:
         report["status"] = "gpu_execution_failed"
+        report["gpu_failure_diagnostic_log"] = _read_optional_log(
+            root / _compile_dir(gpu_work_root, seed) / "_verilate" / "stdout.log"
+        )
         return _maybe_write_report(report, root, write_report, report_rel)
 
     comparison = compare_rtlmeter_observables(
@@ -238,7 +261,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--write-report", action="store_true", help="Write the generated report under reports/.")
     parser.add_argument("--report-out", help="Override report output path.")
     parser.add_argument("--seed", default=SELECTED_SEED)
-    parser.add_argument("--compile-args", default="--use-gpu")
+    parser.add_argument("--compile-args", default=DEFAULT_COMPILE_ARGS)
     return parser
 
 

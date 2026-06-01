@@ -13,6 +13,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 try:
+    from .rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_handoff
     from .rtlmeter_verilator_path_wrapper import (
         STATUS_DELEGATE_TO_REAL_VERILATOR,
         STATUS_GPU_INTENT_CAPTURED_NOT_READY,
@@ -20,6 +21,7 @@ try:
         inspect_rtlmeter_verilator_wrapper_argv,
     )
 except ImportError:  # pragma: no cover - exercised when invoked as a script.
+    from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_handoff
     from rtlmeter_verilator_path_wrapper import (
         STATUS_DELEGATE_TO_REAL_VERILATOR,
         STATUS_GPU_INTENT_CAPTURED_NOT_READY,
@@ -79,12 +81,14 @@ def resolve_real_verilator(*, environ: Mapping[str, str], wrapper_path: Path) ->
 def fail_closed_report(argv: Sequence[str]) -> dict[str, object]:
     inspection = inspect_rtlmeter_verilator_wrapper_argv(argv)
     status = str(inspection["status"])
+    handoff_metadata = None
     if status == STATUS_GPU_INTENT_CAPTURED_NOT_READY:
         runtime_status = STATUS_USE_GPU_NEEDS_SCHEDULE
         diagnostic = "--use-gpu reached the wrapper, but no explicit sidecar schedule was provided"
     elif status == STATUS_READY_FOR_RTL_METER_SIDECAR_PLANNING:
         runtime_status = STATUS_SIDECAR_EXECUTION_NOT_IMPLEMENTED
         diagnostic = "expanded sidecar schedule was captured, but RTLMeter sidecar execution is not wired yet"
+        handoff_metadata = build_rtlmeter_sidecar_handoff(argv)
     else:
         runtime_status = STATUS_UNSUPPORTED_GPU_REQUEST
         diagnostic = str(inspection["diagnostic"])
@@ -99,6 +103,7 @@ def fail_closed_report(argv: Sequence[str]) -> dict[str, object]:
         "delegated_to_real_verilator": False,
         "sidecar_execution_invoked": False,
         "inspection_status": status,
+        "handoff_metadata": handoff_metadata,
         "diagnostic": diagnostic,
         "non_claims": [
             "GPU intent is never delegated to CPU Verilator as a fake GPU run",

@@ -110,6 +110,46 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         self.assertEqual(report["status"], "sidecar_schedule_captured_execution_not_implemented")
         self.assertEqual(report["inspection_status"], "ready_for_rtlmeter_sidecar_planning")
         self.assertFalse(report["cpu_as_gpu_fallback"])
+        handoff = report["handoff_metadata"]
+        self.assertEqual(handoff["surface"], "rtlmeter_sidecar_handoff")
+        self.assertEqual(handoff["status"], "rtlmeter_sidecar_handoff_blocked_missing_context")
+        self.assertEqual(handoff["schedule"]["shape"], "64x1")
+        self.assertIn("template_or_target_registry_entry", handoff["missing_sidecar_context"])
+        self.assertIn("host_probe_metadata", handoff["missing_sidecar_context"])
+        self.assertFalse(handoff["sidecar_execution_invoked"])
+        self.assertFalse(handoff["cpu_as_gpu_fallback"])
+
+    def test_rtlmeter_sidecar_handoff_preserves_parser_inputs_without_execution(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_handoff
+
+        handoff = build_rtlmeter_sidecar_handoff(
+            [
+                "--cc",
+                "--main",
+                "--top-module",
+                "top",
+                "+incdir+verilogIncludeFiles",
+                "+define+__RTLMETER_MAIN_CLOCK=top.clk",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ]
+        )
+
+        self.assertEqual(handoff["schedule"]["state_count"], 64)
+        self.assertEqual(handoff["schedule"]["step_count"], 1)
+        self.assertEqual(handoff["parser_payload"]["top_module"], "top")
+        self.assertIn("filelist", handoff["parser_payload"]["filelists"])
+        self.assertIn("+incdir+verilogIncludeFiles", handoff["parser_payload"]["include_dirs"])
+        self.assertFalse(handoff["execution_authority"])
+        self.assertFalse(handoff["sidecar_launcher_invoked"])
+        self.assertFalse(handoff["coverage_output_compare_reached"])
 
     def test_materialized_wrapper_is_named_verilator_and_executable(self) -> None:
         self.add_tools_to_path()

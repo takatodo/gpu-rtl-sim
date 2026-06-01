@@ -41,6 +41,16 @@ execution boundary: no-GPU argv delegates to the real Verilator after excluding
 itself from PATH lookup, while GPU intent fails closed until a sidecar execution
 path is wired. The older `src/tools/rtlmeter_verilator_path_wrapper.py` remains
 inspect-only metadata and is not promoted to execution authority.
+The compare helper defaults the GPU candidate to the expanded native-minimum
+schedule spelling, `--sim-accel sidecar-gpu --sim-accel-states 64
+--sim-accel-steps 1`, rather than `--use-gpu` alone. That keeps the failure at
+the sidecar handoff boundary instead of failing earlier because no schedule was
+selected.
+At that boundary, `src/tools/rtlmeter_sidecar_handoff.py` records metadata only:
+captured schedule, preserved parser inputs, and the missing sidecar-owned
+context such as template/source-closure/host-probe/coverage metadata. It does
+not call `run_hybrid_template.py`; launching an unrelated template would not be
+RTLMeter GPU evidence.
 
 ## Runtime Building Blocks
 
