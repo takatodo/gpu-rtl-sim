@@ -42,6 +42,8 @@ Status values: `open`, `claimed`, `blocked`, `review`, `done`.
 | FC-032 | [RTLMeter public contract tests](issues/FC-032-rtlmeter-public-contract-tests.md) | `tests/contract/test_rtlmeter_*` |
 | FC-033 | [RTLMeter docs and troubleshooting](issues/FC-033-rtlmeter-docs-troubleshooting.md) | `README.md`, `docs/verilator_sidecar_option.md` |
 | FC-034 | [RTLMeter first seed execution integration](issues/FC-034-rtlmeter-first-seed-execution-integration.md) | `src/tools/rtlmeter_*`, `reports/`, `tests/contract/test_rtlmeter_*` |
+| FC-035 | [Clean sim GPU runtime preflight](issues/FC-035-clean-sim-gpu-runtime-preflight.md) | `src/tools/run_vl_hybrid.py`, `src/tools/run_vl_hybrid_launch.py`, `tests/contract/test_clean_sim_prerequisites.py`, `README.md` |
+| FC-036 | [Move generated tool binaries out of src](issues/FC-036-move-generated-tool-binaries-out-of-src.md) | `src/passes/Makefile`, `src/hybrid/Makefile`, `src/tools/build_vl_gpu_*`, `src/tools/run_vl_hybrid_*`, `tests/contract/test_clean_sim_prerequisites.py`, `README.md` |
 
 ## Parallel Split
 
@@ -50,6 +52,7 @@ Status values: `open`, `claimed`, `blocked`, `review`, `done`.
 - Agent C: FC-014 through FC-017, contract tests.
 - Agent D: FC-018 through FC-023, Codex memory and source-of-truth alignment.
 - Agent E: FC-024 through FC-034, RTLMeter user-path exploration. Keep this separate from current sidecar cleanup unless a file is explicitly owned. FC-034 is the first executing issue; keep it isolated from non-executing FC-024 through FC-033.
+- Agent F: FC-035 through FC-036, clean sim hardening. Keep it separate from RTLMeter execution integration, do not turn blocked GPU access into a success claim, and do not normalize generated binaries under `src/` as acceptable public UX.
 
 ## Guardrails
 
