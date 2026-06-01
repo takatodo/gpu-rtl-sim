@@ -1,8 +1,8 @@
 # FC-029: RTLMeter First Seed Selection
 
-Status: open
-Owner: unassigned
-Target file: `config/selection.json`, `config/targets.json`
+Status: done
+Owner: Codex
+Target file: `src/tools/rtlmeter_seed_selection.py`, `tests/contract/test_rtlmeter_first_seed_selection.py`
 
 ## Objective
 
@@ -28,3 +28,19 @@ python3 -m unittest tests.contract.test_resident_runtime_contract -q
 ```
 
 Run this only after confirming it will not mutate selection state in the current worktree.
+
+Current validation:
+
+```sh
+python3 -m unittest tests.contract.test_rtlmeter_first_seed_selection -q
+```
+
+Result: passed on 2026-06-01.
+
+## Resolution
+
+- Added `src/tools/rtlmeter_seed_selection.py` as non-canonical planning metadata.
+- Selected exactly one first RTLMeter user-path plumbing candidate: `Example:kind:hello`.
+- Did not edit `config/selection.json` or `config/targets.json`; the active project priority and seed policy remain unchanged.
+- Deferred OpenTitan primitive, TL-UL, and NVDLA CMAC candidates because they pull the first user-path experiment toward repo-specific overlays/templates.
+- Did not add `records/scaling_gates/rtlmeter_first_seed_selection_gate.json`; records growth remains a separate reviewed decision.
