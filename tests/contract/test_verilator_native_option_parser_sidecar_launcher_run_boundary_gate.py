@@ -22,6 +22,12 @@ RUN_GATE = (
     / "scaling_gates"
     / "run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_gate.json"
 )
+REVIEW_RUN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_run_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarLauncherRunBoundaryGateTest(unittest.TestCase):
@@ -167,3 +173,40 @@ class VerilatorNativeOptionParserSidecarLauncherRunBoundaryGateTest(unittest.Tes
         self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_native_path"])
         self.assertFalse(policy["direct_verilator_sidecar_execution_claim_allowed"])
         self.assertEqual(run["required_next_gate"]["name"], run["next_task"])
+
+    def test_review_run_accepts_failure_and_selects_launcher_invocation_boundary(self) -> None:
+        review = json.loads(REVIEW_RUN_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_gate.json",
+        )
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_boundary_gate",
+        )
+        self.assertEqual(review["status"], "accepted_sidecar_launcher_bridge_failure_run")
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("not direct Verilator sidecar execution", review["review_decision"]["weakest_point"])
+        accepted = review["accepted_run_result"]
+        self.assertEqual(accepted["failure_class"], "sidecar_launcher_bridge_failure")
+        self.assertTrue(accepted["native_option_parse_accepted"])
+        self.assertTrue(accepted["sidecar_launcher_bridge_fixture_ready"])
+        self.assertFalse(accepted["sidecar_launcher_invoked_from_native_path"])
+        self.assertFalse(accepted["coverage_output_compare_reached_from_native_path"])
+        self.assertTrue(accepted["separate_reviewed_sidecar_build_run_compare_passed"])
+        claims = review["accepted_claim_scope"]
+        self.assertTrue(claims["sidecar_launcher_bridge_failure_accepted"])
+        self.assertTrue(claims["coverage_output_equivalence_accepted_for_separate_pulp_ita_mha_64x1_run"])
+        self.assertFalse(claims["sidecar_launcher_invocation_reached_from_native_path"])
+        self.assertFalse(claims["direct_verilator_sidecar_execution_accepted"])
+        selected = review["selected_next_workstream"]
+        self.assertEqual(selected["name"], review["required_next_gate"]["name"])
+        self.assertEqual(review["required_next_gate"]["name"], review["next_task"])
+        policy = review["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertTrue(policy["sidecar_launcher_bridge_failure_accepted"])
+        self.assertTrue(policy["next_launcher_invocation_implementation_boundary_allowed"])
+        self.assertFalse(policy["sidecar_launcher_invocation_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_native_path"])
+        self.assertFalse(policy["reports_and_artifacts_are_source_of_truth"])
