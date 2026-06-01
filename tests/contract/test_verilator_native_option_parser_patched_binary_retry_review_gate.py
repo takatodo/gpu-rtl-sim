@@ -39,6 +39,7 @@ REVIEW_DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_BOUNDARY_GATE_NAME = "r
 IMPLEMENT_DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_FIXTURE_GATE_NAME = "implement_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_gate"
 REVIEW_DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_FIXTURE_IMPLEMENTATION_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_implementation_gate"
 DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_RUN_BOUNDARY_GATE_NAME = "define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate"
+REVIEW_DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_RUN_BOUNDARY_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate"
 DEFINE_AUTHORITY_GATE_NAME = "define_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate"
 REVIEW_AUTHORITY_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate"
 FIRST_SCOPED_EXECUTION_BOUNDARY_GATE_NAME = "define_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_boundary_gate"
@@ -75,6 +76,7 @@ PUBLIC_PACK_RECORDS = (
     "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_boundary_gate.json",
     "records/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_gate.json",
     "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_implementation_gate.json",
+    "records/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json",
 )
 
 
@@ -95,9 +97,9 @@ class VerilatorNativeOptionParserPatchedBinaryRetryReviewGateTest(unittest.TestC
     def test_selection_points_at_first_scoped_execution_boundary_review_after_definition(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
 
-        self.assertEqual(selection["current_priority"], DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_RUN_BOUNDARY_GATE_NAME)
-        self.assertEqual(selection["current_priority_source_artifact"], f"config/scaling_gates/{REVIEW_DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_FIXTURE_IMPLEMENTATION_GATE_NAME}.json")
-        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 924)
+        self.assertEqual(selection["current_priority"], REVIEW_DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_RUN_BOUNDARY_GATE_NAME)
+        self.assertEqual(selection["current_priority_source_artifact"], f"config/scaling_gates/{DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_RUN_BOUNDARY_GATE_NAME}.json")
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 925)
 
     def test_review_accepts_only_parser_only_patched_binary_success(self) -> None:
         gate = json.loads(REVIEW_GATE.read_text(encoding="utf-8"))
