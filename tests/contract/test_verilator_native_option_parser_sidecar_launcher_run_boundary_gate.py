@@ -46,6 +46,12 @@ IMPLEMENT_INVOCATION_FIXTURE_GATE = (
     / "scaling_gates"
     / "implement_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_gate.json"
 )
+REVIEW_INVOCATION_FIXTURE_IMPLEMENTATION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_implementation_gate.json"
+)
 
 
 class VerilatorNativeOptionParserSidecarLauncherRunBoundaryGateTest(unittest.TestCase):
@@ -381,3 +387,35 @@ class VerilatorNativeOptionParserSidecarLauncherRunBoundaryGateTest(unittest.Tes
         for name in ("sidecar_launcher_bridge_failure", "sidecar_launcher_invocation_failure", "sidecar_stage_failure", "compare_failure"):
             self.assertIn(name, failures)
         self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
+
+    def test_invocation_fixture_implementation_review_accepts_metadata_only_argv(self) -> None:
+        review = json.loads(REVIEW_INVOCATION_FIXTURE_IMPLEMENTATION_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            review["source_implementation_gate"],
+            "config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_gate.json",
+        )
+        self.assertEqual(
+            review["current_priority"],
+            "define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate",
+        )
+        self.assertTrue(review["review_decision"]["accepted"])
+        self.assertIn("over-reading materialized argv", review["review_decision"]["weakest_point"])
+        accepted = review["accepted_implementation"]
+        self.assertEqual(accepted["primary_entrypoint_function"], "define_sidecar_launcher_invocation_fixture")
+        self.assertEqual(accepted["helper_module"], "src/tools/verilator_native_option_parser_sidecar_launcher_invocation.py")
+        self.assertTrue(accepted["metadata_only"])
+        self.assertFalse(accepted["sidecar_launcher_invocation_execution_added"])
+        output = review["accepted_output_contract"]
+        self.assertEqual(output["launcher_command_role"], "materialized_for_later_run_not_invoked_by_fixture")
+        self.assertFalse(output["sidecar_launcher_invoked_from_native_path"])
+        self.assertFalse(output["coverage_output_compare_reached_from_native_path"])
+        self.assertFalse(output["timing_measured"])
+        failures = review["accepted_failure_classes_to_preserve"]
+        self.assertTrue(failures["sidecar_launcher_invocation_failure"])
+        policy = review["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertTrue(policy["next_execution_boundary_definition_allowed"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["sidecar_launcher_invocation_claim_allowed_by_gate_alone"])
+        self.assertEqual(review["required_next_gate"]["name"], review["next_task"])
