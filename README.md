@@ -10,8 +10,8 @@ The contract is the boundary between frontend-owned RTL/build information and si
 
 Current pointer, mirrored from `config/selection.json`:
 
-- `current_priority`: `implement_verilator_use_gpu_first_executable_path_gate`
-- `current_priority_source_artifact`: `config/scaling_gates/review_verilator_use_gpu_first_executable_path_gate.json`
+- `current_priority`: `package_verilator_use_gpu_first_scoped_wrapper_gate`
+- `current_priority_source_artifact`: `config/scaling_gates/sync_verilator_use_gpu_first_path_completion_to_wrapper_task_gate.json`
 
 The long-term shorthand Verilator-facing UX target remains:
 
@@ -21,7 +21,7 @@ verilator --use-gpu -f filelist.f --top-module top
 
 That endpoint is not yet a general Verilator replacement. The current canonical preview and parser-minimum spelling is `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`. The current implementation is a scoped hybrid sidecar path with Verilator-like option plumbing. Supported paths should reach the GPU sidecar flow and compare CPU vs hybrid output. Unsupported paths should fail clearly instead of silently falling back or claiming GPU optimization.
 
-The current `--use-gpu` work is implementing the first scoped executable path. It still selects one reviewed filelist/template/top path, requires an explicit `64x1` schedule, and must keep unsupported paths fail-closed without adding arbitrary filelist support, dependency inference, automatic GPU allocation, timing/speedup, CIRCT execution, raw-state equality, or a JSON runtime ABI.
+The first scoped executable `--use-gpu` adapter path is complete. The current `--use-gpu` work is packaging that proven path as a Verilator-facing wrapper. It still selects one reviewed filelist/template/top path, requires an explicit `64x1` schedule unless a later reviewed gate changes that wrapper rule, and must keep unsupported paths fail-closed without adding arbitrary filelist support, dependency inference, automatic GPU allocation, timing/speedup, CIRCT execution, raw-state equality, or a JSON runtime ABI.
 
 The frontend-neutral research target is:
 
@@ -166,7 +166,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-s
 - If a dry-run fails, run `python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu` and pick one of the listed targets.
 - If a non-dry-run fails during build, initialize submodules with `git submodule update --init --recursive`.
 - If CPU-vs-hybrid compare reports raw state mismatch, check whether `coverage_output_equivalence` still passes; raw full-state equality is not the supported correctness policy.
-- If `verilator --use-gpu` style commands are needed, use `src/tools/verilator_sidecar_shim.py` as a preview path for now.
+- If `verilator --use-gpu` style commands are needed before the #33 wrapper lands, use `src/tools/verilator_sidecar_shim.py` or `src/tools/verilator_use_gpu_first_path.py` as the scoped preview path.
 - If an RTLMeter command with `--compileArgs "--use-gpu"` only reports wrapper metadata, that is expected for the current public surface. It proves GPU intent reached the Verilator command path, not GPU execution or speedup.
 - If `third_party/rtlmeter/rtlmeter` fails from the repo root with `No module named 'src.rtlmeter'`, use the documented compare helper; it prepends `third_party/rtlmeter` to `PYTHONPATH` for RTLMeter execution.
 - If an RTLMeter wrapper request fails closed, check that the captured Verilator argv includes `--cc`, `-f <filelist>`, `--top-module <top>`, and either `--use-gpu` or expanded `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`.

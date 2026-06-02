@@ -8,7 +8,7 @@ JSON is an inspection format for that contract. Automation may read it for diagn
 
 ## Weakest Point
 
-Current weak point: #32 must implement the accepted first executable path without broadening it. The standalone operator `.filelist` is still not a general source of truth, so implementation must preserve reviewed template/source-list authority, reject arbitrary `-f` dependency inference, and keep GPU-unavailable and CPU-as-GPU cases fail-closed.
+Current weak point: #33 must package the completed first executable adapter path as a Verilator-facing wrapper without broadening it. The standalone operator `.filelist` is still not a general source of truth, so wrapper work must preserve reviewed template/source-list authority, reject arbitrary `-f` dependency inference, and keep GPU-unavailable and CPU-as-GPU cases fail-closed.
 
 Historical context follows for audit. If older text below names another current bridge task, prefer the `Current Frontier` section above.
 
@@ -16,24 +16,24 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is implementing the first scoped executable Verilator-facing `--use-gpu` path.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The first scoped executable Verilator-facing `--use-gpu` adapter path is complete; the current work packages that proven path as a scoped Verilator-facing wrapper.
 
 Current priority:
 
-`implement_verilator_use_gpu_first_executable_path_gate`
+`package_verilator_use_gpu_first_scoped_wrapper_gate`
 
 Current gate:
 
-`config/scaling_gates/review_verilator_use_gpu_first_executable_path_gate.json`
+`config/scaling_gates/sync_verilator_use_gpu_first_path_completion_to_wrapper_task_gate.json`
 
-GitHub tracking: #9 owns the parent `FC-042: Verilator --use-gpu first real path` goal, #28 and #29 are completed prerequisites, #30 defines the first executable-path gate, #31 accepts the review, and #32 owns the current implementation task.
+GitHub tracking: #9 owns the parent `FC-042: Verilator --use-gpu first real path` goal, #32 completed the first scoped executable adapter path, #34 synced the canonical pointer after that completion, and #33 owns the current wrapper-packaging task.
 
 Current alignment check: `config/selection.json`, `docs/status.md`, `README.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **First executable `--use-gpu` path implementation**: Implement #32 for exactly one reviewed filelist/template/top path, explicit `64x1` scheduling, fail-closed unsupported inputs, and no broad support claim.
-2. **Docs pointer sync**: Keep `config/selection.json`, `docs/status.md`, this roadmap, and README aligned on `implement_verilator_use_gpu_first_executable_path_gate`.
+1. **Verilator-facing wrapper packaging**: Implement #33 by packaging the completed #32 adapter path as a wrapper named `verilator` or equivalent repo-materialized wrapper surface, without widening support beyond the reviewed filelist/template/top path and explicit `64x1` schedule.
+2. **Docs pointer sync**: Keep `config/selection.json`, `docs/status.md`, this roadmap, and README aligned on `package_verilator_use_gpu_first_scoped_wrapper_gate`.
 3. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
 4. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
@@ -92,7 +92,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Implement #32 only within the accepted narrow boundary: one reviewed filelist/template/top path, explicit `64x1` schedule, fail-closed unsupported inputs, and no arbitrary filelist inference, automatic allocation, timing/speedup, CIRCT execution, raw-state equality, broad native option support, production throughput, or JSON runtime ABI claim.
+Package #33 only within the accepted narrow boundary proven by #32: one reviewed filelist/template/top path, explicit `64x1` schedule unless a later reviewed gate changes wrapper defaults, fail-closed unsupported inputs, and no arbitrary filelist inference, automatic allocation, timing/speedup, CIRCT execution, raw-state equality, broad native option support, production throughput, or JSON runtime ABI claim.
 
 Parser boundary definition:
 
