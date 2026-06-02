@@ -6,7 +6,23 @@ The external-facing goal is a frontend-neutral GPU sidecar runtime for RTL compi
 
 The sidecar contract is an implementation/runtime boundary, not a JSON-first design. JSON reports and operator plans are useful for debug and review inspection, but canonical execution should flow through importable helpers and structured metadata.
 
+## Current Priority
+
+Goal: `modern_llm_serving_rtl_hybrid_conditions`
+
+Current priority: `review_verilator_use_gpu_first_real_path_gate`
+
+Current gate: `config/scaling_gates/define_verilator_use_gpu_first_real_path_gate.json`
+
+GitHub tracking: #9 is the parent `FC-042: Verilator --use-gpu first real path` goal, #28 is the completed definition-review task, and #29 is the docs pointer sync task.
+
+This gate is review-only. It selects the first scoped Verilator-facing `--use-gpu` path as `filelist_known_template_pulp_ita_mha` / `pulp_ita_mha_gpu_cov_tb` with explicit `64x1` scheduling through reviewed sidecar metadata. It does not claim execution through `--use-gpu`, arbitrary filelist support, dependency inference, automatic GPU allocation, timing/speedup, CIRCT execution, raw full-state equality, or JSON as the runtime ABI.
+
 ## Weakest Point
+
+Current weak point: #28 accepted the first-real-path definition only because the project keeps `--use-gpu` scoped to one reviewed `filelist_known_template_pulp_ita_mha` / `pulp_ita_mha_gpu_cov_tb` / `64x1` path and treats the missing standalone tracked `.filelist` source as an implementation requirement, not as arbitrary `-f` dependency inference. #29 must keep the docs pointer aligned before an implementation gate is opened.
+
+Historical context follows for audit. If an older paragraph below names a different current weak point, prefer the `Current Priority` section and this paragraph.
 
 The commit-split cleanup is complete, and the repaired Verilator native-option overlay patch now has accepted scoped `verilator_bin` build-only validation, reviewed parser-only smoke, reviewed rebuilt integer-hardening smoke, a reviewed parser-to-adapter handoff boundary, a reviewed non-executing handoff fixture, a reviewed parser-adapter to sidecar plan-resolution boundary, a reviewed non-executing plan-resolution fixture, an accepted status/readiness hardening definition, a reviewed in-place helper implementation of that hardening, a defined handoff-contract metadata boundary after plan resolution, a review accepting that boundary, an implemented non-executing handoff-contract metadata fixture, an accepted implementation review after adding the explicit `efficiency_estimate_invoked` guard, a defined handoff-contract-to-operator-plan metadata boundary, a review accepting that boundary, an implemented non-executing operator-plan metadata fixture, a review accepting that fixture only as metadata, a defined hardening boundary for bool/int strictness plus `efficiency_estimate` non-timing wording, a review accepting that boundary for implementation, an in-place implementation of the hardening, a review accepting the implementation, a definition of the first execution boundary, a review accepting that boundary, a scoped sidecar execution run, a review accepting that run only as scoped sidecar build/run/compare evidence, a definition of the direct command-path boundary, a review accepting that boundary only as non-executing fixture-contract preparation, a definition of the direct command-path fixture contract, a review accepting that contract for implementation, an implemented importable direct command-path fixture helper, a review accepting that helper only as non-executing reference-boundary metadata, a definition of parser-payload validation hardening, a review accepting that hardening definition, an implementation of that hardening, a review accepting that implementation, a definition of the direct command-path sidecar stage-plan materialization boundary, a review accepting only the adapter-and-plan-resolution bridge route, an implementation of that non-executing bridge, a review accepting the bridge as metadata-only stage-plan materialization, a definition of the direct command-path sidecar stage-plan execution boundary, a review accepting that boundary for a scoped future run, a scoped direct command-path sidecar stage-plan run, a review accepting that run only as scoped sidecar build/run/compare evidence, a definition of the native invocation boundary, a review accepting that boundary only for a later non-executing fixture, an implementation of that non-executing fixture, a review accepting it only as metadata validation, a definition of the first real native-invocation execution boundary, a review accepting that definition for a scoped future run, a scoped local Verilator process parse run that rejected `--sim-accel`, a review accepting that result only as local process-parse failure evidence, a definition selecting the rebuilt parser-hardening patched Verilator binary as the next retry candidate, a review accepting that candidate only for a parser-only retry, a patched-binary parser-only retry that accepted the expanded native option spelling, a first scoped native sidecar run, a review accepting only the separated parser-success plus reviewed `pulp_ita_mha 64x1` sidecar build/run/compare evidence, a direct launch boundary definition/review, a scoped direct-launch run record, a review accepting its `direct_launch_handoff_failure`, a definition of the minimal direct-launch handoff implementation boundary, a review accepting only that narrow boundary, a metadata-only direct-launch handoff fixture implementation, a real handoff run boundary definition/review, a scoped handoff run that still records `direct_launch_handoff_failure`, a review accepting that failure as honest evidence, a native-process to sidecar-launcher bridge boundary definition/review, a metadata-only bridge fixture implementation, a review accepting that bridge only as metadata, a scoped sidecar-launcher run boundary definition/review, a scoped sidecar-launcher run record that still records `sidecar_launcher_bridge_failure`, a review accepting that failure as honest evidence, a launcher-invocation boundary definition/review, a non-executing launcher-invocation fixture implementation, a review accepting that fixture only as argv materialization metadata, a definition of the launcher-invocation run boundary, a review accepting that boundary for a scoped future run, and a scoped launcher-invocation run that starts the reviewed structured `run_hybrid_template.py` argv and reaches coverage-output compare with mismatch count `0`. The current weak point is reviewing that run without over-reading it as direct Verilator sidecar execution, broad native option support, timing evidence, automatic allocation, runtime/ABI change, or production throughput.
 
@@ -58,11 +74,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate`
+`review_verilator_use_gpu_first_real_path_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate.json`
+`config/scaling_gates/define_verilator_use_gpu_first_real_path_gate.json`
 
 ## 追跡タスク
 

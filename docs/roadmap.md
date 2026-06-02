@@ -2,33 +2,40 @@
 
 ## Goal Frame
 
-The roadmap should be read as a GPU sidecar roadmap, not a Verilator-only roadmap. Verilator is the first frontend and the near-term native UX target; CIRCT is a planned second frontend. The shared target is a sidecar contract that carries frontend-owned RTL/build metadata into sidecar-owned GPU build, execution, and compare stages.
+The roadmap should be read as a GPU sidecar roadmap, not a Verilator-only roadmap. Verilator is the current compatibility frontend and the near-term native UX target; CIRCT is a planned second frontend. The shared target is a sidecar contract that carries frontend-owned RTL/build metadata into sidecar-owned GPU build, execution, and compare stages.
 
 JSON is an inspection format for that contract. Automation may read it for diagnostics, but it should not become execution authority or the mandatory runtime ABI.
 
 ## Weakest Point
 
+Current weak point: #28 accepted the first-real-path definition only because `--use-gpu` stays scoped to one reviewed `filelist_known_template_pulp_ita_mha` / `pulp_ita_mha_gpu_cov_tb` / `64x1` path. The missing standalone tracked `.filelist` must be handled as a future implementation requirement, and #29 must keep docs aligned before the executable-path gate is opened.
+
+Historical context follows for audit. If older text below names another current bridge task, prefer the `Current Frontier` section above.
+
 Hybrid execution is close to a normal Verilator-style flow for generated templates, but "native" is still only a prototype boundary. The chain now includes a reviewed patched-binary parser-only retry, an accepted sidecar authority boundary, a first scoped native sidecar run, a review accepting only separated parser-success plus reviewed `pulp_ita_mha 64x1` sidecar build/run/compare evidence, a definition of the direct launch authority chain, a review accepting that definition only for a scoped future run, a run record that stops at `direct_launch_handoff_failure`, a review accepting that failure as honest, a definition of the minimal direct-launch handoff implementation boundary, a review accepting only that narrow boundary, a metadata-only direct-launch handoff fixture implementation, a review accepting that fixture only as readiness metadata, a definition of the first real handoff run boundary, a review accepting that boundary only for a scoped future run, a scoped handoff run that still records `direct_launch_handoff_failure`, a review accepting that failure as honest, a native-process to sidecar-launcher bridge boundary definition/review, a metadata-only bridge fixture implementation, a review accepting that fixture only as metadata, a scoped sidecar-launcher run boundary definition/review, a scoped sidecar-launcher run that stops at `sidecar_launcher_bridge_failure`, a review accepting that failure as honest, a definition of the launcher-invocation implementation boundary, a review accepting that boundary only for a scoped fixture implementation, a non-executing launcher-invocation fixture implementation, a review accepting that fixture only as argv materialization metadata, a definition of the launcher-invocation run boundary, a review accepting that boundary for a scoped future run, and a scoped launcher-invocation run that starts the reviewed structured `run_hybrid_template.py` argv and reaches coverage-output compare with mismatch count `0`. The weak point is now reviewing that run without treating it as direct Verilator sidecar execution, broad native option support, timing evidence, automatic allocation, runtime/ABI change, or production throughput.
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the launcher-invocation run.
+`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The current work is reviewing the first scoped Verilator-facing `--use-gpu` path definition before implementation.
 
 Current priority:
 
-`review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate`
+`review_verilator_use_gpu_first_real_path_gate`
 
 Current gate:
 
-`config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate.json`
+`config/scaling_gates/define_verilator_use_gpu_first_real_path_gate.json`
+
+GitHub tracking: #9 owns the parent `FC-042: Verilator --use-gpu first real path` goal, #28 owns the completed definition review, and #29 owns this docs pointer sync.
 
 Current alignment check: `config/selection.json`, `docs/status.md`, `README.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
 ## 追跡タスク (Tracked tasks)
 
-1. **Native parser direct command path**: Review the scoped launcher-invocation run from reviewed fixture output.
-2. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
-3. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
+1. **First real `--use-gpu` path review**: Keep #28 scoped to one reviewed filelist/template/top path, explicit `64x1` scheduling, fail-closed unsupported inputs, and no execution or broad support claim until a later implementation gate is reviewed.
+2. **Docs pointer sync**: Complete #29 by keeping `config/selection.json`, `docs/status.md`, this roadmap, and README aligned on `review_verilator_use_gpu_first_real_path_gate`.
+3. **Simple verification doc**: Keep `docs/migration_notes.md` “Gap from a minimal verification setup” accurate when entrypoints or prerequisites change.
+4. **Gate chain hygiene**: When advancing `current_priority`, update `completed_goal_evidence` in `config/selection_extensions.json` only with tracked records; keep linked source-of-truth files clone-reproducible.
 
 **Recommended cleanup order** (deeper refactors): see **「整理の順序（推奨）」** in `docs/migration_notes.md`.
 
@@ -85,7 +92,7 @@ The concrete stages are:
 
 Current strongest next stage:
 
-Review the scoped sidecar-launcher invocation run. The run starts the reviewed structured `run_hybrid_template.py` argv for `pulp_ita_mha 64x1` and reaches coverage-output compare with mismatch count `0`; timing, arbitrary filelist support, automatic allocation, runtime/ABI changes, direct Verilator sidecar execution, broad native option support, and raw-state equality remain out of scope unless a later review/run explicitly proves them.
+Complete #29, then open the executable-path definition gate for the first scoped Verilator-facing `--use-gpu` path. The future gate should still be definition-only first: one reviewed filelist/template/top path, explicit `64x1` schedule, fail-closed unsupported inputs, and no arbitrary filelist inference, automatic allocation, timing/speedup, CIRCT execution, raw-state equality, broad native option support, production throughput, or JSON runtime ABI claim.
 
 Parser boundary definition:
 
