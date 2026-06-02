@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_run_gate",
+  "status": "accepted_scoped_post_source_closure_retry_coverage_output_equivalence",
+  "objective": "Review the post-source-closure bridge-path launcher retry run and decide whether the scoped evidence satisfies GitHub issue #27 while keeping timing, raw-state, arbitrary filelist, and automatic-allocation claims out of scope.",
+  "source_run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate.json",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate.json",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate.json",
+  "current_priority": "close_github_27_after_accepted_post_source_closure_retry_run_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The scoped retry materialized the required submodules at tracked gitlink SHAs, verified all 29 pulp_ita_mha template source files in a clean worktree, invoked the exact structured launcher argv, reached Verilator build, host-probe build, GPU artifact build, hybrid sidecar run, and coverage-output compare, and passed the selected coverage_output_equivalence policy with mismatch_count 0.",
+    "weakest_point": "The accepted result is still only one scoped pulp_ita_mha 64x1 correctness run through the reviewed launcher bridge. Raw final-state equality is false, and the gate does not measure timing, prove speedup, support arbitrary RTL or filelists, infer dependencies automatically, allocate GPU work automatically, or execute a direct Verilator-internal sidecar path.",
+    "accepted_because": [
+      "source closure was verified before launcher execution",
+      "the launcher used structured argv rather than a shell string",
+      "the launcher exit code was 0",
+      "Verilator build, host-probe build, GPU artifact build, hybrid sidecar run, and compare were reached",
+      "coverage-output mismatch count was 0 across 64 state pairs and 1856 compared words",
+      "raw final-state mismatch stayed diagnostic and outside the accepted claim"
+    ]
+  },
+  "accepted_run_evidence": {
+    "target": "pulp_ita_mha",
+    "shape": "64x1",
+    "clean_worktree_head": "4b508fa",
+    "submodule_materialization_exit_code": 0,
+    "template_source_file_count": 29,
+    "missing_source_file_count": 0,
+    "launcher_command": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ],
+    "shell_string_used": false,
+    "launcher_exit_code": 0,
+    "coverage_output_compare_reached": true,
+    "coverage_output_equivalence_passed": true,
+    "coverage_output_mismatch_count": 0,
+    "compared_state_pair_count": 64,
+    "strict_output_word_count_per_state": 29,
+    "compared_word_count": 1856,
+    "compared_byte_count": 7424
+  },
+  "accepted_source_closure": {
+    "materialized_submodule_count": 2,
+    "submodule_gitlinks_match": true,
+    "submodules": [
+      {
+        "path": "third_party/ITA",
+        "observed_checkout_sha": "ba96519becce195d64e85eb9a5302e8a1d5487e7"
+      },
+      {
+        "path": "third_party/common_cells",
+        "observed_checkout_sha": "c27bce39ebb2e6bae52f60960814a2afca7bd4cb"
+      }
+    ]
+  },
+  "accepted_stage_reachability": {
+    "source_closure_materialized": true,
+    "template_source_closure_verified": true,
+    "launcher_process_invoked": true,
+    "verilator_build_reached": true,
+    "verilator_build_completed": true,
+    "host_probe_build_reached": true,
+    "host_probe_build_completed": true,
+    "gpu_artifact_build_reached": true,
+    "gpu_artifact_build_completed": true,
+    "hybrid_sidecar_run_reached": true,
+    "coverage_output_compare_reached": true
+  },
+  "rejected_or_blocked_claims": {
+    "raw_full_state_equality": true,
+    "timing_or_speedup": true,
+    "direct_verilator_internal_sidecar_execution": true,
+    "broad_native_option_support": true,
+    "arbitrary_rtl_support": true,
+    "arbitrary_filelist_support": true,
+    "automatic_dependency_inference": true,
+    "automatic_gpu_allocation": true,
+    "production_throughput": true,
+    "reports_and_artifacts_as_source_of_truth": true
+  },
+  "github_issue_27": {
+    "url": "https://github.com/takatodo/gpu-rtl-sim/issues/27",
+    "acceptance_satisfied": true,
+    "closure_allowed_by_this_review": true,
+    "reason": "Issue #27 asked for the scoped post-source-closure retry, exact structured argv, source closure verification, result classification, and no broad non-claims. The reviewed run records a successful coverage-output equivalence result under those constraints."
+  },
+  "required_next_gate": {
+    "name": "close_github_27_after_accepted_post_source_closure_retry_run_gate",
+    "must_close": [
+      "GitHub issue #27 only after the accepted run evidence and non-claims are summarized",
+      "the close reason must stay scoped to pulp_ita_mha 64x1 coverage-output equivalence",
+      "the close summary must keep timing, speedup, arbitrary RTL/filelist support, and automatic GPU allocation as non-claims",
+      "the follow-up pointer should move to the narrow first real #9 / FC-042 --use-gpu path rather than broader filelist support"
+    ],
+    "must_not_claim": [
+      "raw full-state equality",
+      "arbitrary RTL or filelist support",
+      "automatic dependency inference",
+      "automatic GPU allocation",
+      "production LLM-serving throughput",
+      "direct Verilator internal sidecar execution"
+    ]
+  },
+  "acceptance_policy": {
+    "review_gate": true,
+    "run_gate_accepted": true,
+    "coverage_output_equivalence_claim_accepted": true,
+    "github_issue_27_closure_allowed": true,
+    "future_first_real_use_gpu_path_definition_allowed_after_issue_close": true,
+    "new_execution_allowed_by_this_review": false,
+    "timing_or_speedup_claim_allowed_by_this_review": false,
+    "raw_full_state_equality_claim_allowed_by_this_review": false,
+    "broad_native_option_support_claim_allowed_by_this_review": false,
+    "arbitrary_filelist_support_claim_allowed_by_this_review": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_this_review": false,
+    "direct_verilator_internal_sidecar_execution_claim_allowed_by_this_review": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "close_github_27_after_accepted_post_source_closure_retry_run_gate"
+}

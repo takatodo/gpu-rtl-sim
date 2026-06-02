@@ -67,6 +67,12 @@ AFTER_SOURCE_CLOSURE_RETRY_RUN_GATE = (
     / "scaling_gates"
     / "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate.json"
 )
+AFTER_SOURCE_CLOSURE_RETRY_RUN_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_run_gate.json"
+)
 BASE_ARGS = [
     "verilator", "--cc", "--timing", "-Mdir", "artifacts/pulp_ita_mha_obj_dir",
     "--top-module", "pulp_ita_mha_gpu_cov_tb", "-DTRACE=1", "-Wno-fatal",
@@ -525,6 +531,46 @@ class VerilatorProcessLauncherBridgeObservableOrderingHelperTest(unittest.TestCa
         self.assertFalse(failures["compare_failure"])
         self.assertIn("not raw full-state equality", gate["accepted_non_claims"])
         self.assertIn("not timing or speedup evidence", gate["accepted_non_claims"])
+        self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
+
+    def test_after_source_closure_retry_run_review_accepts_scoped_equivalence_only(self) -> None:
+        gate = json.loads(AFTER_SOURCE_CLOSURE_RETRY_RUN_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "close_github_27_after_accepted_post_source_closure_retry_run_gate",
+        )
+        decision = gate["review_decision"]
+        self.assertTrue(decision["accepted"])
+        self.assertIn("weakest_point", decision)
+        accepted = gate["accepted_run_evidence"]
+        self.assertEqual(accepted["target"], "pulp_ita_mha")
+        self.assertEqual(accepted["shape"], "64x1")
+        self.assertEqual(accepted["launcher_exit_code"], 0)
+        self.assertFalse(accepted["shell_string_used"])
+        self.assertTrue(accepted["coverage_output_compare_reached"])
+        self.assertTrue(accepted["coverage_output_equivalence_passed"])
+        self.assertEqual(accepted["coverage_output_mismatch_count"], 0)
+        self.assertEqual(accepted["compared_state_pair_count"], 64)
+        self.assertEqual(accepted["compared_word_count"], 1856)
+        self.assertTrue(gate["accepted_source_closure"]["submodule_gitlinks_match"])
+        blocked = gate["rejected_or_blocked_claims"]
+        self.assertTrue(blocked["raw_full_state_equality"])
+        self.assertTrue(blocked["timing_or_speedup"])
+        self.assertTrue(blocked["arbitrary_filelist_support"])
+        self.assertTrue(blocked["automatic_gpu_allocation"])
+        issue = gate["github_issue_27"]
+        self.assertTrue(issue["acceptance_satisfied"])
+        self.assertTrue(issue["closure_allowed_by_this_review"])
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["coverage_output_equivalence_claim_accepted"])
+        self.assertTrue(policy["future_first_real_use_gpu_path_definition_allowed_after_issue_close"])
+        self.assertFalse(policy["timing_or_speedup_claim_allowed_by_this_review"])
+        self.assertFalse(policy["direct_verilator_internal_sidecar_execution_claim_allowed_by_this_review"])
         self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
 
 
