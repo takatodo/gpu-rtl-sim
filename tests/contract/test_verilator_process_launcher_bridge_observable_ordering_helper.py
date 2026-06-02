@@ -61,6 +61,12 @@ AFTER_SOURCE_CLOSURE_RETRY_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate.json"
 )
+AFTER_SOURCE_CLOSURE_RETRY_RUN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate.json"
+)
 BASE_ARGS = [
     "verilator", "--cc", "--timing", "-Mdir", "artifacts/pulp_ita_mha_obj_dir",
     "--top-module", "pulp_ita_mha_gpu_cov_tb", "-DTRACE=1", "-Wno-fatal",
@@ -467,6 +473,58 @@ class VerilatorProcessLauncherBridgeObservableOrderingHelperTest(unittest.TestCa
         self.assertTrue(policy["future_launcher_retry_run_allowed"])
         self.assertFalse(policy["new_execution_allowed_by_this_review"])
         self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_bridge_path"])
+        self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
+
+    def test_after_source_closure_retry_run_records_coverage_output_equivalence_only(self) -> None:
+        gate = json.loads(AFTER_SOURCE_CLOSURE_RETRY_RUN_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate.json",
+        )
+        self.assertEqual(
+            gate["source_materialization_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_run_gate",
+        )
+        evidence = gate["clean_worktree_evidence"]
+        self.assertEqual(evidence["submodule_materialization_exit_code"], 0)
+        self.assertFalse(evidence["shell_string_used"])
+        self.assertEqual(evidence["template_source_file_count"], 29)
+        self.assertEqual(evidence["missing_source_file_count"], 0)
+        self.assertEqual(evidence["launcher_exit_code"], 0)
+        submodules = gate["materialized_submodules"]
+        self.assertEqual(
+            [(submodule["path"], submodule["observed_checkout_sha"]) for submodule in submodules],
+            [
+                ("third_party/ITA", "ba96519becce195d64e85eb9a5302e8a1d5487e7"),
+                ("third_party/common_cells", "c27bce39ebb2e6bae52f60960814a2afca7bd4cb"),
+            ],
+        )
+        self.assertTrue(all(submodule["matches_expected_gitlink_sha"] for submodule in submodules))
+        reachability = gate["stage_reachability"]
+        self.assertTrue(reachability["coverage_output_compare_reached"])
+        self.assertTrue(reachability["hybrid_sidecar_run_reached"])
+        compare = gate["compare_result"]
+        self.assertEqual(compare["acceptance_policy"], "coverage_output_equivalence")
+        self.assertTrue(compare["coverage_output_equivalence_passed"])
+        self.assertEqual(compare["coverage_output_mismatch_count"], 0)
+        self.assertEqual(compare["compared_state_pair_count"], 64)
+        self.assertEqual(compare["strict_output_word_count_per_state"], 29)
+        self.assertEqual(compare["expected_total_bytes_per_state"], 116)
+        self.assertEqual(compare["compared_word_count"], 1856)
+        diagnostic = gate["diagnostic_state_result"]
+        self.assertFalse(diagnostic["raw_final_state_match"])
+        self.assertFalse(diagnostic["raw_full_state_equality_required"])
+        self.assertTrue(diagnostic["normalized_final_state_equivalence_passed"])
+        failures = gate["failure_classification"]
+        self.assertIsNone(failures["selected_failure_class"])
+        self.assertFalse(failures["compare_failure"])
+        self.assertIn("not raw full-state equality", gate["accepted_non_claims"])
+        self.assertIn("not timing or speedup evidence", gate["accepted_non_claims"])
         self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
 
 
