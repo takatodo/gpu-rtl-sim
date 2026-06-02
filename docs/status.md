@@ -10,17 +10,17 @@ The sidecar contract is an implementation/runtime boundary, not a JSON-first des
 
 Goal: `modern_llm_serving_rtl_hybrid_conditions`
 
-Current priority: `package_verilator_use_gpu_first_scoped_wrapper_gate`
+Current priority: `external_user_readiness_audit_gate`
 
-Current gate: `config/scaling_gates/sync_verilator_use_gpu_first_path_completion_to_wrapper_task_gate.json`
+Current gate: `config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json`
 
-GitHub tracking: #9 is the parent `FC-042: Verilator --use-gpu first real path` goal, #32 completed the first scoped executable adapter path, #34 synced the canonical pointer after that completion, and #33 owns the current wrapper-packaging task.
+GitHub tracking: #9 is the completed parent `FC-042: Verilator --use-gpu first real path` goal pending closure after #35 sync, #32 completed the first scoped executable adapter path, #33 completed the scoped PATH-selected wrapper path, #35 owns the completion pointer sync, and #11 owns the current external-readiness audit.
 
-The completed adapter path proves one scoped Verilator-facing `--use-gpu` route as `filelist_known_template_pulp_ita_mha` / `pulp_ita_mha_gpu_cov_tb` with explicit `64x1` scheduling through reviewed sidecar metadata. The current gate authorizes packaging that same narrow route as a wrapper-facing operator path. It does not claim broad `--use-gpu` execution, arbitrary filelist support, dependency inference, automatic GPU allocation, timing/speedup, CIRCT execution, raw full-state equality, or JSON as the runtime ABI.
+The completed adapter and wrapper path proves one scoped Verilator-facing `--use-gpu` route as `filelist_known_template_pulp_ita_mha` / `pulp_ita_mha_gpu_cov_tb` with explicit `64x1` scheduling through reviewed sidecar metadata. The current gate moves the active task to external user readiness after that completion. It does not claim broad `--use-gpu` execution, arbitrary filelist support, dependency inference, automatic GPU allocation, timing/speedup, CIRCT execution, raw full-state equality, or JSON as the runtime ABI.
 
 ## Weakest Point
 
-Current weak point: #33 must package the completed accepted path without broadening it. The standalone operator `.filelist` is still not a general source of truth, so wrapper work must preserve reviewed template/source-list authority, reject arbitrary `-f` dependency inference, and keep GPU-unavailable and CPU-as-GPU cases fail-closed.
+Current weak point: #11 must make the repository honest and usable for an external reader after the scoped `--use-gpu` wrapper path completed. The main risk is over-reading the one reviewed filelist/template/top path as broad Verilator support, arbitrary `-f` dependency inference, automatic allocation, timing/speedup evidence, or production readiness.
 
 Historical context follows for audit. If an older paragraph below names a different current weak point, prefer the `Current Priority` section and this paragraph.
 
@@ -74,11 +74,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`package_verilator_use_gpu_first_scoped_wrapper_gate`
+`external_user_readiness_audit_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/sync_verilator_use_gpu_first_path_completion_to_wrapper_task_gate.json`
+`config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json`
 
 ## 追跡タスク
 

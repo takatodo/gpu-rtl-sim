@@ -1,5 +1,6 @@
 {
   "completed_goal_evidence": {
+    "verilator_use_gpu_wrapper_completion_sync_gate": "config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json",
     "verilator_use_gpu_first_executable_path_completion_sync_gate": "config/scaling_gates/sync_verilator_use_gpu_first_path_completion_to_wrapper_task_gate.json",
     "verilator_native_process_to_launcher_cli_execution_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_run_gate.json",
     "verilator_native_process_launcher_bridge_boundary_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate.json",

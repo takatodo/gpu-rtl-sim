@@ -1,0 +1,62 @@
+{
+  "gate": "sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate",
+  "status": "accepted_current_pointer_sync_after_scoped_use_gpu_wrapper_completion",
+  "github_parent_goal_issue": 9,
+  "github_completed_task_issue": 33,
+  "github_sync_task_issue": 35,
+  "github_next_task_issue": 11,
+  "completed_task": {
+    "name": "package_verilator_use_gpu_first_scoped_wrapper_gate",
+    "result": "first scoped PATH-selected Verilator --use-gpu wrapper completed",
+    "implementation_commit": "5bbb388",
+    "docs_execution_wording_commit": "238c980",
+    "supported_path": {
+      "target": "filelist_known_template_pulp_ita_mha",
+      "filelist": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+      "top": "pulp_ita_mha_gpu_cov_tb",
+      "accelerator": "sidecar-gpu",
+      "states": 64,
+      "steps": 1,
+      "shape": "64x1",
+      "wrapper_command": "artifacts/use-gpu-wrapper/verilator"
+    },
+    "accepted_policy": "coverage_output_equivalence",
+    "coverage_output_mismatch_count": 0,
+    "compared_word_count": 1856,
+    "sidecar_execution_invoked": true,
+    "cpu_as_gpu_fallback": false,
+    "generated_report_is_source_of_truth": false
+  },
+  "parent_goal_closure_decision": {
+    "github_issue": 9,
+    "decision": "close_after_this_sync",
+    "reason": "The scoped documented wrapper command reached sidecar build/run/compare with coverage_output_equivalence mismatch_count 0, and unsupported paths remain fail-closed."
+  },
+  "current_priority": "external_user_readiness_audit_gate",
+  "current_priority_source_artifact": "config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json",
+  "required_next_task": {
+    "github_issue": 11,
+    "name": "external_user_readiness_audit_gate",
+    "summary": "Audit whether the repository is honest and usable for an external reader after the scoped --use-gpu wrapper path completed."
+  },
+  "source_of_truth_files_synced_by_this_gate": [
+    "config/selection.json",
+    "config/selection_extensions.json",
+    "README.md",
+    "docs/status.md",
+    "docs/roadmap.md"
+  ],
+  "non_claims": [
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic dependency inference",
+    "not automatic GPU allocation",
+    "not timing or speedup evidence",
+    "not CIRCT execution support",
+    "not raw full-state equality",
+    "not JSON runtime ABI",
+    "not production throughput",
+    "not upstream Verilator native support"
+  ],
+  "next_task": "external_user_readiness_audit_gate"
+}

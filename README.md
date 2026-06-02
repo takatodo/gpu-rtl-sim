@@ -10,8 +10,8 @@ The contract is the boundary between frontend-owned RTL/build information and si
 
 Current pointer, mirrored from `config/selection.json`:
 
-- `current_priority`: `package_verilator_use_gpu_first_scoped_wrapper_gate`
-- `current_priority_source_artifact`: `config/scaling_gates/sync_verilator_use_gpu_first_path_completion_to_wrapper_task_gate.json`
+- `current_priority`: `external_user_readiness_audit_gate`
+- `current_priority_source_artifact`: `config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json`
 
 The long-term shorthand Verilator-facing UX target remains:
 
@@ -21,7 +21,7 @@ verilator --use-gpu -f filelist.f --top-module top
 
 That endpoint is not yet a general Verilator replacement. The current canonical preview and parser-minimum spelling is `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`. The current implementation is a scoped hybrid sidecar path with Verilator-like option plumbing. Supported paths should reach the GPU sidecar flow and compare CPU vs hybrid output. Unsupported paths should fail clearly instead of silently falling back or claiming GPU optimization.
 
-The first scoped executable `--use-gpu` adapter path is complete. The current `--use-gpu` work is packaging that proven path as a Verilator-facing wrapper. It still selects one reviewed filelist/template/top path, requires an explicit `64x1` schedule unless a later reviewed gate changes that wrapper rule, and must keep unsupported paths fail-closed without adding arbitrary filelist support, dependency inference, automatic GPU allocation, timing/speedup, CIRCT execution, raw-state equality, or a JSON runtime ABI.
+The first scoped executable `--use-gpu` adapter path and PATH-selected wrapper path are complete for one reviewed filelist/template/top path with explicit `64x1` scheduling. The current work is the external user readiness audit: verify that docs, issue state, generated-output policy, and non-claims match that narrow support boundary before presenting the repository as usable by someone outside the current agent loop.
 
 The frontend-neutral research target is:
 
