@@ -13,6 +13,12 @@ IMPLEMENTATION_GATE = (
     / "scaling_gates"
     / "implement_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_gate.json"
 )
+EXECUTION_RUN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_gate.json"
+)
 BASE_ARGS = [
     "verilator", "--cc", "--timing", "-Mdir", "artifacts/pulp_ita_mha_obj_dir",
     "--top-module", "pulp_ita_mha_gpu_cov_tb", "-DTRACE=1", "-Wno-fatal",
@@ -169,6 +175,40 @@ class VerilatorProcessLauncherBridgeObservableOrderingHelperTest(unittest.TestCa
         self.assertFalse(policy["new_execution_allowed_by_this_gate"])
         self.assertFalse(policy["bridge_path_launcher_start_claim_allowed_by_gate_alone"])
         self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_bridge_path"])
+        self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
+
+    def test_execution_run_gate_records_build_stage_failure_without_compare_claim(self) -> None:
+        gate = json.loads(EXECUTION_RUN_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_boundary_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_run_gate",
+        )
+        self.assertEqual(gate["clean_worktree_evidence"]["helper_validation_exit_code"], 0)
+        self.assertEqual(gate["clean_worktree_evidence"]["launcher_exit_code"], 1)
+        precondition = gate["observable_ordering_precondition"]
+        self.assertTrue(precondition["reviewed_helper_output_validated_before_runtime_attempt"])
+        self.assertFalse(precondition["launcher_start_allowed_status_is_launcher_start_evidence"])
+        result = gate["runtime_attempt_result"]
+        self.assertTrue(result["runtime_attempt_started"])
+        self.assertTrue(result["launcher_process_invoked"])
+        self.assertTrue(result["launcher_command_started_from_exact_structured_argv"])
+        self.assertTrue(result["verilator_build_stage_reached"])
+        self.assertFalse(result["hybrid_sidecar_run_reached"])
+        self.assertFalse(result["coverage_output_compare_reached"])
+        self.assertFalse(result["timing_measured"])
+        self.assertEqual(result["failure_class"], "sidecar_stage_failure")
+        self.assertEqual(result["failure_subclass"], "verilator_build_missing_third_party_sources")
+        observed = gate["observed_failure"]
+        self.assertEqual(observed["missing_source_file_count_observed"], 26)
+        self.assertIsNone(observed["compare_report"])
+        self.assertIsNone(observed["coverage_output_mismatch_count"])
+        self.assertIn("not direct Verilator internal sidecar execution", gate["accepted_non_claims"])
+        self.assertIn("not bridge-path coverage-output equivalence", gate["accepted_non_claims"])
         self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
 
 

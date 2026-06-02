@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "gate": "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_gate",
+  "status": "blocked_at_scoped_verilator_build_input_resolution",
+  "objective": "Run the narrow future runtime attempt authorized by the observable-ordering execution boundary review, after validating the reviewed non-executing helper output, without treating helper readiness as launcher-start evidence or claiming sidecar compare, timing, direct Verilator sidecar execution, broad native option support, arbitrary filelists, automatic allocation, runtime/ABI changes, raw-state equality, or production throughput.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_boundary_gate.json",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_boundary_gate.json",
+  "source_helper_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_implementation_gate.json",
+  "source_helper_implementation_gate": "config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_run_gate",
+  "native_invocation_scope": {
+    "target": "pulp_ita_mha",
+    "template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "shape": "64x1",
+    "state_count": 64,
+    "step_count": 1,
+    "correctness_policy_for_later_compare": "coverage_output_equivalence",
+    "launcher_command_argv": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ]
+  },
+  "clean_worktree_evidence": {
+    "head": "3676143",
+    "helper_validation_command": [
+      "python3",
+      "-m",
+      "unittest",
+      "tests.contract.test_verilator_process_launcher_bridge_observable_ordering_helper",
+      "-q"
+    ],
+    "helper_validation_exit_code": 0,
+    "launcher_command": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ],
+    "launcher_exit_code": 1,
+    "generated_outputs_are_noncanonical": true,
+    "local_absolute_paths_recorded": false
+  },
+  "observable_ordering_precondition": {
+    "reviewed_helper_output_validated_before_runtime_attempt": true,
+    "surface": "native_verilator_parser_direct_command_path_verilator_process_launcher_bridge_observable_ordering_helper",
+    "status": "verilator_process_launcher_bridge_observable_ordering_helper_ready_for_review",
+    "observable_ordering_trace_event_count": 7,
+    "observable_ordering_trace_monotonic": true,
+    "launcher_start_allowed_status_emitted_after_trace": true,
+    "launcher_start_allowed_status_is_launcher_start_evidence": false,
+    "observable_ordering_trace_is_execution_authority": false,
+    "observable_ordering_trace_is_correctness_evidence": false
+  },
+  "runtime_attempt_result": {
+    "runtime_attempt_started": true,
+    "launcher_start_attempted_after_helper_validation": true,
+    "launcher_process_invoked": true,
+    "launcher_command_started_from_exact_structured_argv": true,
+    "launcher_start_from_shell_string_used": false,
+    "launcher_start_from_generated_command_text_used": false,
+    "verilator_build_stage_reached": true,
+    "hybrid_sidecar_run_reached": false,
+    "coverage_output_compare_reached": false,
+    "timing_measured": false,
+    "runtime_or_abi_changed": false,
+    "automatic_gpu_allocation_used": false,
+    "failure_class": "sidecar_stage_failure",
+    "failure_subclass": "verilator_build_missing_third_party_sources",
+    "failed_stage": "verilator_build_input_resolution"
+  },
+  "observed_failure": {
+    "verilator_error_summary": "Verilator could not resolve required third_party/common_cells and third_party/ITA source files from the scoped pulp_ita_mha template before compare.",
+    "missing_source_file_count_observed": 26,
+    "missing_source_file_examples": [
+      "third_party/common_cells/src/cf_math_pkg.sv",
+      "third_party/common_cells/src/lzc.sv",
+      "third_party/common_cells/src/fifo_v3.sv",
+      "third_party/ITA/src/ita_package.sv",
+      "third_party/ITA/src/ita.sv"
+    ],
+    "coverage_output_mismatch_count": null,
+    "compare_report": null
+  },
+  "failure_classification": {
+    "selected_failure_class": "sidecar_stage_failure",
+    "not_launcher_cli_invocation_failure_reason": "The python launcher command started and invoked the scoped Verilator build command; the chain stopped inside build input resolution.",
+    "not_compare_failure_reason": "coverage-output compare was not reached.",
+    "not_timing_claim_without_measurement_reason": "no timing or speedup claim is made by this gate.",
+    "source_or_template_authority_risk": "The scoped template names third_party sources that are absent in the clean worktree; the next review should decide whether the fix is submodule/source materialization or a narrower source-closure gate."
+  },
+  "accepted_non_claims": [
+    "not direct Verilator internal sidecar execution",
+    "not bridge-path coverage-output equivalence",
+    "not timing or speedup evidence",
+    "not broad native option support",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_run_gate",
+    "must_review": [
+      "whether sidecar_stage_failure is the honest failure class for a launcher process that reaches Verilator build input resolution",
+      "whether helper validation remains a precondition rather than launcher-start evidence",
+      "whether exact structured argv was sufficient evidence for the scoped launcher attempt",
+      "whether missing third_party source closure should be fixed before retrying bridge-path compare",
+      "whether compare and timing claims remain blocked"
+    ],
+    "must_not_claim": [
+      "coverage-output compare reached from this run",
+      "coverage-output equivalence passed from this run",
+      "direct Verilator sidecar execution",
+      "timing or speedup evidence",
+      "broad native option support",
+      "arbitrary RTL or filelist support",
+      "automatic GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_run_gate"
+}
