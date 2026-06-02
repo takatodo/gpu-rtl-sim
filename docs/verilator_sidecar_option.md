@@ -71,6 +71,27 @@ python3 src/tools/run_hybrid_benchmark.py <target> \
   --dry-run
 ```
 
+The first executable `--use-gpu` adapter is deliberately one path wide:
+
+```bash
+python3 src/tools/verilator_use_gpu_first_path.py --cc \
+  -f config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json \
+  --top-module pulp_ita_mha_gpu_cov_tb \
+  --use-gpu \
+  --sim-accel sidecar-gpu \
+  --sim-accel-states 64 \
+  --sim-accel-steps 1 \
+  --first-use-gpu-dry-run
+```
+
+Without `--first-use-gpu-dry-run`, that adapter validates the reviewed
+filelist/template authority and exact `64x1` schedule, then delegates to
+`python3 src/tools/run_hybrid_template.py
+config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape
+64x1`. Unknown filelists, top mismatch, missing schedule, missing source
+authority, launcher failure, or missing `coverage_output_equivalence` mismatch
+count `0` fail closed. This is not broad Verilator support.
+
 ## RTLMeter User Path
 
 RTLMeter should stay a RTLMeter workflow. The intended user path is to keep
