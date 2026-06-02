@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate",
+  "status": "defined_source_closure_materialization_boundary",
+  "objective": "Define the minimal clean-worktree source-closure materialization boundary required before retrying the observable-ordering bridge-path launcher run for pulp_ita_mha 64x1.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_run_gate.json",
+  "source_run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate",
+  "definition_decision": {
+    "defined": true,
+    "definition_only": true,
+    "selected_boundary": "submodule_materialization_preflight_before_bridge_retry",
+    "reason": [
+      "the previous run reached Verilator build input resolution from exact structured argv",
+      "the build stopped because clean-worktree third_party source files were absent",
+      "the missing roots are gitlink-backed submodules rather than generated outputs",
+      "a reproducible source materialization preflight is required before retrying bridge-path compare"
+    ],
+    "weakest_point": "Submodule materialization fixes the clean-worktree missing-source blocker, but it does not by itself prove Verilator build success, sidecar execution, coverage-output equivalence, timing, broad native option support, arbitrary filelist support, or automatic GPU allocation."
+  },
+  "source_closure_authority": {
+    "target": "pulp_ita_mha",
+    "template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "template_source_closure_status": "promoted_full_ita_mha_dependency_template_boundary",
+    "template_source_file_count": 29,
+    "required_submodules": [
+      {
+        "path": "third_party/ITA",
+        "url": "https://github.com/pulp-platform/ITA.git",
+        "gitlink_sha": "ba96519becce195d64e85eb9a5302e8a1d5487e7"
+      },
+      {
+        "path": "third_party/common_cells",
+        "url": "https://github.com/pulp-platform/common_cells.git",
+        "gitlink_sha": "c27bce39ebb2e6bae52f60960814a2afca7bd4cb"
+      }
+    ],
+    "required_overlay_roots": [
+      "overlays/ITA/src"
+    ],
+    "generated_outputs_are_source_closure_authority": false
+  },
+  "required_materialization_preflight": {
+    "command": [
+      "git",
+      "submodule",
+      "update",
+      "--init",
+      "third_party/ITA",
+      "third_party/common_cells"
+    ],
+    "must_run_in_clean_worktree_before_retry": true,
+    "must_not_add_generated_outputs": true,
+    "must_verify_source_files_from_template": true,
+    "required_file_examples": [
+      "third_party/common_cells/src/cf_math_pkg.sv",
+      "third_party/common_cells/src/lzc.sv",
+      "third_party/common_cells/src/fifo_v3.sv",
+      "third_party/ITA/src/ita_package.sv",
+      "third_party/ITA/src/ita.sv",
+      "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv"
+    ],
+    "expected_missing_source_count_after_preflight": 0
+  },
+  "future_retry_scope": {
+    "target": "pulp_ita_mha",
+    "shape": "64x1",
+    "launcher_command_argv": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ],
+    "retry_allowed_only_after_review_and_materialization_run_gate": true,
+    "compare_claim_requires_future_retry_compare_reached": true,
+    "timing_claim_requires_separate_timing_gate": true
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate",
+    "must_review": [
+      "whether submodule materialization is the correct clean-worktree preflight",
+      "whether the source closure remains scoped to pulp_ita_mha 64x1",
+      "whether source file existence must be checked before launcher retry",
+      "whether compare and timing claims remain blocked"
+    ],
+    "must_not_claim": [
+      "source closure has been materialized by this definition gate",
+      "Verilator build success",
+      "hybrid sidecar run success",
+      "coverage-output compare reached",
+      "coverage-output equivalence passed",
+      "timing or speedup evidence",
+      "broad native option support",
+      "arbitrary filelist support",
+      "automatic GPU allocation"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "future_review_gate_allowed": true,
+    "future_materialization_run_allowed_after_review": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "coverage_output_equivalence_claim_reached_from_bridge_path": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_this_gate": false,
+    "timing_or_speedup_claim_allowed_by_this_gate": false,
+    "broad_native_option_support_claim_allowed_by_this_gate": false,
+    "arbitrary_filelist_support_claim_allowed_by_this_gate": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate"
+}

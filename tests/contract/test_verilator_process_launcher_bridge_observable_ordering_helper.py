@@ -25,6 +25,12 @@ EXECUTION_RUN_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_run_gate.json"
 )
+SOURCE_CLOSURE_DEFINITION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json"
+)
 BASE_ARGS = [
     "verilator", "--cc", "--timing", "-Mdir", "artifacts/pulp_ita_mha_obj_dir",
     "--top-module", "pulp_ita_mha_gpu_cov_tb", "-DTRACE=1", "-Wno-fatal",
@@ -248,6 +254,41 @@ class VerilatorProcessLauncherBridgeObservableOrderingHelperTest(unittest.TestCa
         )
         policy = gate["acceptance_policy"]
         self.assertFalse(policy["new_execution_allowed_by_this_review"])
+        self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_bridge_path"])
+        self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
+
+    def test_source_closure_materialization_definition_scopes_submodule_preflight(self) -> None:
+        gate = json.loads(SOURCE_CLOSURE_DEFINITION_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_run_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate",
+        )
+        decision = gate["definition_decision"]
+        self.assertTrue(decision["defined"])
+        self.assertTrue(decision["definition_only"])
+        authority = gate["source_closure_authority"]
+        self.assertEqual(authority["target"], "pulp_ita_mha")
+        self.assertEqual(authority["template_source_file_count"], 29)
+        self.assertEqual(
+            [submodule["path"] for submodule in authority["required_submodules"]],
+            ["third_party/ITA", "third_party/common_cells"],
+        )
+        preflight = gate["required_materialization_preflight"]
+        self.assertEqual(
+            preflight["command"],
+            ["git", "submodule", "update", "--init", "third_party/ITA", "third_party/common_cells"],
+        )
+        self.assertTrue(preflight["must_run_in_clean_worktree_before_retry"])
+        self.assertTrue(preflight["must_verify_source_files_from_template"])
+        self.assertEqual(preflight["expected_missing_source_count_after_preflight"], 0)
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["definition_only"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
         self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_bridge_path"])
         self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
 
