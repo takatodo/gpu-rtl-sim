@@ -49,6 +49,12 @@ SOURCE_CLOSURE_RUN_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_run_gate.json"
 )
+AFTER_SOURCE_CLOSURE_RETRY_DEFINITION_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate.json"
+)
 BASE_ARGS = [
     "verilator", "--cc", "--timing", "-Mdir", "artifacts/pulp_ita_mha_obj_dir",
     "--top-module", "pulp_ita_mha_gpu_cov_tb", "-DTRACE=1", "-Wno-fatal",
@@ -391,6 +397,40 @@ class VerilatorProcessLauncherBridgeObservableOrderingHelperTest(unittest.TestCa
         self.assertTrue(policy["future_launcher_retry_definition_allowed"])
         self.assertFalse(policy["new_execution_allowed_by_this_review"])
         self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_bridge_path"])
+        self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
+
+    def test_after_source_closure_retry_definition_requires_materialization_before_launcher(self) -> None:
+        gate = json.loads(AFTER_SOURCE_CLOSURE_RETRY_DEFINITION_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_run_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate",
+        )
+        self.assertTrue(gate["definition_decision"]["definition_only"])
+        sequence = gate["required_clean_worktree_sequence"]
+        self.assertEqual([step["step"] for step in sequence], ["materialize_required_submodules", "verify_template_source_closure", "run_scoped_launcher_retry"])
+        self.assertEqual(
+            sequence[0]["argv"],
+            ["git", "submodule", "update", "--init", "third_party/ITA", "third_party/common_cells"],
+        )
+        self.assertEqual(sequence[1]["expected_source_file_count"], 29)
+        self.assertEqual(sequence[1]["expected_missing_source_file_count"], 0)
+        self.assertEqual(
+            sequence[2]["argv"],
+            ["python3", "src/tools/run_hybrid_template.py", "config/slice_launch_templates/pulp_ita_mha.json", "--shape", "64x1"],
+        )
+        self.assertIn("sidecar_stage_failure", gate["retry_failure_classes"])
+        success = gate["retry_success_boundary"]
+        self.assertTrue(success["coverage_output_compare_must_be_reached"])
+        self.assertTrue(success["coverage_output_equivalence_must_pass_for_equivalence_claim"])
+        self.assertTrue(success["timing_claim_requires_separate_gate"])
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["definition_only"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
         self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
 
 
