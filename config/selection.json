@@ -4,6 +4,7 @@
   "current_priority": "external_user_readiness_audit_gate",
   "current_priority_source_artifact": "config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json",
   "active_scope": {
+    "scope_semantics": "Regression/measurement target inventory only; this does not define the current external user support surface, broad --use-gpu support, arbitrary filelist inference, or automatic GPU allocation.",
     "active_target_count": 127,
     "active_tlul_target_count": 22,
     "active_primitive_target_count": 105,
@@ -13,7 +14,7 @@
     "coverage_output_equivalence_report": "reports/tlul_coverage_output_equivalence.json",
     "strict_output_words_per_state": 29,
     "strict_output_bytes_per_state": 116,
-    "claim": "Twenty-two active TL-UL seeds plus one hundred five active OpenTitan primitive seeds through prim_generic_and2 pass scoped coverage-output equivalence; TL-UL shared depth remains 50/50 and all one hundred five primitive depth gates pass 2/2."
+    "claim": "Regression inventory claim: twenty-two active TL-UL seeds plus one hundred five active OpenTitan primitive seeds through prim_generic_and2 pass scoped coverage-output equivalence; TL-UL shared depth remains 50/50 and all one hundred five primitive depth gates pass 2/2. This does not broaden the current external-readiness path beyond the scoped reviewed --use-gpu wrapper route."
   },
   "candidate_targets": [],
   "coverage_output_equivalence": {

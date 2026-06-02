@@ -14,7 +14,7 @@ Current priority: `external_user_readiness_audit_gate`
 
 Current gate: `config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json`
 
-GitHub tracking: #9 is the completed parent `FC-042: Verilator --use-gpu first real path` goal pending closure after #35 sync, #32 completed the first scoped executable adapter path, #33 completed the scoped PATH-selected wrapper path, #35 owns the completion pointer sync, and #11 owns the current external-readiness audit.
+GitHub tracking: #9 is the closed parent `FC-042: Verilator --use-gpu first real path` goal, #32 completed the first scoped executable adapter path, #33 completed the scoped PATH-selected wrapper path, #35 closed the completion pointer sync, and #11 owns the current external-readiness audit.
 
 The completed adapter and wrapper path proves one scoped Verilator-facing `--use-gpu` route as `filelist_known_template_pulp_ita_mha` / `pulp_ita_mha_gpu_cov_tb` with explicit `64x1` scheduling through reviewed sidecar metadata. The current gate moves the active task to external user readiness after that completion. It does not claim broad `--use-gpu` execution, arbitrary filelist support, dependency inference, automatic GPU allocation, timing/speedup, CIRCT execution, raw full-state equality, or JSON as the runtime ABI.
 
@@ -82,7 +82,7 @@ Current gate (authorizing artifact):
 
 ## 追跡タスク
 
-- `review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate` で、structured argv 起動成功と coverage-output compare 成功を direct Verilator sidecar 実行として過大主張していないかを確認する。
+- `external_user_readiness_audit_gate` で、README/docs/tool surface/GitHub/for_codex の現在ポインタ、非主張、生成物ポリシーを外部利用者目線で監査する。
 - `docs/migration_notes.md` の「シンプル検証からの乖離」節を、前提変更時に見直す。
 - 新規ゲート完了時は `config/selection_extensions.json` の `completed_goal_evidence` / `records/scaling_gates/public_benchmark_pack_goal_completion_audit.json` の整合を取る。
 - ゲート JSON に残る履歴表記の例: `next_task: select_next_measurement_after_paged_attention_kv_cache_scale_up_next_shapes_public_pack_refresh`（正の源泉は常に `config/selection.json` の `current_priority` を優先）。マージ後の全体像が必要なら `src/tools/selection_state.py` の `load_selection` を参照。

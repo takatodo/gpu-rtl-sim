@@ -25,15 +25,16 @@ fail closed, and any RTLMeter JSON capture remains debug/inspection metadata.
 | `src/tools/run_hybrid_benchmark.py` | Verilator-like target/shape wrapper for supported benchmark workloads. Start here for routine dry-runs, summaries, and supported target discovery. |
 | `src/tools/verilator_sidecar_shim.py` | Non-executing JSON shim for the planned `verilator --sim-accel sidecar-gpu` option. Use to inspect readiness, stage details, and efficiency estimate with stable exit codes. |
 | `src/tools/run_hybrid_template.py` | Lower-level slice-template runner. Use when working directly from `config/slice_launch_templates/*.json`. |
-| `src/tools/run_results_reproduction.py` | Public-pack reproduction, aggregate measurement workflows, and scoped policy dry-runs such as `--filelist-shape-breadth-gpu-allocation-policy --dry-run` and `--filelist-broader-shape-gpu-allocation-policy --dry-run`. |
+| `src/tools/run_results_reproduction.py` | Public-pack reproduction, aggregate measurement workflows, and developer/audit-only policy dry-runs. Policy dry-runs do not imply arbitrary filelist support or automatic optimal GPU allocation. |
 | `src/tools/gen_hybrid_config.py` | Generate a new slice template, coverage-region file, and scaling-gate draft from a target/top/overlay description. |
 
 RTLMeter helpers under `src/tools/rtlmeter_*` are not routine entrypoints yet.
 They exist to capture RTLMeter's Verilator command shape and preserve the future
 RTLMeter user path while the sidecar contract is hardened.
-`src/tools/rtlmeter_cpu_gpu_compare_integration.py` is the first executing
-RTLMeter gate: it is opt-in, writes generated evidence under `reports/`, and
-fails closed when RTLMeter or the sidecar Verilator wrapper is unavailable.
+`src/tools/rtlmeter_cpu_gpu_compare_integration.py` is an opt-in
+RTLMeter reference-vs-sidecar-candidate compare helper. It writes generated
+evidence under `reports/` and fails closed when RTLMeter or the sidecar
+Verilator wrapper is unavailable.
 When no `RTLMETER_SIDECAR_VERILATOR_WRAPPER` is supplied, it creates an ignored
 `artifacts/.../wrapper/verilator` shim backed by
 `src/tools/rtlmeter_verilator_wrapper_runtime.py`. That shim is an explicit
@@ -61,6 +62,12 @@ not the stable sidecar ABI and does not authorize execution.
 The RTLMeter launcher materializer can only produce `run_hybrid_template.py`
 argv after metadata-ready handoff plus a reviewed template path; it still does
 not invoke the launcher.
+The native-Verilator bridge work has accepted metadata and failure-classification
+evidence for a scoped wrapper-mediated process-to-launcher path. That evidence
+is a technical prerequisite, not the current public task: the active task is the
+external user readiness audit after the scoped `--use-gpu` wrapper completion.
+Launcher start, bridge-path compare, timing, and broad native-option claims
+remain out of scope.
 RTLMeter context candidates distinguish compile source closure from hybrid
 execution source closure; `Example:kind:hello` has known compile inputs, but the
 current host-probe contract is not execution-compatible with its stdout/cycles
@@ -69,6 +76,16 @@ evidence.
 ## Runtime Building Blocks
 
 The near-term target end state is a direct Verilator option, described in `docs/verilator_sidecar_option.md`.
+The current active work is the external user readiness audit, not additional
+native direct-command implementation. Observable-ordering helper work remains a
+technical follow-up lane and must not be presented as current public support.
+The separate process-to-launcher CLI run started the exact `run_hybrid_template.py`
+launcher argv for `pulp_ita_mha 64x1`, reached sidecar stages, and reached
+`coverage_output_equivalence` compare from reviewed fixture metadata, but it
+remains prerequisite evidence rather than bridge-path authority. Timing,
+broad filelist support, runtime/ABI change, production-throughput claims, broad
+native option support, and direct Verilator sidecar execution remain out of
+scope until later reviewed evidence proves them.
 Until that exists in Verilator itself, use this compatibility spelling:
 
 ```bash

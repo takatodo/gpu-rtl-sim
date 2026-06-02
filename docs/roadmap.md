@@ -26,7 +26,7 @@ Current gate:
 
 `config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json`
 
-GitHub tracking: #9 is the completed parent `FC-042: Verilator --use-gpu first real path` goal pending closure after #35 sync, #32 completed the first scoped executable adapter path, #33 completed the scoped PATH-selected wrapper path, #35 owns this completion pointer sync, and #11 owns the current external-readiness audit.
+GitHub tracking: #9 is the closed parent `FC-042: Verilator --use-gpu first real path` goal, #32 completed the first scoped executable adapter path, #33 completed the scoped PATH-selected wrapper path, #35 closed the completion pointer sync, and #11 owns the current external-readiness audit.
 
 Current alignment check: `config/selection.json`, `docs/status.md`, `README.md`, and this roadmap agree on the **current_priority** and **current_priority_source_artifact** strings above. Historical completion gates may still list older `next_task` labels; treat `selection.json` as authoritative for the open pointer.
 
@@ -476,7 +476,7 @@ Config-generation validation breadth public refresh:
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public refresh review gate: `config/scaling_gates/public_results_packaging_refresh_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_review_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median public-pack externalization completion gate: `config/scaling_gates/public_benchmark_pack_externalization_completion_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_gate.json`
 - filelist shape-breadth GPU allocation policy broader shape sweep policy repeat-median next-selection gate: `config/scaling_gates/next_measurement_selection_after_filelist_shape_breadth_gpu_allocation_policy_broader_shape_sweep_policy_repeat_median_public_pack_refresh_gate.json`
-- current next task: `run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate`
+- historical next task at this checkpoint: `review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_implementation_gate`; current project priority is `external_user_readiness_audit_gate`
 - reason: the compact suite validates debug inspection surface, high/low shape classes, resident dry-run, and filelist execution evidence; the resident decode-like mitigation is measured, public-pack refreshed, and externalized, and the scoped filelist-derived repeat-median result is accepted, public-pack refreshed, externally closed, selected for conservative policy broadening, defined, separated into a dry-run workflow, reviewed, packaged into a public-refresh definition, accepted as a public-pack archive dry-run, externally closed, selected for scoped non-dry-run execution definition, and fixed to the two policy-recommended `64x1` commands
 
 Config-generation validation shape breadth definition:
@@ -818,18 +818,15 @@ Tracked evidence:
 
 Recommended next gate:
 
-`review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate`
+`external_user_readiness_audit_gate`
 
 Acceptance criteria:
 
-- use `config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate.json` as the source artifact
-- review whether reviewed invocation fixture metadata started the existing launcher from the structured argv
-- review whether sidecar stages executed and whether coverage-output compare reached mismatch count `0`
-- verify the run is not over-claimed as direct Verilator sidecar execution, broad native option support, timing evidence, automatic allocation, runtime/ABI change, raw-state equality, or production throughput
-- preserve the distinction between structured launcher invocation evidence and direct Verilator sidecar execution
-- preserve the `pulp_ita_mha` / `64x1` scope until a later reviewed run broadens it
-- keep timing, arbitrary filelist support, automatic allocation, runtime/ABI changes, raw-state equality, and production throughput out of scope
-- keep direct-Verilator sidecar execution, timing, arbitrary RTL/filelist inference, automatic GPU allocation, runtime/ABI change, production-serving, and raw full-state equality out of scope unless separately proven
+- use `config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json` as the source artifact
+- verify `README.md`, `docs/status.md`, this roadmap, `docs/tool_surface.md`, `for_codex/issues.md`, and GitHub issues agree that #9 and #35 are completed and #11 is current
+- run or classify the documented non-GPU-required commands without treating blocked GPU runtime access as success
+- demote or move misleading generated, archival, or agent-only surface area instead of adding a second source of truth
+- keep broad `verilator --use-gpu`, arbitrary filelist inference, automatic GPU allocation, timing/speedup, CIRCT execution, raw-state equality, JSON runtime ABI, and production-readiness claims out of scope unless later gates prove them
 
 Deferred technical workstreams:
 

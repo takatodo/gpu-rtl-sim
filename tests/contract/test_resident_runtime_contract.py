@@ -33,7 +33,7 @@ class ReducedActiveSurfaceContractTest(ResidentRuntimeContractHelpers, unittest.
         )
         self.assertEqual(completed.returncode, 0, msg=completed.stderr)
         self.assertIn(
-            "review_verilator_use_gpu_first_real_path_gate",
+            "external_user_readiness_audit_gate",
             completed.stdout,
         )
 
@@ -54,11 +54,11 @@ class ReducedActiveSurfaceContractTest(ResidentRuntimeContractHelpers, unittest.
         self.assertEqual(selection["top_level_goal"], "modern_llm_serving_rtl_hybrid_conditions")
         self.assertEqual(
             selection["current_priority"],
-            "review_verilator_use_gpu_first_real_path_gate",
+            "external_user_readiness_audit_gate",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/define_verilator_use_gpu_first_real_path_gate.json",
+            "config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json",
         )
         self._assert_selection_evidence_paths(selection)
         self.assertEqual(selection["candidate_targets"], [])
