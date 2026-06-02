@@ -182,7 +182,7 @@ def _default_launcher(_resolution: Mapping[str, object], _root_path: Path) -> di
     validate_source_closure_for_execution(plan)
     run_plan(plan, dry_run=False, verbose=False)
     compare = json.loads(Path(plan.compare_report).read_text(encoding="utf-8"))
-    return {"returncode": 0, "compare_report_path": plan.compare_report.as_posix(), "compare_report": compare}
+    return {"returncode": 0, "compare_report_path": Path(plan.compare_report).resolve().relative_to(_root_path).as_posix(), "compare_report": compare}
 
 
 def execute_verilator_use_gpu_first_path(
