@@ -113,6 +113,10 @@ handled only by the reviewed first-path adapter and otherwise fails closed; the
 wrapper does not add arbitrary filelist support, automatic schedule selection,
 timing evidence, or upstream Verilator support.
 
+Remove `--first-use-gpu-dry-run` to execute the same scoped wrapper path through
+sidecar build/run/compare. The accepted correctness policy remains
+`coverage_output_equivalence`, not raw full-state equality.
+
 ## RTLMeter User Path
 
 RTLMeter should stay a RTLMeter workflow. The intended user path is to keep

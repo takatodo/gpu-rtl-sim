@@ -105,6 +105,10 @@ environment variable is set. GPU-intent argv is never delegated as CPU-only
 success; it must pass the same reviewed first-path authority above or fail
 closed.
 
+Remove `--first-use-gpu-dry-run` from the wrapper command to execute the same
+scoped path through sidecar build, run, and `coverage_output_equivalence`
+compare.
+
 After `git clean -fdX`, template and hybrid runs rebuild the local GPU pass
 tools and hybrid runtime binary on demand. Generated material remains under
 ignored build/report locations.
@@ -175,7 +179,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-s
 - If a dry-run fails, run `python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu` and pick one of the listed targets.
 - If a non-dry-run fails during build, initialize submodules with `git submodule update --init --recursive`.
 - If CPU-vs-hybrid compare reports raw state mismatch, check whether `coverage_output_equivalence` still passes; raw full-state equality is not the supported correctness policy.
-- If `verilator --use-gpu` style commands are needed before the #33 wrapper lands, use `src/tools/verilator_sidecar_shim.py` or `src/tools/verilator_use_gpu_first_path.py` as the scoped preview path.
+- If scoped `verilator --use-gpu` wrapper support is needed, materialize `artifacts/use-gpu-wrapper/verilator` as shown in Quickstart. Use `src/tools/verilator_use_gpu_first_path.py --first-use-gpu-dry-run` only when inspecting the underlying adapter directly.
 - If an RTLMeter command with `--compileArgs "--use-gpu"` only reports wrapper metadata, that is expected for the current public surface. It proves GPU intent reached the Verilator command path, not GPU execution or speedup.
 - If `third_party/rtlmeter/rtlmeter` fails from the repo root with `No module named 'src.rtlmeter'`, use the documented compare helper; it prepends `third_party/rtlmeter` to `PYTHONPATH` for RTLMeter execution.
 - If an RTLMeter wrapper request fails closed, check that the captured Verilator argv includes `--cc`, `-f <filelist>`, `--top-module <top>`, and either `--use-gpu` or expanded `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`.
