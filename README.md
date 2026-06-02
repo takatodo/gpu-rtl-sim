@@ -10,8 +10,8 @@ The contract is the boundary between frontend-owned RTL/build information and si
 
 Current pointer, mirrored from `config/selection.json`:
 
-- `current_priority`: `review_verilator_use_gpu_first_real_path_gate`
-- `current_priority_source_artifact`: `config/scaling_gates/define_verilator_use_gpu_first_real_path_gate.json`
+- `current_priority`: `review_verilator_use_gpu_first_executable_path_gate`
+- `current_priority_source_artifact`: `config/scaling_gates/define_verilator_use_gpu_first_executable_path_gate.json`
 
 The long-term shorthand Verilator-facing UX target remains:
 
@@ -21,7 +21,7 @@ verilator --use-gpu -f filelist.f --top-module top
 
 That endpoint is not yet a general Verilator replacement. The current canonical preview and parser-minimum spelling is `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`. The current implementation is a scoped hybrid sidecar path with Verilator-like option plumbing. Supported paths should reach the GPU sidecar flow and compare CPU vs hybrid output. Unsupported paths should fail clearly instead of silently falling back or claiming GPU optimization.
 
-The current `--use-gpu` work is a review-only first-real-path definition. It selects one reviewed filelist/template/top path, requires an explicit `64x1` schedule, and does not yet add execution, arbitrary filelist support, dependency inference, automatic GPU allocation, timing/speedup, CIRCT execution, raw-state equality, or a JSON runtime ABI.
+The current `--use-gpu` work is reviewing the first executable-path definition. It still selects one reviewed filelist/template/top path, requires an explicit `64x1` schedule, and does not yet add execution evidence, arbitrary filelist support, dependency inference, automatic GPU allocation, timing/speedup, CIRCT execution, raw-state equality, or a JSON runtime ABI.
 
 The frontend-neutral research target is:
 
