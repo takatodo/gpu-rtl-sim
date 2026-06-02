@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate",
+  "status": "accepted_source_closure_materialization_boundary",
+  "objective": "Review the source-closure materialization boundary and decide whether the next gate may run a scoped submodule materialization preflight before retrying bridge-path launcher execution.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json",
+  "source_execution_run_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_run_gate.json",
+  "current_priority": "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The definition identifies the missing clean-worktree source roots as gitlink-backed PULP ITA and common_cells submodules, keeps the scope limited to pulp_ita_mha 64x1, and requires explicit source-file verification before any bridge retry.",
+    "weakest_point": "Submodule materialization can remove the missing-source blocker, but it does not prove the Verilator build, sidecar run, compare, timing, direct Verilator sidecar execution, or automatic GPU allocation.",
+    "accepted_because": [
+      "the previous run stopped after launcher invocation at Verilator build input resolution",
+      "the required source roots are tracked submodules rather than generated artifacts",
+      "the preflight command is explicit and scoped to the two required submodules",
+      "source file existence is required before launcher retry",
+      "compare and timing claims remain blocked"
+    ]
+  },
+  "accepted_materialization_boundary": {
+    "materialization_command": [
+      "git",
+      "submodule",
+      "update",
+      "--init",
+      "third_party/ITA",
+      "third_party/common_cells"
+    ],
+    "must_run_in_clean_worktree_before_retry": true,
+    "must_verify_template_source_files": true,
+    "expected_template_source_file_count": 29,
+    "expected_missing_source_count_after_preflight": 0,
+    "generated_outputs_are_source_closure_authority": false
+  },
+  "accepted_scope": {
+    "target": "pulp_ita_mha",
+    "shape": "64x1",
+    "submodule_paths": [
+      "third_party/ITA",
+      "third_party/common_cells"
+    ],
+    "retry_after_materialization": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ]
+  },
+  "required_next_gate": {
+    "name": "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate",
+    "must_record": [
+      "submodule materialization command exit code",
+      "whether third_party/ITA and third_party/common_cells are checked out at tracked gitlink SHAs",
+      "whether all 29 template source files exist after materialization",
+      "whether generated outputs remain noncanonical",
+      "whether launcher retry is still blocked until a separate retry gate"
+    ],
+    "must_not_claim": [
+      "Verilator build success",
+      "hybrid sidecar run success",
+      "coverage-output compare reached",
+      "coverage-output equivalence passed",
+      "timing or speedup evidence",
+      "direct Verilator sidecar execution",
+      "automatic GPU allocation"
+    ]
+  },
+  "acceptance_policy": {
+    "review_gate": true,
+    "definition_gate_accepted": true,
+    "future_materialization_run_allowed": true,
+    "future_launcher_retry_allowed_by_this_review": false,
+    "new_public_cli_allowed_by_this_review": false,
+    "coverage_output_equivalence_claim_reached_from_bridge_path": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_this_review": false,
+    "timing_or_speedup_claim_allowed_by_this_review": false,
+    "broad_native_option_support_claim_allowed_by_this_review": false,
+    "arbitrary_filelist_support_claim_allowed_by_this_review": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_this_review": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate"
+}

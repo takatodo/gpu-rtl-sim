@@ -31,6 +31,12 @@ SOURCE_CLOSURE_DEFINITION_GATE = (
     / "scaling_gates"
     / "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json"
 )
+SOURCE_CLOSURE_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json"
+)
 BASE_ARGS = [
     "verilator", "--cc", "--timing", "-Mdir", "artifacts/pulp_ita_mha_obj_dir",
     "--top-module", "pulp_ita_mha_gpu_cov_tb", "-DTRACE=1", "-Wno-fatal",
@@ -289,6 +295,32 @@ class VerilatorProcessLauncherBridgeObservableOrderingHelperTest(unittest.TestCa
         policy = gate["acceptance_policy"]
         self.assertTrue(policy["definition_only"])
         self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_bridge_path"])
+        self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
+
+    def test_source_closure_materialization_review_allows_only_preflight_run(self) -> None:
+        gate = json.loads(SOURCE_CLOSURE_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_definition_gate"],
+            "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate",
+        )
+        self.assertTrue(gate["review_decision"]["accepted"])
+        boundary = gate["accepted_materialization_boundary"]
+        self.assertEqual(
+            boundary["materialization_command"],
+            ["git", "submodule", "update", "--init", "third_party/ITA", "third_party/common_cells"],
+        )
+        self.assertTrue(boundary["must_verify_template_source_files"])
+        self.assertEqual(boundary["expected_template_source_file_count"], 29)
+        self.assertEqual(boundary["expected_missing_source_count_after_preflight"], 0)
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["future_materialization_run_allowed"])
+        self.assertFalse(policy["future_launcher_retry_allowed_by_this_review"])
         self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_bridge_path"])
         self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
 
