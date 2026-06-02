@@ -37,6 +37,12 @@ SOURCE_CLOSURE_REVIEW_GATE = (
     / "scaling_gates"
     / "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json"
 )
+SOURCE_CLOSURE_RUN_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json"
+)
 BASE_ARGS = [
     "verilator", "--cc", "--timing", "-Mdir", "artifacts/pulp_ita_mha_obj_dir",
     "--top-module", "pulp_ita_mha_gpu_cov_tb", "-DTRACE=1", "-Wno-fatal",
@@ -322,6 +328,36 @@ class VerilatorProcessLauncherBridgeObservableOrderingHelperTest(unittest.TestCa
         self.assertTrue(policy["future_materialization_run_allowed"])
         self.assertFalse(policy["future_launcher_retry_allowed_by_this_review"])
         self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_bridge_path"])
+        self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
+
+    def test_source_closure_materialization_run_records_submodules_without_retry_claim(self) -> None:
+        gate = json.loads(SOURCE_CLOSURE_RUN_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_review_gate"],
+            "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_run_gate",
+        )
+        self.assertEqual(gate["clean_worktree_evidence"]["materialization_exit_code"], 0)
+        self.assertEqual(
+            [submodule["path"] for submodule in gate["materialized_submodules"]],
+            ["third_party/ITA", "third_party/common_cells"],
+        )
+        self.assertTrue(all(submodule["matches_expected_gitlink_sha"] for submodule in gate["materialized_submodules"]))
+        source_check = gate["template_source_file_check"]
+        self.assertEqual(source_check["source_file_count"], 29)
+        self.assertEqual(source_check["missing_source_file_count"], 0)
+        result = gate["run_result"]
+        self.assertTrue(result["source_closure_materialized"])
+        self.assertTrue(result["clean_worktree_missing_source_blocker_removed"])
+        self.assertFalse(result["launcher_retry_performed"])
+        self.assertFalse(result["verilator_build_performed"])
+        self.assertFalse(result["coverage_output_compare_reached"])
+        self.assertIn("not Verilator build success", gate["accepted_non_claims"])
+        self.assertIn("not coverage-output equivalence passed", gate["accepted_non_claims"])
         self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
 
 
