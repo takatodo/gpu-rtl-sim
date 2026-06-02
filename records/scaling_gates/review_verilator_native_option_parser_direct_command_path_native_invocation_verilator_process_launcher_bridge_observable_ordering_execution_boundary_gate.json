@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_boundary_gate",
+  "status": "accepted_observable_ordering_execution_boundary_definition",
+  "objective": "Review the future runtime-attempt boundary after the non-executing observable-ordering helper and decide whether a scoped run may attempt launcher start from exact structured argv without treating this review as runtime attempt, launcher start, sidecar execution, bridge-path compare, timing, broad native option support, arbitrary filelist support, automatic allocation, runtime/ABI change, raw-state equality, direct Verilator sidecar execution, or production throughput evidence.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_boundary_gate.json",
+  "source_helper_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_implementation_gate.json",
+  "source_helper_implementation_gate": "config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_gate.json",
+  "current_priority": "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The definition is narrow enough for one scoped future runtime attempt. It requires the reviewed non-executing observable-ordering helper output, keeps launcher-start-allowed status separate from launcher process start evidence, limits the launcher command to exact structured argv for pulp_ita_mha 64x1, and preserves distinct failure classes for launcher invocation, sidecar stages, compare, and timing claims.",
+    "weakest_point": "The next run may attempt launcher start, but this review still proves no runtime attempt, launcher process start, sidecar stage, bridge-path compare, timing, direct Verilator sidecar execution, broad native option support, arbitrary filelists, automatic allocation, runtime/ABI change, raw-state equality, or production throughput.",
+    "accepted_because": [
+      "the source definition is explicitly definition-only",
+      "helper output is accepted only as a future runtime-attempt precondition",
+      "launcher-start-allowed status is explicitly not launcher-start evidence",
+      "runtime attempt may start only after this review gate",
+      "launcher process start may be attempted only from exact structured argv",
+      "scope remains pulp_ita_mha 64x1",
+      "failure classes remain distinguishable after helper validation",
+      "generated reports and artifacts remain noncanonical evidence"
+    ]
+  },
+  "accepted_boundary": {
+    "definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_boundary_gate.json",
+    "future_runtime_attempt_allowed_after_review": true,
+    "runtime_attempt_started_by_this_review": false,
+    "launcher_process_started_by_this_review": false,
+    "sidecar_stage_execution_started_by_this_review": false,
+    "bridge_path_compare_reached_by_this_review": false,
+    "helper_output_is_precondition_only": true,
+    "launcher_start_allowed_status_is_launcher_start_evidence": false,
+    "observable_ordering_trace_is_execution_authority": false,
+    "observable_ordering_trace_is_correctness_evidence": false
+  },
+  "required_future_runtime_attempt_inputs": {
+    "surface": "native_verilator_parser_direct_command_path_verilator_process_launcher_bridge_observable_ordering_helper",
+    "status": "verilator_process_launcher_bridge_observable_ordering_helper_ready_for_review",
+    "bridge_metadata_validated": true,
+    "process_to_launcher_metadata_validated": true,
+    "explicit_sidecar_context_validated": true,
+    "unreviewed_sidecar_context_source_ref_rejected": true,
+    "structured_launcher_argv_validated": true,
+    "observable_ordering_trace_event_count": 7,
+    "observable_ordering_trace_must_be_monotonic": true,
+    "launcher_start_allowed_status_emitted_after_trace": true,
+    "launcher_command_argv": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ]
+  },
+  "accepted_scope": {
+    "target": "pulp_ita_mha",
+    "template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "shape": "64x1",
+    "state_count": 64,
+    "step_count": 1,
+    "correctness_policy_for_later_compare": "coverage_output_equivalence",
+    "scope_broadening_allowed_by_this_review": false
+  },
+  "failure_classes_to_preserve": {
+    "process_to_launcher_bridge_failure": "helper output cannot be tied to reviewed process-to-launcher metadata and exact structured argv before runtime attempt",
+    "launcher_cli_invocation_failure": "future runtime attempt reaches launcher start attempt but cannot start or complete launcher invocation safely",
+    "sidecar_stage_failure": "launcher starts, but scoped build or run stage fails before compare",
+    "compare_failure": "coverage_output_equivalence compare runs and records a mismatch",
+    "timing_claim_without_measurement": "timing or speedup is claimed without a separate timing gate"
+  },
+  "required_next_gate": {
+    "name": "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_gate",
+    "must_record": [
+      "whether reviewed helper output is validated before runtime attempt",
+      "whether launcher start is attempted only after observable ordering trace and only from exact structured argv",
+      "whether the launcher process starts or fails with launcher_cli_invocation_failure",
+      "whether sidecar stages are reached or fail with sidecar_stage_failure",
+      "whether coverage-output compare is reached from the bridge path",
+      "the exact failure class if the chain stops",
+      "all generated reports and artifacts as noncanonical evidence"
+    ],
+    "must_not_claim": [
+      "runtime attempt by this review gate",
+      "bridge-path launcher start by this review gate",
+      "bridge-path sidecar stages by this review gate",
+      "bridge-path coverage-output compare by this review gate",
+      "direct Verilator sidecar execution",
+      "timing or speedup evidence",
+      "broad native option support",
+      "arbitrary RTL or filelist support",
+      "automatic GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "source_definition_gate_accepted": true,
+    "future_runtime_attempt_allowed_after_review": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "runtime_attempt_claim_allowed_by_gate_alone": false,
+    "bridge_path_launcher_start_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_reached_from_bridge_path": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "broad_native_option_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_gate",
+  "non_claims": [
+    "not runtime attempt start",
+    "not bridge-path launcher start",
+    "not bridge-path sidecar stage execution",
+    "not bridge-path coverage-output compare",
+    "not direct Verilator sidecar execution",
+    "not timing or speedup evidence",
+    "not broad native option support",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
