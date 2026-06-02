@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_use_gpu_first_executable_path_gate",
+  "status": "accepted_scoped_first_executable_use_gpu_path_definition",
+  "objective": "Review the first executable Verilator-facing --use-gpu path definition before opening implementation work.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_use_gpu_first_executable_path_gate.json",
+  "github_issues": {
+    "parent_goal": {
+      "number": 9,
+      "url": "https://github.com/takatodo/gpu-rtl-sim/issues/9",
+      "title": "FC-042: Verilator --use-gpu first real path"
+    },
+    "definition_task": {
+      "number": 30,
+      "url": "https://github.com/takatodo/gpu-rtl-sim/issues/30",
+      "title": "T10: Define first executable --use-gpu path gate",
+      "state": "closed"
+    },
+    "review_task": {
+      "number": 31,
+      "url": "https://github.com/takatodo/gpu-rtl-sim/issues/31",
+      "title": "T11: Review first executable --use-gpu path gate"
+    },
+    "next_implementation_task": {
+      "number": 32,
+      "url": "https://github.com/takatodo/gpu-rtl-sim/issues/32",
+      "title": "T12: Implement first scoped executable --use-gpu path"
+    }
+  },
+  "current_priority": "implement_verilator_use_gpu_first_executable_path_gate",
+  "review_decision": {
+    "accepted": true,
+    "accepted_scope": "definition_only_for_one_scoped_executable_path",
+    "reason": [
+      "the definition limits the executable path to filelist_known_template_pulp_ita_mha",
+      "the top module is exactly pulp_ita_mha_gpu_cov_tb",
+      "the schedule is explicit as sidecar-gpu 64x1 with 64 states and 1 step",
+      "accepted input authority is reviewed template-derived or explicitly reviewed equivalent source closure",
+      "unknown filelists, top mismatches, missing sidecar context, unsupported schedules, GPU unavailable, compare-not-reached, and CPU-as-GPU cases are fail-closed",
+      "debug JSON and operator-plan JSON remain rejected as runtime ABI or execution authority"
+    ],
+    "weakest_point": "The standalone operator .filelist is not yet materialized as source of truth. Implementation must preserve the reviewed template/source-list authority and must not treat arbitrary -f input as dependency inference."
+  },
+  "accepted_first_path": {
+    "target": "filelist_known_template_pulp_ita_mha",
+    "template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+    "top_module": "pulp_ita_mha_gpu_cov_tb",
+    "accelerator": "sidecar-gpu",
+    "shape": "64x1",
+    "states": 64,
+    "steps": 1,
+    "coverage_output_policy": "coverage_output_equivalence",
+    "expected_output_words_per_state": 29,
+    "expected_output_bytes_per_state": 116
+  },
+  "accepted_authority_boundary": {
+    "accepted_input_authorities": [
+      "reviewed materialized filelist generated from config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+      "reviewed explicit source list equivalent to the known template source closure"
+    ],
+    "rejected_input_authorities": [
+      "arbitrary -f filelist dependency inference",
+      "unknown filesystem filelist without reviewed source closure",
+      "debug JSON report as execution authority",
+      "operator plan JSON as runtime ABI",
+      "CPU-only fallback represented as GPU execution"
+    ]
+  },
+  "implementation_requirements": [
+    "parse or adapt a Verilator-facing invocation containing --use-gpu",
+    "validate known filelist or template authority before sidecar execution",
+    "validate exact top-module match",
+    "require explicit sidecar-gpu 64x1 scheduling or an equivalent reviewed explicit schedule field",
+    "resolve reviewed sidecar context before launcher handoff",
+    "route to the existing sidecar launcher path",
+    "reach CPU reference, hybrid sidecar run, and coverage_output_equivalence compare for the supported path",
+    "reject unsupported inputs before any CPU-as-GPU success can be reported"
+  ],
+  "implementation_fail_closed_cases": [
+    "unknown filelist",
+    "missing reviewed filelist or source-closure authority",
+    "top module missing or mismatched",
+    "missing sidecar context",
+    "missing or unsupported explicit schedule",
+    "unsupported shape",
+    "GPU runtime unavailable",
+    "sidecar launcher unavailable",
+    "Verilator build failure",
+    "host-probe build failure",
+    "GPU artifact build failure",
+    "hybrid sidecar run failure",
+    "coverage-output compare not reached",
+    "coverage-output mismatch count greater than zero",
+    "attempt to classify CPU-only execution as GPU evidence"
+  ],
+  "preserved_non_claims": [
+    "no execution evidence through --use-gpu yet",
+    "no arbitrary RTL or arbitrary filelist support",
+    "no automatic dependency inference",
+    "no automatic GPU allocation or optimization",
+    "no timing or speedup evidence",
+    "no CIRCT execution",
+    "no raw full-state equality claim",
+    "no broad Verilator native option support",
+    "no JSON runtime ABI",
+    "no production throughput claim"
+  ],
+  "required_next_gate": {
+    "name": "implement_verilator_use_gpu_first_executable_path_gate",
+    "github_issue": 32,
+    "must_implement": [
+      "supported scoped path execution",
+      "unknown filelist rejection",
+      "top mismatch rejection",
+      "missing sidecar context rejection",
+      "missing or unsupported schedule rejection",
+      "GPU unavailable blocked or fail-closed behavior",
+      "public docs that keep the scope narrow"
+    ],
+    "must_not_claim": [
+      "general Verilator --use-gpu support",
+      "arbitrary RTL or arbitrary filelist support",
+      "automatic dependency inference",
+      "automatic GPU allocation",
+      "timing or speedup evidence",
+      "production throughput",
+      "CIRCT execution",
+      "mandatory JSON runtime ABI",
+      "raw full-state equality"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_review_accepted": true,
+    "future_implementation_gate_allowed": true,
+    "new_execution_allowed_by_this_gate": false,
+    "timing_or_speedup_claim_allowed_by_this_gate": false,
+    "broad_use_gpu_claim_allowed_by_this_gate": false,
+    "arbitrary_filelist_support_claim_allowed_by_this_gate": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "implement_verilator_use_gpu_first_executable_path_gate"
+}

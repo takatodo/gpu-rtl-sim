@@ -10,17 +10,17 @@ The sidecar contract is an implementation/runtime boundary, not a JSON-first des
 
 Goal: `modern_llm_serving_rtl_hybrid_conditions`
 
-Current priority: `review_verilator_use_gpu_first_executable_path_gate`
+Current priority: `implement_verilator_use_gpu_first_executable_path_gate`
 
-Current gate: `config/scaling_gates/define_verilator_use_gpu_first_executable_path_gate.json`
+Current gate: `config/scaling_gates/review_verilator_use_gpu_first_executable_path_gate.json`
 
-GitHub tracking: #9 is the parent `FC-042: Verilator --use-gpu first real path` goal, #28 and #29 are completed prerequisites, #30 defines the first executable-path gate, and #31 owns the current review.
+GitHub tracking: #9 is the parent `FC-042: Verilator --use-gpu first real path` goal, #28 and #29 are completed prerequisites, #30 defines the first executable-path gate, #31 accepts the review, and #32 owns the current implementation task.
 
-This gate reviews the first executable-path definition. It selects the first scoped Verilator-facing `--use-gpu` path as `filelist_known_template_pulp_ita_mha` / `pulp_ita_mha_gpu_cov_tb` with explicit `64x1` scheduling through reviewed sidecar metadata. It does not claim execution through `--use-gpu`, arbitrary filelist support, dependency inference, automatic GPU allocation, timing/speedup, CIRCT execution, raw full-state equality, or JSON as the runtime ABI.
+This gate authorizes implementation of the first scoped Verilator-facing `--use-gpu` path as `filelist_known_template_pulp_ita_mha` / `pulp_ita_mha_gpu_cov_tb` with explicit `64x1` scheduling through reviewed sidecar metadata. It does not claim broad execution through `--use-gpu`, arbitrary filelist support, dependency inference, automatic GPU allocation, timing/speedup, CIRCT execution, raw full-state equality, or JSON as the runtime ABI.
 
 ## Weakest Point
 
-Current weak point: #30 defines an executable path only if the project keeps `--use-gpu` scoped to one reviewed `filelist_known_template_pulp_ita_mha` / `pulp_ita_mha_gpu_cov_tb` / `64x1` path and treats the missing standalone tracked `.filelist` source as an implementation requirement, not as arbitrary `-f` dependency inference. The next review must check that GPU-unavailable and CPU-as-GPU cases fail closed before implementation opens.
+Current weak point: #32 must implement the accepted path without broadening it. The standalone operator `.filelist` is still not a general source of truth, so implementation must preserve reviewed template/source-list authority, reject arbitrary `-f` dependency inference, and keep GPU-unavailable and CPU-as-GPU cases fail-closed.
 
 Historical context follows for audit. If an older paragraph below names a different current weak point, prefer the `Current Priority` section and this paragraph.
 
@@ -74,11 +74,11 @@ PULP ITA MHA shape expansion review state: `config/scaling_gates/pulp_ita_mha_sh
 
 Current priority:
 
-`review_verilator_use_gpu_first_executable_path_gate`
+`implement_verilator_use_gpu_first_executable_path_gate`
 
 Current gate (authorizing artifact):
 
-`config/scaling_gates/define_verilator_use_gpu_first_executable_path_gate.json`
+`config/scaling_gates/review_verilator_use_gpu_first_executable_path_gate.json`
 
 ## 追跡タスク
 

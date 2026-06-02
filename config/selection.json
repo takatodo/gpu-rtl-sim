@@ -1,8 +1,8 @@
 {
   "schema_version": 3,
   "top_level_goal": "modern_llm_serving_rtl_hybrid_conditions",
-  "current_priority": "review_verilator_use_gpu_first_executable_path_gate",
-  "current_priority_source_artifact": "config/scaling_gates/define_verilator_use_gpu_first_executable_path_gate.json",
+  "current_priority": "implement_verilator_use_gpu_first_executable_path_gate",
+  "current_priority_source_artifact": "config/scaling_gates/review_verilator_use_gpu_first_executable_path_gate.json",
   "active_scope": {
     "active_target_count": 127,
     "active_tlul_target_count": 22,
