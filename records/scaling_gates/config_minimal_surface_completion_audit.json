@@ -13,7 +13,7 @@
   ],
   "measured_state": {
     "config_file_count_after_cleanup": 145,
-    "records_scaling_gate_json_count": 957,
+    "records_scaling_gate_json_count": 958,
     "config_scaling_gates_is_symlink": true,
     "config_scaling_gates_link_target": "../records/scaling_gates",
     "runtime_facing_template_count": 138,
@@ -39,7 +39,7 @@
       "evidence": [
         "records/scaling_gates/",
         "records/scaling_gates/README.md",
-        "git ls-files 'records/scaling_gates/*.json' | wc -l == 957"
+        "git ls-files 'records/scaling_gates/*.json' | wc -l == 958"
       ]
     },
     {
