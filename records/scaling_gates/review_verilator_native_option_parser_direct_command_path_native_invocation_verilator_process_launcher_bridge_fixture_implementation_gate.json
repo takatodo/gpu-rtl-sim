@@ -38,9 +38,10 @@
     "runtime_or_abi_changed": false,
     "arbitrary_rtl_or_filelist_support_added": false,
     "automatic_gpu_allocation_added": false,
-    "module_line_count_after_review": 238,
-    "reused_process_to_launcher_module_line_count_after_review": 262,
-    "contract_test_line_count_after_review": 921
+    "module_line_count_after_review": 194,
+    "reused_process_to_launcher_module_line_count_after_review": 244,
+    "contract_test_line_count_after_review": 181,
+    "reused_process_to_launcher_contract_test_line_count_after_review": 213
   },
   "accepted_output_contract": {
     "surface": "native_verilator_parser_direct_command_path_verilator_process_launcher_bridge_fixture",
@@ -121,13 +122,16 @@
     "timing_claim_without_measurement": true
   },
   "reviewed_tests": {
-    "focused_contract_test_command": "python3 -m unittest tests.contract.test_verilator_native_option_parser_process_to_launcher_cli_fixture -q",
-    "focused_contract_test_exit_code": 0,
-    "focused_contract_test_count": 18,
-    "full_contract_test_command": "python3 -m unittest discover -s tests/contract -q",
-    "full_contract_test_exit_code": 0,
-    "full_contract_test_count": 594,
-    "py_compile_command": "python3 -m py_compile src/tools/verilator_native_option_parser_verilator_process_launcher_bridge_fixture.py src/tools/verilator_native_option_parser_process_to_launcher_cli_fixture.py src/tools/results_reproduction_manifest.py tests/contract/test_verilator_native_option_parser_process_to_launcher_cli_fixture.py",
+    "focused_bridge_fixture_contract_test_command": "python3 -m unittest tests.contract.test_verilator_process_launcher_bridge_fixture -q",
+    "focused_bridge_fixture_contract_test_exit_code": 0,
+    "focused_bridge_fixture_contract_test_count": 4,
+    "focused_process_to_launcher_contract_test_command": "python3 -m unittest tests.contract.test_verilator_native_option_parser_process_to_launcher_cli_fixture -q",
+    "focused_process_to_launcher_contract_test_exit_code": 0,
+    "focused_process_to_launcher_contract_test_count": 4,
+    "clean_surface_contract_test_command": "python3 -m unittest tests.contract.test_resident_runtime_contract tests.contract.test_tracked_tool_dependency_boundary -q",
+    "clean_surface_contract_test_exit_code": 0,
+    "clean_surface_contract_test_count": 22,
+    "py_compile_command": "python3 -m py_compile src/tools/verilator_native_option_parser_verilator_process_launcher_bridge_fixture.py src/tools/verilator_native_option_parser_process_to_launcher_cli_fixture.py tests/contract/test_verilator_process_launcher_bridge_fixture.py tests/contract/test_resident_runtime_contract.py",
     "py_compile_exit_code": 0
   },
   "required_next_gate": {
