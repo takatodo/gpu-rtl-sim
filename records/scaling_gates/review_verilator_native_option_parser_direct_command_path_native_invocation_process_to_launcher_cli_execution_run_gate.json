@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_run_gate",
+  "status": "accepted_process_to_launcher_cli_execution_run_from_reviewed_fixture_metadata",
+  "objective": "Review the scoped process-to-launcher CLI execution run and decide whether it may advance the chain toward a real Verilator-process-to-launcher bridge boundary without treating the run as direct Verilator sidecar execution.",
+  "source_run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_gate.json",
+  "source_execution_boundary_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate.json",
+  "source_fixture_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_fixture_implementation_gate.json",
+  "source_structured_invocation_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate.json",
+  "current_priority": "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The run starts the exact reviewed run_hybrid_template.py argv from process-to-launcher CLI fixture metadata, executes the existing seven sidecar stages for pulp_ita_mha 64x1, and reaches coverage_output_equivalence compare with mismatch count 0 while keeping direct Verilator sidecar execution false.",
+    "weakest_point": "The evidence is still a launcher run from reviewed fixture metadata. A real Verilator process did not itself hand off to the sidecar launcher, so this must not be read as broad native option support, arbitrary filelist support, automatic allocation, runtime or ABI change, timing evidence, raw-state equality, or production throughput.",
+    "accepted_because": [
+      "the source run is scoped to pulp_ita_mha, config/slice_launch_templates/pulp_ita_mha.json, and 64x1",
+      "the process-to-launcher CLI fixture metadata is reviewed and ready",
+      "the materialized launcher argv is python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 64x1",
+      "the launcher command exit code is 0",
+      "the run records Verilator build, host-probe build, CPU init/reference, GPU artifact build, hybrid sidecar run, and coverage-output compare stages as executed",
+      "coverage_output_equivalence passed with mismatch count 0 over 64 state pairs and 1856 compared words",
+      "generated reports and artifacts remain noncanonical",
+      "the source run keeps direct_verilator_sidecar_execution_proven false"
+    ]
+  },
+  "accepted_evidence": {
+    "target": "pulp_ita_mha",
+    "template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "shape": "64x1",
+    "state_count": 64,
+    "step_count": 1,
+    "launcher_command_argv": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ],
+    "launcher_command_exit_code": 0,
+    "process_to_launcher_cli_fixture_metadata_ready": true,
+    "structured_launcher_argv_started": true,
+    "sidecar_launcher_invoked_from_reviewed_process_to_launcher_cli_path": true,
+    "verilator_build_stage_executed": true,
+    "host_probe_build_stage_executed": true,
+    "cpu_init_state_stage_executed": true,
+    "cpu_reference_stage_executed": true,
+    "gpu_artifact_build_stage_executed": true,
+    "hybrid_sidecar_run_stage_executed": true,
+    "coverage_output_compare_stage_executed": true,
+    "compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+    "generated_reports_and_artifacts_are_source_of_truth": false
+  },
+  "accepted_compare_result": {
+    "acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_equivalence_passed": true,
+    "coverage_output_mismatch_count": 0,
+    "compared_state_pair_count": 64,
+    "strict_output_word_count_per_state": 29,
+    "expected_total_words_per_state": 29,
+    "expected_total_bytes_per_state": 116,
+    "compared_word_count": 1856,
+    "compared_byte_count": 7424,
+    "raw_full_state_equality_required": false,
+    "raw_full_state_match": false
+  },
+  "claim_boundary": {
+    "process_to_launcher_cli_execution_from_reviewed_fixture_metadata_accepted": true,
+    "coverage_output_equivalence_claim_reached_from_process_to_launcher_cli_execution": true,
+    "coverage_output_equivalence_claim_reached_from_direct_verilator_sidecar_execution": false,
+    "direct_verilator_sidecar_execution_proven": false,
+    "full_native_verilator_process_to_launcher_cli_exists": false,
+    "broad_native_verilator_option_support_proven": false,
+    "timing_or_speedup_evidence_proven": false,
+    "arbitrary_rtl_support_proven": false,
+    "arbitrary_filelist_support_proven": false,
+    "automatic_optimal_gpu_allocation_proven": false,
+    "runtime_or_abi_change_proven": false,
+    "raw_full_state_equality_proven": false,
+    "production_llm_serving_throughput_proven": false
+  },
+  "required_next_gate": {
+    "name": "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate",
+    "must_define": [
+      "what must be present before a real Verilator-facing process may hand off to the sidecar launcher",
+      "how patched-binary parser success, process-to-launcher fixture metadata, launcher argv, explicit sidecar context, source authority, sidecar stages, and compare evidence remain separate",
+      "whether the bridge is an in-process callback, wrapper-mediated process launch, generated command handoff, or another reviewed boundary",
+      "which failure classes separate parser failure, bridge failure, launcher invocation failure, sidecar stage failure, compare failure, and timing-without-measurement",
+      "how generated reports and artifacts remain noncanonical"
+    ],
+    "must_not_claim": [
+      "direct Verilator sidecar execution by this review gate",
+      "broad native Verilator option support",
+      "timing or speedup evidence",
+      "arbitrary RTL or filelist support",
+      "automatic GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "source_run_gate_accepted": true,
+    "next_boundary_definition_allowed": true,
+    "next_gate_must_be_definition_only": true,
+    "process_to_launcher_cli_execution_claim_allowed_for_reviewed_fixture_metadata_path": true,
+    "direct_verilator_sidecar_execution_claim_allowed_by_gate_alone": false,
+    "broad_native_verilator_option_support_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate",
+  "non_claims": [
+    "not direct Verilator sidecar execution",
+    "not broad native Verilator option support",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

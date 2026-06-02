@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate",
+  "status": "defined_process_to_launcher_cli_execution_boundary_after_fixture_review",
+  "objective": "Define the narrow first execution boundary that may turn reviewed process-to-launcher CLI fixture metadata into a future src/tools/run_hybrid_template.py launcher process start, without executing that launcher, sidecar stages, compare, or timing in this gate.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_fixture_implementation_gate.json",
+  "source_implementation_gate": "config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_fixture_gate.json",
+  "source_boundary_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate.json",
+  "source_structured_invocation_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate",
+  "definition_decision": {
+    "defined": true,
+    "definition_only": true,
+    "selected_surface": "reviewed_process_to_launcher_cli_fixture_metadata_to_scoped_launcher_process_start_boundary",
+    "weakest_point": "The accepted fixture proves only that a Verilator-facing process payload can be bound to exact run_hybrid_template.py argv. A future run may still fail while starting the launcher, inside sidecar build/run stages, or during coverage-output compare, so launcher argv materialization remains metadata until a reviewed run gate executes it.",
+    "reason": [
+      "the previous review accepted define_process_to_launcher_cli_fixture only as non-executing metadata",
+      "the fixture marks launcher_command_role as materialized_for_later_run_not_invoked_by_fixture",
+      "the predecessor structured launcher invocation run review remains reference evidence but not current execution authority",
+      "the next useful step is defining exactly when a future process may start the existing launcher from reviewed fixture metadata",
+      "coverage_output_equivalence remains the scoped correctness policy only after a later reviewed run reaches compare"
+    ]
+  },
+  "future_execution_boundary": {
+    "eligible_input_surface": "native_verilator_parser_direct_command_path_process_to_launcher_cli_fixture",
+    "eligible_input_status": "process_to_launcher_cli_metadata_ready_for_review",
+    "required_entrypoint": "define_process_to_launcher_cli_fixture",
+    "required_source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate.json",
+    "required_structured_invocation_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate.json",
+    "required_sidecar_launcher_entrypoint": "src/tools/run_hybrid_template.py",
+    "required_launcher_command_argv": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ],
+    "required_launcher_command_role_before_run": "materialized_for_later_run_not_invoked_by_fixture",
+    "required_target": "pulp_ita_mha",
+    "required_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "required_shape": "64x1",
+    "required_state_count": 64,
+    "required_step_count": 1,
+    "required_correctness_policy": "coverage_output_equivalence",
+    "required_stage_order": [
+      "verilator_build",
+      "host_probe_build",
+      "cpu_init_state",
+      "cpu_reference_output",
+      "gpu_artifact_build",
+      "hybrid_sidecar_run",
+      "coverage_output_compare"
+    ],
+    "must_start_from_verilator_facing_parse_result": true,
+    "must_validate_reviewed_fixture_metadata": true,
+    "must_validate_explicit_sidecar_context": true,
+    "must_reject_payload_only_execution_authority": true,
+    "must_reject_generated_command_text_as_execution_authority": true,
+    "must_use_structured_launcher_argv_without_shell_string_guessing": true,
+    "must_start_launcher_process_only_in_future_run_gate": true,
+    "must_keep_generated_outputs_noncanonical": true
+  },
+  "future_compare_boundary": {
+    "correctness_policy": "coverage_output_equivalence",
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 3
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "compared_state_pair_count": 64,
+    "required_mismatch_count_for_success": 0,
+    "raw_full_state_equality_required": false
+  },
+  "future_run_success_criteria": {
+    "launcher_process_started_from_materialized_argv_required": true,
+    "sidecar_launcher_invoked_from_native_path_required": true,
+    "sidecar_launch_reached_from_native_path_required": true,
+    "coverage_output_compare_reached_from_native_path_required": true,
+    "coverage_output_mismatch_count_required": 0,
+    "compared_output_words_must_be_explicit": true,
+    "raw_full_state_equality_required": false,
+    "timing_or_speedup_claim_allowed": false
+  },
+  "allowed_generated_outputs_for_future_run": {
+    "reports": [
+      "scoped process-to-launcher CLI stdout/stderr summary",
+      "coverage-output compare JSON summary",
+      "optional launcher argv handoff summary"
+    ],
+    "artifacts": [
+      "Verilator obj_dir outputs",
+      "host-probe binaries",
+      "GPU cubin or PTX outputs",
+      "raw state dumps used by compare"
+    ],
+    "source_of_truth": false
+  },
+  "failure_class_boundary": {
+    "process_parse_failure": "the Verilator-facing process rejects or fails before expanded accelerator options are accepted",
+    "missing_explicit_sidecar_context": "native parser, process-to-launcher metadata, or sidecar context is missing target/template/shape/source context",
+    "source_or_template_authority_failure": "reviewed source closure or template authority is absent or mismatched for pulp_ita_mha 64x1",
+    "process_to_launcher_cli_bridge_failure": "the reviewed process payload cannot be converted into the exact structured launcher CLI argv",
+    "launcher_cli_invocation_failure": "the future run attempts to start the existing launcher from structured argv but cannot start or complete launcher invocation safely",
+    "sidecar_stage_failure": "the launcher starts, but a scoped build or run stage fails before compare",
+    "compare_failure": "coverage_output_equivalence compare runs and records a mismatch",
+    "timing_claim_without_measurement": "timing or speedup is claimed without a separate timing gate"
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate",
+    "must_decide": [
+      "whether the future execution boundary is narrow enough for a first process-to-launcher CLI run attempt from reviewed fixture metadata",
+      "whether exact launcher argv, sidecar context, source authority, structured invocation reference, and compare policy stay separate",
+      "whether materialized argv remains metadata until a later run starts the launcher",
+      "whether launcher invocation, sidecar stage, compare, and timing failure classes remain distinguishable",
+      "whether generated reports and artifacts remain noncanonical",
+      "whether timing, arbitrary filelists, automatic allocation, runtime/ABI changes, raw-state equality, and production throughput remain out of scope"
+    ],
+    "must_not_claim": [
+      "process-to-launcher CLI runtime execution by this definition gate",
+      "direct Verilator sidecar execution",
+      "native-path coverage-output compare",
+      "timing or speedup evidence",
+      "arbitrary RTL or filelist support",
+      "automatic GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "process_to_launcher_cli_execution_boundary_defined": true,
+    "future_review_gate_allowed": true,
+    "future_run_gate_allowed_after_review": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_gate_alone": false,
+    "process_to_launcher_cli_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_reached_from_native_path": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate",
+  "non_claims": [
+    "not process-to-launcher CLI runtime execution",
+    "not direct Verilator sidecar execution",
+    "not native-path coverage-output compare",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

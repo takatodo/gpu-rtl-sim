@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate",
+  "status": "accepted_structured_sidecar_launcher_invocation_run",
+  "objective": "Review the scoped launcher-invocation run and decide whether its structured argv execution evidence may advance the chain toward defining the missing Verilator-facing process-to-launcher CLI boundary, without treating that run as direct Verilator sidecar execution.",
+  "source_run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate.json",
+  "source_boundary_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json",
+  "source_invocation_fixture_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_implementation_gate.json",
+  "current_priority": "define_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The source run starts the reviewed structured launcher argv for the scoped pulp_ita_mha 64x1 path, executes the existing sidecar launcher stages, and reaches coverage_output_equivalence compare with mismatch count 0 while explicitly keeping direct Verilator sidecar execution false.",
+    "weakest_point": "The strongest evidence is still a structured invocation of src/tools/run_hybrid_template.py from reviewed metadata. It is not a real Verilator process directly executing sidecar stages, does not prove broad native option support, and does not prove timing, automatic allocation, arbitrary filelist support, runtime/ABI change, raw-state equality, or production throughput.",
+    "accepted_because": [
+      "the run source gate is scoped to pulp_ita_mha, config/slice_launch_templates/pulp_ita_mha.json, and 64x1",
+      "the reviewed structured launcher argv is python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 64x1",
+      "the launcher command exit code is 0",
+      "the sidecar launcher evidence records Verilator build, host-probe build, CPU init/reference, GPU artifact build, hybrid run, and coverage-output compare stages as executed",
+      "coverage_output_equivalence passed with mismatch count 0 over 64 state pairs",
+      "the source run keeps generated reports and artifacts noncanonical",
+      "the source run keeps direct_verilator_sidecar_execution_proven false"
+    ]
+  },
+  "accepted_evidence": {
+    "target": "pulp_ita_mha",
+    "template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "shape": "64x1",
+    "state_count": 64,
+    "step_count": 1,
+    "launcher_command_argv": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ],
+    "launcher_command_exit_code": 0,
+    "structured_launcher_argv_started": true,
+    "sidecar_launcher_invoked_from_reviewed_metadata_path": true,
+    "verilator_build_stage_executed": true,
+    "host_probe_build_stage_executed": true,
+    "cpu_init_state_stage_executed": true,
+    "cpu_reference_stage_executed": true,
+    "gpu_artifact_build_stage_executed": true,
+    "hybrid_sidecar_run_stage_executed": true,
+    "coverage_output_compare_stage_executed": true,
+    "compare_report": "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+    "generated_reports_and_artifacts_are_source_of_truth": false
+  },
+  "accepted_compare_result": {
+    "acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_equivalence_passed": true,
+    "coverage_output_mismatch_count": 0,
+    "compared_state_pair_count": 64,
+    "strict_output_word_count_per_state": 29,
+    "expected_total_words_per_state": 29,
+    "expected_total_bytes_per_state": 116,
+    "compared_word_count": 1856,
+    "compared_byte_count": 7424,
+    "raw_full_state_equality_required": false,
+    "raw_full_state_match": false
+  },
+  "claim_boundary": {
+    "structured_launcher_invocation_evidence_accepted": true,
+    "coverage_output_equivalence_claim_reached_from_structured_launcher_invocation": true,
+    "coverage_output_equivalence_claim_reached_from_direct_verilator_sidecar_execution": false,
+    "direct_verilator_sidecar_execution_proven": false,
+    "broad_native_verilator_option_support_proven": false,
+    "timing_or_speedup_evidence_proven": false,
+    "arbitrary_rtl_support_proven": false,
+    "arbitrary_filelist_support_proven": false,
+    "automatic_optimal_gpu_allocation_proven": false,
+    "runtime_or_abi_change_proven": false,
+    "raw_full_state_equality_proven": false,
+    "production_llm_serving_throughput_proven": false
+  },
+  "required_next_gate": {
+    "name": "define_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate",
+    "must_define": [
+      "what counts as a Verilator-facing process-to-launcher CLI connection rather than manually starting run_hybrid_template.py from reviewed metadata",
+      "which runtime authority must be present before a Verilator-facing process may start the sidecar launcher",
+      "which parser, source-closure, sidecar-context, stage, compare, and report fields must be bound before execution",
+      "how failure classes stay separate from parser-only success, launcher invocation success, sidecar stage success, compare success, and timing evidence",
+      "how generated reports and artifacts remain noncanonical"
+    ],
+    "must_not_claim": [
+      "direct Verilator sidecar execution by this review gate",
+      "broad native Verilator option support",
+      "timing or speedup evidence",
+      "arbitrary RTL or filelist support",
+      "automatic GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "next_task": "define_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate",
+  "non_claims": [
+    "not direct Verilator sidecar execution",
+    "not broad native Verilator option support",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

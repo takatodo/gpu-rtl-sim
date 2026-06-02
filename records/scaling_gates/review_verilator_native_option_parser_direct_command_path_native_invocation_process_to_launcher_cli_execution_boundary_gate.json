@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate",
+  "status": "accepted_process_to_launcher_cli_execution_boundary_definition",
+  "objective": "Review the scoped process-to-launcher CLI execution boundary after accepted fixture metadata and decide whether a future run gate may start src/tools/run_hybrid_template.py from exact reviewed argv without treating this review as execution, compare, timing, or direct Verilator sidecar evidence.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate.json",
+  "source_fixture_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_fixture_implementation_gate.json",
+  "source_structured_invocation_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate.json",
+  "current_priority": "run_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The boundary is narrow enough for a first process-to-launcher CLI run attempt because it starts from reviewed process-to-launcher fixture metadata, requires the exact structured run_hybrid_template.py argv for pulp_ita_mha 64x1, preserves explicit sidecar context and source authority, and keeps coverage_output_equivalence as the only future compare policy.",
+    "weakest_point": "This is still review-only. It does not start the launcher, execute sidecar stages, record native-path compare, or measure timing. The strongest remaining risk is that the future run may stop at launcher_cli_invocation_failure or sidecar_stage_failure before any compare evidence exists.",
+    "accepted_because": [
+      "the source definition is explicitly definition-only",
+      "the eligible input is limited to reviewed process-to-launcher CLI fixture metadata",
+      "the launcher argv is structured and exactly names python3, src/tools/run_hybrid_template.py, config/slice_launch_templates/pulp_ita_mha.json, --shape, and 64x1",
+      "the launcher command role remains materialized_for_later_run_not_invoked_by_fixture until the next run gate",
+      "the run scope remains pulp_ita_mha, config/slice_launch_templates/pulp_ita_mha.json, and 64x1",
+      "the predecessor structured invocation run review is reference evidence but not standalone execution authority",
+      "coverage_output_equivalence is the accepted compare policy and raw full-state equality remains out of scope",
+      "generated reports and artifacts remain noncanonical evidence"
+    ]
+  },
+  "accepted_boundary": {
+    "definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate.json",
+    "definition_only_boundary_confirmed": true,
+    "future_run_gate_allowed": true,
+    "selected_target": "pulp_ita_mha",
+    "selected_template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "selected_shape": "64x1",
+    "selected_state_count": 64,
+    "selected_step_count": 1,
+    "required_fixture_entrypoint": "define_process_to_launcher_cli_fixture",
+    "required_fixture_surface": "native_verilator_parser_direct_command_path_process_to_launcher_cli_fixture",
+    "required_sidecar_launcher_entrypoint": "src/tools/run_hybrid_template.py",
+    "required_launcher_command_argv": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ],
+    "required_launcher_command_role_before_run": "materialized_for_later_run_not_invoked_by_fixture",
+    "success_requires_launcher_process_start_from_materialized_argv": true,
+    "success_requires_sidecar_launcher_invocation_from_native_path": true,
+    "success_requires_sidecar_launch_from_native_path": true,
+    "success_requires_compare_from_native_path": true,
+    "generated_reports_and_artifacts_are_source_of_truth": false
+  },
+  "accepted_failure_classes": {
+    "process_parse_failure": true,
+    "missing_explicit_sidecar_context": true,
+    "source_or_template_authority_failure": true,
+    "process_to_launcher_cli_bridge_failure": true,
+    "launcher_cli_invocation_failure": true,
+    "sidecar_stage_failure": true,
+    "compare_failure": true,
+    "timing_claim_without_measurement": true
+  },
+  "accepted_compare_boundary": {
+    "correctness_policy": "coverage_output_equivalence",
+    "total_words_per_state": 29,
+    "total_bytes_per_state": 116,
+    "compared_state_pair_count": 64,
+    "required_mismatch_count_for_success": 0,
+    "raw_full_state_equality_required": false
+  },
+  "required_next_gate": {
+    "name": "run_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_gate",
+    "must_record": [
+      "whether reviewed process-to-launcher CLI fixture metadata starts the existing sidecar launcher from structured argv",
+      "whether sidecar stages execute after launcher invocation",
+      "whether coverage-output compare is reached from the native path",
+      "the exact failure class if the chain stops",
+      "all generated reports and artifacts as noncanonical evidence"
+    ],
+    "must_not_claim": [
+      "direct Verilator sidecar execution by this review gate",
+      "process-to-launcher CLI runtime execution by this review gate",
+      "native-path coverage-output compare by this review gate",
+      "timing or speedup evidence",
+      "arbitrary RTL or filelist support",
+      "automatic GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "review_only": true,
+    "source_definition_gate_accepted": true,
+    "future_run_gate_allowed": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_gate_alone": false,
+    "process_to_launcher_cli_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_reached_from_native_path": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "run_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_gate",
+  "non_claims": [
+    "not direct Verilator sidecar execution",
+    "not process-to-launcher CLI runtime execution",
+    "not native-path coverage-output compare",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}
