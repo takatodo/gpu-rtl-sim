@@ -1,8 +1,8 @@
 {
   "schema_version": 3,
   "top_level_goal": "modern_llm_serving_rtl_hybrid_conditions",
-  "current_priority": "define_verilator_use_gpu_first_real_path_gate",
-  "current_priority_source_artifact": "config/scaling_gates/close_github_27_after_accepted_post_source_closure_retry_run_gate.json",
+  "current_priority": "review_verilator_use_gpu_first_real_path_gate",
+  "current_priority_source_artifact": "config/scaling_gates/define_verilator_use_gpu_first_real_path_gate.json",
   "active_scope": {
     "active_target_count": 127,
     "active_tlul_target_count": 22,
@@ -66,7 +66,7 @@
     "selection_policy": "current_state_only; historical gate details live in records/scaling_gates with config/scaling_gates as a compatibility link; generated outputs are reproducible under reports and artifacts but are not source of truth",
     "config_minimal_surface_audit": "records/scaling_gates/config_minimal_surface_completion_audit.json",
     "config_file_count_after_cleanup": 145,
-    "records_scaling_gate_json_count": 961,
+    "records_scaling_gate_json_count": 962,
     "generated_output_policy": "reports and artifacts may contain local generated evidence, but canonical decisions stay in config/selection.json, docs/status.md, docs/roadmap.md, and README.md",
     "generated_dirs": [
       "artifacts",
