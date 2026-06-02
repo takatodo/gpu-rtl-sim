@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_run_gate",
+  "status": "accepted_scoped_build_stage_failure_classification",
+  "objective": "Review the observable-ordering execution run gate and decide whether its launcher-start attempt, build-stage failure, and non-claims are sufficient to advance to source-closure materialization before retrying bridge-path compare.",
+  "source_run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_gate.json",
+  "source_boundary_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_boundary_gate.json",
+  "current_priority": "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The run gate honestly separates helper readiness from launcher process start evidence, records a clean-worktree helper validation before runtime attempt, starts the scoped launcher from exact structured argv, reaches the Verilator build stage, and stops before compare because required third_party source files are absent.",
+    "weakest_point": "This run proves bridge-path launcher invocation only up to scoped Verilator build input resolution. It does not prove sidecar execution, coverage-output equivalence, timing, direct Verilator sidecar execution, broad filelist support, or source closure completeness.",
+    "accepted_because": [
+      "helper output is treated as a precondition rather than launcher-start evidence",
+      "launcher process invocation is tied to exact structured argv",
+      "failure is classified after the launcher reaches the scoped Verilator build stage",
+      "missing third_party sources explain the stop before compare",
+      "coverage-output compare and timing claims remain blocked"
+    ]
+  },
+  "accepted_run_evidence": {
+    "run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_execution_gate.json",
+    "helper_validation_exit_code": 0,
+    "launcher_exit_code": 1,
+    "runtime_attempt_started": true,
+    "launcher_process_invoked": true,
+    "launcher_command_started_from_exact_structured_argv": true,
+    "verilator_build_stage_reached": true,
+    "hybrid_sidecar_run_reached": false,
+    "coverage_output_compare_reached": false,
+    "timing_measured": false,
+    "failure_class": "sidecar_stage_failure",
+    "failure_subclass": "verilator_build_missing_third_party_sources"
+  },
+  "accepted_failure_boundary": {
+    "selected_failure_class": "sidecar_stage_failure",
+    "launcher_cli_invocation_failure_rejected": true,
+    "launcher_cli_invocation_failure_rejected_reason": "The Python launcher process started and invoked Verilator; failure occurred in scoped build input resolution.",
+    "compare_failure_rejected": true,
+    "compare_failure_rejected_reason": "coverage-output compare was not reached.",
+    "timing_claim_without_measurement_rejected": true,
+    "timing_claim_without_measurement_rejected_reason": "no timing or speedup claim is accepted by this review.",
+    "source_closure_blocker": "third_party/common_cells and third_party/ITA source paths named by the pulp_ita_mha template are absent in the clean worktree"
+  },
+  "required_source_closure_scope": {
+    "target": "pulp_ita_mha",
+    "template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "missing_source_roots": [
+      "third_party/common_cells/src",
+      "third_party/ITA/src"
+    ],
+    "must_decide_before_retry": [
+      "whether these roots are submodule materialization requirements",
+      "whether the source closure should be checked before launcher execution",
+      "whether clean-worktree source availability can be verified without generated artifacts",
+      "whether the retry should remain scoped to pulp_ita_mha 64x1"
+    ]
+  },
+  "acceptance_policy": {
+    "review_gate": true,
+    "run_gate_accepted": true,
+    "future_source_closure_definition_allowed": true,
+    "future_bridge_path_retry_allowed_after_source_closure_review": true,
+    "new_execution_allowed_by_this_review": false,
+    "new_public_cli_allowed_by_this_review": false,
+    "coverage_output_equivalence_claim_reached_from_bridge_path": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_this_review": false,
+    "timing_or_speedup_claim_allowed_by_this_review": false,
+    "broad_native_option_support_claim_allowed_by_this_review": false,
+    "arbitrary_filelist_support_claim_allowed_by_this_review": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_this_review": false,
+    "runtime_or_abi_change_allowed_by_this_review": false,
+    "raw_full_state_equality_claim_allowed_by_this_review": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "required_next_gate": {
+    "name": "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate",
+    "must_define": [
+      "the tracked or submodule-backed source-closure authority for pulp_ita_mha",
+      "the exact preflight check for required third_party source files before launcher retry",
+      "the clean-worktree retry scope for pulp_ita_mha 64x1",
+      "the non-claims that remain blocked until compare and timing gates"
+    ],
+    "must_not_claim": [
+      "source closure is already complete",
+      "coverage-output compare has been reached",
+      "coverage-output equivalence has passed",
+      "direct Verilator sidecar execution",
+      "timing or speedup evidence",
+      "broad native option support",
+      "automatic GPU allocation"
+    ]
+  },
+  "next_task": "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate"
+}
