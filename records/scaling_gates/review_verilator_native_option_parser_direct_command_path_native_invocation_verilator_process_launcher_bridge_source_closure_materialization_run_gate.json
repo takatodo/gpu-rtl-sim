@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_run_gate",
+  "status": "accepted_source_closure_materialization_run",
+  "objective": "Review the source-closure materialization run and decide whether the missing-source blocker is removed enough to define a scoped bridge-path launcher retry after materialization.",
+  "source_run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json",
+  "current_priority": "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The materialization run checked out the required PULP ITA and common_cells submodules at tracked gitlink SHAs and verified that all 29 source files named by the pulp_ita_mha template exist in a clean worktree.",
+    "weakest_point": "This proves source availability only. It does not prove that the post-materialization launcher retry builds, runs the sidecar, reaches compare, passes coverage-output equivalence, measures timing, or exercises direct Verilator sidecar execution.",
+    "accepted_because": [
+      "submodule materialization command exited 0",
+      "both required submodules matched tracked gitlink SHAs",
+      "template source file count was 29",
+      "missing source file count after materialization was 0",
+      "launcher retry was intentionally not performed by the materialization run gate"
+    ]
+  },
+  "accepted_source_closure_result": {
+    "source_closure_materialized": true,
+    "clean_worktree_missing_source_blocker_removed": true,
+    "materialized_submodule_count": 2,
+    "submodule_gitlinks_match": true,
+    "template_source_file_count": 29,
+    "missing_source_file_count": 0
+  },
+  "blocked_claims_after_this_review": {
+    "launcher_retry_performed": false,
+    "verilator_build_success": false,
+    "hybrid_sidecar_run_success": false,
+    "coverage_output_compare_reached": false,
+    "coverage_output_equivalence_passed": false,
+    "timing_measured": false,
+    "direct_verilator_sidecar_execution": false,
+    "automatic_gpu_allocation": false
+  },
+  "required_next_gate": {
+    "name": "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate",
+    "must_define": [
+      "the exact clean-worktree command sequence for submodule materialization plus launcher retry",
+      "the expected failure classes if the retry stops after source closure",
+      "whether coverage-output compare may be claimed only if reached in the retry",
+      "that timing remains a separate gate"
+    ],
+    "must_not_claim": [
+      "launcher retry has already run",
+      "Verilator build success",
+      "hybrid sidecar run success",
+      "coverage-output compare reached",
+      "coverage-output equivalence passed",
+      "timing or speedup evidence",
+      "direct Verilator sidecar execution",
+      "automatic GPU allocation"
+    ]
+  },
+  "acceptance_policy": {
+    "review_gate": true,
+    "source_closure_materialization_run_accepted": true,
+    "future_launcher_retry_definition_allowed": true,
+    "new_execution_allowed_by_this_review": false,
+    "coverage_output_equivalence_claim_reached_from_bridge_path": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_this_review": false,
+    "timing_or_speedup_claim_allowed_by_this_review": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_this_review": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate"
+}

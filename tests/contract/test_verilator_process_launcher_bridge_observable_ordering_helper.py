@@ -43,6 +43,12 @@ SOURCE_CLOSURE_RUN_GATE = (
     / "scaling_gates"
     / "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json"
 )
+SOURCE_CLOSURE_RUN_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_run_gate.json"
+)
 BASE_ARGS = [
     "verilator", "--cc", "--timing", "-Mdir", "artifacts/pulp_ita_mha_obj_dir",
     "--top-module", "pulp_ita_mha_gpu_cov_tb", "-DTRACE=1", "-Wno-fatal",
@@ -358,6 +364,33 @@ class VerilatorProcessLauncherBridgeObservableOrderingHelperTest(unittest.TestCa
         self.assertFalse(result["coverage_output_compare_reached"])
         self.assertIn("not Verilator build success", gate["accepted_non_claims"])
         self.assertIn("not coverage-output equivalence passed", gate["accepted_non_claims"])
+        self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
+
+    def test_source_closure_materialization_run_review_advances_to_retry_definition(self) -> None:
+        gate = json.loads(SOURCE_CLOSURE_RUN_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            gate["source_run_gate"],
+            "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json",
+        )
+        self.assertEqual(
+            gate["current_priority"],
+            "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate",
+        )
+        self.assertTrue(gate["review_decision"]["accepted"])
+        result = gate["accepted_source_closure_result"]
+        self.assertTrue(result["source_closure_materialized"])
+        self.assertTrue(result["clean_worktree_missing_source_blocker_removed"])
+        self.assertTrue(result["submodule_gitlinks_match"])
+        self.assertEqual(result["template_source_file_count"], 29)
+        self.assertEqual(result["missing_source_file_count"], 0)
+        blocked = gate["blocked_claims_after_this_review"]
+        self.assertFalse(blocked["launcher_retry_performed"])
+        self.assertFalse(blocked["coverage_output_equivalence_passed"])
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["future_launcher_retry_definition_allowed"])
+        self.assertFalse(policy["new_execution_allowed_by_this_review"])
+        self.assertFalse(policy["coverage_output_equivalence_claim_reached_from_bridge_path"])
         self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
 
 
