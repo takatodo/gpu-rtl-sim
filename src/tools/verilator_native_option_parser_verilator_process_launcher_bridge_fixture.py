@@ -21,14 +21,20 @@ define_process_to_launcher_cli_fixture = launcher.define_process_to_launcher_cli
 
 GATE_PREFIX = "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_"
 VERILATOR_PROCESS_LAUNCHER_BRIDGE_BOUNDARY_REVIEW_GATE_REF = GATE_PREFIX + "verilator_process_launcher_bridge_boundary_gate.json"
+VERILATOR_PROCESS_LAUNCHER_BRIDGE_OBSERVABLE_ORDERING_REVIEW_GATE_REF = (
+    GATE_PREFIX + "verilator_process_launcher_bridge_observable_ordering_implementation_boundary_gate.json"
+)
 PROCESS_TO_LAUNCHER_CLI_EXECUTION_RUN_REVIEW_GATE_REF = GATE_PREFIX + "process_to_launcher_cli_execution_run_gate.json"
 VERILATOR_PROCESS_LAUNCHER_BRIDGE_FIXTURE_SURFACE = "native_verilator_parser_direct_command_path_verilator_process_launcher_bridge_fixture"
 VERILATOR_PROCESS_LAUNCHER_BRIDGE_STATUS = "verilator_process_launcher_bridge_metadata_ready_for_review"
+VERILATOR_PROCESS_LAUNCHER_BRIDGE_OBSERVABLE_ORDERING_SURFACE = "native_verilator_parser_direct_command_path_verilator_process_launcher_bridge_observable_ordering_helper"
+VERILATOR_PROCESS_LAUNCHER_BRIDGE_OBSERVABLE_ORDERING_STATUS = "verilator_process_launcher_bridge_observable_ordering_helper_ready_for_review"
 VERILATOR_PROCESS_LAUNCHER_BRIDGE_FAILURE_CLASSES = tuple("verilator_process_parse_failure missing_explicit_sidecar_context source_or_template_authority_failure process_to_launcher_bridge_failure launcher_cli_invocation_failure sidecar_stage_failure compare_failure timing_claim_without_measurement".split())
 VERILATOR_PROCESS_LAUNCHER_BRIDGE_FIELDS = tuple("schema_version surface status source_review_gate source_process_to_launcher_boundary_review_gate source_process_to_launcher_execution_run_review_gate process_to_launcher_cli_surface process_to_launcher_cli_status verilator_process_launcher_bridge_ready wrapper_mediated_process_launch_bridge process_to_launcher_cli_bridge_ready invocation_ready parser_payload parser_schedule sidecar_context source_or_template_authority sidecar_launcher_entrypoint launcher_command_argv launcher_command_role bridge_materialization_status required_stage_order preserved_failure_classes verilator_process_invoked wrapper_execution_used launcher_cli_invoked launcher_process_invoked sidecar_launcher_invoked_from_native_path sidecar_launch_reached_from_native_path sidecar_stage_execution_performed compare_execution_performed coverage_output_compare_reached_from_native_path native_path_compare_reached direct_verilator_sidecar_execution_proven coverage_output_equivalence_claim_reached_from_direct_verilator_sidecar_execution execution_performed measurement_performed timing_measured runtime_or_abi_changed automatic_gpu_allocation_used generated_reports_and_artifacts_source_of_truth non_claims".split())
 VERILATOR_PROCESS_LAUNCHER_BRIDGE_NON_CLAIMS = tuple("Verilator process launcher bridge fixture binds reviewed process metadata to launcher argv only|Verilator process launcher bridge fixture does not start a Verilator process|Verilator process launcher bridge fixture does not start run_hybrid_template.py|Verilator process launcher bridge fixture does not execute sidecar stages or compare outputs|Verilator process launcher bridge fixture does not prove direct Verilator sidecar execution|reviewed process-to-launcher metadata and exact argv are not execution authority|generated reports and artifacts remain evidence only and are not source of truth".split("|"))
 EXPECTED_PROCESS_TO_LAUNCHER_SCHEDULE = {"accelerator_mode": "sidecar-gpu", "state_count": 64, "step_count": 1, "shape": "64x1", "correctness_policy": "coverage_output_equivalence"}
 NON_EXECUTION_FLAGS = tuple("launcher_cli_invoked launcher_process_invoked sidecar_launcher_invoked_from_native_path sidecar_launch_reached_from_native_path sidecar_stage_execution_performed compare_execution_performed coverage_output_compare_reached_from_native_path native_path_compare_reached direct_verilator_sidecar_execution_proven coverage_output_equivalence_claim_reached_from_direct_verilator_sidecar_execution execution_performed measurement_performed timing_measured runtime_or_abi_changed automatic_gpu_allocation_used generated_reports_and_artifacts_source_of_truth".split())
+OBSERVABLE_ORDERING_EVENTS = tuple("verilator_facing_invocation_received reviewed_bridge_metadata_validated reviewed_process_to_launcher_metadata_validated explicit_sidecar_context_validated unreviewed_sidecar_context_source_ref_rejected bridge_ordering_trace_emitted_before_launcher_start launcher_start_allowed_from_structured_argv".split())
 
 
 def _error(code: str, message: str) -> ProcessToLauncherCliFixtureError:
@@ -192,3 +198,82 @@ def define_verilator_process_launcher_bridge_fixture(
     }
     assert tuple(output.keys()) == VERILATOR_PROCESS_LAUNCHER_BRIDGE_FIELDS
     return output
+
+
+def _validate_observable_ordering_review_gate(source_review_gate: str) -> None:
+    if source_review_gate != VERILATOR_PROCESS_LAUNCHER_BRIDGE_OBSERVABLE_ORDERING_REVIEW_GATE_REF:
+        raise _error(
+            "source_or_template_authority_failure",
+            "observable ordering helper requires the reviewed observable-ordering boundary gate",
+        )
+
+
+def _observable_ordering_trace() -> list[dict[str, object]]:
+    return [
+        {"index": index, "event": event}
+        for index, event in enumerate(OBSERVABLE_ORDERING_EVENTS, start=1)
+    ]
+
+
+def run_verilator_process_launcher_bridge_with_observable_ordering(
+    argv: Sequence[str] | None = None,
+    *,
+    sidecar_context: Mapping[str, object],
+    source_review_gate: str,
+    parser_payload: Mapping[str, object] | None = None,
+    bridge_metadata: Mapping[str, object] | None = None,
+    process_to_launcher_cli_metadata: Mapping[str, object] | None = None,
+) -> dict[str, object]:
+    """Validate bridge metadata and return ordering evidence without executing it."""
+    _validate_observable_ordering_review_gate(source_review_gate)
+    bridge = define_verilator_process_launcher_bridge_fixture(
+        argv,
+        sidecar_context=sidecar_context,
+        source_review_gate=VERILATOR_PROCESS_LAUNCHER_BRIDGE_BOUNDARY_REVIEW_GATE_REF,
+        parser_payload=parser_payload,
+        bridge_metadata=bridge_metadata,
+        process_to_launcher_cli_metadata=process_to_launcher_cli_metadata,
+    )
+    trace = _observable_ordering_trace()
+    launcher_status = {
+        "allowed": True,
+        "status_emitted_after_trace": True,
+        "allowed_from_structured_argv_only": True,
+        "launcher_process_started": False,
+    }
+    return {
+        "schema_version": 1,
+        "surface": VERILATOR_PROCESS_LAUNCHER_BRIDGE_OBSERVABLE_ORDERING_SURFACE,
+        "status": VERILATOR_PROCESS_LAUNCHER_BRIDGE_OBSERVABLE_ORDERING_STATUS,
+        "source_review_gate": source_review_gate,
+        "source_bridge_fixture_review_gate": bridge["source_review_gate"],
+        "source_process_to_launcher_boundary_review_gate": bridge[
+            "source_process_to_launcher_boundary_review_gate"
+        ],
+        "source_process_to_launcher_execution_run_review_gate": bridge[
+            "source_process_to_launcher_execution_run_review_gate"
+        ],
+        "bridge_metadata_validated": True,
+        "process_to_launcher_metadata_validated": True,
+        "explicit_sidecar_context_validated": True,
+        "unreviewed_sidecar_context_source_ref_rejected": True,
+        "structured_launcher_argv_validated": True,
+        "parser_schedule": _copy_value(bridge["parser_schedule"]),
+        "sidecar_context": _copy_value(bridge["sidecar_context"]),
+        "launcher_command_argv": list(bridge["launcher_command_argv"]),
+        "observable_ordering_trace": trace,
+        "launcher_start_allowed_status": launcher_status,
+        "launcher_process_started": False,
+        "launcher_process_invoked": False,
+        "sidecar_stage_execution_performed": False,
+        "compare_execution_performed": False,
+        "execution_performed": False,
+        "measurement_performed": False,
+        "timing_measured": False,
+        "runtime_or_abi_changed": False,
+        "automatic_gpu_allocation_used": False,
+        "generated_reports_and_artifacts_source_of_truth": False,
+        "observable_ordering_trace_is_correctness_evidence": False,
+        "observable_ordering_trace_is_execution_authority": False,
+        "non_claims": list(VERILATOR_PROCESS_LAUNCHER_BRIDGE_NON_CLAIMS),
+    }
