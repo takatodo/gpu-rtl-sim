@@ -89,12 +89,21 @@ python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run
 python3 src/tools/verilator_sidecar_shim.py --target pulp_ita_mha --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command
 python3 src/tools/verilator_use_gpu_first_path.py --cc -f config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --top-module pulp_ita_mha_gpu_cov_tb --use-gpu --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --first-use-gpu-dry-run
+python3 -c 'from src.tools.verilator_use_gpu_wrapper_runtime import write_verilator_use_gpu_wrapper; write_verilator_use_gpu_wrapper("artifacts/use-gpu-wrapper/verilator")'
+PATH="$PWD/artifacts/use-gpu-wrapper:$PATH" verilator --cc -f config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --top-module pulp_ita_mha_gpu_cov_tb --use-gpu --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --first-use-gpu-dry-run
 ```
 
 The `verilator_use_gpu_first_path.py` adapter is intentionally narrow: it
 accepts only the reviewed `filelist_known_template_pulp_ita_mha` `64x1` path
 and delegates to the existing hybrid template runner. It is not arbitrary
 filelist support or automatic GPU allocation.
+
+The generated `artifacts/use-gpu-wrapper/verilator` wrapper is the current
+scoped PATH-selected wrapper for #33. It delegates no-GPU-intent argv to a real
+Verilator later on `PATH`, or to `VERILATOR_USE_GPU_REAL_VERILATOR` when that
+environment variable is set. GPU-intent argv is never delegated as CPU-only
+success; it must pass the same reviewed first-path authority above or fail
+closed.
 
 After `git clean -fdX`, template and hybrid runs rebuild the local GPU pass
 tools and hybrid runtime binary on demand. Generated material remains under

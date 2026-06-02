@@ -92,6 +92,27 @@ config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --shape
 authority, launcher failure, or missing `coverage_output_equivalence` mismatch
 count `0` fail closed. This is not broad Verilator support.
 
+For the current scoped PATH wrapper, materialize a generated `verilator`
+command under `artifacts/` and put it before a real Verilator on `PATH`:
+
+```bash
+python3 -c 'from src.tools.verilator_use_gpu_wrapper_runtime import write_verilator_use_gpu_wrapper; write_verilator_use_gpu_wrapper("artifacts/use-gpu-wrapper/verilator")'
+PATH="$PWD/artifacts/use-gpu-wrapper:$PATH" verilator --cc \
+  -f config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json \
+  --top-module pulp_ita_mha_gpu_cov_tb \
+  --use-gpu \
+  --sim-accel sidecar-gpu \
+  --sim-accel-states 64 \
+  --sim-accel-steps 1 \
+  --first-use-gpu-dry-run
+```
+
+The wrapper delegates argv without GPU intent to a real Verilator later on
+`PATH`, or to `VERILATOR_USE_GPU_REAL_VERILATOR` when set. GPU-intent argv is
+handled only by the reviewed first-path adapter and otherwise fails closed; the
+wrapper does not add arbitrary filelist support, automatic schedule selection,
+timing evidence, or upstream Verilator support.
+
 ## RTLMeter User Path
 
 RTLMeter should stay a RTLMeter workflow. The intended user path is to keep
