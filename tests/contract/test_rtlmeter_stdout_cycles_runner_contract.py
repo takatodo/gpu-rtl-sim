@@ -180,17 +180,54 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertFalse(boundary["measurement_performed"])
         self.assertFalse(boundary["sidecar_execution_invoked"])
 
+    def test_adapter_entrypoint_metadata_is_descriptive_only(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_runner_adapter import (
+            build_rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata,
+        )
+
+        adapter_metadata = build_rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata()
+
+        self.assertEqual(adapter_metadata["surface"], "rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata")
+        self.assertEqual(adapter_metadata["status"], "rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata_ready")
+        self.assertEqual(
+            adapter_metadata["runner_adapter_entrypoint"],
+            "rtlmeter_stdout_cycles_sidecar_runner_entrypoint",
+        )
+        self.assertEqual(
+            adapter_metadata["runner_adapter_entrypoint_role"],
+            "declared_future_entrypoint_not_materialized",
+        )
+        self.assertEqual(adapter_metadata["outputs"]["observables"], ["normalized_stdout", "rtlmeter_cycles"])
+        self.assertTrue(adapter_metadata["acceptance_policy"]["normalized_stdout_match"])
+        self.assertTrue(adapter_metadata["acceptance_policy"]["cycle_count_match"])
+        self.assertFalse(adapter_metadata["acceptance_policy"]["raw_state_equality_required"])
+        self.assertFalse(adapter_metadata["uses_run_hybrid_template"])
+        self.assertFalse(adapter_metadata["requires_runtime_launch_template"])
+        self.assertFalse(adapter_metadata["run_hybrid_template_compatible"])
+        self.assertIsNone(adapter_metadata["launcher_command_argv"])
+        self.assertIsNone(adapter_metadata["runner_command_argv"])
+        self.assertEqual(adapter_metadata["runner_command_role"], "not_materialized")
+        self.assertFalse(adapter_metadata["execution_authority"])
+        self.assertFalse(adapter_metadata["runtime_abi"])
+        self.assertFalse(adapter_metadata["adapter_invoked"])
+        self.assertFalse(adapter_metadata["sidecar_runner_invoked"])
+        self.assertFalse(adapter_metadata["sidecar_execution_invoked"])
+        self.assertFalse(adapter_metadata["coverage_output_compare_reached"])
+        self.assertFalse(adapter_metadata["execution_performed"])
+        self.assertFalse(adapter_metadata["measurement_performed"])
+        self.assertFalse(adapter_metadata["cpu_as_gpu_fallback"])
+
     def test_implementation_boundary_accepts_adapter_metadata_without_materializing_command(self) -> None:
         self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_runner_adapter import (
+            build_rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata,
+        )
         from rtlmeter_stdout_cycles_runner_implementation import (
             build_rtlmeter_stdout_cycles_runner_implementation_boundary,
         )
 
-        adapter_metadata = {
-            "surface": "rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata",
-            "status": "rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata_ready",
-            "runner_adapter_entrypoint": "rtlmeter_stdout_cycles_runner_adapter_entrypoint",
-        }
+        adapter_metadata = build_rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata()
         boundary = build_rtlmeter_stdout_cycles_runner_implementation_boundary(
             runner_contract=self._contract(),
             runner_adapter_entrypoint_metadata=adapter_metadata,
@@ -203,7 +240,7 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertEqual(boundary["missing_implementation_context"], [])
         self.assertEqual(
             boundary["runner_adapter_entrypoint"],
-            "rtlmeter_stdout_cycles_runner_adapter_entrypoint",
+            "rtlmeter_stdout_cycles_sidecar_runner_entrypoint",
         )
         self.assertEqual(boundary["runner_adapter_entrypoint_metadata"], adapter_metadata)
         self.assertIsNone(boundary["launcher_command_argv"])
