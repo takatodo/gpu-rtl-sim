@@ -121,6 +121,124 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertFalse(contract["measurement_performed"])
         self.assertFalse(contract["cpu_as_gpu_fallback"])
 
+    def test_implementation_boundary_waits_for_adapter_without_materializing_command(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_runner_implementation import (
+            build_rtlmeter_stdout_cycles_runner_implementation_boundary,
+        )
+
+        boundary = build_rtlmeter_stdout_cycles_runner_implementation_boundary(
+            runner_contract=self._contract(),
+        )
+
+        self.assertEqual(boundary["surface"], "rtlmeter_stdout_cycles_runner_implementation")
+        self.assertEqual(boundary["status"], "rtlmeter_stdout_cycles_runner_implementation_blocked_missing_adapter")
+        self.assertEqual(boundary["missing_implementation_context"], ["runner_adapter_entrypoint"])
+        self.assertEqual(boundary["observables"], ["normalized_stdout", "rtlmeter_cycles"])
+        self.assertTrue(boundary["acceptance_policy"]["normalized_stdout_match"])
+        self.assertTrue(boundary["acceptance_policy"]["cycle_count_match"])
+        self.assertFalse(boundary["acceptance_policy"]["raw_state_equality_required"])
+        self.assertFalse(boundary["uses_run_hybrid_template"])
+        self.assertFalse(boundary["requires_runtime_launch_template"])
+        self.assertFalse(boundary["run_hybrid_template_compatible"])
+        self.assertIsNone(boundary["launcher_command_argv"])
+        self.assertIsNone(boundary["runner_command_argv"])
+        self.assertEqual(boundary["runner_command_role"], "not_materialized")
+        self.assertFalse(boundary["execution_authority"])
+        self.assertFalse(boundary["runtime_abi"])
+        self.assertFalse(boundary["sidecar_runner_invoked"])
+        self.assertFalse(boundary["sidecar_execution_invoked"])
+        self.assertFalse(boundary["coverage_output_compare_reached"])
+        self.assertFalse(boundary["execution_performed"])
+        self.assertFalse(boundary["measurement_performed"])
+        self.assertFalse(boundary["cpu_as_gpu_fallback"])
+
+    def test_implementation_boundary_keeps_unready_contract_blocked(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_runner_implementation import (
+            build_rtlmeter_stdout_cycles_runner_implementation_boundary,
+        )
+
+        authority_registry = json.loads((REPO_ROOT / REGISTRY_PATH).read_text(encoding="utf-8"))
+        boundary = build_rtlmeter_stdout_cycles_runner_implementation_boundary(
+            runner_contract=self._contract(authority_registry=authority_registry),
+        )
+
+        self.assertEqual(boundary["status"], "rtlmeter_stdout_cycles_runner_implementation_blocked_contract")
+        self.assertIn("runner_contract_missing_context", boundary["missing_implementation_context"])
+        self.assertIn(
+            "runner_contract.authority_registry.source_closure.status",
+            boundary["missing_implementation_context"],
+        )
+        self.assertIn(
+            "runner_contract.rtlmeter_stdout_cycles_runner_implementation",
+            boundary["missing_implementation_context"],
+        )
+        self.assertIsNone(boundary["runner_command_argv"])
+        self.assertEqual(boundary["runner_command_role"], "not_materialized")
+        self.assertFalse(boundary["execution_performed"])
+        self.assertFalse(boundary["measurement_performed"])
+        self.assertFalse(boundary["sidecar_execution_invoked"])
+
+    def test_implementation_boundary_accepts_adapter_metadata_without_materializing_command(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_runner_implementation import (
+            build_rtlmeter_stdout_cycles_runner_implementation_boundary,
+        )
+
+        adapter_metadata = {
+            "surface": "rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata",
+            "status": "rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata_ready",
+            "runner_adapter_entrypoint": "rtlmeter_stdout_cycles_runner_adapter_entrypoint",
+        }
+        boundary = build_rtlmeter_stdout_cycles_runner_implementation_boundary(
+            runner_contract=self._contract(),
+            runner_adapter_entrypoint_metadata=adapter_metadata,
+        )
+
+        self.assertEqual(
+            boundary["status"],
+            "rtlmeter_stdout_cycles_runner_implementation_adapter_entrypoint_metadata_ready",
+        )
+        self.assertEqual(boundary["missing_implementation_context"], [])
+        self.assertEqual(
+            boundary["runner_adapter_entrypoint"],
+            "rtlmeter_stdout_cycles_runner_adapter_entrypoint",
+        )
+        self.assertEqual(boundary["runner_adapter_entrypoint_metadata"], adapter_metadata)
+        self.assertIsNone(boundary["launcher_command_argv"])
+        self.assertIsNone(boundary["runner_command_argv"])
+        self.assertEqual(boundary["runner_command_role"], "not_materialized")
+        self.assertFalse(boundary["execution_authority"])
+        self.assertFalse(boundary["runtime_abi"])
+        self.assertFalse(boundary["sidecar_runner_invoked"])
+        self.assertFalse(boundary["sidecar_execution_invoked"])
+        self.assertFalse(boundary["coverage_output_compare_reached"])
+        self.assertFalse(boundary["execution_performed"])
+        self.assertFalse(boundary["measurement_performed"])
+        self.assertFalse(boundary["cpu_as_gpu_fallback"])
+
+    def test_implementation_boundary_rejects_unready_adapter_metadata(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_runner_implementation import (
+            build_rtlmeter_stdout_cycles_runner_implementation_boundary,
+        )
+
+        boundary = build_rtlmeter_stdout_cycles_runner_implementation_boundary(
+            runner_contract=self._contract(),
+            runner_adapter_entrypoint_metadata={
+                "surface": "rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata",
+                "runner_adapter_entrypoint": "rtlmeter_stdout_cycles_runner_adapter_entrypoint",
+            },
+        )
+
+        self.assertEqual(boundary["status"], "rtlmeter_stdout_cycles_runner_implementation_blocked_missing_adapter")
+        self.assertEqual(boundary["missing_implementation_context"], ["runner_adapter_entrypoint_metadata.status"])
+        self.assertIsNone(boundary["runner_command_argv"])
+        self.assertEqual(boundary["runner_command_role"], "not_materialized")
+        self.assertFalse(boundary["execution_performed"])
+        self.assertFalse(boundary["measurement_performed"])
+
     def test_metadata_only_tracked_registry_stays_blocked(self) -> None:
         authority_registry = json.loads((REPO_ROOT / REGISTRY_PATH).read_text(encoding="utf-8"))
         contract = self._contract(authority_registry=authority_registry)

@@ -59,6 +59,7 @@ TRACKED_TOOL_ROOTS = (
     "rtlmeter_seed_selection",
     "rtlmeter_sidecar_contract_mapping",
     "rtlmeter_stdout_cycles_runner_contract",
+    "rtlmeter_stdout_cycles_runner_implementation",
     "rtlmeter_verilator_command_capture",
     "rtlmeter_verilator_path_wrapper",
     "rtlmeter_verilator_wrapper_runtime",
