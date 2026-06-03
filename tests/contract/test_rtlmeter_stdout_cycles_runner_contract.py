@@ -94,6 +94,20 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
             runner_implementation_ready=runner_ready,
         )
 
+    def _implementation_boundary(self) -> dict[str, object]:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_runner_adapter import (
+            build_rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata,
+        )
+        from rtlmeter_stdout_cycles_runner_implementation import (
+            build_rtlmeter_stdout_cycles_runner_implementation_boundary,
+        )
+
+        return build_rtlmeter_stdout_cycles_runner_implementation_boundary(
+            runner_contract=self._contract(),
+            runner_adapter_entrypoint_metadata=build_rtlmeter_stdout_cycles_runner_adapter_entrypoint_metadata(),
+        )
+
     def test_contract_blocks_only_on_missing_runner_implementation(self) -> None:
         contract = self._contract()
 
@@ -253,6 +267,105 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertFalse(boundary["coverage_output_compare_reached"])
         self.assertFalse(boundary["execution_performed"])
         self.assertFalse(boundary["measurement_performed"])
+        self.assertFalse(boundary["cpu_as_gpu_fallback"])
+
+    def test_sidecar_runner_source_argv_boundary_materializes_argv_without_execution(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_sidecar_runner import (
+            build_rtlmeter_stdout_cycles_sidecar_runner_source_argv_boundary,
+        )
+        from rtlmeter_stdout_cycles_plan import (
+            build_rtlmeter_stdout_cycles_execution_plan,
+        )
+
+        boundary = build_rtlmeter_stdout_cycles_sidecar_runner_source_argv_boundary(
+            runner_implementation_boundary=self._implementation_boundary(),
+            stdout_cycles_plan=build_rtlmeter_stdout_cycles_execution_plan(),
+        )
+
+        self.assertEqual(boundary["surface"], "rtlmeter_stdout_cycles_sidecar_runner_source_argv_boundary")
+        self.assertEqual(boundary["status"], "rtlmeter_stdout_cycles_sidecar_runner_argv_metadata_ready")
+        self.assertEqual(boundary["missing_runner_source_context"], [])
+        self.assertEqual(boundary["rejected_runner_source_context"], [])
+        self.assertEqual(boundary["observables"], ["normalized_stdout", "rtlmeter_cycles"])
+        self.assertEqual(boundary["runner_command_role"], "materialized_for_later_run_not_invoked")
+        self.assertEqual(boundary["runner_command_argv"][0], "python3")
+        self.assertEqual(boundary["runner_command_argv"][1], "src/tools/rtlmeter_stdout_cycles_sidecar_runner.py")
+        self.assertIn("--observable-execute-dir", boundary["runner_command_argv"])
+        self.assertIn("--", boundary["runner_command_argv"])
+        self.assertIn("third_party/rtlmeter/rtlmeter", boundary["runner_command_argv"])
+        self.assertNotIn("--execute", boundary["runner_command_argv"])
+        self.assertIsNone(boundary["launcher_command_argv"])
+        self.assertFalse(boundary["runner_source_cli_implemented"])
+        self.assertFalse(boundary["subprocess_invoked"])
+        self.assertFalse(boundary["rtlmeter_invoked"])
+        self.assertFalse(boundary["adapter_invoked"])
+        self.assertFalse(boundary["sidecar_runner_invoked"])
+        self.assertFalse(boundary["sidecar_execution_invoked"])
+        self.assertFalse(boundary["coverage_output_compare_reached"])
+        self.assertFalse(boundary["execution_performed"])
+        self.assertFalse(boundary["measurement_performed"])
+        self.assertFalse(boundary["execution_authority"])
+        self.assertFalse(boundary["runtime_abi"])
+        self.assertFalse(boundary["cpu_as_gpu_fallback"])
+        self.assertFalse(boundary["gpu_execution_claimed"])
+        self.assertNotIn("command_result", boundary)
+        self.assertNotIn("output_status", boundary)
+        self.assertNotIn("cycle_count", boundary)
+
+    def test_sidecar_runner_source_argv_boundary_rejects_run_hybrid_template(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_sidecar_runner import (
+            build_rtlmeter_stdout_cycles_sidecar_runner_source_argv_boundary,
+        )
+        from rtlmeter_stdout_cycles_plan import (
+            build_rtlmeter_stdout_cycles_execution_plan,
+        )
+
+        plan = build_rtlmeter_stdout_cycles_execution_plan()
+        gpu_candidate = dict(plan["gpu_candidate"])
+        gpu_candidate["command"] = ["python3", "src/tools/run_hybrid_template.py"]
+        plan["gpu_candidate"] = gpu_candidate
+
+        boundary = build_rtlmeter_stdout_cycles_sidecar_runner_source_argv_boundary(
+            runner_implementation_boundary=self._implementation_boundary(),
+            stdout_cycles_plan=plan,
+        )
+
+        self.assertEqual(boundary["status"], "rtlmeter_stdout_cycles_sidecar_runner_blocked_rejected_command")
+        self.assertIn("run_hybrid_template.py", boundary["rejected_runner_source_context"])
+        self.assertIsNone(boundary["runner_command_argv"])
+        self.assertEqual(boundary["runner_command_role"], "not_materialized")
+        self.assertFalse(boundary["subprocess_invoked"])
+        self.assertFalse(boundary["execution_performed"])
+        self.assertFalse(boundary["measurement_performed"])
+        self.assertFalse(boundary["cpu_as_gpu_fallback"])
+
+    def test_sidecar_runner_source_argv_boundary_blocks_cpu_reference_command(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_sidecar_runner import (
+            build_rtlmeter_stdout_cycles_sidecar_runner_source_argv_boundary,
+        )
+        from rtlmeter_stdout_cycles_plan import (
+            build_rtlmeter_stdout_cycles_execution_plan,
+        )
+
+        plan = build_rtlmeter_stdout_cycles_execution_plan()
+        gpu_candidate = dict(plan["cpu_reference"])
+        gpu_candidate["cpu_as_gpu_fallback_allowed"] = False
+        plan["gpu_candidate"] = gpu_candidate
+        boundary = build_rtlmeter_stdout_cycles_sidecar_runner_source_argv_boundary(
+            runner_implementation_boundary=self._implementation_boundary(),
+            stdout_cycles_plan=plan,
+        )
+
+        self.assertEqual(boundary["status"], "rtlmeter_stdout_cycles_sidecar_runner_blocked_plan")
+        self.assertIn(
+            "stdout_cycles_plan.gpu_candidate.compile_args.sidecar_accel",
+            boundary["missing_runner_source_context"],
+        )
+        self.assertIsNone(boundary["runner_command_argv"])
+        self.assertFalse(boundary["execution_performed"])
         self.assertFalse(boundary["cpu_as_gpu_fallback"])
 
     def test_implementation_boundary_rejects_unready_adapter_metadata(self) -> None:
