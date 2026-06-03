@@ -51,6 +51,8 @@ TRACKED_TOOL_ROOTS = (
     "verilator_native_option_parser_process_to_launcher_cli_fixture",
     "verilator_native_option_parser_verilator_process_launcher_bridge_fixture",
     "verilator_native_option_parser_stub_fixture",
+    "verilator_use_gpu_first_path",
+    "verilator_use_gpu_wrapper_runtime",
     "rtlmeter_cpu_gpu_compare_integration",
     "rtlmeter_cpu_gpu_compare_policy",
     "rtlmeter_overlay_audit",
