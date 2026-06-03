@@ -27,6 +27,24 @@ fail closed, and any RTLMeter JSON capture remains debug/inspection metadata.
 | `src/tools/run_results_reproduction.py` | Public-pack reproduction, aggregate measurement workflows, and developer/audit-only policy dry-runs. Policy dry-runs do not imply arbitrary filelist support or automatic optimal GPU allocation. |
 | `src/tools/gen_hybrid_config.py` | Generate a new slice template, coverage-region file, and scaling-gate draft from a target/top/overlay description. |
 
+## Reproduction And Public Pack Boundary
+
+`src/tools/run_results_reproduction.py --dry-run` is a preview surface. It
+prints commands and expected generated outputs; it does not run measurements,
+create archives, or promote generated evidence to source of truth. The public
+pack preview is explicit:
+
+```bash
+python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run
+```
+
+That command prints include/exclude lines and refuses non-dry archive creation.
+`reports/` entries are generated evidence snapshots, `artifacts/` entries are
+rebuildable local outputs, and canonical project decisions stay in
+`config/selection.json`, `docs/status.md`, `docs/roadmap.md`, and `README.md`.
+Clean-checkout checks can use Python dry-runs; non-dry Verilator or CUDA runs
+need the corresponding local toolchain and GPU runtime.
+
 ## Routine Operator Path
 
 The normal sidecar path starts with `src/tools/run_hybrid_benchmark.py`, not the

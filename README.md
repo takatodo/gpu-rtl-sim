@@ -140,6 +140,17 @@ python3 src/tools/run_results_reproduction.py --dry-run
 
 `make simple` validates the compact state and runs the dry-run smoke. `make surface` checks the tracked tool boundary. `make check` runs validation, surface checks, and contract tests.
 
+`python3 src/tools/run_results_reproduction.py --dry-run` is a command preview:
+it prints reproduction commands and expected generated outputs without running
+measurements or creating archives. For the public pack boundary, use
+`python3 src/tools/run_results_reproduction.py --public-pack-archive --dry-run`;
+it prints the include/exclude plan and still creates no archive. Treat
+`reports/` as generated evidence snapshots and `artifacts/` as rebuildable local
+outputs. Canonical current state remains in `config/selection.json`,
+`docs/status.md`, `docs/roadmap.md`, and `README.md`. A clean checkout can run
+the Python dry-runs; non-dry Verilator/CUDA flows require the matching toolchain
+and GPU runtime prerequisites.
+
 Verilator-like benchmark runner:
 
 ```bash
