@@ -8,6 +8,12 @@ This repository is an experimental GPU sidecar runtime for RTL compiler frontend
 
 The contract is the boundary between frontend-owned RTL/build information and sidecar-owned GPU build, run, and compare work. It should be represented in importable code and runtime metadata first. JSON output is useful for debug and review; automation may inspect it, but it should not become execution authority or the required runtime ABI.
 
+### Current Algorithm Status
+
+The core GPU sidecar algorithm is established for scoped template-backed RTL workloads. Correctness is claimed through `coverage_output_equivalence`, not raw full-state equality. The best observed shape is state-parallel work that evaluates many independent states in one sidecar launch.
+
+This does not claim arbitrary RTL support, arbitrary filelist inference, broad native Verilator support, automatic optimal allocation, stable external runtime ABI, RTLMeter acceleration, or production throughput.
+
 Current pointer, mirrored from `config/selection.json`:
 
 - `current_priority`: `external_user_readiness_audit_gate`

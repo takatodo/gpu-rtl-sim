@@ -2,13 +2,13 @@
 
 ## Conclusion
 
-The hybrid runtime is useful for scoped modern-LLM-serving-like RTL harnesses when the workload has many independent states per launch and correctness is checked with coverage-output equivalence.
+The hybrid runtime is useful for scoped modern-LLM-serving-like RTL harnesses when the workload has many independent states per launch and correctness is checked with `coverage_output_equivalence`, not raw full-state equality.
 
 The strongest measured condition is state-parallel execution. The weakest baseline condition is a single state advanced across many repeated launches. Resident execution only slightly changes the `1x64` median in the latest run, while resident batch-parallel decode restores much of the throughput shape by amortizing one resident launch across many states.
 
 The persistent resident ABI probe adds a stronger decode-like condition: one process can keep the same GPU `d_storage` allocation authoritative across four cumulative `16x64` phases, with phase dumps used only as compare evidence rather than as the next phase input.
 
-The current result is a scoped RTL-harness conclusion. It is not a production LLM serving benchmark.
+The current result is a scoped RTL-harness conclusion. It is not arbitrary RTL support, broad native Verilator support, automatic optimal allocation, a stable external runtime ABI, or a production LLM serving benchmark.
 
 ## How To Read This Pack
 
