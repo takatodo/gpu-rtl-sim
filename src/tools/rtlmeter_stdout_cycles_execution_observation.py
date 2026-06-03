@@ -1,0 +1,195 @@
+"""Execution observation boundary for RTLMeter stdout/cycles sidecar results."""
+
+from __future__ import annotations
+
+import hashlib
+import re
+from collections.abc import Mapping
+from pathlib import Path
+
+try:
+    from .rtlmeter_stdout_cycles_observables import normalized_rtlmeter_stdout
+    from .rtlmeter_stdout_cycles_plan import EXPECTED_OBSERVABLES
+    from .rtlmeter_stdout_cycles_sidecar_runner import (
+        STATUS_BLOCKED_PLAN,
+        STATUS_BLOCKED_REJECTED_COMMAND,
+        _copy_mapping,
+        _plan_missing_context,
+        _rejected_command_inputs,
+        _strip_separator,
+    )
+except ImportError:  # pragma: no cover - exercised when imported via sys.path.
+    from rtlmeter_stdout_cycles_observables import normalized_rtlmeter_stdout
+    from rtlmeter_stdout_cycles_plan import EXPECTED_OBSERVABLES
+    from rtlmeter_stdout_cycles_sidecar_runner import (
+        STATUS_BLOCKED_PLAN,
+        STATUS_BLOCKED_REJECTED_COMMAND,
+        _copy_mapping,
+        _plan_missing_context,
+        _rejected_command_inputs,
+        _strip_separator,
+    )
+
+
+STATUS_EXECUTION_NOT_REQUESTED = "rtlmeter_stdout_cycles_sidecar_runner_execution_not_requested"
+STATUS_EXECUTION_FAILED = "rtlmeter_stdout_cycles_sidecar_runner_execution_failed"
+STATUS_OUTPUTS_MISSING = "rtlmeter_stdout_cycles_sidecar_runner_outputs_missing"
+STATUS_OBSERVABLES_READY = "rtlmeter_stdout_cycles_sidecar_runner_observables_ready"
+
+
+def _sanitize_text(text: str) -> str:
+    return re.sub(r"/(?:home|tmp|Users|var|mnt|workspace|root)/[^\s'\",;)]+", "<local-absolute-path>", text)
+
+
+def _sanitize_object(value: object) -> object:
+    if isinstance(value, str):
+        return _sanitize_text(value)
+    if isinstance(value, list):
+        return [_sanitize_object(item) for item in value]
+    if isinstance(value, tuple):
+        return [_sanitize_object(item) for item in value]
+    if isinstance(value, Mapping):
+        return {str(key): _sanitize_object(item) for key, item in value.items()}
+    return value
+
+
+def _relative_path(path: Path, repo_root: Path | None) -> str:
+    if repo_root is not None:
+        try:
+            return path.resolve().relative_to(repo_root.resolve()).as_posix()
+        except ValueError:
+            pass
+    if path.is_absolute():
+        return "<local-absolute-path>"
+    return path.as_posix()
+
+
+def _command_names_rtlmeter(command: object) -> bool:
+    if not isinstance(command, list):
+        return False
+    return any(Path(str(item)).name == "rtlmeter" for item in command)
+
+
+def _observable_paths(observable_execute_dir: object, repo_root: Path | None) -> tuple[Path | None, Path | None]:
+    if not isinstance(observable_execute_dir, str) or not observable_execute_dir:
+        return None, None
+    execute_dir = Path(observable_execute_dir)
+    if not execute_dir.is_absolute() and repo_root is not None:
+        execute_dir = repo_root / execute_dir
+    return execute_dir / "_execute" / "stdout.log", execute_dir / "_rtlmeter_cycles.txt"
+
+
+def _read_observables(*, observable_execute_dir: object, repo_root: Path | None) -> dict[str, object]:
+    stdout_log, cycle_count_file = _observable_paths(observable_execute_dir, repo_root)
+    paths = {
+        "stdout_log": _relative_path(stdout_log, repo_root) if stdout_log is not None else None,
+        "cycle_count_file": _relative_path(cycle_count_file, repo_root) if cycle_count_file is not None else None,
+    }
+    missing: list[str] = []
+    stdout_sha256 = None
+    cycle_count = None
+
+    if stdout_log is None or not stdout_log.is_file():
+        missing.append("stdout_log")
+    else:
+        normalized_stdout = normalized_rtlmeter_stdout(stdout_log.read_text(encoding="utf-8"))
+        stdout_sha256 = hashlib.sha256(normalized_stdout.encode("utf-8")).hexdigest()
+
+    if cycle_count_file is None or not cycle_count_file.is_file():
+        missing.append("cycle_count_file")
+    else:
+        try:
+            cycle_count = int(cycle_count_file.read_text(encoding="utf-8").strip())
+        except ValueError:
+            missing.append("cycle_count_file.parse_int")
+
+    return {
+        "observable_paths": paths,
+        "missing_observables": missing,
+        "observables_ready": not missing,
+        "normalized_stdout_sha256": stdout_sha256,
+        "cycle_count": cycle_count,
+    }
+
+
+def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
+    *,
+    stdout_cycles_plan: Mapping[str, object] | None,
+    command_result: Mapping[str, object] | None,
+    repo_root: Path | None = None,
+) -> dict[str, object]:
+    """Observe a reviewed opt-in runner subprocess result without measuring speedup."""
+
+    gpu_candidate = stdout_cycles_plan.get("gpu_candidate") if isinstance(stdout_cycles_plan, Mapping) else None
+    if isinstance(gpu_candidate, Mapping):
+        candidate_command = _strip_separator(gpu_candidate.get("command"))
+        observable_execute_dir = gpu_candidate.get("observable_execute_dir")
+        sidecar_candidate = gpu_candidate.get("owner") == "sidecar"
+        sidecar_candidate = sidecar_candidate and gpu_candidate.get("cpu_as_gpu_fallback_allowed") is False
+    else:
+        candidate_command = None
+        observable_execute_dir = None
+        sidecar_candidate = False
+
+    subprocess_invoked = command_result is not None
+    returncode = command_result.get("returncode") if isinstance(command_result, Mapping) else None
+    command_failed = not isinstance(returncode, int) or returncode != 0
+    observable_status = _read_observables(observable_execute_dir=observable_execute_dir, repo_root=repo_root)
+    missing_context = _plan_missing_context(stdout_cycles_plan)
+    rejected = _rejected_command_inputs(candidate_command or [])
+
+    if missing_context:
+        status = STATUS_BLOCKED_PLAN
+    elif rejected:
+        status = STATUS_BLOCKED_REJECTED_COMMAND
+    elif not subprocess_invoked:
+        status = STATUS_EXECUTION_NOT_REQUESTED
+    elif command_failed:
+        status = STATUS_EXECUTION_FAILED
+    elif not observable_status["observables_ready"]:
+        status = STATUS_OUTPUTS_MISSING
+    else:
+        status = STATUS_OBSERVABLES_READY
+
+    execution_performed = status == STATUS_OBSERVABLES_READY
+    return {
+        "schema_version": 1,
+        "surface": "rtlmeter_stdout_cycles_sidecar_runner_execution_observation_boundary",
+        "status": status,
+        "runner_kind": "rtlmeter_stdout_cycles_sidecar_runner",
+        "stdout_cycles_plan": _copy_mapping(stdout_cycles_plan),
+        "missing_runner_execution_context": missing_context,
+        "rejected_runner_execution_context": rejected,
+        "candidate_command_argv": candidate_command,
+        "observable_execute_dir": observable_execute_dir,
+        "observables": list(EXPECTED_OBSERVABLES),
+        "command_result": _sanitize_object(command_result) if command_result is not None else None,
+        **observable_status,
+        "uses_run_hybrid_template": False,
+        "requires_runtime_launch_template": False,
+        "run_hybrid_template_compatible": False,
+        "launcher_command_argv": None,
+        "runner_command_argv": None,
+        "runner_command_role": "not_materialized_by_execution_observation",
+        "subprocess_invoked": subprocess_invoked,
+        "rtlmeter_invoked": subprocess_invoked and _command_names_rtlmeter(candidate_command),
+        "adapter_invoked": False,
+        "sidecar_runner_invoked": subprocess_invoked and sidecar_candidate,
+        "sidecar_execution_invoked": subprocess_invoked and sidecar_candidate,
+        "coverage_output_compare_reached": False,
+        "execution_performed": execution_performed,
+        "measurement_performed": False,
+        "execution_authority": subprocess_invoked and sidecar_candidate,
+        "runtime_abi": False,
+        "cpu_as_gpu_fallback": False,
+        "gpu_execution_claimed": execution_performed,
+        "generated_report_is_source_of_truth": False,
+        "timing_measured": False,
+        "speedup_claimed": False,
+        "non_claims": [
+            "execution observation does not measure timing or speedup",
+            "execution observation does not use run_hybrid_template.py",
+            "execution observation does not treat generated reports as source of truth",
+            "CPU execution is never reported as GPU execution",
+        ],
+    }

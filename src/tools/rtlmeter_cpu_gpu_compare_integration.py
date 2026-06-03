@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import re
@@ -29,13 +28,17 @@ from rtlmeter_stdout_cycles_plan import (
     rtlmeter_compile_dir as _compile_dir,
     rtlmeter_execute_dir as _execute_dir,
 )
+from rtlmeter_stdout_cycles_execution_observation import (
+    STATUS_OBSERVABLES_READY,
+    build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation,
+)
+from rtlmeter_stdout_cycles_observables import compare_rtlmeter_observables, required_observable_files_missing
 from rtlmeter_verilator_command_capture import RtlmeterCommandCaptureError
 from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, write_rtlmeter_verilator_wrapper
 
 
 SURFACE = "rtlmeter_cpu_gpu_compare_integration"
 OPT_IN_ENV = "RTLMETER_CPU_GPU_COMPARE_EXECUTE"
-TIMESTAMP_PREFIX_RE = re.compile(r"^\s*[0-9]+(?:\.[0-9]+)?\s+\|\s?")
 
 
 def _repo_root() -> Path:
@@ -48,29 +51,6 @@ def _sanitize(text: str) -> str:
 
 def _compile_arg_tokens(compile_args: str) -> tuple[str, ...]:
     return tuple(shlex.split(compile_args))
-
-
-def normalized_rtlmeter_stdout(text: str) -> str:
-    lines = [TIMESTAMP_PREFIX_RE.sub("", line).rstrip() for line in text.splitlines()]
-    return "\n".join(lines).strip()
-
-
-def compare_rtlmeter_observables(cpu_execute_dir: Path, gpu_execute_dir: Path) -> dict[str, object]:
-    cpu_stdout = normalized_rtlmeter_stdout((cpu_execute_dir / "_execute" / "stdout.log").read_text(encoding="utf-8"))
-    gpu_stdout = normalized_rtlmeter_stdout((gpu_execute_dir / "_execute" / "stdout.log").read_text(encoding="utf-8"))
-    cpu_cycles = int((cpu_execute_dir / "_rtlmeter_cycles.txt").read_text(encoding="utf-8").strip())
-    gpu_cycles = int((gpu_execute_dir / "_rtlmeter_cycles.txt").read_text(encoding="utf-8").strip())
-    stdout_match = cpu_stdout == gpu_stdout
-    cycles_match = cpu_cycles == gpu_cycles
-    return {
-        "status": "passed" if stdout_match and cycles_match else "failed",
-        "normalized_stdout_match": stdout_match,
-        "cycle_count_match": cycles_match,
-        "cpu_cycles": cpu_cycles,
-        "gpu_cycles": gpu_cycles,
-        "cpu_stdout_sha256": hashlib.sha256(cpu_stdout.encode("utf-8")).hexdigest(),
-        "gpu_stdout_sha256": hashlib.sha256(gpu_stdout.encode("utf-8")).hexdigest(),
-    }
 
 
 def _preflight(*, repo_root: Path, sidecar_wrapper: str | None, path_env: str | None) -> list[str]:
@@ -151,6 +131,11 @@ def run_rtlmeter_cpu_gpu_compare_integration(
     gpu_work_root = artifact_root / "gpu"
     cpu_command = _rtlmeter_command(seed, cpu_work_root)
     gpu_command = _rtlmeter_command(seed, gpu_work_root, compile_args)
+    stdout_cycles_plan = build_rtlmeter_stdout_cycles_execution_plan(
+        seed=seed,
+        compile_args=compile_args,
+        artifact_root=artifact_root,
+    )
     report: dict[str, object] = {
         "schema_version": 1,
         "surface": SURFACE,
@@ -166,11 +151,7 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         "rtlmeter_timing_conflated_with_sidecar_timing": False,
         "commands": {"cpu": cpu_command, "gpu": gpu_command},
         "compare_policy": policy["compare_policy"],
-        "stdout_cycles_execution_plan": build_rtlmeter_stdout_cycles_execution_plan(
-            seed=seed,
-            compile_args=compile_args,
-            artifact_root=artifact_root,
-        ),
+        "stdout_cycles_execution_plan": stdout_cycles_plan,
         "sidecar_contract": None,
         "sidecar_context_candidate": None,
         "stdout_cycles_sidecar_runner": None,
@@ -234,6 +215,11 @@ def run_rtlmeter_cpu_gpu_compare_integration(
     gpu_result = _run(gpu_command, repo_root=root, env=gpu_env, runner=runner)
     report["ran_commands"] = True
     report["command_results"] = {"cpu": cpu_result, "gpu": gpu_result}
+    report["stdout_cycles_sidecar_runner"] = build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
+        stdout_cycles_plan=stdout_cycles_plan,
+        command_result=gpu_result,
+        repo_root=root,
+    )
     if gpu_result["returncode"] != 0:
         report["status"] = "gpu_execution_failed"
         report["gpu_failure_diagnostic_log"] = _read_optional_log(
@@ -241,9 +227,23 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         )
         return _maybe_write_report(report, root, write_report, report_rel)
 
+    cpu_execute_dir = root / _execute_dir(cpu_work_root, seed)
+    gpu_execute_dir = root / _execute_dir(gpu_work_root, seed)
+    missing_observables = [
+        *required_observable_files_missing(cpu_execute_dir, "cpu"),
+        *required_observable_files_missing(gpu_execute_dir, "gpu"),
+    ]
+    if missing_observables:
+        report["status"] = "observables_missing"
+        report["missing_observables"] = missing_observables
+        return _maybe_write_report(report, root, write_report, report_rel)
+    if report["stdout_cycles_sidecar_runner"]["status"] != STATUS_OBSERVABLES_READY:
+        report["status"] = "gpu_observables_not_ready"
+        return _maybe_write_report(report, root, write_report, report_rel)
+
     comparison = compare_rtlmeter_observables(
-        root / _execute_dir(cpu_work_root, seed),
-        root / _execute_dir(gpu_work_root, seed),
+        cpu_execute_dir,
+        gpu_execute_dir,
     )
     report["comparison"] = comparison
     report["status"] = "passed" if comparison["status"] == "passed" else "failed"
