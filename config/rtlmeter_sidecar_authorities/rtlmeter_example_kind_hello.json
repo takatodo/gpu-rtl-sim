@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "schema_role": "rtlmeter_sidecar_authority",
+  "status": "blocked_missing_runtime_launch_template",
+  "runtime_launchable": false,
+  "target": "rtlmeter_example_kind_hello",
+  "mode": "rtlmeter_first_seed",
+  "rtlmeter_case": "Example:kind:hello",
+  "source_gate_or_manifest_ref": "for_codex/issues/FC-034-rtlmeter-first-seed-execution-integration.md",
+  "coverage_output_target": "rtlmeter_stdout_and_cycles_equivalence",
+  "coverage_manifest": {
+    "outputs": [
+      "normalized_stdout",
+      "rtlmeter_cycles"
+    ],
+    "status": "policy_defined_not_observed"
+  },
+  "compile_source_closure": {
+    "status": "complete",
+    "source_files": [
+      "third_party/rtlmeter/designs/Example/src/top.v",
+      "third_party/rtlmeter/rtl/__rtlmeter_utils.sv"
+    ],
+    "include_files": [
+      "third_party/rtlmeter/rtl/__rtlmeter_top_include.vh"
+    ],
+    "filelist_entries": [
+      "verilogSourceFiles/top.v",
+      "rtl/__rtlmeter_utils.sv",
+      "rtl/__rtlmeter_top_include.vh"
+    ],
+    "provenance": "rtlmeter_descriptor_capture"
+  },
+  "source_closure": {
+    "status": "frontend_metadata_only_not_source_closure",
+    "required_authority": "reviewed_hybrid_execution_source_closure",
+    "authority_scope": "rtlmeter_stdout_cycles_sidecar_runner",
+    "target": "rtlmeter_example_kind_hello",
+    "mode": "rtlmeter_first_seed",
+    "rtlmeter_case": "Example:kind:hello",
+    "source_gate_or_manifest_ref": "for_codex/issues/FC-034-rtlmeter-first-seed-execution-integration.md",
+    "source_files": [
+      "third_party/rtlmeter/designs/Example/src/top.v",
+      "third_party/rtlmeter/rtl/__rtlmeter_utils.sv"
+    ],
+    "include_files": [
+      "third_party/rtlmeter/rtl/__rtlmeter_top_include.vh"
+    ],
+    "filelist_entries": [
+      "verilogSourceFiles/top.v",
+      "rtl/__rtlmeter_utils.sv",
+      "rtl/__rtlmeter_top_include.vh"
+    ],
+    "observables": [
+      "normalized_stdout",
+      "rtlmeter_cycles"
+    ],
+    "runner_strategy": "rtlmeter_stdout_cycles_direct_wrapper",
+    "host_probe_contract_status": "not_reviewed_for_rtlmeter_sidecar",
+    "cpu_as_gpu_fallback_allowed": false,
+    "execution_blocker": "blocked_host_probe_contract_mismatch",
+    "compile_source_closure_is_not_hybrid_execution_closure": true
+  },
+  "runtime_launch_template": null,
+  "runtime_launch_template_required_role": "runnable_hybrid_template",
+  "non_claims": [
+    "not a run_hybrid_template.py launch template",
+    "not sidecar execution authority",
+    "not CPU vs GPU compare evidence",
+    "not timing or speedup evidence"
+  ]
+}

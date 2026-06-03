@@ -19,15 +19,22 @@ from rtlmeter_cpu_gpu_compare_policy import rtlmeter_cpu_gpu_compare_policy
 from rtlmeter_seed_selection import SELECTED_SEED
 from rtlmeter_sidecar_contract_mapping import map_rtlmeter_case_to_sidecar_contract
 from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_context_candidate
+from rtlmeter_stdout_cycles_plan import (
+    DEFAULT_ARTIFACT_ROOT,
+    DEFAULT_AUTHORITY_REGISTRY,
+    DEFAULT_COMPILE_ARGS,
+    WRAPPER_ENV,
+    build_rtlmeter_stdout_cycles_execution_plan,
+    rtlmeter_command as _rtlmeter_command,
+    rtlmeter_compile_dir as _compile_dir,
+    rtlmeter_execute_dir as _execute_dir,
+)
 from rtlmeter_verilator_command_capture import RtlmeterCommandCaptureError
 from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, write_rtlmeter_verilator_wrapper
 
 
 SURFACE = "rtlmeter_cpu_gpu_compare_integration"
 OPT_IN_ENV = "RTLMETER_CPU_GPU_COMPARE_EXECUTE"
-WRAPPER_ENV = "RTLMETER_SIDECAR_VERILATOR_WRAPPER"
-DEFAULT_COMPILE_ARGS = "--sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1"
-DEFAULT_ARTIFACT_ROOT = Path("artifacts/rtlmeter_example_kind_hello_cpu_gpu_compare")
 TIMESTAMP_PREFIX_RE = re.compile(r"^\s*[0-9]+(?:\.[0-9]+)?\s+\|\s?")
 
 
@@ -36,38 +43,7 @@ def _repo_root() -> Path:
 
 
 def _sanitize(text: str) -> str:
-    return re.sub(r"(?<!\S)/(?:home|tmp|Users|var|mnt|workspace|root)/\S+", "<local-absolute-path>", text)
-
-
-def _split_seed(seed: str) -> tuple[str, str, str]:
-    parts = seed.split(":")
-    if len(parts) != 3:
-        raise ValueError("RTLMeter execution seed must be formatted as <design>:<config>:<test>")
-    return parts[0], parts[1], parts[2]
-
-
-def _execute_dir(work_root: Path, seed: str) -> Path:
-    design, config, test = _split_seed(seed)
-    return work_root / design / config / "execute-0" / test
-
-
-def _compile_dir(work_root: Path, seed: str) -> Path:
-    design, config, _test = _split_seed(seed)
-    return work_root / design / config / "compile-0"
-
-
-def _rtlmeter_command(seed: str, work_root: Path, compile_args: str = "") -> list[str]:
-    command = [
-        "third_party/rtlmeter/rtlmeter",
-        "run",
-        "--cases",
-        seed,
-        "--workRoot",
-        work_root.as_posix(),
-    ]
-    if compile_args:
-        command.append(f"--compileArgs={compile_args}")
-    return command
+    return re.sub(r"/(?:home|tmp|Users|var|mnt|workspace|root)/[^\s'\",;)]+", "<local-absolute-path>", text)
 
 
 def _compile_arg_tokens(compile_args: str) -> tuple[str, ...]:
@@ -144,6 +120,16 @@ def _run(command: list[str], *, repo_root: Path, env: Mapping[str, str], runner)
     }
 
 
+def _clean_generated_work_roots(repo_root: Path, work_roots: list[Path]) -> list[str]:
+    cleaned: list[str] = []
+    for work_root in work_roots:
+        target = repo_root / work_root
+        if target.exists():
+            shutil.rmtree(target)
+            cleaned.append(work_root.as_posix())
+    return cleaned
+
+
 def run_rtlmeter_cpu_gpu_compare_integration(
     *,
     seed: str = SELECTED_SEED,
@@ -180,9 +166,16 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         "rtlmeter_timing_conflated_with_sidecar_timing": False,
         "commands": {"cpu": cpu_command, "gpu": gpu_command},
         "compare_policy": policy["compare_policy"],
+        "stdout_cycles_execution_plan": build_rtlmeter_stdout_cycles_execution_plan(
+            seed=seed,
+            compile_args=compile_args,
+            artifact_root=artifact_root,
+        ),
         "sidecar_contract": None,
         "sidecar_context_candidate": None,
+        "stdout_cycles_sidecar_runner": None,
         "missing_prerequisites": [],
+        "cleaned_generated_work_roots": [],
         "ran_commands": False,
         "comparison": None,
         "sidecar_wrapper_source": None,
@@ -202,7 +195,8 @@ def run_rtlmeter_cpu_gpu_compare_integration(
             compile_args=_compile_arg_tokens(compile_args),
         )
         report["sidecar_context_candidate"] = build_rtlmeter_sidecar_context_candidate(
-            report["sidecar_contract"]
+            report["sidecar_contract"],
+            template_or_target_registry_entry=DEFAULT_AUTHORITY_REGISTRY,
         )
     except (RtlmeterCommandCaptureError, ValueError) as exc:
         report["status"] = "cannot_execute"
@@ -223,6 +217,7 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         report["missing_prerequisites"] = missing
         return _maybe_write_report(report, root, write_report, report_rel)
 
+    report["cleaned_generated_work_roots"] = _clean_generated_work_roots(root, [cpu_work_root, gpu_work_root])
     base_env = _rtlmeter_execution_env(root, env_source)
     cpu_result = _run(cpu_command, repo_root=root, env=base_env, runner=runner)
     if cpu_result["returncode"] != 0:
@@ -232,6 +227,7 @@ def run_rtlmeter_cpu_gpu_compare_integration(
 
     gpu_env = dict(base_env)
     assert sidecar_wrapper is not None
+    gpu_env[WRAPPER_ENV] = sidecar_wrapper
     gpu_env["PATH"] = f"{Path(sidecar_wrapper).parent}{os.pathsep}{gpu_env.get('PATH', '')}"
     if report["sidecar_context_candidate"] is not None:
         gpu_env[SIDECAR_CONTEXT_JSON_ENV] = json.dumps(report["sidecar_context_candidate"], sort_keys=True)

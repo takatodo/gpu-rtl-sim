@@ -33,6 +33,7 @@ except ImportError:  # pragma: no cover - exercised when invoked as a script.
 SURFACE = "rtlmeter_verilator_wrapper_runtime"
 REAL_VERILATOR_ENV = "RTLMETER_REAL_VERILATOR"
 SIDECAR_CONTEXT_JSON_ENV = "RTLMETER_SIDECAR_CONTEXT_JSON"
+WRAPPER_SELF_ENV = "RTLMETER_VERILATOR_WRAPPER_SELF"
 STATUS_DELEGATED = "delegated_to_real_verilator"
 STATUS_REAL_VERILATOR_MISSING = "real_verilator_missing"
 STATUS_USE_GPU_NEEDS_SCHEDULE = "use_gpu_requires_explicit_sidecar_schedule"
@@ -101,6 +102,13 @@ def fail_closed_report(
     inspection = inspect_rtlmeter_verilator_wrapper_argv(argv)
     status = str(inspection["status"])
     handoff_metadata = None
+    launcher_invocation = None
+    stdout_cycles_execution_plan = None
+    stdout_cycles_runner_contract = None
+    stdout_cycles_runner_implementation = None
+    stdout_cycles_runner_adapter_implementation = None
+    authority_registry = None
+    authority_registry_load_error = None
     if status == STATUS_GPU_INTENT_CAPTURED_NOT_READY:
         runtime_status = STATUS_USE_GPU_NEEDS_SCHEDULE
         diagnostic = "--use-gpu reached the wrapper, but no explicit sidecar schedule was provided"
@@ -117,12 +125,21 @@ def fail_closed_report(
         "status": runtime_status,
         "json_flow_role": "runtime_diagnostic",
         "runtime_abi": False,
-        "execution_authority": True,
+        "execution_authority": False,
         "cpu_as_gpu_fallback": False,
         "delegated_to_real_verilator": False,
         "sidecar_execution_invoked": False,
         "inspection_status": status,
+        "wrapper_inspection": inspection,
+        "missing_required_inputs": list(inspection.get("missing_required_inputs", [])),
         "handoff_metadata": handoff_metadata,
+        "launcher_invocation": launcher_invocation,
+        "sidecar_authority_registry": authority_registry,
+        "sidecar_authority_registry_load_error": authority_registry_load_error,
+        "stdout_cycles_execution_plan": stdout_cycles_execution_plan,
+        "stdout_cycles_runner_contract": stdout_cycles_runner_contract,
+        "stdout_cycles_runner_implementation": stdout_cycles_runner_implementation,
+        "stdout_cycles_runner_adapter_implementation": stdout_cycles_runner_adapter_implementation,
         "sidecar_context_parse_error": (
             dict(sidecar_context_parse_error) if sidecar_context_parse_error is not None else None
         ),
@@ -140,7 +157,7 @@ def _real_verilator_missing_report() -> dict[str, object]:
         "schema_version": 1,
         "surface": SURFACE,
         "status": STATUS_REAL_VERILATOR_MISSING,
-        "execution_authority": True,
+        "execution_authority": False,
         "cpu_as_gpu_fallback": False,
         "delegated_to_real_verilator": False,
         "sidecar_execution_invoked": False,
@@ -157,7 +174,7 @@ def run_rtlmeter_verilator_wrapper(
     stderr=None,
 ) -> int:
     env = dict(os.environ if environ is None else environ)
-    wrapper_path = Path(executable or sys.argv[0])
+    wrapper_path = Path(env.get(WRAPPER_SELF_ENV) or executable or sys.argv[0])
     inspection = inspect_rtlmeter_verilator_wrapper_argv(argv)
 
     if inspection["status"] == STATUS_DELEGATE_TO_REAL_VERILATOR:
@@ -190,7 +207,7 @@ def write_rtlmeter_verilator_wrapper(path: str | Path, *, python_executable: str
     python = python_executable or sys.executable or "python3"
     target.write_text(
         "#!/bin/sh\n"
-        f"exec {shlex.quote(python)} {shlex.quote(str(runtime_path))} \"$@\"\n",
+        f"{WRAPPER_SELF_ENV}=\"$0\" exec {shlex.quote(python)} {shlex.quote(str(runtime_path))} \"$@\"\n",
         encoding="utf-8",
     )
     target.chmod(target.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
