@@ -23,10 +23,30 @@ fail closed, and any RTLMeter JSON capture remains debug/inspection metadata.
 | Entrypoint | Use |
 | --- | --- |
 | `src/tools/run_hybrid_benchmark.py` | Verilator-like target/shape wrapper for supported benchmark workloads. Start here for routine dry-runs, summaries, and supported target discovery. |
-| `src/tools/verilator_sidecar_shim.py` | Non-executing JSON shim for the planned `verilator --sim-accel sidecar-gpu` option. Use to inspect readiness, stage details, and efficiency estimate with stable exit codes. |
 | `src/tools/run_hybrid_template.py` | Lower-level slice-template runner. Use when working directly from `config/slice_launch_templates/*.json`. |
 | `src/tools/run_results_reproduction.py` | Public-pack reproduction, aggregate measurement workflows, and developer/audit-only policy dry-runs. Policy dry-runs do not imply arbitrary filelist support or automatic optimal GPU allocation. |
 | `src/tools/gen_hybrid_config.py` | Generate a new slice template, coverage-region file, and scaling-gate draft from a target/top/overlay description. |
+
+## Routine Operator Path
+
+The normal sidecar path starts with `src/tools/run_hybrid_benchmark.py`, not the
+JSON shim. Discover a ready target, dry-run it, then print the operator plan:
+
+```bash
+python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-operator-plan
+```
+
+The operator plan is terminal output for humans. JSON inspection is available
+for debugging, but it is not the runtime ABI and should not become the required
+operator path.
+
+## Lower-Level Template Path
+
+Use `src/tools/run_hybrid_template.py` only when working directly from a reviewed
+`config/slice_launch_templates/*.json` template. It is a lower-level path below
+target discovery, not the default first command for an external operator.
 
 RTLMeter helpers under `src/tools/rtlmeter_*` are not routine entrypoints yet.
 They exist to capture RTLMeter's Verilator command shape and preserve the future
@@ -131,7 +151,9 @@ When `--dry-run` is invoked with `--sidecar-gpu` or explicit `--sim-accel sideca
 
 Preflight and summary JSON include `operator_entrypoint` so debug tooling can distinguish the short `--sidecar-gpu` alias, explicit `--sim-accel` compatibility spelling, and ordinary target/shape runs without scraping the terminal output.
 
-For debug inspection, `src/tools/verilator_sidecar_shim.py` emits the same readiness surface as JSON. Exit code `0` means ready for the option shim, `2` means the target or mode is not ready for the shim, and `1` means input or planning error with a JSON error object on stderr. The shim accepts both expanded `--sim-accel-states <N> --sim-accel-steps <S>` and compact `--sim-accel-shape <NxS>` shape spellings. When a synthesized Verilator command is emitted, shim JSON carries the same `discovery_hint` as wrapper operator-plan JSON at the top level and inside `operator_plan`.
+## Shim Preview And Debug Path
+
+For debug inspection, `src/tools/verilator_sidecar_shim.py` emits the same readiness surface as JSON. It is a non-executing preview for the planned `verilator --sim-accel sidecar-gpu` handoff, not the first routine operator entrypoint. Exit code `0` means ready for the option shim, `2` means the target or mode is not ready for the shim, and `1` means input or planning error with a JSON error object on stderr. The shim accepts both expanded `--sim-accel-states <N> --sim-accel-steps <S>` and compact `--sim-accel-shape <NxS>` shape spellings. When a synthesized Verilator command is emitted, shim JSON carries the same `discovery_hint` as wrapper operator-plan JSON at the top level and inside `operator_plan`.
 
 The shim accepts `--stage <name> --emit-command` to expose one stage command as top-level JSON for debug inspection. This remains non-executing output; unknown stages and `--emit-command` without `--stage` are JSON errors.
 
@@ -151,7 +173,9 @@ On the primary wrapper, `--sim-accel-estimate-efficiency` is not a print-only pr
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --sim-accel-estimate-efficiency --dry-run
 ```
 
-For debug inspection, use the same compact command with `--operator-plan-json` instead of `--print-operator-plan`, for example `python3 src/tools/run_hybrid_benchmark.py <target> --sim-accel-shape <NxS> --operator-plan-json`. It emits the synthesized command, `estimate_command` with `--sim-accel-estimate-efficiency`, concrete `requested_compatibility_entrypoint`, efficiency estimate, `correctness_policy`, discovery hint, and non-claims as JSON when ready; not-ready targets return JSON with exit code `2` instead of a plain text error. The discovery hint carries the requested shape, whether it matches the recommended starting shape, the same recommended/compatibility entrypoints exposed by sidecar discovery, and the concrete compatibility spelling for the requested shape. Summary JSON carries the same discovery hint when a direct-option preview can be synthesized. The wrapper JSON keeps `schema_role: target_first_operator_plan` for compatibility and adds `json_flow_role: debug_inspection`, `runtime_abi: false`, and `execution_authority: false`; the shim remains the fuller readiness/stage-detail debug boundary.
+## Debug JSON Inspection Path
+
+For debug inspection from the primary wrapper, use the same compact command with `--operator-plan-json` instead of `--print-operator-plan`, for example `python3 src/tools/run_hybrid_benchmark.py <target> --sim-accel-shape <NxS> --operator-plan-json`. It emits the synthesized command, `estimate_command` with `--sim-accel-estimate-efficiency`, concrete `requested_compatibility_entrypoint`, efficiency estimate, `correctness_policy`, discovery hint, and non-claims as JSON when ready; not-ready targets return JSON with exit code `2` instead of a plain text error. The discovery hint carries the requested shape, whether it matches the recommended starting shape, the same recommended/compatibility entrypoints exposed by sidecar discovery, and the concrete compatibility spelling for the requested shape. Summary JSON carries the same discovery hint when a direct-option preview can be synthesized. The wrapper JSON keeps `schema_role: target_first_operator_plan` for compatibility and adds `json_flow_role: debug_inspection`, `runtime_abi: false`, and `execution_authority: false`; the shim remains the fuller readiness/stage-detail debug boundary.
 
 `operator_entrypoint.effective_sim_accel` records the selected sidecar path after compatibility normalization. This keeps raw `sim_accel: null` from looking like no accelerator was selected when the operator used compact `--sim-accel-shape`.
 

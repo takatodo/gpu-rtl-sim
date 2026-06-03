@@ -88,16 +88,18 @@ evidence.
 
 ## Quickstart
 
-Use the repo tools directly while the native GPU UX is still being hardened:
+Start with target discovery, then confirm the routine sidecar path without
+dropping into shim JSON or wrapper internals:
 
 ```sh
-python3 src/tools/run_hybrid_benchmark.py pulp_ita_mha --shape 64x1 --dry-run
+python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu
 python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --shape 64x1 --dry-run
-python3 src/tools/verilator_sidecar_shim.py --target pulp_ita_mha --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --print-verilator-command
-python3 src/tools/verilator_use_gpu_first_path.py --cc -f config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --top-module pulp_ita_mha_gpu_cov_tb --use-gpu --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --first-use-gpu-dry-run
-python3 -c 'from src.tools.verilator_use_gpu_wrapper_runtime import write_verilator_use_gpu_wrapper; write_verilator_use_gpu_wrapper("artifacts/use-gpu-wrapper/verilator")'
-PATH="$PWD/artifacts/use-gpu-wrapper:$PATH" verilator --cc -f config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json --top-module pulp_ita_mha_gpu_cov_tb --use-gpu --sim-accel sidecar-gpu --sim-accel-states 64 --sim-accel-steps 1 --first-use-gpu-dry-run
+python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-shape 64x1 --print-operator-plan
 ```
+
+For debug and compatibility work below the normal operator path, use the
+preview/shim tools deliberately rather than treating them as the first command a
+user should run.
 
 The `verilator_use_gpu_first_path.py` adapter is intentionally narrow: it
 accepts only the reviewed `filelist_known_template_pulp_ita_mha` `64x1` path
@@ -185,7 +187,7 @@ python3 src/tools/run_hybrid_benchmark.py paged_attention_kv_score --sim-accel-s
 - If a dry-run fails, run `python3 src/tools/run_hybrid_benchmark.py --list-targets sidecar_gpu` and pick one of the listed targets.
 - If a non-dry-run fails during build, initialize submodules with `git submodule update --init --recursive`.
 - If CPU-vs-hybrid compare reports raw state mismatch, check whether `coverage_output_equivalence` still passes; raw full-state equality is not the supported correctness policy.
-- If scoped `verilator --use-gpu` wrapper support is needed, materialize `artifacts/use-gpu-wrapper/verilator` as shown in Quickstart. Use `src/tools/verilator_use_gpu_first_path.py --first-use-gpu-dry-run` only when inspecting the underlying adapter directly.
+- If scoped `verilator --use-gpu` wrapper support is needed, treat it as a debug/compatibility path rather than the first operator command. Use `src/tools/verilator_use_gpu_first_path.py --first-use-gpu-dry-run` only when inspecting the underlying adapter directly.
 - If an RTLMeter command with `--compileArgs "--use-gpu"` only reports wrapper metadata, that is expected for the current public surface. It proves GPU intent reached the Verilator command path, not GPU execution or speedup.
 - If `third_party/rtlmeter/rtlmeter` fails from the repo root with `No module named 'src.rtlmeter'`, use the documented compare helper; it prepends `third_party/rtlmeter` to `PYTHONPATH` for RTLMeter execution.
 - If an RTLMeter wrapper request fails closed, check that the captured Verilator argv includes `--cc`, `-f <filelist>`, `--top-module <top>`, and either `--use-gpu` or expanded `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`.
