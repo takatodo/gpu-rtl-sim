@@ -1,4 +1,4 @@
-"""Non-executing RTLMeter stdout/cycles sidecar runner argv boundary."""
+"""RTLMeter stdout/cycles sidecar runner argv boundary."""
 
 from __future__ import annotations
 
@@ -60,6 +60,30 @@ def _rejected_command_inputs(command: list[str]) -> list[str]:
             rejected.append("python -m run_hybrid_template")
         previous = item
     return rejected
+
+
+def materialize_rtlmeter_stdout_cycles_sidecar_runner_command(
+    stdout_cycles_plan: Mapping[str, object] | None,
+    *,
+    runner_source_path: str = DEFAULT_RUNNER_SOURCE_PATH,
+    python_executable: str = "python3",
+) -> list[str] | None:
+    if _plan_missing_context(stdout_cycles_plan):
+        return None
+    assert stdout_cycles_plan is not None
+    gpu_candidate = stdout_cycles_plan.get("gpu_candidate")
+    assert isinstance(gpu_candidate, Mapping)
+    command = _strip_separator(gpu_candidate.get("command"))
+    if command is None or _rejected_command_inputs(command):
+        return None
+    return [
+        python_executable,
+        runner_source_path,
+        "--observable-execute-dir",
+        str(gpu_candidate.get("observable_execute_dir")),
+        "--",
+        *command,
+    ]
 
 
 def _command_missing_context(command: list[str] | None, seed: object, compile_args: object) -> list[str]:
@@ -176,7 +200,7 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_source_argv_boundary(
         "missing_runner_source_context": [*missing_implementation, *missing_plan],
         "rejected_runner_source_context": rejected,
         "runner_source_path": runner_source_path,
-        "runner_source_cli_implemented": False,
+        "runner_source_cli_implemented": True,
         "candidate_command_argv": command,
         "observable_execute_dir": observable_execute_dir,
         "observables": list(EXPECTED_OBSERVABLES),
@@ -205,10 +229,18 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_source_argv_boundary(
         "gpu_execution_claimed": False,
         "next_required_boundary": "review subprocess execution and stdout/cycles observation separately",
         "non_claims": [
-            "runner source argv boundary does not execute RTLMeter",
             "runner source argv boundary does not invoke a materialized command",
             "runner source argv boundary does not observe stdout/cycles outputs",
             "runner source argv boundary does not invoke run_hybrid_template.py",
             "runner source argv boundary does not prove GPU correctness, timing, or speedup",
         ],
     }
+
+
+if __name__ == "__main__":
+    try:
+        from .rtlmeter_stdout_cycles_sidecar_runner_cli import main
+    except ImportError:  # pragma: no cover - exercised when invoked as a script.
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import main
+
+    raise SystemExit(main())

@@ -17,6 +17,7 @@ try:
         _plan_missing_context,
         _rejected_command_inputs,
         _strip_separator,
+        materialize_rtlmeter_stdout_cycles_sidecar_runner_command,
     )
 except ImportError:  # pragma: no cover - exercised when imported via sys.path.
     from rtlmeter_stdout_cycles_observables import normalized_rtlmeter_stdout
@@ -28,6 +29,7 @@ except ImportError:  # pragma: no cover - exercised when imported via sys.path.
         _plan_missing_context,
         _rejected_command_inputs,
         _strip_separator,
+        materialize_rtlmeter_stdout_cycles_sidecar_runner_command,
     )
 
 
@@ -70,13 +72,25 @@ def _command_names_rtlmeter(command: object) -> bool:
     return any(Path(str(item)).name == "rtlmeter" for item in command)
 
 
-def _observable_paths(observable_execute_dir: object, repo_root: Path | None) -> tuple[Path | None, Path | None]:
+def _command_equals(left: object, right: object) -> bool:
+    if not isinstance(left, list) or not isinstance(right, list):
+        return False
+    return [str(item) for item in left] == [str(item) for item in right]
+
+
+def rtlmeter_stdout_cycles_observable_paths(
+    observable_execute_dir: object, repo_root: Path | None
+) -> tuple[Path | None, Path | None]:
     if not isinstance(observable_execute_dir, str) or not observable_execute_dir:
         return None, None
     execute_dir = Path(observable_execute_dir)
     if not execute_dir.is_absolute() and repo_root is not None:
         execute_dir = repo_root / execute_dir
     return execute_dir / "_execute" / "stdout.log", execute_dir / "_rtlmeter_cycles.txt"
+
+
+def _observable_paths(observable_execute_dir: object, repo_root: Path | None) -> tuple[Path | None, Path | None]:
+    return rtlmeter_stdout_cycles_observable_paths(observable_execute_dir, repo_root)
 
 
 def _read_observables(*, observable_execute_dir: object, repo_root: Path | None) -> dict[str, object]:
@@ -134,14 +148,18 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
     subprocess_invoked = command_result is not None
     returncode = command_result.get("returncode") if isinstance(command_result, Mapping) else None
     command_failed = not isinstance(returncode, int) or returncode != 0
+    runner_command = materialize_rtlmeter_stdout_cycles_sidecar_runner_command(stdout_cycles_plan)
+    executed_runner_command = (
+        isinstance(command_result, Mapping) and _command_equals(command_result.get("command"), runner_command)
+    )
     observable_status = _read_observables(observable_execute_dir=observable_execute_dir, repo_root=repo_root)
     missing_context = _plan_missing_context(stdout_cycles_plan)
     rejected = _rejected_command_inputs(candidate_command or [])
 
-    if missing_context:
-        status = STATUS_BLOCKED_PLAN
-    elif rejected:
+    if rejected:
         status = STATUS_BLOCKED_REJECTED_COMMAND
+    elif missing_context:
+        status = STATUS_BLOCKED_PLAN
     elif not subprocess_invoked:
         status = STATUS_EXECUTION_NOT_REQUESTED
     elif command_failed:
@@ -151,7 +169,8 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
     else:
         status = STATUS_OBSERVABLES_READY
 
-    execution_performed = status == STATUS_OBSERVABLES_READY
+    execution_performed = status == STATUS_OBSERVABLES_READY and executed_runner_command and sidecar_candidate
+    authorized_execution = execution_performed
     return {
         "schema_version": 1,
         "surface": "rtlmeter_stdout_cycles_sidecar_runner_execution_observation_boundary",
@@ -169,20 +188,20 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         "requires_runtime_launch_template": False,
         "run_hybrid_template_compatible": False,
         "launcher_command_argv": None,
-        "runner_command_argv": None,
-        "runner_command_role": "not_materialized_by_execution_observation",
+        "runner_command_argv": runner_command,
+        "runner_command_role": "materialized_and_observed" if runner_command is not None else "not_materialized",
         "subprocess_invoked": subprocess_invoked,
-        "rtlmeter_invoked": subprocess_invoked and _command_names_rtlmeter(candidate_command),
-        "adapter_invoked": False,
-        "sidecar_runner_invoked": subprocess_invoked and sidecar_candidate,
-        "sidecar_execution_invoked": subprocess_invoked and sidecar_candidate,
+        "rtlmeter_invoked": executed_runner_command and _command_names_rtlmeter(candidate_command),
+        "adapter_invoked": executed_runner_command,
+        "sidecar_runner_invoked": executed_runner_command and sidecar_candidate,
+        "sidecar_execution_invoked": authorized_execution,
         "coverage_output_compare_reached": False,
         "execution_performed": execution_performed,
         "measurement_performed": False,
-        "execution_authority": subprocess_invoked and sidecar_candidate,
+        "execution_authority": authorized_execution,
         "runtime_abi": False,
         "cpu_as_gpu_fallback": False,
-        "gpu_execution_claimed": execution_performed,
+        "gpu_execution_claimed": False,
         "generated_report_is_source_of_truth": False,
         "timing_measured": False,
         "speedup_claimed": False,
@@ -191,5 +210,6 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
             "execution observation does not use run_hybrid_template.py",
             "execution observation does not treat generated reports as source of truth",
             "CPU execution is never reported as GPU execution",
+            "RTLMeter stdout/cycles observation does not claim GPU runtime execution",
         ],
     }
