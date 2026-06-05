@@ -8,6 +8,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 try:
+    from .rtlmeter_sidecar_proxy_marker import observe_rtlmeter_sidecar_proxy_marker
     from .rtlmeter_stdout_cycles_observables import normalized_rtlmeter_stdout
     from .rtlmeter_stdout_cycles_plan import EXPECTED_OBSERVABLES
     from .rtlmeter_stdout_cycles_sidecar_runner import (
@@ -20,6 +21,7 @@ try:
         materialize_rtlmeter_stdout_cycles_sidecar_runner_command,
     )
 except ImportError:  # pragma: no cover - exercised when imported via sys.path.
+    from rtlmeter_sidecar_proxy_marker import observe_rtlmeter_sidecar_proxy_marker
     from rtlmeter_stdout_cycles_observables import normalized_rtlmeter_stdout
     from rtlmeter_stdout_cycles_plan import EXPECTED_OBSERVABLES
     from rtlmeter_stdout_cycles_sidecar_runner import (
@@ -153,6 +155,10 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         isinstance(command_result, Mapping) and _command_equals(command_result.get("command"), runner_command)
     )
     observable_status = _read_observables(observable_execute_dir=observable_execute_dir, repo_root=repo_root)
+    proxy_marker = observe_rtlmeter_sidecar_proxy_marker(
+        observable_execute_dir=observable_execute_dir,
+        repo_root=repo_root,
+    )
     missing_context = _plan_missing_context(stdout_cycles_plan)
     rejected = _rejected_command_inputs(candidate_command or [])
 
@@ -184,6 +190,7 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         "observables": list(EXPECTED_OBSERVABLES),
         "command_result": _sanitize_object(command_result) if command_result is not None else None,
         **observable_status,
+        **proxy_marker,
         "uses_run_hybrid_template": False,
         "requires_runtime_launch_template": False,
         "run_hybrid_template_compatible": False,
@@ -201,6 +208,7 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         "execution_authority": authorized_execution,
         "runtime_abi": False,
         "cpu_as_gpu_fallback": False,
+        "gpu_execution_claim_requires_valid_proxy_marker": True,
         "gpu_execution_claimed": False,
         "generated_report_is_source_of_truth": False,
         "timing_measured": False,
@@ -211,5 +219,6 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
             "execution observation does not treat generated reports as source of truth",
             "CPU execution is never reported as GPU execution",
             "RTLMeter stdout/cycles observation does not claim GPU runtime execution",
+            "RTLMeter stdout/cycles equivalence alone does not prove sidecar proxy execution",
         ],
     }
