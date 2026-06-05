@@ -22,11 +22,7 @@ try:
         direct_sidecar_proxy_readiness,
         direct_sidecar_verilate_ready,
     )
-    from .rtlmeter_verilator_wrapper_phase import (
-        PHASE_ENV,
-        current_wrapper_phase,
-        env_with_sidecar_verilate_phase,
-    )
+    from .rtlmeter_verilator_wrapper_phase import PHASE_ENV, REPO_ROOT_ENV, current_wrapper_phase, env_with_sidecar_verilate_phase
     from .rtlmeter_verilator_path_wrapper import (
         STATUS_DELEGATE_TO_REAL_VERILATOR,
         STATUS_GPU_INTENT_CAPTURED_NOT_READY,
@@ -43,11 +39,7 @@ except ImportError:  # pragma: no cover - exercised when invoked as a script.
         direct_sidecar_proxy_readiness,
         direct_sidecar_verilate_ready,
     )
-    from rtlmeter_verilator_wrapper_phase import (
-        PHASE_ENV,
-        current_wrapper_phase,
-        env_with_sidecar_verilate_phase,
-    )
+    from rtlmeter_verilator_wrapper_phase import PHASE_ENV, REPO_ROOT_ENV, current_wrapper_phase, env_with_sidecar_verilate_phase
     from rtlmeter_verilator_path_wrapper import (
         STATUS_DELEGATE_TO_REAL_VERILATOR,
         STATUS_GPU_INTENT_CAPTURED_NOT_READY,
@@ -262,7 +254,7 @@ def run_rtlmeter_verilator_wrapper(
             [str(real_verilator), *map(str, argv)],
             env=env_with_sidecar_verilate_phase(env),
         )
-        repo_root = Path(env.get("PWD") or Path.cwd())
+        repo_root = Path(env.get(REPO_ROOT_ENV) or env.get("PWD") or Path.cwd())
         proxy_readiness = direct_sidecar_proxy_readiness(report, repo_root=repo_root)
         write_rtlmeter_sidecar_proxy_marker(
             observable_execute_dir=direct_sidecar_observable_execute_dir(report),

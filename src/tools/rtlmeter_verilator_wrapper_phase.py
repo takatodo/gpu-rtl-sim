@@ -8,6 +8,7 @@ from collections.abc import Mapping
 PHASE_ENV = "RTLMETER_VERILATOR_WRAPPER_PHASE"
 PHASE_RTL_METER_RUN = "rtlmeter_run"
 PHASE_SIDECAR_VERILATE = "sidecar_verilate"
+REPO_ROOT_ENV = "RTLMETER_REPO_ROOT"
 
 STATUS_PHASE_CLEAR = "rtlmeter_wrapper_phase_guard_clear"
 STATUS_PHASE_ENTER_RTL_METER_RUN = "rtlmeter_wrapper_phase_guard_enter_rtlmeter_run"

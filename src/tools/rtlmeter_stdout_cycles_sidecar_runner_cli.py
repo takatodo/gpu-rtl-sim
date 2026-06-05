@@ -29,6 +29,7 @@ try:
     from .rtlmeter_verilator_wrapper_phase import (
         PHASE_ENV,
         PHASE_RTL_METER_RUN,
+        REPO_ROOT_ENV,
         STATUS_PHASE_CLEAR,
         STATUS_PHASE_ENTER_RTL_METER_RUN,
         env_with_rtlmeter_run_phase,
@@ -54,6 +55,7 @@ except ImportError:  # pragma: no cover - exercised when invoked as a script.
     from rtlmeter_verilator_wrapper_phase import (
         PHASE_ENV,
         PHASE_RTL_METER_RUN,
+        REPO_ROOT_ENV,
         STATUS_PHASE_CLEAR,
         STATUS_PHASE_ENTER_RTL_METER_RUN,
         env_with_rtlmeter_run_phase,
@@ -121,6 +123,7 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
     if command is not None and plan is not None and not _plan_missing_context(plan) and not _rejected_command_inputs(command):
         if phase_guard["status"] == STATUS_PHASE_CLEAR:
             child_env = env_with_rtlmeter_run_phase(env_source)
+            child_env[REPO_ROOT_ENV] = root.as_posix()
             _remove_existing_observable_files(observable_execute_dir=observable_execute_dir, repo_root=root)
             raw_result = _run_command(command, repo_root=root, env=child_env, runner=runner)
             command_result = _runner_command_result(plan, raw_result)
@@ -129,6 +132,8 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
                 "status": STATUS_PHASE_ENTER_RTL_METER_RUN,
                 "child_phase": PHASE_RTL_METER_RUN,
                 "child_phase_env": PHASE_ENV,
+                "repo_root_env": REPO_ROOT_ENV,
+                "repo_root_env_present": True,
                 "vsim_sidecar_proxy_env": VSIM_SIDECAR_PROXY_ENV,
                 "vsim_sidecar_proxy_env_present": bool(child_env.get(VSIM_SIDECAR_PROXY_ENV)),
                 "diagnostic": "RTLMeter runner subprocess entered the rtlmeter_run wrapper phase",

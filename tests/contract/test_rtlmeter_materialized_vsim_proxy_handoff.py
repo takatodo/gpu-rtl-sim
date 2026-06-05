@@ -183,3 +183,72 @@ class RtlmeterMaterializedVsimProxyHandoffTest(HybridCliTestCase):
         self.assertTrue(readiness["vsim_main_proxy_patch"]["execution_authority"])
         self.assertTrue(readiness["vsim_execute_proxy"]["execution_authority"])
         self.assertTrue(readiness["execution_authority"])
+
+    def test_materialized_wrapper_uses_repo_root_env_when_rtlmeter_runs_from_compile_dir(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_proxy_marker import MARKER_FILENAME
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan, rtlmeter_compile_dir
+        from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN, REPO_ROOT_ENV
+        from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, write_rtlmeter_verilator_wrapper
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            wrapper = write_rtlmeter_verilator_wrapper(
+                root / "wrapper" / "verilator",
+                python_executable=sys.executable,
+            )
+            real = root / "real" / "verilator"
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            marker = root / plan["gpu_candidate"]["observable_execute_dir"] / MARKER_FILENAME
+            misplaced_marker = (
+                root
+                / rtlmeter_compile_dir(Path(str(plan["gpu_candidate"]["work_root"])), str(plan["seed"]))
+                / plan["gpu_candidate"]["observable_execute_dir"]
+                / MARKER_FILENAME
+            )
+            compile_dir = root / rtlmeter_compile_dir(
+                Path(str(plan["gpu_candidate"]["work_root"])),
+                str(plan["seed"]),
+            )
+            obj_dir = compile_dir / "obj_dir"
+            main_cpp = obj_dir / "Vsim__main.cpp"
+            real.parent.mkdir()
+            compile_dir.mkdir(parents=True)
+            self._write_executable(
+                real,
+                "#!/bin/sh\n"
+                "mkdir -p obj_dir\n"
+                "cat > obj_dir/Vsim__main.cpp <<'EOF_MAIN'\n"
+                f"{self._generated_main()}"
+                "EOF_MAIN\n"
+                "exit 0\n",
+            )
+
+            completed = subprocess.run(
+                [str(wrapper), *self._expanded_sidecar_argv()],
+                cwd=compile_dir,
+                env={
+                    **os.environ,
+                    SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._sidecar_context()),
+                    PHASE_ENV: PHASE_RTL_METER_RUN,
+                    REPO_ROOT_ENV: root.as_posix(),
+                    "PATH": f"{wrapper.parent}{os.pathsep}{real.parent}{os.pathsep}{os.environ.get('PATH', '')}",
+                },
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            marker_payload = json.loads(marker.read_text(encoding="utf-8"))
+            patched_main = main_cpp.read_text(encoding="utf-8")
+            marker_exists = marker.exists()
+            misplaced_marker_exists = misplaced_marker.exists()
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertTrue(marker_exists)
+        self.assertFalse(misplaced_marker_exists)
+        self.assertFalse(marker_payload["execute_proxy_installed_by_wrapper_branch"])
+        self.assertEqual(
+            marker_payload["direct_sidecar_proxy_readiness"]["vsim_main_proxy_patch"]["status"],
+            "rtlmeter_vsim_main_proxy_patch_applied",
+        )
+        self.assertIn("RTLMETER_VSIM_SIDECAR_PROXY", patched_main)
