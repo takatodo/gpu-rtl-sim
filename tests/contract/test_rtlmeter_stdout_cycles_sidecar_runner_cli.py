@@ -9,7 +9,10 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
     def test_cli_executes_inner_command_with_rtlmeter_phase(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
-        from rtlmeter_stdout_cycles_sidecar_runner_cli import run_rtlmeter_stdout_cycles_sidecar_runner
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import (
+            VSIM_SIDECAR_PROXY_ENV,
+            run_rtlmeter_stdout_cycles_sidecar_runner,
+        )
         from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -39,6 +42,8 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertEqual(calls[0][0], command)
         self.assertEqual(calls[0][1]["env"][PHASE_ENV], PHASE_RTL_METER_RUN)
         self.assertTrue(report["runner_source_cli_implemented"])
+        self.assertEqual(report["vsim_sidecar_proxy_env"], VSIM_SIDECAR_PROXY_ENV)
+        self.assertFalse(report["vsim_sidecar_proxy_env_present"])
         self.assertTrue(report["execution_performed"])
         self.assertTrue(report["execution_authority_requires_valid_proxy_marker"])
         self.assertFalse(report["execution_authority"])
@@ -46,6 +51,46 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertFalse(report["sidecar_proxy_marker_valid"])
         self.assertFalse(report["gpu_execution_claimed"])
         self.assertFalse(report["cpu_as_gpu_fallback"])
+
+    def test_cli_forwards_vsim_sidecar_proxy_env_to_inner_command(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import (
+            VSIM_SIDECAR_PROXY_ENV,
+            run_rtlmeter_stdout_cycles_sidecar_runner,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = plan["gpu_candidate"]["command"]
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            calls = []
+
+            def fake_runner(command_argv, **kwargs):
+                calls.append((command_argv, kwargs))
+                out = root / observable_dir
+                (out / "_execute").mkdir(parents=True)
+                (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
+                (out / "_rtlmeter_cycles.txt").write_text("1000000\n", encoding="utf-8")
+                return subprocess.CompletedProcess(command_argv, 0, stdout="", stderr="")
+
+            report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                observable_execute_dir=observable_dir,
+                command_argv=["--", *command],
+                repo_root=root,
+                environ={VSIM_SIDECAR_PROXY_ENV: proxy_path},
+                runner=fake_runner,
+            )
+
+        self.assertEqual(report["status"], "rtlmeter_stdout_cycles_sidecar_runner_observables_ready")
+        self.assertEqual(calls[0][1]["env"][VSIM_SIDECAR_PROXY_ENV], proxy_path)
+        self.assertEqual(report["vsim_sidecar_proxy_env"], VSIM_SIDECAR_PROXY_ENV)
+        self.assertTrue(report["vsim_sidecar_proxy_env_present"])
+        self.assertTrue(report["wrapper_phase_guard"]["vsim_sidecar_proxy_env_present"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["gpu_execution_claimed"])
 
     def test_cli_valid_marker_alone_does_not_grant_execution_authority(self) -> None:
         self.add_tools_to_path()

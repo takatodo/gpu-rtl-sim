@@ -25,6 +25,7 @@ try:
         _strip_separator,
         materialize_rtlmeter_stdout_cycles_sidecar_runner_command,
     )
+    from .rtlmeter_vsim_main_proxy_patch import PROXY_ENV as VSIM_SIDECAR_PROXY_ENV
     from .rtlmeter_verilator_wrapper_phase import (
         PHASE_ENV,
         PHASE_RTL_METER_RUN,
@@ -49,6 +50,7 @@ except ImportError:  # pragma: no cover - exercised when invoked as a script.
         _strip_separator,
         materialize_rtlmeter_stdout_cycles_sidecar_runner_command,
     )
+    from rtlmeter_vsim_main_proxy_patch import PROXY_ENV as VSIM_SIDECAR_PROXY_ENV
     from rtlmeter_verilator_wrapper_phase import (
         PHASE_ENV,
         PHASE_RTL_METER_RUN,
@@ -127,6 +129,8 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
                 "status": STATUS_PHASE_ENTER_RTL_METER_RUN,
                 "child_phase": PHASE_RTL_METER_RUN,
                 "child_phase_env": PHASE_ENV,
+                "vsim_sidecar_proxy_env": VSIM_SIDECAR_PROXY_ENV,
+                "vsim_sidecar_proxy_env_present": bool(child_env.get(VSIM_SIDECAR_PROXY_ENV)),
                 "diagnostic": "RTLMeter runner subprocess entered the rtlmeter_run wrapper phase",
             }
     report = build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
@@ -135,6 +139,8 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
         repo_root=root,
     )
     report["runner_source_cli_implemented"] = True
+    report["vsim_sidecar_proxy_env"] = VSIM_SIDECAR_PROXY_ENV
+    report["vsim_sidecar_proxy_env_present"] = bool(env_source.get(VSIM_SIDECAR_PROXY_ENV))
     report["wrapper_phase_guard"] = phase_guard
     if (
         command_result is None
