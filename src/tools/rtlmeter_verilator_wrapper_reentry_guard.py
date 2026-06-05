@@ -134,6 +134,53 @@ def _rtlmeter_compile_dir(work_root: object, seed: object) -> Path | None:
     return Path(work_root) / parts[0] / parts[1] / "compile-0"
 
 
+def _install_vsim_execute_proxy(expected_vsim: Path | None, main_patch: object, repo_root: Path | None) -> dict[str, object]:
+    if expected_vsim is None:
+        return {
+            "status": "rtlmeter_vsim_execute_proxy_missing_vsim_path",
+            "expected_vsim_path": None,
+            "installed_by_wrapper_branch": False,
+            "execution_authority": False,
+            "missing_proxy_context": ["expected_vsim"],
+        }
+    if not expected_vsim.exists():
+        return {
+            "status": "rtlmeter_vsim_execute_proxy_missing_vsim",
+            "expected_vsim_path": _relative_path(expected_vsim, repo_root),
+            "installed_by_wrapper_branch": False,
+            "execution_authority": False,
+            "missing_proxy_context": ["expected_vsim"],
+        }
+    if not isinstance(main_patch, Mapping) or main_patch.get("execution_authority") is not True:
+        return {
+            "status": "rtlmeter_vsim_execute_proxy_blocked_by_source_patch",
+            "expected_vsim_path": _relative_path(expected_vsim, repo_root),
+            "installed_by_wrapper_branch": False,
+            "execution_authority": False,
+            "missing_proxy_context": ["vsim_main_proxy_patch.execution_authority"],
+        }
+
+    expected_vsim.write_text(
+        "#!/bin/sh\n"
+        "if [ -z \"${RTLMETER_VSIM_SIDECAR_PROXY:-}\" ]; then\n"
+        "  echo \"missing RTLMETER_VSIM_SIDECAR_PROXY for RTLMeter sidecar proxy\" >&2\n"
+        "  exit 125\n"
+        "fi\n"
+        "exec \"$RTLMETER_VSIM_SIDECAR_PROXY\" \"$@\"\n"
+        "echo \"exec RTLMeter sidecar proxy failed: $RTLMETER_VSIM_SIDECAR_PROXY\" >&2\n"
+        "exit 126\n",
+        encoding="utf-8",
+    )
+    expected_vsim.chmod(expected_vsim.stat().st_mode | 0o111)
+    return {
+        "status": "rtlmeter_vsim_execute_proxy_installed",
+        "expected_vsim_path": _relative_path(expected_vsim, repo_root),
+        "installed_by_wrapper_branch": True,
+        "execution_authority": True,
+        "missing_proxy_context": [],
+    }
+
+
 def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: Path | None) -> dict[str, object]:
     plan = report.get("stdout_cycles_execution_plan")
     gpu_candidate = plan.get("gpu_candidate") if isinstance(plan, Mapping) else None
@@ -153,14 +200,17 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
         if expected_main_cpp is not None
         else None
     )
-    proxy_installed = isinstance(main_patch, Mapping) and main_patch.get("execution_authority") is True
+    execute_proxy = _install_vsim_execute_proxy(expected_vsim, main_patch, repo_root)
+    proxy_installed = execute_proxy.get("execution_authority") is True
     missing_context: list[str] = []
     if compile_dir is None:
         missing_context.append("rtlmeter_compile_dir")
     if expected_vsim is None or not expected_vsim.exists():
         missing_context.append("expected_obj_dir_vsim")
     if not proxy_installed:
-        missing_context.append("execute_proxy_installer")
+        missing_context.extend(str(item) for item in execute_proxy.get("missing_proxy_context", []))
+        if not execute_proxy.get("missing_proxy_context"):
+            missing_context.append("execute_proxy_installer")
 
     return {
         "schema_version": 1,
@@ -176,6 +226,7 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
         "expected_vsim_main_cpp_path": _relative_path(expected_main_cpp, repo_root),
         "expected_vsim_present": bool(expected_vsim is not None and expected_vsim.exists()),
         "vsim_main_proxy_patch": main_patch,
+        "vsim_execute_proxy": execute_proxy,
         "proxy_installable": proxy_installed,
         "proxy_installed_by_wrapper_branch": proxy_installed,
         "ordinary_vsim_unclaimable": True,

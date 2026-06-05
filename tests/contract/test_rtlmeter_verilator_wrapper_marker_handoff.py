@@ -154,7 +154,7 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
         self.assertFalse(readiness["proxy_installed_by_wrapper_branch"])
         self.assertTrue(readiness["ordinary_vsim_unclaimable"])
         self.assertFalse(readiness["execution_authority"])
-        self.assertIn("execute_proxy_installer", readiness["missing_proxy_context"])
+        self.assertIn("vsim_main_proxy_patch.execution_authority", readiness["missing_proxy_context"])
 
     def test_rtlmeter_run_phase_marks_proxy_installed_when_generated_main_is_patched(self) -> None:
         self.add_tools_to_path()
@@ -194,10 +194,13 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
                 str(plan["seed"]),
             )
             main_cpp = compile_dir / "obj_dir" / "Vsim__main.cpp"
+            vsim = compile_dir / "obj_dir" / "Vsim"
 
             def fake_runner(command, **kwargs):
                 main_cpp.parent.mkdir(parents=True)
                 main_cpp.write_text(self._generated_main(), encoding="utf-8")
+                vsim.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+                vsim.chmod(0o755)
                 return subprocess.CompletedProcess(command, 0)
 
             code = run_rtlmeter_verilator_wrapper(
@@ -221,4 +224,5 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
         self.assertTrue(readiness["proxy_installed_by_wrapper_branch"])
         self.assertTrue(readiness["execution_authority"])
         self.assertTrue(readiness["vsim_main_proxy_patch"]["execution_authority"])
+        self.assertTrue(readiness["vsim_execute_proxy"]["execution_authority"])
         self.assertIn("RTLMETER_VSIM_SIDECAR_PROXY", patched_main)
