@@ -60,7 +60,7 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
     def test_rtlmeter_run_phase_writes_proxy_marker_when_direct_verilate_runs(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_sidecar_proxy_marker import MARKER_FILENAME
-        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan, rtlmeter_compile_dir
         from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN, PHASE_SIDECAR_VERILATE
         from rtlmeter_verilator_wrapper_runtime import (
             SIDECAR_CONTEXT_JSON_ENV,
@@ -91,9 +91,16 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
             calls: list[tuple[list[str], dict[str, object]]] = []
             plan = build_rtlmeter_stdout_cycles_execution_plan()
             marker = root / plan["gpu_candidate"]["observable_execute_dir"] / MARKER_FILENAME
+            compile_dir = root / rtlmeter_compile_dir(
+                Path(str(plan["gpu_candidate"]["work_root"])),
+                str(plan["seed"]),
+            )
+            ordinary_vsim = compile_dir / "obj_dir" / "Vsim"
 
             def fake_runner(command, **kwargs):
                 calls.append((command, kwargs))
+                ordinary_vsim.parent.mkdir(parents=True)
+                ordinary_vsim.write_text("#!/bin/sh\n", encoding="utf-8")
                 return subprocess.CompletedProcess(command, 0)
 
             code = run_rtlmeter_verilator_wrapper(
@@ -116,3 +123,14 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
         self.assertEqual(marker_payload["producer"], "rtlmeter_verilator_wrapper_runtime")
         self.assertFalse(marker_payload["cpu_as_gpu_fallback"])
         self.assertFalse(marker_payload["ordinary_vsim_output"])
+        self.assertFalse(marker_payload["execute_proxy_installed_by_wrapper_branch"])
+        readiness = marker_payload["direct_sidecar_proxy_readiness"]
+        self.assertEqual(readiness["status"], "rtlmeter_direct_sidecar_proxy_not_installed")
+        self.assertEqual(readiness["rtlmeter_compile_dir"], compile_dir.relative_to(root).as_posix())
+        self.assertEqual(readiness["expected_vsim_path"], ordinary_vsim.relative_to(root).as_posix())
+        self.assertTrue(readiness["expected_vsim_present"])
+        self.assertFalse(readiness["proxy_installable"])
+        self.assertFalse(readiness["proxy_installed_by_wrapper_branch"])
+        self.assertTrue(readiness["ordinary_vsim_unclaimable"])
+        self.assertFalse(readiness["execution_authority"])
+        self.assertIn("execute_proxy_installer", readiness["missing_proxy_context"])

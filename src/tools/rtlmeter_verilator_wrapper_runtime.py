@@ -19,6 +19,7 @@ try:
     from .rtlmeter_verilator_wrapper_reentry_guard import (
         build_rtlmeter_verilator_wrapper_reentry_guard_report,
         direct_sidecar_observable_execute_dir,
+        direct_sidecar_proxy_readiness,
         direct_sidecar_verilate_ready,
     )
     from .rtlmeter_verilator_wrapper_phase import (
@@ -39,6 +40,7 @@ except ImportError:  # pragma: no cover - exercised when invoked as a script.
     from rtlmeter_verilator_wrapper_reentry_guard import (
         build_rtlmeter_verilator_wrapper_reentry_guard_report,
         direct_sidecar_observable_execute_dir,
+        direct_sidecar_proxy_readiness,
         direct_sidecar_verilate_ready,
     )
     from rtlmeter_verilator_wrapper_phase import (
@@ -260,9 +262,12 @@ def run_rtlmeter_verilator_wrapper(
             [str(real_verilator), *map(str, argv)],
             env=env_with_sidecar_verilate_phase(env),
         )
+        repo_root = Path(env.get("PWD") or Path.cwd())
+        proxy_readiness = direct_sidecar_proxy_readiness(report, repo_root=repo_root)
         write_rtlmeter_sidecar_proxy_marker(
             observable_execute_dir=direct_sidecar_observable_execute_dir(report),
-            repo_root=Path(env.get("PWD") or Path.cwd()),
+            repo_root=repo_root,
+            proxy_readiness=proxy_readiness,
         )
         return int(completed.returncode)
 

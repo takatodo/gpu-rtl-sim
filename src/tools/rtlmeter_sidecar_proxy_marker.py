@@ -37,8 +37,10 @@ def rtlmeter_sidecar_proxy_marker_path(observable_execute_dir: object, repo_root
     return execute_dir / MARKER_FILENAME
 
 
-def build_rtlmeter_sidecar_proxy_marker_payload() -> dict[str, object]:
-    return {
+def build_rtlmeter_sidecar_proxy_marker_payload(
+    *, proxy_readiness: Mapping[str, object] | None = None
+) -> dict[str, object]:
+    payload = {
         "schema_version": MARKER_SCHEMA_VERSION,
         "schema_role": MARKER_SCHEMA_ROLE,
         "producer": MARKER_PRODUCER,
@@ -47,14 +49,22 @@ def build_rtlmeter_sidecar_proxy_marker_payload() -> dict[str, object]:
         "ordinary_vsim_output": False,
         "execute_proxy_installed_by_wrapper_branch": False,
     }
+    if proxy_readiness is not None:
+        payload["direct_sidecar_proxy_readiness"] = dict(proxy_readiness)
+    return payload
 
 
-def write_rtlmeter_sidecar_proxy_marker(*, observable_execute_dir: object, repo_root: Path | None) -> Path:
+def write_rtlmeter_sidecar_proxy_marker(
+    *,
+    observable_execute_dir: object,
+    repo_root: Path | None,
+    proxy_readiness: Mapping[str, object] | None = None,
+) -> Path:
     marker_path = rtlmeter_sidecar_proxy_marker_path(observable_execute_dir, repo_root)
     if marker_path is None:
         raise ValueError("observable_execute_dir is required to write the RTLMeter sidecar proxy marker")
     marker_path.parent.mkdir(parents=True, exist_ok=True)
-    payload = build_rtlmeter_sidecar_proxy_marker_payload()
+    payload = build_rtlmeter_sidecar_proxy_marker_payload(proxy_readiness=proxy_readiness)
     marker_path.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
     return marker_path
 

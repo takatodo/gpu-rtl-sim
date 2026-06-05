@@ -108,3 +108,61 @@ def direct_sidecar_observable_execute_dir(report: Mapping[str, object]) -> objec
     if not isinstance(gpu_candidate, Mapping):
         return None
     return gpu_candidate.get("observable_execute_dir")
+
+
+def _relative_path(path: Path | None, repo_root: Path | None) -> str | None:
+    if path is None:
+        return None
+    if repo_root is not None:
+        try:
+            return path.resolve().relative_to(repo_root.resolve()).as_posix()
+        except ValueError:
+            pass
+    if path.is_absolute():
+        return "<local-absolute-path>"
+    return path.as_posix()
+
+
+def _rtlmeter_compile_dir(work_root: object, seed: object) -> Path | None:
+    if not isinstance(work_root, str) or not isinstance(seed, str):
+        return None
+    parts = seed.split(":")
+    if len(parts) != 3:
+        return None
+    return Path(work_root) / parts[0] / parts[1] / "compile-0"
+
+
+def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: Path | None) -> dict[str, object]:
+    plan = report.get("stdout_cycles_execution_plan")
+    gpu_candidate = plan.get("gpu_candidate") if isinstance(plan, Mapping) else None
+    seed = plan.get("seed") if isinstance(plan, Mapping) else None
+    work_root = gpu_candidate.get("work_root") if isinstance(gpu_candidate, Mapping) else None
+    observable_execute_dir = (
+        gpu_candidate.get("observable_execute_dir") if isinstance(gpu_candidate, Mapping) else None
+    )
+
+    compile_dir = _rtlmeter_compile_dir(work_root, seed)
+    if compile_dir is not None and not compile_dir.is_absolute() and repo_root is not None:
+        compile_dir = repo_root / compile_dir
+    expected_vsim = compile_dir / "obj_dir" / "Vsim" if compile_dir is not None else None
+    missing_context: list[str] = []
+    if compile_dir is None:
+        missing_context.append("rtlmeter_compile_dir")
+    if expected_vsim is None or not expected_vsim.exists():
+        missing_context.append("expected_obj_dir_vsim")
+    missing_context.append("execute_proxy_installer")
+
+    return {
+        "schema_version": 1,
+        "surface": "rtlmeter_direct_sidecar_proxy_readiness",
+        "status": "rtlmeter_direct_sidecar_proxy_not_installed",
+        "observable_execute_dir": observable_execute_dir,
+        "rtlmeter_compile_dir": _relative_path(compile_dir, repo_root),
+        "expected_vsim_path": _relative_path(expected_vsim, repo_root),
+        "expected_vsim_present": bool(expected_vsim is not None and expected_vsim.exists()),
+        "proxy_installable": False,
+        "proxy_installed_by_wrapper_branch": False,
+        "ordinary_vsim_unclaimable": True,
+        "execution_authority": False,
+        "missing_proxy_context": missing_context,
+    }
