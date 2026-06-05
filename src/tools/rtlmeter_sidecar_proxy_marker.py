@@ -8,6 +8,7 @@ from pathlib import Path
 
 
 MARKER_FILENAME = "_rtlmeter_sidecar_proxy_marker.json"
+MARKER_SCHEMA_VERSION = 1
 MARKER_SCHEMA_ROLE = "rtlmeter_sidecar_proxy_marker"
 MARKER_PRODUCER = "rtlmeter_verilator_wrapper_runtime"
 MARKER_PHASE = "sidecar_verilate"
@@ -36,10 +37,33 @@ def rtlmeter_sidecar_proxy_marker_path(observable_execute_dir: object, repo_root
     return execute_dir / MARKER_FILENAME
 
 
+def build_rtlmeter_sidecar_proxy_marker_payload() -> dict[str, object]:
+    return {
+        "schema_version": MARKER_SCHEMA_VERSION,
+        "schema_role": MARKER_SCHEMA_ROLE,
+        "producer": MARKER_PRODUCER,
+        "phase": MARKER_PHASE,
+        "cpu_as_gpu_fallback": False,
+        "ordinary_vsim_output": False,
+    }
+
+
+def write_rtlmeter_sidecar_proxy_marker(*, observable_execute_dir: object, repo_root: Path | None) -> Path:
+    marker_path = rtlmeter_sidecar_proxy_marker_path(observable_execute_dir, repo_root)
+    if marker_path is None:
+        raise ValueError("observable_execute_dir is required to write the RTLMeter sidecar proxy marker")
+    marker_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = build_rtlmeter_sidecar_proxy_marker_payload()
+    marker_path.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+    return marker_path
+
+
 def _missing_marker_context(payload: object) -> list[str]:
     if not isinstance(payload, Mapping):
         return ["payload"]
     missing: list[str] = []
+    if payload.get("schema_version") != MARKER_SCHEMA_VERSION:
+        missing.append("schema_version")
     if payload.get("schema_role") != MARKER_SCHEMA_ROLE:
         missing.append("schema_role")
     if payload.get("producer") != MARKER_PRODUCER:

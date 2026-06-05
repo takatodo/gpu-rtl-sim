@@ -91,3 +91,33 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
         self.assertTrue(report["execution_performed"])
         self.assertFalse(report["measurement_performed"])
         self.assertFalse(report["gpu_execution_claimed"])
+
+    def test_writer_creates_observable_valid_proxy_marker(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_proxy_marker import (
+            MARKER_FILENAME,
+            write_rtlmeter_sidecar_proxy_marker,
+        )
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            marker = write_rtlmeter_sidecar_proxy_marker(
+                observable_execute_dir=plan["gpu_candidate"]["observable_execute_dir"],
+                repo_root=root,
+            )
+            report = self._observed_report(root)
+
+        self.assertEqual(marker.name, MARKER_FILENAME)
+        self.assertEqual(report["sidecar_proxy_marker_status"], "rtlmeter_sidecar_proxy_marker_valid")
+        self.assertTrue(report["sidecar_proxy_marker_valid"])
+        self.assertFalse(report["gpu_execution_claimed"])
+        self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
+
+    def test_writer_requires_observable_execute_dir(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_proxy_marker import write_rtlmeter_sidecar_proxy_marker
+
+        with self.assertRaises(ValueError):
+            write_rtlmeter_sidecar_proxy_marker(observable_execute_dir=None, repo_root=None)
