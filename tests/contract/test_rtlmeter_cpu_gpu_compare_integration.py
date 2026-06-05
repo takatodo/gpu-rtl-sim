@@ -208,10 +208,12 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
             WRAPPER_ENV,
             run_rtlmeter_cpu_gpu_compare_integration,
         )
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import VSIM_SIDECAR_PROXY_ENV
 
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             (root / "third_party/rtlmeter/venv/bin").mkdir(parents=True)
+            (root / "third_party/rtlmeter/src").mkdir(parents=True)
             (root / "third_party/rtlmeter/rtlmeter").write_text("#!/bin/sh\n", encoding="utf-8")
             (root / "third_party/rtlmeter/venv/bin/python3").write_text("#!/bin/sh\n", encoding="utf-8")
             bin_dir = root / "bin"
@@ -223,6 +225,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
             wrapper.parent.mkdir()
             wrapper.write_text("#!/bin/sh\n", encoding="utf-8")
             wrapper.chmod(0o755)
+            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
             base = root / "artifacts/rtlmeter_example_kind_hello_cpu_gpu_compare"
             cpu_execute = base / "cpu/Example/kind/execute-0/hello"
             gpu_execute = base / "gpu/Example/kind/execute-0/hello"
@@ -240,7 +243,12 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
 
             report = run_rtlmeter_cpu_gpu_compare_integration(
                 repo_root=root,
-                environ={OPT_IN_ENV: "1", WRAPPER_ENV: wrapper.as_posix(), "PATH": bin_dir.as_posix()},
+                environ={
+                    OPT_IN_ENV: "1",
+                    WRAPPER_ENV: wrapper.as_posix(),
+                    VSIM_SIDECAR_PROXY_ENV: proxy_path,
+                    "PATH": bin_dir.as_posix(),
+                },
                 runner=fake_runner,
             )
 
@@ -258,6 +266,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["cpu_as_gpu_fallback"])
         self.assertEqual(len(calls), 2)
         self.assertIn("RTLMETER_SIDECAR_VERILATOR_WRAPPER", calls[1][1]["env"])
+        self.assertEqual(calls[1][1]["env"][VSIM_SIDECAR_PROXY_ENV], proxy_path)
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 
     def test_gpu_success_without_observables_fails_closed(self) -> None:
