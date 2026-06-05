@@ -33,6 +33,7 @@ from rtlmeter_stdout_cycles_execution_observation import (
     build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation,
 )
 from rtlmeter_stdout_cycles_observables import compare_rtlmeter_observables, required_observable_files_missing
+from rtlmeter_stdout_cycles_sidecar_runner import materialize_rtlmeter_stdout_cycles_sidecar_runner_command
 from rtlmeter_verilator_command_capture import RtlmeterCommandCaptureError
 from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, write_rtlmeter_verilator_wrapper
 
@@ -212,7 +213,10 @@ def run_rtlmeter_cpu_gpu_compare_integration(
     gpu_env["PATH"] = f"{Path(sidecar_wrapper).parent}{os.pathsep}{gpu_env.get('PATH', '')}"
     if report["sidecar_context_candidate"] is not None:
         gpu_env[SIDECAR_CONTEXT_JSON_ENV] = json.dumps(report["sidecar_context_candidate"], sort_keys=True)
-    gpu_result = _run(gpu_command, repo_root=root, env=gpu_env, runner=runner)
+    gpu_runner_command = materialize_rtlmeter_stdout_cycles_sidecar_runner_command(stdout_cycles_plan)
+    assert gpu_runner_command is not None
+    report["commands"]["gpu_runner"] = gpu_runner_command
+    gpu_result = _run(gpu_runner_command, repo_root=root, env=gpu_env, runner=runner)
     report["ran_commands"] = True
     report["command_results"] = {"cpu": cpu_result, "gpu": gpu_result}
     report["stdout_cycles_sidecar_runner"] = build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
@@ -237,7 +241,10 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         report["status"] = "observables_missing"
         report["missing_observables"] = missing_observables
         return _maybe_write_report(report, root, write_report, report_rel)
-    if report["stdout_cycles_sidecar_runner"]["status"] != STATUS_OBSERVABLES_READY:
+    if (
+        report["stdout_cycles_sidecar_runner"]["status"] != STATUS_OBSERVABLES_READY
+        or not report["stdout_cycles_sidecar_runner"]["execution_performed"]
+    ):
         report["status"] = "gpu_observables_not_ready"
         return _maybe_write_report(report, root, write_report, report_rel)
 
