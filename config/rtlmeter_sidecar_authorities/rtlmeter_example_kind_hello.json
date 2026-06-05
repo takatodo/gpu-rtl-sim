@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "schema_role": "rtlmeter_sidecar_authority",
-  "status": "blocked_missing_runtime_launch_template",
+  "status": "blocked_sidecar_verilate_execution",
   "runtime_launchable": false,
   "target": "rtlmeter_example_kind_hello",
   "mode": "rtlmeter_first_seed",
@@ -26,14 +26,13 @@
     ],
     "filelist_entries": [
       "verilogSourceFiles/top.v",
-      "rtl/__rtlmeter_utils.sv",
-      "rtl/__rtlmeter_top_include.vh"
+      "verilogSourceFiles/__rtlmeter_utils.sv"
     ],
     "provenance": "rtlmeter_descriptor_capture"
   },
   "source_closure": {
-    "status": "frontend_metadata_only_not_source_closure",
-    "required_authority": "reviewed_hybrid_execution_source_closure",
+    "status": "complete",
+    "authority": "reviewed_hybrid_execution_source_closure",
     "authority_scope": "rtlmeter_stdout_cycles_sidecar_runner",
     "target": "rtlmeter_example_kind_hello",
     "mode": "rtlmeter_first_seed",
@@ -48,24 +47,32 @@
     ],
     "filelist_entries": [
       "verilogSourceFiles/top.v",
-      "rtl/__rtlmeter_utils.sv",
-      "rtl/__rtlmeter_top_include.vh"
+      "verilogSourceFiles/__rtlmeter_utils.sv"
     ],
     "observables": [
       "normalized_stdout",
       "rtlmeter_cycles"
     ],
     "runner_strategy": "rtlmeter_stdout_cycles_direct_wrapper",
-    "host_probe_contract_status": "not_reviewed_for_rtlmeter_sidecar",
+    "host_probe_contract_status": "reviewed_for_rtlmeter_sidecar",
     "cpu_as_gpu_fallback_allowed": false,
-    "execution_blocker": "blocked_host_probe_contract_mismatch",
-    "compile_source_closure_is_not_hybrid_execution_closure": true
+    "compile_source_closure_is_not_hybrid_execution_closure": true,
+    "review_evidence": {
+      "reviewed": true,
+      "review_ref": "https://github.com/takatodo/gpu-rtl-sim/issues/43"
+    }
   },
   "runtime_launch_template": null,
-  "runtime_launch_template_required_role": "runnable_hybrid_template",
+  "runner_handoff": {
+    "status": "implemented_thin_cli_subprocess_handoff",
+    "runner_source": "src/tools/rtlmeter_stdout_cycles_sidecar_runner.py",
+    "helper": "src/tools/rtlmeter_stdout_cycles_sidecar_runner_cli.py"
+  },
+  "next_required_boundary": "sidecar-capable RTLMeter Verilator wrapper execution for stdout/cycles evidence",
   "non_claims": [
     "not a run_hybrid_template.py launch template",
-    "not sidecar execution authority",
+    "runtime_launch_template is intentionally null for the RTLMeter stdout/cycles path",
+    "not a sidecar execution result",
     "not CPU vs GPU compare evidence",
     "not timing or speedup evidence"
   ]

@@ -71,15 +71,19 @@ class RtlmeterSidecarAuthorityRegistryTest(HybridCliTestCase):
         payload = json.loads((REPO_ROOT / REGISTRY_PATH).read_text(encoding="utf-8"))
 
         self.assertEqual(payload["schema_role"], "rtlmeter_sidecar_authority")
+        self.assertEqual(payload["status"], "blocked_sidecar_verilate_execution")
         self.assertFalse(payload["runtime_launchable"])
         self.assertIsNone(payload["runtime_launch_template"])
-        self.assertEqual(payload["source_closure"]["status"], "frontend_metadata_only_not_source_closure")
-        self.assertNotIn("authority", payload["source_closure"])
+        self.assertEqual(payload["runner_handoff"]["status"], "implemented_thin_cli_subprocess_handoff")
         self.assertEqual(
-            payload["source_closure"]["required_authority"],
-            "reviewed_hybrid_execution_source_closure",
+            payload["next_required_boundary"],
+            "sidecar-capable RTLMeter Verilator wrapper execution for stdout/cycles evidence",
         )
+        self.assertEqual(payload["source_closure"]["status"], "complete")
+        self.assertEqual(payload["source_closure"]["authority"], "reviewed_hybrid_execution_source_closure")
         self.assertEqual(payload["source_closure"]["authority_scope"], "rtlmeter_stdout_cycles_sidecar_runner")
+        self.assertEqual(payload["source_closure"]["host_probe_contract_status"], "reviewed_for_rtlmeter_sidecar")
+        self.assertTrue(payload["source_closure"]["review_evidence"]["reviewed"])
         self.assertFalse(payload["source_closure"]["cpu_as_gpu_fallback_allowed"])
         self.assert_no_local_absolute_paths(json.dumps(payload, sort_keys=True))
 
@@ -100,10 +104,29 @@ class RtlmeterSidecarAuthorityRegistryTest(HybridCliTestCase):
         self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_blocked")
         self.assertEqual(invocation["authority_registry_entry"], REGISTRY_PATH)
         self.assertIn("runtime_launch_template", invocation["missing_invocation_context"])
-        self.assertIn("authority_registry.source_closure.status", invocation["missing_invocation_context"])
-        self.assertIn("authority_registry.source_closure.authority", invocation["missing_invocation_context"])
-        self.assertIn("authority_registry.source_closure.host_probe_contract_status", invocation["missing_invocation_context"])
-        self.assertIn("authority_registry.source_closure.review_evidence", invocation["missing_invocation_context"])
+        self.assertNotIn("authority_registry.source_closure.status", invocation["missing_invocation_context"])
+        self.assertNotIn("authority_registry.source_closure.authority", invocation["missing_invocation_context"])
+        self.assertNotIn("authority_registry.source_closure.review_evidence", invocation["missing_invocation_context"])
         self.assertIsNone(invocation["runtime_launch_template"])
         self.assertIsNone(invocation["launcher_command_argv"])
         self.assertFalse(invocation["execution_performed"])
+
+    def test_context_candidate_can_adopt_reviewed_registry_source_closure(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_contract_mapping import map_rtlmeter_case_to_sidecar_contract
+        from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_context_candidate, build_rtlmeter_sidecar_handoff
+
+        sidecar_contract = map_rtlmeter_case_to_sidecar_contract("Example:kind:hello")
+        context = build_rtlmeter_sidecar_context_candidate(
+            sidecar_contract,
+            template_or_target_registry_entry=REGISTRY_PATH,
+            repo_root=REPO_ROOT,
+        )
+        handoff = build_rtlmeter_sidecar_handoff(self._expanded_sidecar_argv(), sidecar_context=context)
+
+        self.assertEqual(context["status"], "candidate_context_with_reviewed_source_closure")
+        self.assertEqual(context["source_closure"]["status"], "complete")
+        self.assertEqual(context["source_closure"]["authority"], "reviewed_hybrid_execution_source_closure")
+        self.assertEqual(handoff["status"], "rtlmeter_sidecar_handoff_metadata_ready")
+        self.assertNotIn("source_closure", handoff["missing_sidecar_context"])
+        self.assertFalse(handoff["sidecar_execution_invoked"])

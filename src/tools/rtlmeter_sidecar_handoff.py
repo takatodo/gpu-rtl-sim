@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import re
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 
 try:
     from .rtlmeter_sidecar_launcher_invocation import build_rtlmeter_sidecar_launcher_invocation
@@ -52,6 +54,8 @@ REQUIRED_SIDECAR_CONTEXT = tuple(
 )
 DEFAULT_SOURCE_GATE_OR_MANIFEST_REF = "for_codex/issues/FC-034-rtlmeter-first-seed-execution-integration.md"
 DEFAULT_VERILATOR_MDIR = "obj_dir"
+AUTHORITY_REGISTRY_PREFIX = ("config", "rtlmeter_sidecar_authorities")
+AUTHORITY_REGISTRY_ROLE = "rtlmeter_sidecar_authority"
 
 
 def _copy_value(value: object) -> object:
@@ -106,8 +110,45 @@ def _target_name_from_case(case: object) -> str:
     return f"rtlmeter_{stem or 'unknown'}"
 
 
-def _source_closure_is_complete(value: object) -> bool:
-    return source_closure_is_reviewed(value)
+def _repo_root(repo_root: str | Path | None = None) -> Path:
+    return Path(repo_root) if repo_root is not None else Path(__file__).resolve().parents[2]
+
+
+def _authority_registry_entry(value: object) -> str | None:
+    if not isinstance(value, str) or not value:
+        return None
+    path = Path(value)
+    if path.is_absolute() or ".." in path.parts or path.suffix != ".json":
+        return None
+    if path.parts[: len(AUTHORITY_REGISTRY_PREFIX)] != AUTHORITY_REGISTRY_PREFIX:
+        return None
+    return path.as_posix()
+
+
+def _reviewed_registry_source_closure(
+    entry: object, *, repo_root: str | Path | None, target: str, case: object, source_files: list[str],
+    include_files: list[str], filelist_entries: list[str]
+) -> object | None:
+    registry_entry = _authority_registry_entry(entry)
+    if registry_entry is None:
+        return None
+    try:
+        payload = json.loads((_repo_root(repo_root) / registry_entry).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if (
+        not isinstance(payload, Mapping)
+        or payload.get("schema_role") != AUTHORITY_REGISTRY_ROLE
+        or payload.get("runtime_launchable") is not False
+        or payload.get("target") != target
+    ):
+        return None
+    closure = payload.get("source_closure")
+    if not isinstance(closure, Mapping) or closure.get("target") != target or closure.get("rtlmeter_case") != str(case):
+        return None
+    if closure.get("source_files") != source_files or closure.get("include_files") != include_files or closure.get("filelist_entries") != filelist_entries:
+        return None
+    return _copy_value(closure) if source_closure_is_reviewed(closure) else None
 
 
 def _missing_context_fields(sidecar_context: Mapping[str, object] | None) -> list[str]:
@@ -118,7 +159,7 @@ def _missing_context_fields(sidecar_context: Mapping[str, object] | None) -> lis
         value = sidecar_context.get(field)
         if value is None or value == "" or value == {} or value == []:
             missing.append(field)
-        elif field == "source_closure" and not _source_closure_is_complete(value):
+        elif field == "source_closure" and not source_closure_is_reviewed(value):
             missing.append(field)
     return missing
 
@@ -180,6 +221,7 @@ def build_rtlmeter_sidecar_context_candidate(
     *,
     source_gate_or_manifest_ref: str = DEFAULT_SOURCE_GATE_OR_MANIFEST_REF,
     template_or_target_registry_entry: str | None = None,
+    repo_root: str | Path | None = None,
 ) -> dict[str, object]:
     frontend_metadata = sidecar_contract.get("frontend_owned_build_metadata")
     if not isinstance(frontend_metadata, Mapping):
@@ -189,10 +231,39 @@ def build_rtlmeter_sidecar_context_candidate(
     source_files = [f"third_party/rtlmeter/{item}" for item in frontend_metadata.get("verilog_source_files", [])]
     include_files = [f"third_party/rtlmeter/{item}" for item in frontend_metadata.get("verilog_include_files", [])]
     filelist_entries = list(frontend_metadata.get("filelist_entries", []))
+    source_closure: object = {
+        "status": SOURCE_CLOSURE_INCOMPLETE_STATUS,
+        "required_authority": SOURCE_CLOSURE_EXECUTION_AUTHORITY,
+        "authority_scope": SOURCE_CLOSURE_AUTHORITY_SCOPE,
+        "target": target,
+        "mode": "rtlmeter_first_seed",
+        "rtlmeter_case": str(case),
+        "source_gate_or_manifest_ref": source_gate_or_manifest_ref,
+        "source_files": source_files,
+        "include_files": include_files,
+        "filelist_entries": filelist_entries,
+        "observables": ["normalized_stdout", "rtlmeter_cycles"],
+        "runner_strategy": SOURCE_CLOSURE_RUNNER_STRATEGY,
+        "host_probe_contract_status": "not_reviewed_for_rtlmeter_sidecar",
+        "cpu_as_gpu_fallback_allowed": False,
+        "execution_blocker": "blocked_host_probe_contract_mismatch",
+        "compile_source_closure_is_not_hybrid_execution_closure": True,
+    }
+    reviewed_source_closure = _reviewed_registry_source_closure(
+        template_or_target_registry_entry,
+        repo_root=repo_root,
+        target=target,
+        case=case,
+        source_files=source_files,
+        include_files=include_files,
+        filelist_entries=filelist_entries,
+    )
+    if reviewed_source_closure is not None:
+        source_closure = reviewed_source_closure
     return {
         "schema_version": 1,
         "surface": "rtlmeter_sidecar_context_candidate",
-        "status": "candidate_context_without_source_closure",
+        "status": "candidate_context_with_reviewed_source_closure" if reviewed_source_closure is not None else "candidate_context_without_source_closure",
         "target": target,
         "mode": "rtlmeter_first_seed",
         "template_or_target_registry_entry": template_or_target_registry_entry,
@@ -218,27 +289,10 @@ def build_rtlmeter_sidecar_context_candidate(
             "defines": _copy_value(frontend_metadata.get("verilog_defines") or {}),
             "provenance": "rtlmeter_descriptor_capture",
         },
-        "source_closure": {
-            "status": SOURCE_CLOSURE_INCOMPLETE_STATUS,
-            "required_authority": SOURCE_CLOSURE_EXECUTION_AUTHORITY,
-            "authority_scope": SOURCE_CLOSURE_AUTHORITY_SCOPE,
-            "target": target,
-            "mode": "rtlmeter_first_seed",
-            "rtlmeter_case": str(case),
-            "source_gate_or_manifest_ref": DEFAULT_SOURCE_GATE_OR_MANIFEST_REF,
-            "source_files": source_files,
-            "include_files": include_files,
-            "filelist_entries": filelist_entries,
-            "observables": ["normalized_stdout", "rtlmeter_cycles"],
-            "runner_strategy": SOURCE_CLOSURE_RUNNER_STRATEGY,
-            "host_probe_contract_status": "not_reviewed_for_rtlmeter_sidecar",
-            "cpu_as_gpu_fallback_allowed": False,
-            "execution_blocker": "blocked_host_probe_contract_mismatch",
-            "compile_source_closure_is_not_hybrid_execution_closure": True,
-        },
+        "source_closure": source_closure,
         "non_claims": [
             "context candidate does not provide a reviewed RTLMeter launch template",
-            "context candidate does not prove source closure",
+            "source closure is adopted only from a reviewed RTLMeter authority registry" if reviewed_source_closure is not None else "context candidate does not prove source closure",
             "context candidate does not execute sidecar stages or compare outputs",
         ],
     }
