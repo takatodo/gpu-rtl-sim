@@ -40,10 +40,49 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertEqual(calls[0][1]["env"][PHASE_ENV], PHASE_RTL_METER_RUN)
         self.assertTrue(report["runner_source_cli_implemented"])
         self.assertTrue(report["execution_performed"])
-        self.assertTrue(report["execution_authority"])
-        self.assertTrue(report["sidecar_execution_invoked"])
+        self.assertTrue(report["execution_authority_requires_valid_proxy_marker"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["sidecar_proxy_marker_valid"])
         self.assertFalse(report["gpu_execution_claimed"])
         self.assertFalse(report["cpu_as_gpu_fallback"])
+
+    def test_cli_valid_marker_alone_does_not_grant_execution_authority(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_proxy_marker import write_rtlmeter_sidecar_proxy_marker
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import run_rtlmeter_stdout_cycles_sidecar_runner
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = plan["gpu_candidate"]["command"]
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+
+            def fake_runner(command_argv, **kwargs):
+                out = root / observable_dir
+                (out / "_execute").mkdir(parents=True)
+                (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
+                (out / "_rtlmeter_cycles.txt").write_text("1000000\n", encoding="utf-8")
+                write_rtlmeter_sidecar_proxy_marker(observable_execute_dir=observable_dir, repo_root=root)
+                return subprocess.CompletedProcess(command_argv, 0, stdout="", stderr="")
+
+            report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                observable_execute_dir=observable_dir,
+                command_argv=["--", *command],
+                repo_root=root,
+                environ={},
+                runner=fake_runner,
+            )
+
+        self.assertEqual(report["status"], "rtlmeter_stdout_cycles_sidecar_runner_observables_ready")
+        self.assertTrue(report["execution_performed"])
+        self.assertTrue(report["sidecar_proxy_marker_valid"])
+        self.assertFalse(report["sidecar_execute_proxy_installed_by_wrapper_branch"])
+        self.assertTrue(report["execution_authority_requires_execute_proxy_install"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["gpu_execution_claimed"])
 
     def test_cli_removes_stale_observables_before_inner_command(self) -> None:
         self.add_tools_to_path()

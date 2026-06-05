@@ -47,6 +47,9 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
         self.assertFalse(report["sidecar_proxy_marker_present"])
         self.assertFalse(report["sidecar_proxy_marker_valid"])
         self.assertTrue(report["gpu_execution_claim_requires_valid_proxy_marker"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["sidecar_execute_proxy_installed_by_wrapper_branch"])
         self.assertFalse(report["gpu_execution_claimed"])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 
@@ -68,6 +71,9 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
         self.assertFalse(report["sidecar_proxy_marker_valid"])
         self.assertIn("producer", report["sidecar_proxy_marker_missing_context"])
         self.assertIn("ordinary_vsim_output", report["sidecar_proxy_marker_missing_context"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["sidecar_execute_proxy_installed_by_wrapper_branch"])
         self.assertFalse(report["gpu_execution_claimed"])
 
     def test_valid_proxy_marker_is_metadata_only_in_this_packet(self) -> None:
@@ -81,6 +87,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
                     "phase": "sidecar_verilate",
                     "cpu_as_gpu_fallback": False,
                     "ordinary_vsim_output": False,
+                    "execute_proxy_installed_by_wrapper_branch": False,
                 },
             )
 
@@ -89,6 +96,9 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
         self.assertTrue(report["sidecar_proxy_marker_valid"])
         self.assertEqual(report["sidecar_proxy_marker_missing_context"], [])
         self.assertTrue(report["execution_performed"])
+        self.assertFalse(report["sidecar_execute_proxy_installed_by_wrapper_branch"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["sidecar_execution_invoked"])
         self.assertFalse(report["measurement_performed"])
         self.assertFalse(report["gpu_execution_claimed"])
 
@@ -112,6 +122,9 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
         self.assertEqual(marker.name, MARKER_FILENAME)
         self.assertEqual(report["sidecar_proxy_marker_status"], "rtlmeter_sidecar_proxy_marker_valid")
         self.assertTrue(report["sidecar_proxy_marker_valid"])
+        self.assertFalse(report["sidecar_execute_proxy_installed_by_wrapper_branch"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["sidecar_execution_invoked"])
         self.assertFalse(report["gpu_execution_claimed"])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 

@@ -45,6 +45,7 @@ def build_rtlmeter_sidecar_proxy_marker_payload() -> dict[str, object]:
         "phase": MARKER_PHASE,
         "cpu_as_gpu_fallback": False,
         "ordinary_vsim_output": False,
+        "execute_proxy_installed_by_wrapper_branch": False,
     }
 
 
@@ -74,6 +75,8 @@ def _missing_marker_context(payload: object) -> list[str]:
         missing.append("cpu_as_gpu_fallback")
     if payload.get("ordinary_vsim_output") is not False:
         missing.append("ordinary_vsim_output")
+    if payload.get("execute_proxy_installed_by_wrapper_branch") is not False:
+        missing.append("execute_proxy_installed_by_wrapper_branch")
     return missing
 
 
@@ -88,6 +91,7 @@ def observe_rtlmeter_sidecar_proxy_marker(
             "sidecar_proxy_marker_path": marker_path_text,
             "sidecar_proxy_marker_present": False,
             "sidecar_proxy_marker_valid": False,
+            "sidecar_execute_proxy_installed_by_wrapper_branch": False,
             "sidecar_proxy_marker_missing_context": ["marker_file"],
         }
     try:
@@ -98,6 +102,7 @@ def observe_rtlmeter_sidecar_proxy_marker(
             "sidecar_proxy_marker_path": marker_path_text,
             "sidecar_proxy_marker_present": True,
             "sidecar_proxy_marker_valid": False,
+            "sidecar_execute_proxy_installed_by_wrapper_branch": False,
             "sidecar_proxy_marker_missing_context": ["marker_json"],
         }
     missing = _missing_marker_context(payload)
@@ -106,5 +111,6 @@ def observe_rtlmeter_sidecar_proxy_marker(
         "sidecar_proxy_marker_path": marker_path_text,
         "sidecar_proxy_marker_present": True,
         "sidecar_proxy_marker_valid": not missing,
+        "sidecar_execute_proxy_installed_by_wrapper_branch": False,
         "sidecar_proxy_marker_missing_context": missing,
     }

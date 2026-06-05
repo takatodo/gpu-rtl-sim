@@ -176,7 +176,8 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         status = STATUS_OBSERVABLES_READY
 
     execution_performed = status == STATUS_OBSERVABLES_READY and executed_runner_command and sidecar_candidate
-    authorized_execution = execution_performed
+    proxy_installed = proxy_marker.get("sidecar_execute_proxy_installed_by_wrapper_branch") is True
+    authorized_execution = execution_performed and proxy_installed
     return {
         "schema_version": 1,
         "surface": "rtlmeter_stdout_cycles_sidecar_runner_execution_observation_boundary",
@@ -208,6 +209,8 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         "execution_authority": authorized_execution,
         "runtime_abi": False,
         "cpu_as_gpu_fallback": False,
+        "execution_authority_requires_valid_proxy_marker": True,
+        "execution_authority_requires_execute_proxy_install": True,
         "gpu_execution_claim_requires_valid_proxy_marker": True,
         "gpu_execution_claimed": False,
         "generated_report_is_source_of_truth": False,
@@ -220,5 +223,6 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
             "CPU execution is never reported as GPU execution",
             "RTLMeter stdout/cycles observation does not claim GPU runtime execution",
             "RTLMeter stdout/cycles equivalence alone does not prove sidecar proxy execution",
+            "A sidecar proxy marker alone does not prove RTLMeter-compatible Vsim execute proxy installation",
         ],
     }
