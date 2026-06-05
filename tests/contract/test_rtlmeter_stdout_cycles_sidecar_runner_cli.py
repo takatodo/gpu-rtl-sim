@@ -80,6 +80,77 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertFalse(report["sidecar_execution_invoked"])
         self.assertFalse(report["gpu_execution_claimed"])
 
+    def test_cli_failed_child_does_not_surface_stale_observables(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import run_rtlmeter_stdout_cycles_sidecar_runner
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = plan["gpu_candidate"]["command"]
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            out = root / observable_dir
+            (out / "_execute").mkdir(parents=True)
+            (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
+            (out / "_rtlmeter_cycles.txt").write_text("1000000\n", encoding="utf-8")
+
+            report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                observable_execute_dir=observable_dir,
+                command_argv=["--", *command],
+                repo_root=root,
+                environ={},
+                runner=lambda command_argv, **kwargs: subprocess.CompletedProcess(
+                    command_argv, 7, stdout="", stderr="failed"
+                ),
+            )
+
+        self.assertEqual(report["status"], "rtlmeter_stdout_cycles_sidecar_runner_execution_failed")
+        self.assertEqual(report["missing_observables"], ["stdout_log", "cycle_count_file"])
+        self.assertFalse(report["observables_ready"])
+        self.assertIsNone(report["normalized_stdout_sha256"])
+        self.assertIsNone(report["cycle_count"])
+        self.assertFalse(report["execution_performed"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["gpu_execution_claimed"])
+
+    def test_observation_requires_materialized_runner_command_for_execution(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_execution_observation import (
+            build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation,
+        )
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            out = root / observable_dir
+            (out / "_execute").mkdir(parents=True)
+            (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
+            (out / "_rtlmeter_cycles.txt").write_text("1000000\n", encoding="utf-8")
+
+            report = build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
+                stdout_cycles_plan=plan,
+                command_result={
+                    "command": ["python3", "wrong_runner.py"],
+                    "returncode": 0,
+                    "stdout": "",
+                    "stderr": "",
+                },
+                repo_root=root,
+            )
+
+        self.assertEqual(report["status"], "rtlmeter_stdout_cycles_sidecar_runner_observables_ready")
+        self.assertTrue(report["observables_ready"])
+        self.assertFalse(report["adapter_invoked"])
+        self.assertFalse(report["sidecar_runner_invoked"])
+        self.assertFalse(report["execution_performed"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["gpu_execution_claimed"])
+
     def test_cli_blocks_reentry_without_mutating_stale_observables(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
