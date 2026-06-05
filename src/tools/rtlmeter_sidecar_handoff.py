@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -19,6 +18,7 @@ try:
         SOURCE_CLOSURE_RUNNER_STRATEGY,
         source_closure_is_reviewed,
     )
+    from .rtlmeter_sidecar_authority_registry import reviewed_registry_source_closure
     from .verilator_native_option_parser_stub_fixture import (
         NativeOptionParserStubError,
         parse_verilator_native_option_stub,
@@ -35,6 +35,7 @@ except ImportError:  # pragma: no cover - exercised when imported via sys.path.
         SOURCE_CLOSURE_RUNNER_STRATEGY,
         source_closure_is_reviewed,
     )
+    from rtlmeter_sidecar_authority_registry import reviewed_registry_source_closure
     from verilator_native_option_parser_stub_fixture import (
         NativeOptionParserStubError,
         parse_verilator_native_option_stub,
@@ -54,8 +55,6 @@ REQUIRED_SIDECAR_CONTEXT = tuple(
 )
 DEFAULT_SOURCE_GATE_OR_MANIFEST_REF = "for_codex/issues/FC-034-rtlmeter-first-seed-execution-integration.md"
 DEFAULT_VERILATOR_MDIR = "obj_dir"
-AUTHORITY_REGISTRY_PREFIX = ("config", "rtlmeter_sidecar_authorities")
-AUTHORITY_REGISTRY_ROLE = "rtlmeter_sidecar_authority"
 
 
 def _copy_value(value: object) -> object:
@@ -108,47 +107,6 @@ def _parser_payload_with_default_mdir(parser_payload: dict[str, object] | None) 
 def _target_name_from_case(case: object) -> str:
     stem = re.sub(r"[^A-Za-z0-9]+", "_", str(case or "unknown")).strip("_").lower()
     return f"rtlmeter_{stem or 'unknown'}"
-
-
-def _repo_root(repo_root: str | Path | None = None) -> Path:
-    return Path(repo_root) if repo_root is not None else Path(__file__).resolve().parents[2]
-
-
-def _authority_registry_entry(value: object) -> str | None:
-    if not isinstance(value, str) or not value:
-        return None
-    path = Path(value)
-    if path.is_absolute() or ".." in path.parts or path.suffix != ".json":
-        return None
-    if path.parts[: len(AUTHORITY_REGISTRY_PREFIX)] != AUTHORITY_REGISTRY_PREFIX:
-        return None
-    return path.as_posix()
-
-
-def _reviewed_registry_source_closure(
-    entry: object, *, repo_root: str | Path | None, target: str, case: object, source_files: list[str],
-    include_files: list[str], filelist_entries: list[str]
-) -> object | None:
-    registry_entry = _authority_registry_entry(entry)
-    if registry_entry is None:
-        return None
-    try:
-        payload = json.loads((_repo_root(repo_root) / registry_entry).read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    if (
-        not isinstance(payload, Mapping)
-        or payload.get("schema_role") != AUTHORITY_REGISTRY_ROLE
-        or payload.get("runtime_launchable") is not False
-        or payload.get("target") != target
-    ):
-        return None
-    closure = payload.get("source_closure")
-    if not isinstance(closure, Mapping) or closure.get("target") != target or closure.get("rtlmeter_case") != str(case):
-        return None
-    if closure.get("source_files") != source_files or closure.get("include_files") != include_files or closure.get("filelist_entries") != filelist_entries:
-        return None
-    return _copy_value(closure) if source_closure_is_reviewed(closure) else None
 
 
 def _missing_context_fields(sidecar_context: Mapping[str, object] | None) -> list[str]:
@@ -249,7 +207,7 @@ def build_rtlmeter_sidecar_context_candidate(
         "execution_blocker": "blocked_host_probe_contract_mismatch",
         "compile_source_closure_is_not_hybrid_execution_closure": True,
     }
-    reviewed_source_closure = _reviewed_registry_source_closure(
+    reviewed_source_closure = reviewed_registry_source_closure(
         template_or_target_registry_entry,
         repo_root=repo_root,
         target=target,
