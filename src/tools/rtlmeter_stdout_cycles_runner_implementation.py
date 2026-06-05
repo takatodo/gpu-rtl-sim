@@ -1,4 +1,4 @@
-"""Metadata-only boundary for the missing RTLMeter stdout/cycles runner implementation."""
+"""Metadata boundary for the RTLMeter stdout/cycles runner implementation."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ def _copy_mapping(value: object) -> dict[str, object] | None:
 
 def _contract_gap_is_only_missing_implementation(contract: Mapping[str, object]) -> bool:
     missing = contract.get("missing_runner_context")
-    return missing == ["rtlmeter_stdout_cycles_runner_implementation"]
+    return missing in ([], ["rtlmeter_stdout_cycles_runner_implementation"])
 
 
 def build_rtlmeter_stdout_cycles_runner_implementation_boundary(
@@ -35,7 +35,7 @@ def build_rtlmeter_stdout_cycles_runner_implementation_boundary(
     runner_adapter_entrypoint_metadata: Mapping[str, object] | None = None,
     runner_adapter_entrypoint: str | None = None,
 ) -> dict[str, object]:
-    """Return metadata for the still-missing RTLMeter-specific runner implementation."""
+    """Return metadata for the RTLMeter-specific runner implementation boundary."""
 
     missing: list[str] = []
     if runner_contract is None:
