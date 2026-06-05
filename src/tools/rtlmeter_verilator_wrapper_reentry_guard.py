@@ -7,9 +7,11 @@ from pathlib import Path
 
 try:
     from .rtlmeter_stdout_cycles_runner_adapter import STATUS_HANDOFF_BLOCKED
+    from .rtlmeter_vsim_main_proxy_patch import patch_rtlmeter_vsim_main_proxy_marker
     from .rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN, PHASE_SIDECAR_VERILATE
 except ImportError:  # pragma: no cover - exercised when invoked as a script.
     from rtlmeter_stdout_cycles_runner_adapter import STATUS_HANDOFF_BLOCKED
+    from rtlmeter_vsim_main_proxy_patch import patch_rtlmeter_vsim_main_proxy_marker
     from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN, PHASE_SIDECAR_VERILATE
 
 
@@ -145,6 +147,12 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
     if compile_dir is not None and not compile_dir.is_absolute() and repo_root is not None:
         compile_dir = repo_root / compile_dir
     expected_vsim = compile_dir / "obj_dir" / "Vsim" if compile_dir is not None else None
+    expected_main_cpp = compile_dir / "obj_dir" / "Vsim__main.cpp" if compile_dir is not None else None
+    main_patch = (
+        patch_rtlmeter_vsim_main_proxy_marker(main_cpp=expected_main_cpp, repo_root=repo_root)
+        if expected_main_cpp is not None
+        else None
+    )
     missing_context: list[str] = []
     if compile_dir is None:
         missing_context.append("rtlmeter_compile_dir")
@@ -159,7 +167,9 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
         "observable_execute_dir": observable_execute_dir,
         "rtlmeter_compile_dir": _relative_path(compile_dir, repo_root),
         "expected_vsim_path": _relative_path(expected_vsim, repo_root),
+        "expected_vsim_main_cpp_path": _relative_path(expected_main_cpp, repo_root),
         "expected_vsim_present": bool(expected_vsim is not None and expected_vsim.exists()),
+        "vsim_main_proxy_patch": main_patch,
         "proxy_installable": False,
         "proxy_installed_by_wrapper_branch": False,
         "ordinary_vsim_unclaimable": True,
