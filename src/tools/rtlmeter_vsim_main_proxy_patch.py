@@ -1,4 +1,4 @@
-"""Patch generated RTLMeter Vsim main sources with a fail-closed proxy marker."""
+"""Patch generated RTLMeter Vsim main sources with a fail-closed proxy handoff."""
 
 from __future__ import annotations
 
@@ -8,6 +8,8 @@ from pathlib import Path
 PATCH_BEGIN = "/* RTLMETER_SIDECAR_PROXY_PATCH_BEGIN */"
 PATCH_END = "/* RTLMETER_SIDECAR_PROXY_PATCH_END */"
 INSERT_ANCHOR = "    // Simulate until $finish"
+INCLUDE_ANCHOR = '#include "Vsim.h"'
+PROXY_ENV = "RTLMETER_VSIM_SIDECAR_PROXY"
 REQUIRED_SENTINELS = (
     "// DESCRIPTION: Verilator output: main() simulation loop, created with --main",
     '#include "verilated.h"',
@@ -41,11 +43,23 @@ def _relative_path(path: Path, repo_root: Path | None) -> str:
 def _patch_block() -> str:
     return (
         f"    {PATCH_BEGIN}\n"
-        "    /* schema_version=1 phase=sidecar_verilate execution_authority=false */\n"
-        "    /* producer=rtlmeter_vsim_main_proxy_patch cpu_as_gpu_fallback=false */\n"
-        "    /* ordinary_vsim_output=false sidecar_execution_invoked=false */\n"
+        "    /* schema_version=1 phase=sidecar_verilate execution_authority=true */\n"
+        "    /* producer=rtlmeter_vsim_main_proxy_patch cpu_as_gpu_fallback=false ordinary_vsim_output=false */\n"
+        f"    const char* rtlmeter_sidecar_proxy = std::getenv(\"{PROXY_ENV}\");\n"
+        "    if (rtlmeter_sidecar_proxy == nullptr || rtlmeter_sidecar_proxy[0] == '\\0') {\n"
+        f"        std::fprintf(stderr, \"missing {PROXY_ENV} for RTLMeter sidecar proxy\\n\");\n"
+        "        return 125;\n"
+        "    }\n"
+        "    argv[0] = const_cast<char*>(rtlmeter_sidecar_proxy);\n"
+        "    execv(rtlmeter_sidecar_proxy, argv);\n"
+        "    std::perror(\"execv RTLMeter sidecar proxy\");\n"
+        "    return 126;\n"
         f"    {PATCH_END}\n"
     )
+
+
+def _include_block() -> str:
+    return "\n".join((INCLUDE_ANCHOR, "#include <cstdio>", "#include <cstdlib>", "#include <unistd.h>"))
 
 
 def _unsupported(main_cpp: Path, repo_root: Path | None, missing: list[str]) -> dict[str, object]:
@@ -90,7 +104,7 @@ def patch_rtlmeter_vsim_main_proxy_marker(*, main_cpp: Path, repo_root: Path | N
             "status": STATUS_ALREADY_PATCHED,
             "main_cpp": _relative_path(main_cpp, repo_root),
             "patched_by_wrapper_branch": True,
-            "execution_authority": False,
+            "execution_authority": True,
             "sidecar_execution_invoked": False,
             "cpu_as_gpu_fallback": False,
             "ordinary_vsim_output": False,
@@ -104,14 +118,16 @@ def patch_rtlmeter_vsim_main_proxy_marker(*, main_cpp: Path, repo_root: Path | N
     if missing:
         return _unsupported(main_cpp, repo_root, missing)
 
-    main_cpp.write_text(text.replace(INSERT_ANCHOR, _patch_block() + INSERT_ANCHOR, 1), encoding="utf-8")
+    patched = text.replace(INCLUDE_ANCHOR, _include_block(), 1)
+    patched = patched.replace(INSERT_ANCHOR, _patch_block() + INSERT_ANCHOR, 1)
+    main_cpp.write_text(patched, encoding="utf-8")
     return {
         "schema_version": 1,
         "surface": "rtlmeter_vsim_main_proxy_patch",
         "status": STATUS_PATCHED,
         "main_cpp": _relative_path(main_cpp, repo_root),
         "patched_by_wrapper_branch": True,
-        "execution_authority": False,
+        "execution_authority": True,
         "sidecar_execution_invoked": False,
         "cpu_as_gpu_fallback": False,
         "ordinary_vsim_output": False,

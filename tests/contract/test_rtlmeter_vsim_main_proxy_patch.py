@@ -78,10 +78,11 @@ class RtlmeterVsimMainProxyPatchTest(HybridCliTestCase):
         self.assertIn("rtlmeter_vsim_main_path", report["missing_patch_context"])
         self.assertEqual(after, original)
 
-    def test_patches_vsim_main_with_non_authoritative_marker(self) -> None:
+    def test_patches_vsim_main_with_fail_closed_proxy_handoff(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_vsim_main_proxy_patch import (
             PATCH_BEGIN,
+            PROXY_ENV,
             patch_rtlmeter_vsim_main_proxy_marker,
         )
 
@@ -96,11 +97,16 @@ class RtlmeterVsimMainProxyPatchTest(HybridCliTestCase):
         self.assertEqual(report["status"], "rtlmeter_vsim_main_proxy_patch_applied")
         self.assertEqual(report["main_cpp"], "obj_dir/Vsim__main.cpp")
         self.assertTrue(report["patched_by_wrapper_branch"])
-        self.assertFalse(report["execution_authority"])
+        self.assertTrue(report["execution_authority"])
         self.assertFalse(report["sidecar_execution_invoked"])
         self.assertFalse(report["cpu_as_gpu_fallback"])
         self.assertFalse(report["ordinary_vsim_output"])
         self.assertIn(PATCH_BEGIN, patched_text)
+        self.assertIn("#include <unistd.h>", patched_text)
+        self.assertIn(f'std::getenv("{PROXY_ENV}")', patched_text)
+        self.assertIn("execv(rtlmeter_sidecar_proxy, argv);", patched_text)
+        self.assertIn("return 125;", patched_text)
+        self.assertIn("return 126;", patched_text)
         self.assertIn("int main(int argc, char** argv, char**)", patched_text)
         self.assertLess(patched_text.index(PATCH_BEGIN), patched_text.index("    // Simulate until $finish"))
 
@@ -121,7 +127,7 @@ class RtlmeterVsimMainProxyPatchTest(HybridCliTestCase):
         self.assertEqual(second["status"], "rtlmeter_vsim_main_proxy_patch_already_present")
         self.assertEqual(patched_text.count(PATCH_BEGIN), 1)
         self.assertTrue(second["patched_by_wrapper_branch"])
-        self.assertFalse(second["execution_authority"])
+        self.assertTrue(second["execution_authority"])
 
     def test_rejects_unbalanced_proxy_markers_without_mutating_file(self) -> None:
         self.add_tools_to_path()

@@ -41,6 +41,27 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
             },
         }
 
+    def _generated_main(self) -> str:
+        return "\n".join(
+            [
+                "// DESCRIPTION: Verilator output: main() simulation loop, created with --main",
+                '#include "verilated.h"',
+                '#include "Vsim.h"',
+                "int main(int argc, char** argv, char**) {",
+                "    const std::unique_ptr<VerilatedContext> contextp{new VerilatedContext};",
+                "    contextp->commandArgs(argc, argv);",
+                '    const std::unique_ptr<Vsim> topp{new Vsim{contextp.get(), ""}};',
+                "    // Simulate until $finish",
+                "    while (VL_LIKELY(!contextp->gotFinish())) {",
+                "        topp->eval();",
+                "    }",
+                "    topp->final();",
+                "    contextp->statsPrintSummary();",
+                "}",
+                "",
+            ]
+        )
+
     def _sidecar_context(self) -> dict[str, object]:
         return {
             "target": "rtlmeter_example_kind_hello",
@@ -134,3 +155,70 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
         self.assertTrue(readiness["ordinary_vsim_unclaimable"])
         self.assertFalse(readiness["execution_authority"])
         self.assertIn("execute_proxy_installer", readiness["missing_proxy_context"])
+
+    def test_rtlmeter_run_phase_marks_proxy_installed_when_generated_main_is_patched(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_proxy_marker import MARKER_FILENAME
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan, rtlmeter_compile_dir
+        from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN
+        from rtlmeter_verilator_wrapper_runtime import (
+            SIDECAR_CONTEXT_JSON_ENV,
+            run_rtlmeter_verilator_wrapper,
+        )
+
+        argv = [
+            "--cc",
+            "--top-module",
+            "top",
+            "-f",
+            "filelist",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+        ]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            wrapper = root / "wrapper" / "verilator"
+            real = root / "real" / "verilator"
+            wrapper.parent.mkdir()
+            real.parent.mkdir()
+            self._touch_executable(wrapper)
+            self._touch_executable(real)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            marker = root / plan["gpu_candidate"]["observable_execute_dir"] / MARKER_FILENAME
+            compile_dir = root / rtlmeter_compile_dir(
+                Path(str(plan["gpu_candidate"]["work_root"])),
+                str(plan["seed"]),
+            )
+            main_cpp = compile_dir / "obj_dir" / "Vsim__main.cpp"
+
+            def fake_runner(command, **kwargs):
+                main_cpp.parent.mkdir(parents=True)
+                main_cpp.write_text(self._generated_main(), encoding="utf-8")
+                return subprocess.CompletedProcess(command, 0)
+
+            code = run_rtlmeter_verilator_wrapper(
+                argv,
+                executable=wrapper,
+                environ={
+                    SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._sidecar_context()),
+                    PHASE_ENV: PHASE_RTL_METER_RUN,
+                    "PWD": str(root),
+                    "PATH": f"{wrapper.parent}{os.pathsep}{real.parent}",
+                },
+                runner=fake_runner,
+            )
+            marker_payload = json.loads(marker.read_text(encoding="utf-8"))
+            patched_main = main_cpp.read_text(encoding="utf-8")
+
+        self.assertEqual(code, 0)
+        self.assertTrue(marker_payload["execute_proxy_installed_by_wrapper_branch"])
+        readiness = marker_payload["direct_sidecar_proxy_readiness"]
+        self.assertEqual(readiness["status"], "rtlmeter_direct_sidecar_proxy_installed")
+        self.assertTrue(readiness["proxy_installed_by_wrapper_branch"])
+        self.assertTrue(readiness["execution_authority"])
+        self.assertTrue(readiness["vsim_main_proxy_patch"]["execution_authority"])
+        self.assertIn("RTLMETER_VSIM_SIDECAR_PROXY", patched_main)

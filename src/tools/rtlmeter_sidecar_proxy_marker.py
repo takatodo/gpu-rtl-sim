@@ -40,6 +40,11 @@ def rtlmeter_sidecar_proxy_marker_path(observable_execute_dir: object, repo_root
 def build_rtlmeter_sidecar_proxy_marker_payload(
     *, proxy_readiness: Mapping[str, object] | None = None
 ) -> dict[str, object]:
+    proxy_installed = (
+        isinstance(proxy_readiness, Mapping)
+        and proxy_readiness.get("proxy_installed_by_wrapper_branch") is True
+        and proxy_readiness.get("execution_authority") is True
+    )
     payload = {
         "schema_version": MARKER_SCHEMA_VERSION,
         "schema_role": MARKER_SCHEMA_ROLE,
@@ -47,7 +52,7 @@ def build_rtlmeter_sidecar_proxy_marker_payload(
         "phase": MARKER_PHASE,
         "cpu_as_gpu_fallback": False,
         "ordinary_vsim_output": False,
-        "execute_proxy_installed_by_wrapper_branch": False,
+        "execute_proxy_installed_by_wrapper_branch": proxy_installed,
     }
     if proxy_readiness is not None:
         payload["direct_sidecar_proxy_readiness"] = dict(proxy_readiness)
@@ -85,8 +90,18 @@ def _missing_marker_context(payload: object) -> list[str]:
         missing.append("cpu_as_gpu_fallback")
     if payload.get("ordinary_vsim_output") is not False:
         missing.append("ordinary_vsim_output")
-    if payload.get("execute_proxy_installed_by_wrapper_branch") is not False:
+    proxy_installed = payload.get("execute_proxy_installed_by_wrapper_branch")
+    if proxy_installed not in (False, True):
         missing.append("execute_proxy_installed_by_wrapper_branch")
+    if proxy_installed is True:
+        readiness = payload.get("direct_sidecar_proxy_readiness")
+        if not isinstance(readiness, Mapping):
+            missing.append("direct_sidecar_proxy_readiness")
+        else:
+            if readiness.get("proxy_installed_by_wrapper_branch") is not True:
+                missing.append("direct_sidecar_proxy_readiness.proxy_installed_by_wrapper_branch")
+            if readiness.get("execution_authority") is not True:
+                missing.append("direct_sidecar_proxy_readiness.execution_authority")
     return missing
 
 
@@ -121,6 +136,8 @@ def observe_rtlmeter_sidecar_proxy_marker(
         "sidecar_proxy_marker_path": marker_path_text,
         "sidecar_proxy_marker_present": True,
         "sidecar_proxy_marker_valid": not missing,
-        "sidecar_execute_proxy_installed_by_wrapper_branch": False,
+        "sidecar_execute_proxy_installed_by_wrapper_branch": (
+            not missing and payload.get("execute_proxy_installed_by_wrapper_branch") is True
+        ),
         "sidecar_proxy_marker_missing_context": missing,
     }

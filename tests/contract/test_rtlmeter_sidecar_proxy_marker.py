@@ -134,3 +134,28 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
 
         with self.assertRaises(ValueError):
             write_rtlmeter_sidecar_proxy_marker(observable_execute_dir=None, repo_root=None)
+
+    def test_proxy_installed_marker_grants_execution_authority_without_gpu_claim(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            report = self._observed_report(
+                Path(temp_dir),
+                {
+                    "schema_version": 1,
+                    "schema_role": "rtlmeter_sidecar_proxy_marker",
+                    "producer": "rtlmeter_verilator_wrapper_runtime",
+                    "phase": "sidecar_verilate",
+                    "cpu_as_gpu_fallback": False,
+                    "ordinary_vsim_output": False,
+                    "execute_proxy_installed_by_wrapper_branch": True,
+                    "direct_sidecar_proxy_readiness": {
+                        "proxy_installed_by_wrapper_branch": True,
+                        "execution_authority": True,
+                    },
+                },
+            )
+
+        self.assertEqual(report["sidecar_proxy_marker_status"], "rtlmeter_sidecar_proxy_marker_valid")
+        self.assertTrue(report["sidecar_execute_proxy_installed_by_wrapper_branch"])
+        self.assertTrue(report["execution_authority"])
+        self.assertTrue(report["sidecar_execution_invoked"])
+        self.assertFalse(report["gpu_execution_claimed"])

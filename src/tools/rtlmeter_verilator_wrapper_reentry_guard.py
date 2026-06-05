@@ -153,26 +153,32 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
         if expected_main_cpp is not None
         else None
     )
+    proxy_installed = isinstance(main_patch, Mapping) and main_patch.get("execution_authority") is True
     missing_context: list[str] = []
     if compile_dir is None:
         missing_context.append("rtlmeter_compile_dir")
     if expected_vsim is None or not expected_vsim.exists():
         missing_context.append("expected_obj_dir_vsim")
-    missing_context.append("execute_proxy_installer")
+    if not proxy_installed:
+        missing_context.append("execute_proxy_installer")
 
     return {
         "schema_version": 1,
         "surface": "rtlmeter_direct_sidecar_proxy_readiness",
-        "status": "rtlmeter_direct_sidecar_proxy_not_installed",
+        "status": (
+            "rtlmeter_direct_sidecar_proxy_installed"
+            if proxy_installed
+            else "rtlmeter_direct_sidecar_proxy_not_installed"
+        ),
         "observable_execute_dir": observable_execute_dir,
         "rtlmeter_compile_dir": _relative_path(compile_dir, repo_root),
         "expected_vsim_path": _relative_path(expected_vsim, repo_root),
         "expected_vsim_main_cpp_path": _relative_path(expected_main_cpp, repo_root),
         "expected_vsim_present": bool(expected_vsim is not None and expected_vsim.exists()),
         "vsim_main_proxy_patch": main_patch,
-        "proxy_installable": False,
-        "proxy_installed_by_wrapper_branch": False,
+        "proxy_installable": proxy_installed,
+        "proxy_installed_by_wrapper_branch": proxy_installed,
         "ordinary_vsim_unclaimable": True,
-        "execution_authority": False,
+        "execution_authority": proxy_installed,
         "missing_proxy_context": missing_context,
     }
