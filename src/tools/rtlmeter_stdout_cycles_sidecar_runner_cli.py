@@ -68,6 +68,7 @@ except ImportError:  # pragma: no cover - exercised when invoked as a script.
 
 
 STATUS_BLOCKED_WRAPPER_PHASE = "rtlmeter_stdout_cycles_sidecar_runner_blocked_wrapper_phase_guard"
+STATUS_VSIM_PROXY_TARGET_UNUSABLE = "rtlmeter_stdout_cycles_sidecar_runner_vsim_sidecar_proxy_target_unusable"
 
 
 def _repo_display_path(repo_root: Path, path: Path) -> str:
@@ -162,7 +163,11 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
             child_env = env_with_rtlmeter_run_phase(env_source)
             child_env[REPO_ROOT_ENV] = root.as_posix()
             proxy_path, vsim_sidecar_proxy_target = _resolve_vsim_sidecar_proxy_target(repo_root=root, env=child_env)
-            if proxy_path is not None:
+            if (
+                proxy_path is not None
+                and isinstance(vsim_sidecar_proxy_target, Mapping)
+                and vsim_sidecar_proxy_target.get("executable") is True
+            ):
                 child_env[VSIM_SIDECAR_PROXY_ENV] = proxy_path
                 _remove_existing_observable_files(observable_execute_dir=observable_execute_dir, repo_root=root)
                 raw_result = _run_command(command, repo_root=root, env=child_env, runner=runner)
@@ -205,6 +210,23 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
         report["observable_stdout_has_missing_proxy_env"] = False
         report["observable_read_skipped"] = "missing_vsim_sidecar_proxy_env_pre_execution"
     if (
+        command_result is None
+        and command is not None
+        and plan is not None
+        and not _plan_missing_context(plan)
+        and not _rejected_command_inputs(command)
+        and phase_guard["status"] == STATUS_PHASE_CLEAR
+        and env_source.get(VSIM_SIDECAR_PROXY_ENV)
+        and isinstance(vsim_sidecar_proxy_target, Mapping)
+        and vsim_sidecar_proxy_target.get("executable") is not True
+    ):
+        report["status"] = STATUS_VSIM_PROXY_TARGET_UNUSABLE
+        report["missing_observables"] = []
+        report["observables_ready"] = False
+        report["normalized_stdout_sha256"] = None
+        report["cycle_count"] = None
+        report["observable_read_skipped"] = "unusable_vsim_sidecar_proxy_pre_execution"
+    if (
         command_result is not None
         and report["status"] == STATUS_EXECUTION_FAILED
         and not env_source.get(VSIM_SIDECAR_PROXY_ENV)
@@ -242,6 +264,7 @@ def main(argv: list[str] | None = None) -> int:
     if report["status"] in {
         "rtlmeter_stdout_cycles_sidecar_runner_execution_failed",
         "rtlmeter_stdout_cycles_sidecar_runner_vsim_sidecar_proxy_env_missing",
+        STATUS_VSIM_PROXY_TARGET_UNUSABLE,
     }:
         result = report.get("command_result")
         return int(result.get("returncode", 1)) if isinstance(result, Mapping) else 1

@@ -6,6 +6,13 @@ from tests.contract.hybrid_cli_helpers import HybridCliTestCase
 
 
 class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
+    def _executable_proxy(self, root: Path) -> str:
+        proxy = root / "bin" / "rtlmeter-vsim-sidecar-proxy"
+        proxy.parent.mkdir()
+        proxy.write_text("#!/bin/sh\nexit 126\n", encoding="utf-8")
+        proxy.chmod(0o755)
+        return proxy.as_posix()
+
     def test_cli_fails_closed_without_vsim_sidecar_proxy_env(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
@@ -74,7 +81,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
             plan = build_rtlmeter_stdout_cycles_execution_plan()
             command = plan["gpu_candidate"]["command"]
             observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
-            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            proxy_path = self._executable_proxy(root)
             calls = []
 
             def fake_runner(command_argv, **kwargs):
@@ -105,6 +112,49 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertFalse(report["execution_authority"])
         self.assertFalse(report["gpu_execution_claimed"])
 
+    def test_cli_fails_closed_when_vsim_sidecar_proxy_target_is_unusable(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import (
+            STATUS_VSIM_PROXY_TARGET_UNUSABLE,
+            VSIM_SIDECAR_PROXY_ENV,
+            run_rtlmeter_stdout_cycles_sidecar_runner,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = plan["gpu_candidate"]["command"]
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            out = root / observable_dir
+            (out / "_execute").mkdir(parents=True)
+            (out / "_execute/stdout.log").write_text("stale\n", encoding="utf-8")
+            (out / "_rtlmeter_cycles.txt").write_text("1\n", encoding="utf-8")
+
+            report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                observable_execute_dir=observable_dir,
+                command_argv=["--", *command],
+                repo_root=root,
+                environ={VSIM_SIDECAR_PROXY_ENV: proxy_path},
+                runner=lambda *_args, **_kwargs: self.fail("runner must not be called"),
+            )
+            stale_stdout_exists = (out / "_execute/stdout.log").exists()
+            stale_cycles_exists = (out / "_rtlmeter_cycles.txt").exists()
+
+        self.assertEqual(report["status"], STATUS_VSIM_PROXY_TARGET_UNUSABLE)
+        self.assertIsNone(report["command_result"])
+        self.assertFalse(report["subprocess_invoked"])
+        self.assertTrue(report["vsim_sidecar_proxy_env_present"])
+        self.assertFalse(report["vsim_sidecar_proxy_target"]["executable"])
+        self.assertEqual(report["observable_read_skipped"], "unusable_vsim_sidecar_proxy_pre_execution")
+        self.assertFalse(report["execution_performed"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["gpu_execution_claimed"])
+        self.assertTrue(stale_stdout_exists)
+        self.assertTrue(stale_cycles_exists)
+
     def test_cli_valid_marker_alone_does_not_grant_execution_authority(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_sidecar_proxy_marker import write_rtlmeter_sidecar_proxy_marker
@@ -119,7 +169,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
             plan = build_rtlmeter_stdout_cycles_execution_plan()
             command = plan["gpu_candidate"]["command"]
             observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
-            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            proxy_path = self._executable_proxy(root)
 
             def fake_runner(command_argv, **kwargs):
                 out = root / observable_dir
@@ -160,7 +210,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
             plan = build_rtlmeter_stdout_cycles_execution_plan()
             command = plan["gpu_candidate"]["command"]
             observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
-            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            proxy_path = self._executable_proxy(root)
 
             def fake_runner(command_argv, **kwargs):
                 out = root / observable_dir
@@ -206,7 +256,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
             plan = build_rtlmeter_stdout_cycles_execution_plan()
             command = plan["gpu_candidate"]["command"]
             observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
-            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            proxy_path = self._executable_proxy(root)
             out = root / observable_dir
             (out / "_execute").mkdir(parents=True)
             (out / "_execute/stdout.log").write_text("stale\n", encoding="utf-8")
@@ -245,7 +295,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
             plan = build_rtlmeter_stdout_cycles_execution_plan()
             command = plan["gpu_candidate"]["command"]
             observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
-            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            proxy_path = self._executable_proxy(root)
             out = root / observable_dir
             (out / "_execute").mkdir(parents=True)
             (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")

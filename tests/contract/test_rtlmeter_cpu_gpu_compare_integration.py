@@ -36,6 +36,14 @@ def _write_minimal_rtlmeter_tree(root: Path) -> None:
     (rtlmeter_root / "rtl/__rtlmeter_top_include.vh").write_text("", encoding="utf-8")
 
 
+def _write_executable_vsim_sidecar_proxy(root: Path) -> str:
+    proxy = root / "bin" / "rtlmeter-vsim-sidecar-proxy"
+    proxy.parent.mkdir(exist_ok=True)
+    proxy.write_text("#!/bin/sh\nexit 126\n", encoding="utf-8")
+    proxy.chmod(0o755)
+    return proxy.as_posix()
+
+
 class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
     def test_default_run_is_non_executing_and_report_safe(self) -> None:
         self.add_tools_to_path()
@@ -470,7 +478,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
             wrapper.parent.mkdir()
             wrapper.write_text("#!/bin/sh\n", encoding="utf-8")
             wrapper.chmod(0o755)
-            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            proxy_path = _write_executable_vsim_sidecar_proxy(root)
             base = root / "artifacts/rtlmeter_example_kind_hello_cpu_gpu_compare"
             cpu_execute = base / "cpu/Example/kind/execute-0/hello"
             gpu_execute = base / "gpu/Example/kind/execute-0/hello"
@@ -561,7 +569,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
             wrapper.parent.mkdir()
             wrapper.write_text("#!/bin/sh\n", encoding="utf-8")
             wrapper.chmod(0o755)
-            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            proxy_path = _write_executable_vsim_sidecar_proxy(root)
             base = root / "artifacts/rtlmeter_example_kind_hello_cpu_gpu_compare"
             cpu_execute = base / "cpu/Example/kind/execute-0/hello"
             gpu_execute = base / "gpu/Example/kind/execute-0/hello"
