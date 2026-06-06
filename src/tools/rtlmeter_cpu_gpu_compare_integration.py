@@ -213,7 +213,7 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         command_result=gpu_result,
         repo_root=root,
     )
-    report["sidecar_proxy_evidence"] = {field: report["stdout_cycles_sidecar_runner"].get(field) for field in SIDECAR_PROXY_EVIDENCE_FIELDS}; report["sidecar_proxy_execution_evidence"] = report["stdout_cycles_sidecar_runner"].get("sidecar_proxy_execution_evidence"); report["first_seed_handoff_evidence_status"] = "blocked_before_compare"
+    report["sidecar_proxy_evidence"] = {field: report["stdout_cycles_sidecar_runner"].get(field) for field in SIDECAR_PROXY_EVIDENCE_FIELDS}; report["sidecar_proxy_execution_evidence"] = report["stdout_cycles_sidecar_runner"].get("sidecar_proxy_execution_evidence"); report["sidecar_proxy_evidence"]["blocking_context"] = list(report["sidecar_proxy_execution_evidence"].get("blocking_context", [])) if isinstance(report.get("sidecar_proxy_execution_evidence"), Mapping) else []; report["first_seed_handoff_evidence_status"] = "blocked_before_compare"
     if (
         gpu_result["returncode"] == 0
         and isinstance(report.get("stdout_cycles_sidecar_runner"), Mapping)

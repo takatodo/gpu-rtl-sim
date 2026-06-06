@@ -568,6 +568,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertFalse(evidence["cpu_as_gpu_fallback"])
         self.assertFalse(evidence["timing_measured"])
         self.assertFalse(evidence["speedup_claimed"])
+        self.assertIn("sidecar_execute_proxy_installed_by_wrapper_branch", evidence["blocking_context"])
         execution_evidence = report["sidecar_proxy_execution_evidence"]
         self.assertEqual(execution_evidence["status"], "blocked")
         self.assertTrue(execution_evidence["observables_ready"])
@@ -688,6 +689,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertFalse(evidence["cpu_as_gpu_fallback"])
         self.assertFalse(evidence["timing_measured"])
         self.assertFalse(evidence["speedup_claimed"])
+        self.assertEqual(evidence["blocking_context"], [])
         execution_evidence = report["sidecar_proxy_execution_evidence"]
         self.assertEqual(execution_evidence["status"], "ready")
         self.assertTrue(execution_evidence["execution_authority"])
