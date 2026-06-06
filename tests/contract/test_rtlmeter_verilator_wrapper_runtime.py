@@ -1068,3 +1068,64 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         self.assertIn("template_execution_role", invocation["missing_invocation_context"])
         self.assertIsNone(invocation["launcher_command_argv"])
         self.assertFalse(invocation["execution_performed"])
+
+    def _reviewed_authority_registry_payload_for_registry_guard(self) -> dict[str, object]:
+        return {
+            "schema_role": "rtlmeter_sidecar_authority",
+            "runtime_launchable": False,
+            "target": "rtlmeter_example_kind_hello",
+            "source_closure": self._reviewed_source_closure_for_reentry_guard(),
+        }
+
+    def test_rtlmeter_launcher_invocation_uses_authority_registry_without_materializing_argv(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            registry = root / "config/rtlmeter_sidecar_authorities/rtlmeter_example_kind_hello.json"
+            registry.parent.mkdir(parents=True)
+            registry.write_text(
+                json.dumps(self._reviewed_authority_registry_payload_for_registry_guard()),
+                encoding="utf-8",
+            )
+            context = self._reviewed_rtlmeter_context_for_reentry_guard()
+            context["template_or_target_registry_entry"] = (
+                "config/rtlmeter_sidecar_authorities/rtlmeter_example_kind_hello.json"
+            )
+            invocation = self._launcher_invocation_for_guard(context, repo_root=root)
+
+        self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_blocked")
+        self.assertEqual(
+            invocation["authority_registry_entry"],
+            "config/rtlmeter_sidecar_authorities/rtlmeter_example_kind_hello.json",
+        )
+        self.assertIn("runtime_launch_template", invocation["missing_invocation_context"])
+        self.assertIsNone(invocation["runtime_launch_template"])
+        self.assertIsNone(invocation["launcher_command_argv"])
+        self.assertFalse(invocation["execution_performed"])
+
+    def test_rtlmeter_launcher_invocation_rejects_runtime_launchable_authority_registry(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            registry = root / "config/rtlmeter_sidecar_authorities/rtlmeter_example_kind_hello.json"
+            template = root / "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            registry.parent.mkdir(parents=True)
+            template.parent.mkdir(parents=True)
+            registry_payload = self._reviewed_authority_registry_payload_for_registry_guard()
+            registry_payload["runtime_launchable"] = True
+            registry_payload["runtime_launch_template"] = (
+                "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            )
+            registry.write_text(json.dumps(registry_payload), encoding="utf-8")
+            template.write_text(
+                json.dumps(self._reviewed_template_payload_for_launcher_guard()),
+                encoding="utf-8",
+            )
+            context = self._reviewed_rtlmeter_context_for_reentry_guard()
+            context["template_or_target_registry_entry"] = (
+                "config/rtlmeter_sidecar_authorities/rtlmeter_example_kind_hello.json"
+            )
+            invocation = self._launcher_invocation_for_guard(context, repo_root=root)
+
+        self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_blocked")
+        self.assertIn("authority_registry.runtime_launchable", invocation["missing_invocation_context"])
+        self.assertIsNone(invocation["launcher_command_argv"])
+        self.assertFalse(invocation["execution_performed"])
