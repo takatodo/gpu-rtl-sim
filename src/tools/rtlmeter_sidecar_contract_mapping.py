@@ -144,9 +144,10 @@ def map_rtlmeter_case_to_sidecar_contract(
     case: str,
     *,
     compile_args: tuple[str, ...] = (),
+    rtlmeter_root: str | None = None,
 ) -> dict[str, object]:
     """Capture a RTLMeter case and map it to non-executing sidecar contract metadata."""
 
     return map_rtlmeter_capture_to_sidecar_contract(
-        capture_rtlmeter_verilator_command(case, extra_args=compile_args)
+        capture_rtlmeter_verilator_command(case, rtlmeter_root=rtlmeter_root, extra_args=compile_args)
     )

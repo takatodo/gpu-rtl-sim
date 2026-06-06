@@ -61,7 +61,6 @@ from rtlmeter_verilator_wrapper_runtime import (
 
 SURFACE = "rtlmeter_cpu_gpu_compare_integration"
 OPT_IN_ENV = "RTLMETER_CPU_GPU_COMPARE_EXECUTE"
-
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
@@ -159,6 +158,7 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         report["sidecar_contract"] = map_rtlmeter_case_to_sidecar_contract(
             seed,
             compile_args=_compile_arg_tokens(compile_args),
+            rtlmeter_root=(root / "third_party/rtlmeter").as_posix(),
         )
         report["sidecar_context_candidate"] = build_rtlmeter_sidecar_context_candidate(
             report["sidecar_contract"],

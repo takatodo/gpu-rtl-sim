@@ -87,7 +87,7 @@ class RtlmeterCpuGpuCompareStaleRegressionTest(HybridCliTestCase):
             try:
                 rtlmeter_verilator_command_capture._repo_root = lambda: root
                 rtlmeter_sidecar_contract_mapping.capture_rtlmeter_verilator_command = (
-                    lambda case, extra_args=(): rtlmeter_verilator_command_capture.capture_rtlmeter_verilator_command(
+                    lambda case, extra_args=(), **_kwargs: rtlmeter_verilator_command_capture.capture_rtlmeter_verilator_command(
                         case,
                         rtlmeter_root=rtlmeter_root,
                         extra_args=extra_args,
