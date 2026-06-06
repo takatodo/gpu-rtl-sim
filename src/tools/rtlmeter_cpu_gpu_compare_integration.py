@@ -213,7 +213,7 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         command_result=gpu_result,
         repo_root=root,
     )
-    report["sidecar_proxy_evidence"] = {field: report["stdout_cycles_sidecar_runner"].get(field) for field in SIDECAR_PROXY_EVIDENCE_FIELDS}
+    report["sidecar_proxy_evidence"] = {field: report["stdout_cycles_sidecar_runner"].get(field) for field in SIDECAR_PROXY_EVIDENCE_FIELDS}; report["sidecar_proxy_execution_evidence"] = report["stdout_cycles_sidecar_runner"].get("sidecar_proxy_execution_evidence")
     if (
         gpu_result["returncode"] == 0
         and isinstance(report.get("stdout_cycles_sidecar_runner"), Mapping)
@@ -262,8 +262,8 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         cpu_execute_dir,
         gpu_execute_dir,
     )
-    report["comparison"] = comparison
-    report["status"] = "passed" if comparison["status"] == "passed" else "failed"
+    report["comparison"] = comparison; report["status"] = "passed" if comparison["status"] == "passed" else "failed"
+    report["first_seed_handoff_evidence_status"] = "ready" if comparison["status"] == "passed" and report["stdout_cycles_sidecar_runner"].get("execution_performed") is True and report["stdout_cycles_sidecar_runner"].get("execution_authority") is True and report["stdout_cycles_sidecar_runner"].get("sidecar_execution_invoked") is True and isinstance(report.get("sidecar_proxy_execution_evidence"), Mapping) and report["sidecar_proxy_execution_evidence"].get("status") == "ready" else "compare_passed_without_handoff_authority"
     return _maybe_write_report(report, root, write_report, report_rel)
 
 

@@ -521,6 +521,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
 
         self.assertEqual(report["status"], "passed")
         self.assertEqual(report["comparison"]["status"], "passed")
+        self.assertEqual(report["first_seed_handoff_evidence_status"], "compare_passed_without_handoff_authority")
         self.assertTrue(report["comparison"]["normalized_stdout_match"])
         self.assertTrue(report["comparison"]["cycle_count_match"])
         self.assertEqual(
@@ -551,6 +552,12 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertFalse(evidence["cpu_as_gpu_fallback"])
         self.assertFalse(evidence["timing_measured"])
         self.assertFalse(evidence["speedup_claimed"])
+        execution_evidence = report["sidecar_proxy_execution_evidence"]
+        self.assertEqual(execution_evidence["status"], "blocked")
+        self.assertTrue(execution_evidence["observables_ready"])
+        self.assertTrue(execution_evidence["runner_command_observed"])
+        self.assertFalse(execution_evidence["execution_authority"])
+        self.assertIn("sidecar_execute_proxy_installed_by_wrapper_branch", execution_evidence["blocking_context"])
         self.assertIn("RTLMETER_SIDECAR_VERILATOR_WRAPPER", calls[1][1]["env"])
         self.assertEqual(calls[1][1]["env"][VSIM_SIDECAR_PROXY_ENV], proxy_path)
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
@@ -638,6 +645,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
 
         self.assertEqual(report["status"], "passed")
         self.assertEqual(report["comparison"]["status"], "passed")
+        self.assertEqual(report["first_seed_handoff_evidence_status"], "ready")
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["execution_performed"])
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["sidecar_proxy_marker_valid"])
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["sidecar_execute_proxy_installed_by_wrapper_branch"])
@@ -659,6 +667,11 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertFalse(evidence["cpu_as_gpu_fallback"])
         self.assertFalse(evidence["timing_measured"])
         self.assertFalse(evidence["speedup_claimed"])
+        execution_evidence = report["sidecar_proxy_execution_evidence"]
+        self.assertEqual(execution_evidence["status"], "ready")
+        self.assertTrue(execution_evidence["execution_authority"])
+        self.assertTrue(execution_evidence["sidecar_execution_invoked"])
+        self.assertEqual(execution_evidence["blocking_context"], [])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 
     def test_gpu_success_without_observables_fails_closed(self) -> None:
