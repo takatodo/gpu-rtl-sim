@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 
 from tests.contract.hybrid_cli_helpers import HybridCliTestCase
+from tests.contract.test_rtlmeter_cpu_gpu_compare_integration import _write_minimal_rtlmeter_tree
 
 
 class RtlmeterCpuGpuCompareDiagnosticsTest(HybridCliTestCase):
@@ -17,9 +18,7 @@ class RtlmeterCpuGpuCompareDiagnosticsTest(HybridCliTestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir) / "repo"
-            (root / "third_party/rtlmeter/venv/bin").mkdir(parents=True)
-            (root / "third_party/rtlmeter/rtlmeter").write_text("#!/bin/sh\n", encoding="utf-8")
-            (root / "third_party/rtlmeter/venv/bin/python3").write_text("#!/bin/sh\n", encoding="utf-8")
+            _write_minimal_rtlmeter_tree(root)
             real_root = Path(temp_dir) / "usr/bin"
             real_root.mkdir(parents=True)
             real_verilator = real_root / "verilator"
@@ -53,11 +52,10 @@ class RtlmeterCpuGpuCompareDiagnosticsTest(HybridCliTestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            (root / "third_party/rtlmeter/venv/bin").mkdir(parents=True)
+            _write_minimal_rtlmeter_tree(root)
             rtlmeter = root / "third_party/rtlmeter/rtlmeter"
             rtlmeter.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
             rtlmeter.chmod(0o755)
-            (root / "third_party/rtlmeter/venv/bin/python3").write_text("#!/bin/sh\n", encoding="utf-8")
             real_verilator = root / "real" / "verilator"
             real_verilator.parent.mkdir()
             real_verilator.write_text("#!/bin/sh\n", encoding="utf-8")
@@ -94,9 +92,7 @@ class RtlmeterCpuGpuCompareDiagnosticsTest(HybridCliTestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            (root / "third_party/rtlmeter/venv/bin").mkdir(parents=True)
-            (root / "third_party/rtlmeter/rtlmeter").write_text("#!/bin/sh\n", encoding="utf-8")
-            (root / "third_party/rtlmeter/venv/bin/python3").write_text("#!/bin/sh\n", encoding="utf-8")
+            _write_minimal_rtlmeter_tree(root)
             bin_dir = root / "bin"
             bin_dir.mkdir()
             real_verilator = bin_dir / "verilator"
