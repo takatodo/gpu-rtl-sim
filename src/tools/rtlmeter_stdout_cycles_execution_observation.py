@@ -275,6 +275,7 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         "cpu_as_gpu_fallback": False,
         "execution_authority_requires_valid_proxy_marker": True,
         "execution_authority_requires_execute_proxy_install": True,
+        "execution_authority_requires_source_patch_marker": True,
         "gpu_execution_claim_requires_valid_proxy_marker": True,
         "gpu_execution_claimed": False,
         "generated_report_is_source_of_truth": False,

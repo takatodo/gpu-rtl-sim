@@ -630,6 +630,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["execution_performed"])
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["sidecar_proxy_marker_valid"])
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["sidecar_execute_proxy_installed_by_wrapper_branch"])
+        self.assertTrue(report["stdout_cycles_sidecar_runner"]["execution_authority_requires_source_patch_marker"])
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["execution_authority"])
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["sidecar_execution_invoked"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["gpu_execution_claimed"])

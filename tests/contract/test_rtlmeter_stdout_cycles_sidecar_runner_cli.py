@@ -280,6 +280,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertTrue(report["execution_performed"])
         self.assertTrue(report["sidecar_proxy_marker_valid"])
         self.assertTrue(report["sidecar_execute_proxy_installed_by_wrapper_branch"])
+        self.assertTrue(report["execution_authority_requires_source_patch_marker"])
         self.assertTrue(report["execution_authority"])
         self.assertTrue(report["sidecar_execution_invoked"])
         self.assertFalse(report["gpu_execution_claimed"])
