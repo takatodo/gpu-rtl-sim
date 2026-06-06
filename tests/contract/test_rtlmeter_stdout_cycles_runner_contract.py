@@ -1,4 +1,5 @@
 import json
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -313,6 +314,229 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertNotIn("command_result", boundary)
         self.assertNotIn("output_status", boundary)
         self.assertNotIn("cycle_count", boundary)
+
+    def test_sidecar_runner_cli_executes_inner_command_and_observes_outputs(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import (
+            VSIM_SIDECAR_PROXY_ENV,
+            run_rtlmeter_stdout_cycles_sidecar_runner,
+        )
+        from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = plan["gpu_candidate"]["command"]
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            calls = []
+
+            def fake_runner(command_argv, **kwargs):
+                calls.append((command_argv, kwargs))
+                out = root / observable_dir
+                (out / "_execute").mkdir(parents=True, exist_ok=True)
+                (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
+                (out / "_rtlmeter_cycles.txt").write_text("1000000\n", encoding="utf-8")
+                return subprocess.CompletedProcess(command_argv, 0, stdout="", stderr="")
+
+            report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                observable_execute_dir=observable_dir,
+                command_argv=["--", *command],
+                repo_root=root,
+                environ={VSIM_SIDECAR_PROXY_ENV: proxy_path},
+                runner=fake_runner,
+            )
+
+        self.assertEqual(report["status"], "rtlmeter_stdout_cycles_sidecar_runner_observables_ready")
+        self.assertEqual(calls[0][0], command)
+        self.assertEqual(calls[0][1]["env"][PHASE_ENV], PHASE_RTL_METER_RUN)
+        self.assertEqual(
+            report["wrapper_phase_guard"]["status"],
+            "rtlmeter_wrapper_phase_guard_enter_rtlmeter_run",
+        )
+        self.assertEqual(report["wrapper_phase_guard"]["child_phase"], PHASE_RTL_METER_RUN)
+        self.assertEqual(report["command_result"]["inner_command"], command)
+        self.assertEqual(report["command_result"]["command"][1], "src/tools/rtlmeter_stdout_cycles_sidecar_runner.py")
+        self.assertTrue(report["runner_source_cli_implemented"])
+        self.assertTrue(report["adapter_invoked"])
+        self.assertTrue(report["sidecar_runner_invoked"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["execution_authority"])
+        self.assertTrue(report["execution_performed"])
+        self.assertFalse(report["measurement_performed"])
+        self.assertFalse(report["cpu_as_gpu_fallback"])
+        self.assertFalse(report["gpu_execution_claimed"])
+
+    def test_sidecar_runner_cli_cleans_stale_observables_before_inner_command(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import (
+            VSIM_SIDECAR_PROXY_ENV,
+            run_rtlmeter_stdout_cycles_sidecar_runner,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = plan["gpu_candidate"]["command"]
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            out = root / observable_dir
+            (out / "_execute").mkdir(parents=True)
+            (out / "_execute/stdout.log").write_text("    9.99 | stale output\n", encoding="utf-8")
+            (out / "_rtlmeter_cycles.txt").write_text("999\n", encoding="utf-8")
+            calls = []
+
+            def fake_runner(command_argv, **kwargs):
+                calls.append((command_argv, kwargs))
+                self.assertFalse((out / "_execute/stdout.log").exists())
+                self.assertFalse((out / "_rtlmeter_cycles.txt").exists())
+                (out / "_execute").mkdir(parents=True, exist_ok=True)
+                (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
+                (out / "_rtlmeter_cycles.txt").write_text("1000000\n", encoding="utf-8")
+                return subprocess.CompletedProcess(command_argv, 0, stdout="", stderr="")
+
+            report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                observable_execute_dir=observable_dir,
+                command_argv=["--", *command],
+                repo_root=root,
+                environ={VSIM_SIDECAR_PROXY_ENV: proxy_path},
+                runner=fake_runner,
+            )
+
+        self.assertEqual(report["status"], "rtlmeter_stdout_cycles_sidecar_runner_observables_ready")
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(report["missing_observables"], [])
+        self.assertTrue(report["observables_ready"])
+        self.assertEqual(report["cycle_count"], 1000000)
+        self.assertTrue(report["execution_performed"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["gpu_execution_claimed"])
+
+    def test_sidecar_runner_cli_does_not_reuse_stale_observables_when_child_writes_nothing(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import (
+            VSIM_SIDECAR_PROXY_ENV,
+            run_rtlmeter_stdout_cycles_sidecar_runner,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = plan["gpu_candidate"]["command"]
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            out = root / observable_dir
+            (out / "_execute").mkdir(parents=True)
+            (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
+            (out / "_rtlmeter_cycles.txt").write_text("1000000\n", encoding="utf-8")
+            calls = []
+
+            def fake_runner(command_argv, **kwargs):
+                calls.append((command_argv, kwargs))
+                self.assertFalse((out / "_execute/stdout.log").exists())
+                self.assertFalse((out / "_rtlmeter_cycles.txt").exists())
+                return subprocess.CompletedProcess(command_argv, 0, stdout="", stderr="")
+
+            report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                observable_execute_dir=observable_dir,
+                command_argv=["--", *command],
+                repo_root=root,
+                environ={VSIM_SIDECAR_PROXY_ENV: proxy_path},
+                runner=fake_runner,
+            )
+
+        self.assertEqual(report["status"], "rtlmeter_stdout_cycles_sidecar_runner_outputs_missing")
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(report["missing_observables"], ["stdout_log", "cycle_count_file"])
+        self.assertFalse(report["observables_ready"])
+        self.assertIsNone(report["normalized_stdout_sha256"])
+        self.assertIsNone(report["cycle_count"])
+        self.assertTrue(report["subprocess_invoked"])
+        self.assertTrue(report["sidecar_runner_invoked"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["execution_performed"])
+        self.assertFalse(report["gpu_execution_claimed"])
+
+    def test_sidecar_runner_cli_does_not_surface_stale_observables_after_failed_command(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import (
+            VSIM_SIDECAR_PROXY_ENV,
+            run_rtlmeter_stdout_cycles_sidecar_runner,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = plan["gpu_candidate"]["command"]
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            out = root / observable_dir
+            (out / "_execute").mkdir(parents=True)
+            (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
+            (out / "_rtlmeter_cycles.txt").write_text("1000000\n", encoding="utf-8")
+
+            report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                observable_execute_dir=observable_dir,
+                command_argv=["--", *command],
+                repo_root=root,
+                environ={VSIM_SIDECAR_PROXY_ENV: proxy_path},
+                runner=lambda command_argv, **kwargs: subprocess.CompletedProcess(
+                    command_argv, 7, stdout="", stderr="failed"
+                ),
+            )
+
+        self.assertEqual(report["status"], "rtlmeter_stdout_cycles_sidecar_runner_execution_failed")
+        self.assertEqual(report["missing_observables"], ["stdout_log", "cycle_count_file"])
+        self.assertFalse(report["observables_ready"])
+        self.assertIsNone(report["normalized_stdout_sha256"])
+        self.assertIsNone(report["cycle_count"])
+        self.assertFalse(report["execution_performed"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["gpu_execution_claimed"])
+
+    def test_sidecar_runner_cli_classifies_missing_vsim_sidecar_proxy_env(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import run_rtlmeter_stdout_cycles_sidecar_runner
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = plan["gpu_candidate"]["command"]
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            calls = []
+
+            def fake_runner(command_argv, **kwargs):
+                calls.append((command_argv, kwargs))
+                self.fail("runner must not be called without RTLMETER_VSIM_SIDECAR_PROXY")
+
+            report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                observable_execute_dir=observable_dir,
+                command_argv=["--", *command],
+                repo_root=root,
+                environ={},
+                runner=fake_runner,
+            )
+
+        self.assertEqual(
+            report["status"],
+            "rtlmeter_stdout_cycles_sidecar_runner_vsim_sidecar_proxy_env_missing",
+        )
+        self.assertEqual(calls, [])
+        self.assertIsNone(report["command_result"])
+        self.assertFalse(report["subprocess_invoked"])
+        self.assertFalse(report["observable_stdout_has_missing_proxy_env"])
+        self.assertFalse(report["vsim_sidecar_proxy_env_present"])
+        self.assertFalse(report["execution_performed"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["gpu_execution_claimed"])
 
     def test_sidecar_runner_source_argv_boundary_rejects_run_hybrid_template(self) -> None:
         self.add_tools_to_path()
