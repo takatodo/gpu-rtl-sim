@@ -662,3 +662,211 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         self.assertIsNone(report["stdout_cycles_runner_implementation"])
         self.assertIsNone(report["stdout_cycles_runner_adapter_implementation"])
         self.assertNotIn("should-not-delegate", completed.stdout)
+
+    def _reviewed_source_closure_for_reentry_guard(self) -> dict[str, object]:
+        return {
+            "status": "complete",
+            "authority": "reviewed_hybrid_execution_source_closure",
+            "authority_scope": "rtlmeter_stdout_cycles_sidecar_runner",
+            "target": "rtlmeter_example_kind_hello",
+            "mode": "rtlmeter_first_seed",
+            "rtlmeter_case": "Example:kind:hello",
+            "source_gate_or_manifest_ref": "for_codex/issues/FC-034-rtlmeter-first-seed-execution-integration.md",
+            "source_files": [
+                "third_party/rtlmeter/designs/Example/src/top.v",
+                "third_party/rtlmeter/rtl/__rtlmeter_utils.sv",
+            ],
+            "include_files": ["third_party/rtlmeter/rtl/__rtlmeter_top_include.vh"],
+            "filelist_entries": [
+                "verilogSourceFiles/top.v",
+                "rtl/__rtlmeter_utils.sv",
+                "rtl/__rtlmeter_top_include.vh",
+            ],
+            "observables": ["normalized_stdout", "rtlmeter_cycles"],
+            "runner_strategy": "rtlmeter_stdout_cycles_direct_wrapper",
+            "host_probe_contract_status": "reviewed_for_rtlmeter_sidecar",
+            "cpu_as_gpu_fallback_allowed": False,
+            "review_evidence": {
+                "reviewed": True,
+                "review_ref": "for_codex/issues/FC-034-rtlmeter-first-seed-execution-integration.md",
+            },
+        }
+
+    def _reviewed_rtlmeter_context_for_reentry_guard(self) -> dict[str, object]:
+        context = self._minimal_sidecar_context()
+        context["template_or_target_registry_entry"] = (
+            "config/rtlmeter_sidecar_authorities/rtlmeter_example_kind_hello.json"
+        )
+        context["source_closure"] = self._reviewed_source_closure_for_reentry_guard()
+        return context
+
+    def test_runtime_wrapper_reentry_guard_blocks_recursive_rtlmeter_runner_argv(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_verilator_wrapper_runtime import (
+            SIDECAR_CONTEXT_JSON_ENV,
+            run_rtlmeter_verilator_wrapper,
+        )
+        from rtlmeter_verilator_wrapper_phase import PHASE_ENV
+
+        calls = []
+
+        def fake_runner(*args, **kwargs):
+            calls.append((args, kwargs))
+            return subprocess.CompletedProcess(args[0], 0)
+
+        stderr = io.StringIO()
+        code = run_rtlmeter_verilator_wrapper(
+            [
+                "--cc",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            environ={
+                SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._reviewed_rtlmeter_context_for_reentry_guard()),
+                "PATH": "",
+            },
+            runner=fake_runner,
+            stderr=stderr,
+        )
+        report = json.loads(stderr.getvalue())
+        adapter_implementation = report["stdout_cycles_runner_adapter_implementation"]
+        reentry_guard = report["reentry_guard"]
+
+        self.assertEqual(code, 2)
+        self.assertEqual(calls, [])
+        self.assertEqual(
+            adapter_implementation["status"],
+            "rtlmeter_stdout_cycles_runner_adapter_implementation_runner_argv_ready",
+        )
+        self.assertIsNotNone(adapter_implementation["runner_command_argv"])
+        self.assertEqual(
+            reentry_guard["status"],
+            "rtlmeter_wrapper_reentry_guard_blocked_recursive_rtlmeter_run",
+        )
+        self.assertEqual(reentry_guard["phase_env"], PHASE_ENV)
+        self.assertIsNone(reentry_guard["wrapper_phase"])
+        self.assertTrue(reentry_guard["runner_command_present"])
+        self.assertTrue(reentry_guard["runner_command_invokes_rtlmeter_run"])
+        self.assertFalse(reentry_guard["runner_command_safe_to_execute_from_wrapper"])
+        self.assertFalse(reentry_guard["direct_sidecar_verilate_phase_allowed"])
+        self.assertFalse(reentry_guard["execution_authority"])
+        self.assertFalse(reentry_guard["sidecar_execution_invoked"])
+        self.assertFalse(reentry_guard["cpu_as_gpu_fallback"])
+
+    def test_runtime_wrapper_rtlmeter_run_phase_keeps_runner_argv_metadata_only(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_verilator_wrapper_runtime import (
+            SIDECAR_CONTEXT_JSON_ENV,
+            run_rtlmeter_verilator_wrapper,
+        )
+        from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN, PHASE_SIDECAR_VERILATE
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            wrapper = root / "wrapper" / "verilator"
+            real = root / "real" / "verilator"
+            wrapper.parent.mkdir()
+            real.parent.mkdir()
+            self._touch_executable(wrapper)
+            self._touch_executable(real)
+            calls = []
+
+            def fake_runner(command, **kwargs):
+                calls.append((command, kwargs))
+                return subprocess.CompletedProcess(command, 19)
+
+            argv = [
+                "--cc",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ]
+            stderr = io.StringIO()
+            code = run_rtlmeter_verilator_wrapper(
+                argv,
+                executable=wrapper,
+                environ={
+                    SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._reviewed_rtlmeter_context_for_reentry_guard()),
+                    PHASE_ENV: PHASE_RTL_METER_RUN,
+                    "PATH": f"{wrapper.parent}{os.pathsep}{real.parent}",
+                },
+                runner=fake_runner,
+                stderr=stderr,
+            )
+
+        self.assertEqual(code, 19)
+        self.assertEqual(stderr.getvalue(), "")
+        self.assertEqual(calls[0][0], [str(real), *argv])
+        self.assertEqual(calls[0][1]["env"][PHASE_ENV], PHASE_SIDECAR_VERILATE)
+        flat_command = " ".join(calls[0][0])
+        self.assertNotIn("rtlmeter run", flat_command)
+        self.assertNotIn("rtlmeter_stdout_cycles_sidecar_runner.py", flat_command)
+        self.assertNotIn("run_hybrid_template.py", flat_command)
+
+    def test_runtime_wrapper_sidecar_verilate_phase_blocks_reentry(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_verilator_wrapper_runtime import (
+            SIDECAR_CONTEXT_JSON_ENV,
+            run_rtlmeter_verilator_wrapper,
+        )
+        from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_SIDECAR_VERILATE
+
+        calls = []
+
+        def fake_runner(*args, **kwargs):
+            calls.append((args, kwargs))
+            return subprocess.CompletedProcess(args[0], 0)
+
+        stderr = io.StringIO()
+        code = run_rtlmeter_verilator_wrapper(
+            [
+                "--cc",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            environ={
+                SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._reviewed_rtlmeter_context_for_reentry_guard()),
+                PHASE_ENV: PHASE_SIDECAR_VERILATE,
+                "PATH": "",
+            },
+            runner=fake_runner,
+            stderr=stderr,
+        )
+        report = json.loads(stderr.getvalue())
+        reentry_guard = report["reentry_guard"]
+
+        self.assertEqual(code, 2)
+        self.assertEqual(calls, [])
+        self.assertEqual(
+            reentry_guard["status"],
+            "rtlmeter_wrapper_reentry_guard_blocked_sidecar_verilate_reentry",
+        )
+        self.assertEqual(reentry_guard["phase_env"], PHASE_ENV)
+        self.assertEqual(reentry_guard["wrapper_phase"], PHASE_SIDECAR_VERILATE)
+        self.assertFalse(reentry_guard["runner_command_safe_to_execute_from_wrapper"])
+        self.assertFalse(reentry_guard["direct_sidecar_verilate_phase_allowed"])
+        self.assertFalse(report["cpu_as_gpu_fallback"])
+        self.assertFalse(report["sidecar_execution_invoked"])
