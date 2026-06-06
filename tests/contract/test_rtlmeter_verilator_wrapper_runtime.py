@@ -18,6 +18,12 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         path.write_text(text, encoding="utf-8")
         path.chmod(0o755)
 
+    def _expanded_sidecar_argv(self) -> list[str]:
+        return ["--cc", "--top-module", "top", "-f", "filelist", "--sim-accel", "sidecar-gpu", "--sim-accel-states", "64", "--sim-accel-steps", "1"]
+
+    def _expanded_sidecar_argv_with_mdir(self) -> list[str]:
+        return ["--cc", "-Mdir", "obj_dir", "--top-module", "top", "-f", "filelist", "--sim-accel", "sidecar-gpu", "--sim-accel-states", "64", "--sim-accel-steps", "1"]
+
     def _minimal_sidecar_context(self) -> dict[str, object]:
         return {
             "target": "rtlmeter_example_kind_hello",
@@ -106,19 +112,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
 
         stderr = io.StringIO()
         code = run_rtlmeter_verilator_wrapper(
-            [
-                "--cc",
-                "--top-module",
-                "top",
-                "-f",
-                "filelist",
-                "--sim-accel",
-                "sidecar-gpu",
-                "--sim-accel-states",
-                "64",
-                "--sim-accel-steps",
-                "1",
-            ],
+            self._expanded_sidecar_argv(),
             environ={"PATH": ""},
             runner=lambda *args, **kwargs: self.fail("sidecar execution is not implemented in this wrapper"),
             stderr=stderr,
@@ -213,21 +207,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         context["source_closure"] = {}
 
         handoff = build_rtlmeter_sidecar_handoff(
-            [
-                "--cc",
-                "-Mdir",
-                "obj_dir",
-                "--top-module",
-                "top",
-                "-f",
-                "filelist",
-                "--sim-accel",
-                "sidecar-gpu",
-                "--sim-accel-states",
-                "64",
-                "--sim-accel-steps",
-                "1",
-            ],
+            self._expanded_sidecar_argv_with_mdir(),
             sidecar_context=context,
         )
 
@@ -254,21 +234,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
             template_or_target_registry_entry="config/slice_launch_templates/rtlmeter_example_kind_hello.json",
         )
         handoff = build_rtlmeter_sidecar_handoff(
-            [
-                "--cc",
-                "-Mdir",
-                "obj_dir",
-                "--top-module",
-                "top",
-                "-f",
-                "filelist",
-                "--sim-accel",
-                "sidecar-gpu",
-                "--sim-accel-states",
-                "64",
-                "--sim-accel-steps",
-                "1",
-            ],
+            self._expanded_sidecar_argv_with_mdir(),
             sidecar_context=context,
         )
 
@@ -299,21 +265,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
 
         stderr = io.StringIO()
         code = run_rtlmeter_verilator_wrapper(
-            [
-                "--cc",
-                "-Mdir",
-                "obj_dir",
-                "--top-module",
-                "top",
-                "-f",
-                "filelist",
-                "--sim-accel",
-                "sidecar-gpu",
-                "--sim-accel-states",
-                "64",
-                "--sim-accel-steps",
-                "1",
-            ],
+            self._expanded_sidecar_argv_with_mdir(),
             environ={SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._minimal_sidecar_context()), "PATH": ""},
             runner=lambda *args, **kwargs: self.fail("sidecar execution is not implemented in this wrapper"),
             stderr=stderr,
@@ -342,21 +294,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
             compile_args=("--sim-accel", "sidecar-gpu", "--sim-accel-states", "64", "--sim-accel-steps", "1"),
         )
         handoff = build_rtlmeter_sidecar_handoff(
-            [
-                "--cc",
-                "-Mdir",
-                "obj_dir",
-                "--top-module",
-                "top",
-                "-f",
-                "filelist",
-                "--sim-accel",
-                "sidecar-gpu",
-                "--sim-accel-states",
-                "64",
-                "--sim-accel-steps",
-                "1",
-            ],
+            self._expanded_sidecar_argv_with_mdir(),
             sidecar_context=build_rtlmeter_sidecar_context_candidate(
                 contract,
                 template_or_target_registry_entry="config/slice_launch_templates/rtlmeter_example_kind_hello.json",
@@ -387,21 +325,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
             template_or_target_registry_entry="config/slice_launch_templates/rtlmeter_example_kind_hello.json",
         )
         handoff = build_rtlmeter_sidecar_handoff(
-            [
-                "--cc",
-                "-Mdir",
-                "obj_dir",
-                "--top-module",
-                "top",
-                "-f",
-                "filelist",
-                "--sim-accel",
-                "sidecar-gpu",
-                "--sim-accel-states",
-                "64",
-                "--sim-accel-steps",
-                "1",
-            ],
+            self._expanded_sidecar_argv_with_mdir(),
             sidecar_context=context,
         )
         handoff["status"] = "rtlmeter_sidecar_handoff_metadata_ready"
@@ -423,21 +347,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
             "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
         )
         handoff = build_rtlmeter_sidecar_handoff(
-            [
-                "--cc",
-                "-Mdir",
-                "obj_dir",
-                "--top-module",
-                "top",
-                "-f",
-                "filelist",
-                "--sim-accel",
-                "sidecar-gpu",
-                "--sim-accel-states",
-                "64",
-                "--sim-accel-steps",
-                "1",
-            ],
+            self._expanded_sidecar_argv_with_mdir(),
             sidecar_context=context,
         )
         invocation = build_rtlmeter_sidecar_launcher_invocation(handoff)
@@ -463,21 +373,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
                 "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
             )
             handoff = build_rtlmeter_sidecar_handoff(
-                [
-                    "--cc",
-                    "-Mdir",
-                    "obj_dir",
-                    "--top-module",
-                    "top",
-                    "-f",
-                    "filelist",
-                    "--sim-accel",
-                    "sidecar-gpu",
-                    "--sim-accel-states",
-                    "64",
-                    "--sim-accel-steps",
-                    "1",
-                ],
+                self._expanded_sidecar_argv_with_mdir(),
                 sidecar_context=context,
             )
             invocation = build_rtlmeter_sidecar_launcher_invocation(handoff, repo_root=root)
@@ -503,21 +399,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
                 "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
             )
             handoff = build_rtlmeter_sidecar_handoff(
-                [
-                    "--cc",
-                    "-Mdir",
-                    "obj_dir",
-                    "--top-module",
-                    "top",
-                    "-f",
-                    "filelist",
-                    "--sim-accel",
-                    "sidecar-gpu",
-                    "--sim-accel-states",
-                    "64",
-                    "--sim-accel-steps",
-                    "1",
-                ],
+                self._expanded_sidecar_argv_with_mdir(),
                 sidecar_context=context,
             )
             invocation = build_rtlmeter_sidecar_launcher_invocation(handoff, repo_root=root)
@@ -716,19 +598,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
 
         stderr = io.StringIO()
         code = run_rtlmeter_verilator_wrapper(
-            [
-                "--cc",
-                "--top-module",
-                "top",
-                "-f",
-                "filelist",
-                "--sim-accel",
-                "sidecar-gpu",
-                "--sim-accel-states",
-                "64",
-                "--sim-accel-steps",
-                "1",
-            ],
+            self._expanded_sidecar_argv(),
             environ={
                 SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._reviewed_rtlmeter_context_for_reentry_guard()),
                 "PATH": "",
@@ -834,19 +704,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
 
         stderr = io.StringIO()
         code = run_rtlmeter_verilator_wrapper(
-            [
-                "--cc",
-                "--top-module",
-                "top",
-                "-f",
-                "filelist",
-                "--sim-accel",
-                "sidecar-gpu",
-                "--sim-accel-states",
-                "64",
-                "--sim-accel-steps",
-                "1",
-            ],
+            self._expanded_sidecar_argv(),
             environ={
                 SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._reviewed_rtlmeter_context_for_reentry_guard()),
                 PHASE_ENV: PHASE_SIDECAR_VERILATE,
@@ -911,21 +769,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
             "include_files": ["third_party/rtlmeter/rtl/__rtlmeter_top_include.vh"],
         }
         handoff = build_rtlmeter_sidecar_handoff(
-            [
-                "--cc",
-                "-Mdir",
-                "obj_dir",
-                "--top-module",
-                "top",
-                "-f",
-                "filelist",
-                "--sim-accel",
-                "sidecar-gpu",
-                "--sim-accel-states",
-                "64",
-                "--sim-accel-steps",
-                "1",
-            ],
+            self._expanded_sidecar_argv_with_mdir(),
             sidecar_context=context,
         )
 
@@ -944,21 +788,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
             "authority": "reviewed_hybrid_execution_source_closure",
         }
         handoff = build_rtlmeter_sidecar_handoff(
-            [
-                "--cc",
-                "-Mdir",
-                "obj_dir",
-                "--top-module",
-                "top",
-                "-f",
-                "filelist",
-                "--sim-accel",
-                "sidecar-gpu",
-                "--sim-accel-states",
-                "64",
-                "--sim-accel-steps",
-                "1",
-            ],
+            self._expanded_sidecar_argv_with_mdir(),
             sidecar_context=context,
         )
 
@@ -990,21 +820,7 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         )
 
         handoff = build_rtlmeter_sidecar_handoff(
-            [
-                "--cc",
-                "-Mdir",
-                "obj_dir",
-                "--top-module",
-                "top",
-                "-f",
-                "filelist",
-                "--sim-accel",
-                "sidecar-gpu",
-                "--sim-accel-states",
-                "64",
-                "--sim-accel-steps",
-                "1",
-            ],
+            self._expanded_sidecar_argv_with_mdir(),
             sidecar_context=context,
         )
         if repo_root is None:
@@ -1197,3 +1013,31 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         self.assertFalse(report["cpu_as_gpu_fallback"])
         self.assertFalse(report["delegated_to_real_verilator"])
         self.assertFalse(report["sidecar_execution_invoked"])
+
+
+    def test_runtime_wrapper_rejects_thin_env_source_closure_without_delegating(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, run_rtlmeter_verilator_wrapper
+
+        context = self._reviewed_rtlmeter_context_for_reentry_guard()
+        context["source_closure"] = {"status": "complete", "authority": "reviewed_hybrid_execution_source_closure"}
+        stderr = io.StringIO()
+        code = run_rtlmeter_verilator_wrapper(
+            self._expanded_sidecar_argv(),
+            environ={SIDECAR_CONTEXT_JSON_ENV: json.dumps(context), "PATH": ""},
+            runner=lambda *args, **kwargs: self.fail("thin source closure must not delegate"),
+            stderr=stderr,
+        )
+        report = json.loads(stderr.getvalue())
+        contract = report["stdout_cycles_runner_contract"]
+
+        self.assertEqual(code, 2)
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["cpu_as_gpu_fallback"])
+        self.assertFalse(report["delegated_to_real_verilator"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertIn("handoff_metadata_ready", contract["missing_runner_context"])
+        self.assertIn("sidecar_context.source_closure.authority_scope", contract["missing_runner_context"])
+        self.assertIn("sidecar_context.source_closure.rtlmeter_case", contract["missing_runner_context"])
+        self.assertIn("sidecar_context.source_closure.review_evidence", contract["missing_runner_context"])
+        self.assertFalse(contract["sidecar_execution_invoked"])
