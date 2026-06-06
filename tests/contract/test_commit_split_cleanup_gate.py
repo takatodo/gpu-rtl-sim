@@ -190,13 +190,13 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         self.assertFalse(completion["acceptance_policy"]["new_execution_allowed_by_this_gate"])
         self.assertEqual(
             selection["current_priority"],
-            "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate",
+            "external_user_readiness_audit_gate",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate.json",
+            "config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json",
         )
-        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 927)
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 966)
 
     def test_native_invocation_execution_boundary_review_selects_scoped_run(self) -> None:
         review = json.loads(
