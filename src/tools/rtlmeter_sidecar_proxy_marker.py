@@ -27,7 +27,7 @@ def rtlmeter_sidecar_proxy_marker_path(observable_execute_dir: object, repo_root
         execute_dir = repo_root / execute_dir
     return execute_dir / MARKER_FILENAME
 def build_rtlmeter_sidecar_proxy_marker_payload(
-    *, proxy_readiness: Mapping[str, object] | None = None
+    *, observable_execute_dir: str | None = None, proxy_readiness: Mapping[str, object] | None = None
 ) -> dict[str, object]:
     proxy_installed = (
         isinstance(proxy_readiness, Mapping)
@@ -45,6 +45,7 @@ def build_rtlmeter_sidecar_proxy_marker_payload(
         "schema_role": MARKER_SCHEMA_ROLE,
         "producer": MARKER_PRODUCER,
         "phase": MARKER_PHASE,
+        "observable_execute_dir": observable_execute_dir,
         "cpu_as_gpu_fallback": False,
         "ordinary_vsim_output": False,
         "execute_proxy_installed_by_wrapper_branch": proxy_installed,
@@ -73,12 +74,15 @@ def write_rtlmeter_sidecar_proxy_marker(
     if marker_path is None:
         raise ValueError("observable_execute_dir is required to write the RTLMeter sidecar proxy marker")
     marker_path.parent.mkdir(parents=True, exist_ok=True)
-    payload = build_rtlmeter_sidecar_proxy_marker_payload(proxy_readiness=proxy_readiness)
+    payload = build_rtlmeter_sidecar_proxy_marker_payload(
+        observable_execute_dir=_relative_path(marker_path.parent, repo_root),
+        proxy_readiness=proxy_readiness,
+    )
     marker_path.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
     return marker_path
 
 
-def _missing_marker_context(payload: object) -> list[str]:
+def _missing_marker_context(payload: object, *, expected_observable_execute_dir: str | None = None) -> list[str]:
     if not isinstance(payload, Mapping):
         return ["payload"]
     missing: list[str] = []
@@ -90,6 +94,8 @@ def _missing_marker_context(payload: object) -> list[str]:
         missing.append("producer")
     if payload.get("phase") != MARKER_PHASE:
         missing.append("phase")
+    if payload.get("observable_execute_dir") != expected_observable_execute_dir:
+        missing.append("observable_execute_dir")
     if payload.get("cpu_as_gpu_fallback") is not False:
         missing.append("cpu_as_gpu_fallback")
     if payload.get("ordinary_vsim_output") is not False:
@@ -258,7 +264,11 @@ def observe_rtlmeter_sidecar_proxy_marker(
             missing_context=["marker_json"],
         )
         return {**evidence, "sidecar_proxy_evidence": evidence}
-    missing = _missing_marker_context(payload)
+    expected_observable_execute_dir = _relative_path(marker_path.parent, repo_root)
+    missing = _missing_marker_context(
+        payload,
+        expected_observable_execute_dir=expected_observable_execute_dir,
+    )
     marker_valid = not missing
     proxy_installed = marker_valid and payload.get("execute_proxy_installed_by_wrapper_branch") is True
     source_patch = marker_valid and payload.get("execute_proxy_source_patch_by_wrapper_branch", False) is True

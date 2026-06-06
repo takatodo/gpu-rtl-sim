@@ -20,6 +20,11 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
         (path / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
         (path / "_rtlmeter_cycles.txt").write_text("1000000\n", encoding="utf-8")
 
+    def _observable_dir(self) -> str:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        return str(build_rtlmeter_stdout_cycles_execution_plan()["gpu_candidate"]["observable_execute_dir"])
+
     def _observed_report(self, root: Path, marker_payload: dict[str, object] | None = None) -> dict[str, object]:
         self.add_tools_to_path()
         from rtlmeter_sidecar_proxy_marker import MARKER_FILENAME
@@ -139,6 +144,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
 
     def test_valid_proxy_marker_is_metadata_only_in_this_packet(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
+            observable_dir = self._observable_dir()
             report = self._observed_report(
                 Path(temp_dir),
                 {
@@ -146,6 +152,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
                     "schema_role": "rtlmeter_sidecar_proxy_marker",
                     "producer": "rtlmeter_verilator_wrapper_runtime",
                     "phase": "sidecar_verilate",
+                    "observable_execute_dir": observable_dir,
                     "cpu_as_gpu_fallback": False,
                     "ordinary_vsim_output": False,
                     "execute_proxy_installed_by_wrapper_branch": False,
@@ -190,6 +197,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
             marker_payload = json.loads(marker.read_text(encoding="utf-8"))
 
         self.assertEqual(marker.name, MARKER_FILENAME)
+        self.assertEqual(marker_payload["observable_execute_dir"], plan["gpu_candidate"]["observable_execute_dir"])
         self.assertEqual(
             (
                 marker_payload["wrapper_executed_obj_dir_vsim"],
@@ -217,6 +225,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
 
     def test_proxy_installed_marker_grants_execution_authority_without_gpu_claim(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
+            observable_dir = self._observable_dir()
             report = self._observed_report(
                 Path(temp_dir),
                 {
@@ -224,6 +233,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
                     "schema_role": "rtlmeter_sidecar_proxy_marker",
                     "producer": "rtlmeter_verilator_wrapper_runtime",
                     "phase": "sidecar_verilate",
+                    "observable_execute_dir": observable_dir,
                     "cpu_as_gpu_fallback": False,
                     "ordinary_vsim_output": False,
                     "execute_proxy_installed_by_wrapper_branch": True,
@@ -261,7 +271,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
         self.assertFalse(report["gpu_execution_claimed"])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 
-    def test_installed_proxy_marker_without_source_patch_is_rejected(self) -> None:
+    def test_proxy_marker_for_different_observable_dir_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             report = self._observed_report(
                 Path(temp_dir),
@@ -270,6 +280,39 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
                     "schema_role": "rtlmeter_sidecar_proxy_marker",
                     "producer": "rtlmeter_verilator_wrapper_runtime",
                     "phase": "sidecar_verilate",
+                    "observable_execute_dir": "artifacts/other/execute-dir",
+                    "cpu_as_gpu_fallback": False,
+                    "ordinary_vsim_output": False,
+                    "execute_proxy_installed_by_wrapper_branch": True,
+                    "execute_proxy_source_patch_by_wrapper_branch": True,
+                    **self._runtime_non_claim_context(),
+                    "direct_sidecar_proxy_readiness": {
+                        "proxy_installed_by_wrapper_branch": True,
+                        "proxy_authorized_by_wrapper_branch": True,
+                        "execution_authority": True,
+                        "vsim_sidecar_proxy_target": {"reviewed_proxy_target": True},
+                        "vsim_main_proxy_patch": {"patched_by_wrapper_branch": True, "execution_authority": True},
+                    },
+                },
+            )
+
+        self.assertEqual(report["sidecar_proxy_marker_status"], "rtlmeter_sidecar_proxy_marker_invalid")
+        self.assertIn("observable_execute_dir", report["sidecar_proxy_marker_missing_context"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["gpu_execution_claimed"])
+
+    def test_installed_proxy_marker_without_source_patch_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            observable_dir = self._observable_dir()
+            report = self._observed_report(
+                Path(temp_dir),
+                {
+                    "schema_version": 1,
+                    "schema_role": "rtlmeter_sidecar_proxy_marker",
+                    "producer": "rtlmeter_verilator_wrapper_runtime",
+                    "phase": "sidecar_verilate",
+                    "observable_execute_dir": observable_dir,
                     "cpu_as_gpu_fallback": False,
                     "ordinary_vsim_output": False,
                     "execute_proxy_installed_by_wrapper_branch": True,
@@ -299,6 +342,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
 
     def test_forged_proxy_authorized_marker_without_installed_proxy_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
+            observable_dir = self._observable_dir()
             report = self._observed_report(
                 Path(temp_dir),
                 {
@@ -306,6 +350,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
                     "schema_role": "rtlmeter_sidecar_proxy_marker",
                     "producer": "rtlmeter_verilator_wrapper_runtime",
                     "phase": "sidecar_verilate",
+                    "observable_execute_dir": observable_dir,
                     "cpu_as_gpu_fallback": False,
                     "ordinary_vsim_output": False,
                     "execute_proxy_installed_by_wrapper_branch": False,
@@ -328,6 +373,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
 
     def test_authorized_marker_with_readiness_authority_disagreement_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
+            observable_dir = self._observable_dir()
             report = self._observed_report(
                 Path(temp_dir),
                 {
@@ -335,6 +381,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
                     "schema_role": "rtlmeter_sidecar_proxy_marker",
                     "producer": "rtlmeter_verilator_wrapper_runtime",
                     "phase": "sidecar_verilate",
+                    "observable_execute_dir": observable_dir,
                     "cpu_as_gpu_fallback": False,
                     "ordinary_vsim_output": False,
                     "execute_proxy_installed_by_wrapper_branch": True,

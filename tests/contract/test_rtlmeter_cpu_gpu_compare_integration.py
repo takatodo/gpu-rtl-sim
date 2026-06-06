@@ -982,6 +982,27 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertFalse(written["generated_report_is_source_of_truth"])
         self.assert_no_local_absolute_paths(json.dumps(written, sort_keys=True))
 
+    def test_write_report_rejects_absolute_report_path(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_cpu_gpu_compare_integration import run_rtlmeter_cpu_gpu_compare_integration
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            outside = repo_root.parent / "rtlmeter-outside-report.json"
+            if outside.exists():
+                outside.unlink()
+            report = run_rtlmeter_cpu_gpu_compare_integration(
+                write_report=True,
+                report_path=outside,
+                repo_root=repo_root,
+                environ={},
+            )
+
+        self.assertEqual(report["status"], "invalid_report_path")
+        self.assertEqual(report["missing_prerequisites"], ["report_path.absolute", "report_path.outside_reports"])
+        self.assertFalse(outside.exists())
+        self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
+
     def test_cli_emits_non_executing_json_by_default(self) -> None:
         result = self.run_python_tool("src/tools/rtlmeter_cpu_gpu_compare_integration.py")
         report = json.loads(result.stdout)

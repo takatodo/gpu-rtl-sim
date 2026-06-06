@@ -34,29 +34,12 @@ from rtlmeter_cpu_gpu_compare_policy import rtlmeter_cpu_gpu_compare_policy
 from rtlmeter_seed_selection import SELECTED_SEED
 from rtlmeter_sidecar_contract_mapping import map_rtlmeter_case_to_sidecar_contract
 from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_context_candidate
-from rtlmeter_stdout_cycles_plan import (
-    DEFAULT_ARTIFACT_ROOT,
-    DEFAULT_AUTHORITY_REGISTRY,
-    DEFAULT_COMPILE_ARGS,
-    WRAPPER_ENV,
-    build_rtlmeter_stdout_cycles_execution_plan,
-    rtlmeter_command as _rtlmeter_command,
-    rtlmeter_compile_dir as _compile_dir,
-    rtlmeter_execute_dir as _execute_dir,
-)
-from rtlmeter_stdout_cycles_execution_observation import (
-    STATUS_OUTPUTS_MISSING,
-    STATUS_OBSERVABLES_READY,
-    build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation,
-)
+from rtlmeter_stdout_cycles_plan import DEFAULT_ARTIFACT_ROOT, DEFAULT_AUTHORITY_REGISTRY, DEFAULT_COMPILE_ARGS, WRAPPER_ENV, build_rtlmeter_stdout_cycles_execution_plan, rtlmeter_command as _rtlmeter_command, rtlmeter_compile_dir as _compile_dir, rtlmeter_execute_dir as _execute_dir
+from rtlmeter_stdout_cycles_execution_observation import STATUS_OUTPUTS_MISSING, STATUS_OBSERVABLES_READY, build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation
 from rtlmeter_stdout_cycles_observables import compare_rtlmeter_observables, required_observable_files_missing
 from rtlmeter_stdout_cycles_sidecar_runner import materialize_rtlmeter_stdout_cycles_sidecar_runner_command
 from rtlmeter_verilator_command_capture import RtlmeterCommandCaptureError
-from rtlmeter_verilator_wrapper_runtime import (
-    REAL_VERILATOR_ENV,
-    SIDECAR_CONTEXT_JSON_ENV,
-    write_rtlmeter_verilator_wrapper,
-)
+from rtlmeter_verilator_wrapper_runtime import REAL_VERILATOR_ENV, SIDECAR_CONTEXT_JSON_ENV, write_rtlmeter_verilator_wrapper
 
 SURFACE = "rtlmeter_cpu_gpu_compare_integration"; OPT_IN_ENV = "RTLMETER_CPU_GPU_COMPARE_EXECUTE"
 SIDECAR_PROXY_EVIDENCE_FIELDS = ("execution_authority", "execution_authority_requires_valid_proxy_marker", "execution_authority_requires_execute_proxy_install", "execution_authority_requires_source_patch_marker", "rtlmeter_vsim_proxy_handoff_status", "rtlmeter_vsim_proxy_handoff_reached", "sidecar_proxy_marker_status", "sidecar_proxy_marker_valid", "sidecar_execute_proxy_installed_by_wrapper_branch", "sidecar_execute_proxy_source_patch_by_wrapper_branch", "sidecar_execute_proxy_authorized_by_wrapper_branch", "vsim_binary_proxy_installed_by_wrapper_branch", "vsim_main_source_patch_applied_by_wrapper_branch", "wrapper_executed_obj_dir_vsim", "obj_dir_vsim_execution_observed", "runtime_execution_authority", "vsim_runtime_execution_claimed", "missing_runtime_execution_context", "gpu_execution_claimed", "cpu_as_gpu_fallback", "timing_measured", "speedup_claimed")
@@ -91,6 +74,15 @@ def _clean_generated_work_roots(repo_root: Path, work_roots: list[Path]) -> list
             cleaned.append(work_root.as_posix())
     return cleaned
 
+def _validated_report_path_rule(report_path: str | Path | None, default: object) -> tuple[str, list[str]]:
+    raw = str(report_path or default)
+    path = Path(raw)
+    errors = []
+    if path.is_absolute(): errors.append("report_path.absolute")
+    if ".." in path.parts: errors.append("report_path.parent_reference")
+    if not path.parts or path.parts[0] != "reports": errors.append("report_path.outside_reports")
+    return (raw if not errors else str(default), errors)
+
 def run_rtlmeter_cpu_gpu_compare_integration(
     *,
     seed: str = SELECTED_SEED,
@@ -106,7 +98,7 @@ def run_rtlmeter_cpu_gpu_compare_integration(
     env_source = os.environ if environ is None else environ
     execute_enabled = execute or env_source.get(OPT_IN_ENV) == "1"
     policy = rtlmeter_cpu_gpu_compare_policy(seed, compile_args=compile_args)
-    report_rel = str(report_path or policy["generated_report_path_rule"])
+    report_rel, report_path_errors = _validated_report_path_rule(report_path, policy["generated_report_path_rule"])
     artifact_root = DEFAULT_ARTIFACT_ROOT
     cpu_work_root = artifact_root / "cpu"
     gpu_work_root = artifact_root / "gpu"
@@ -149,6 +141,11 @@ def run_rtlmeter_cpu_gpu_compare_integration(
             "CPU execution is never reported as GPU execution",
         ],
     }
+
+    if report_path_errors:
+        report["status"] = "invalid_report_path"
+        report["missing_prerequisites"] = report_path_errors
+        return report
 
     if not execute_enabled:
         return _maybe_write_report(report, root, write_report, report_rel)
@@ -258,10 +255,7 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         report["status"] = "gpu_observables_not_ready"
         return _maybe_write_report(report, root, write_report, report_rel)
 
-    comparison = compare_rtlmeter_observables(
-        cpu_execute_dir,
-        gpu_execute_dir,
-    )
+    comparison = compare_rtlmeter_observables(cpu_execute_dir, gpu_execute_dir)
     report["comparison"] = comparison; report["status"] = "passed" if comparison["status"] == "passed" else "failed"
     report["first_seed_handoff_evidence_status"] = "compare_failed" if comparison["status"] != "passed" else ("ready" if report["stdout_cycles_sidecar_runner"].get("execution_performed") is True and report["stdout_cycles_sidecar_runner"].get("execution_authority") is True and report["stdout_cycles_sidecar_runner"].get("sidecar_execution_invoked") is True and isinstance(report.get("sidecar_proxy_execution_evidence"), Mapping) and report["sidecar_proxy_execution_evidence"].get("status") == "ready" else "compare_passed_without_handoff_authority")
     return _maybe_write_report(report, root, write_report, report_rel)
