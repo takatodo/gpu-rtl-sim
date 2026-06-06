@@ -159,6 +159,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
         self.assertTrue(report["execution_authority"])
         self.assertTrue(report["sidecar_execution_invoked"])
         self.assertFalse(report["gpu_execution_claimed"])
+        self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 
     def test_forged_proxy_authorized_marker_without_installed_proxy_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
