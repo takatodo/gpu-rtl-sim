@@ -228,3 +228,65 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
         self.assertTrue(readiness["vsim_main_proxy_patch"]["execution_authority"])
         self.assertTrue(readiness["vsim_execute_proxy"]["execution_authority"])
         self.assertIn("RTLMETER_VSIM_SIDECAR_PROXY", patched_main)
+
+    def test_failed_direct_verilate_does_not_write_proxy_authority_marker(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_proxy_marker import MARKER_FILENAME
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan, rtlmeter_compile_dir
+        from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN
+        from rtlmeter_verilator_wrapper_runtime import (
+            SIDECAR_CONTEXT_JSON_ENV,
+            run_rtlmeter_verilator_wrapper,
+        )
+
+        argv = [
+            "--cc",
+            "--top-module",
+            "top",
+            "-f",
+            "filelist",
+            "--sim-accel",
+            "sidecar-gpu",
+            "--sim-accel-states",
+            "64",
+            "--sim-accel-steps",
+            "1",
+        ]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            wrapper = root / "wrapper" / "verilator"
+            real = root / "real" / "verilator"
+            wrapper.parent.mkdir()
+            real.parent.mkdir()
+            self._touch_executable(wrapper)
+            self._touch_executable(real)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            marker = root / plan["gpu_candidate"]["observable_execute_dir"] / MARKER_FILENAME
+            compile_dir = root / rtlmeter_compile_dir(
+                Path(str(plan["gpu_candidate"]["work_root"])),
+                str(plan["seed"]),
+            )
+            main_cpp = compile_dir / "obj_dir" / "Vsim__main.cpp"
+            vsim = compile_dir / "obj_dir" / "Vsim"
+
+            def fake_runner(command, **kwargs):
+                main_cpp.parent.mkdir(parents=True)
+                main_cpp.write_text(self._generated_main(), encoding="utf-8")
+                vsim.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+                vsim.chmod(0o755)
+                return subprocess.CompletedProcess(command, 9)
+
+            code = run_rtlmeter_verilator_wrapper(
+                argv,
+                executable=wrapper,
+                environ={
+                    SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._sidecar_context()),
+                    PHASE_ENV: PHASE_RTL_METER_RUN,
+                    "PWD": str(root),
+                    "PATH": f"{wrapper.parent}{os.pathsep}{real.parent}",
+                },
+                runner=fake_runner,
+            )
+
+        self.assertEqual(code, 9)
+        self.assertFalse(marker.exists())
