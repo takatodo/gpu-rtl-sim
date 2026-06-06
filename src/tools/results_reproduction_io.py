@@ -9,7 +9,9 @@ from pathlib import Path
 
 from results_reproduction_types import ReproductionCommand
 
-LOCAL_ABSOLUTE_PATH_TOKEN_RE = re.compile(r"(?<!\S)/(?:home|tmp|Users|var|mnt|workspace|root)/\S+")
+LOCAL_ABSOLUTE_PATH_TOKEN_RE = re.compile(
+    r"/(?:home|tmp|Users|var|mnt|workspace|root)/[^\s'\",;)]+"
+)
 GPU_TOTAL_RE = re.compile(r"gpu_kernel_time_ms:\s+total=([0-9.]+)\s+per_launch=([0-9.]+)")
 GPU_PER_STATE_RE = re.compile(r"gpu_kernel_time:\s+per_state=([0-9.]+)\s+us")
 WALL_RE = re.compile(r"wall_time_ms:\s+([0-9.]+)")

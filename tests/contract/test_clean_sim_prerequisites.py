@@ -21,6 +21,7 @@ if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
 import build_vl_gpu_stage_env
+from results_reproduction_io import sanitize_local_absolute_paths
 import run_vl_hybrid_launch
 
 
@@ -157,6 +158,13 @@ class CleanSimPrerequisiteTest(unittest.TestCase):
             self.assertEqual(raised.exception.code, 1)
             self.assertIn("failed to build hybrid runtime", stderr.getvalue())
             self.assertNotIn("Traceback", stderr.getvalue())
+
+    def test_log_sanitizer_handles_option_value_absolute_paths(self) -> None:
+        text = "-I/home/user/repo/artifacts/obj --load-pass-plugin=/home/user/repo/artifacts/tool_bins/passes/VlGpuPasses.so"
+        self.assertEqual(
+            sanitize_local_absolute_paths(text),
+            "-I<local-absolute-path> --load-pass-plugin=<local-absolute-path>",
+        )
 
 
 if __name__ == "__main__":
