@@ -3,21 +3,34 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 
 from hybrid_template_normalize import normalize_template_payload
 from hybrid_template_types import HybridTemplatePlan
+from results_reproduction_io import sanitize_local_absolute_paths
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+TEMPLATE_STAGE_NAMES = ("verilator_build", "host_probe_build", "cpu_init_state", "cpu_reference_output", "gpu_artifact_build", "hybrid_sidecar_run", "coverage_output_compare")
+TEMPLATE_STAGE_LABELS = {
+    "verilator_build": "Verilator build",
+    "host_probe_build": "Host-probe build",
+    "cpu_init_state": "CPU init-state capture",
+    "cpu_reference_output": "CPU reference capture",
+    "gpu_artifact_build": "GPU artifact build",
+    "hybrid_sidecar_run": "Hybrid sidecar run",
+    "coverage_output_compare": "Coverage-output compare",
+}
+
+
+class HybridTemplateStageError(RuntimeError):
+    pass
 
 
 def _display_path(path: Path) -> str:
-    try:
-        return str(path.resolve().relative_to(REPO_ROOT))
-    except ValueError:
-        return str(path)
+    return _display_path_with_root(path, repo_root=REPO_ROOT)
 
 
 def _compare_command_impl(plan: HybridTemplatePlan, *, repo_root: Path) -> list[str]:
@@ -39,14 +52,12 @@ def _compare_command_impl(plan: HybridTemplatePlan, *, repo_root: Path) -> list[
         _display_path_with_root(plan.compare_report, repo_root=repo_root),
     ]
     if plan.source_gate is not None:
-        compare.extend(
-            [
-                "--coverage-output-gate",
-                _display_path_with_root(plan.source_gate, repo_root=repo_root),
-                "--coverage-output-target",
-                plan.target_name,
-            ]
-        )
+        compare += [
+            "--coverage-output-gate",
+            _display_path_with_root(plan.source_gate, repo_root=repo_root),
+            "--coverage-output-target",
+            plan.target_name,
+        ]
     return compare
 
 
@@ -147,33 +158,139 @@ def command_plan(plan: HybridTemplatePlan) -> list[list[str]]:
         steps=plan.steps,
         output=plan.cpu_reference_state,
     )
-    return [
-        verilator,
-        make_probe,
-        cpu_init,
-        cpu_ref,
-        _gpu_build_command(plan),
-        _hybrid_command(plan),
-        _compare_command(plan),
-    ]
+    return [verilator, make_probe, cpu_init, cpu_ref, _gpu_build_command(plan), _hybrid_command(plan), _compare_command(plan)]
 
 
-def run_plan(plan: HybridTemplatePlan, *, dry_run: bool = False) -> None:
-    for index, command in enumerate(command_plan(plan), start=1):
-        print("+ " + " ".join(command))
+def staged_command_plan(plan: HybridTemplatePlan) -> list[tuple[str, list[str]]]:
+    commands = command_plan(plan)
+    return list(zip(TEMPLATE_STAGE_NAMES, commands, strict=True))
+
+
+def _shape_tag(plan: HybridTemplatePlan) -> str:
+    return f"{plan.nstates}x{plan.steps}"
+
+
+def _stage_log_path(plan: HybridTemplatePlan, stage: str) -> Path:
+    return REPO_ROOT / "reports" / f"{plan.target_name}_{_shape_tag(plan)}_{stage}.log"
+
+
+def _command_text(command: list[str], *, sanitize: bool = False) -> str:
+    rendered = " ".join(command)
+    return sanitize_local_absolute_paths(rendered) if sanitize else rendered
+
+
+def _log_text(text: str | None) -> str:
+    return sanitize_local_absolute_paths(text) if text else ""
+
+
+def _classified_failure_note(exc: subprocess.CalledProcessError) -> str:
+    text = _log_text("\n".join(part for part in (exc.stderr, exc.output) if part))
+    for line in text.splitlines():
+        if any(key in line for key in ("gpu_runtime_unavailable", "CUDA error", "cuInit")):
+            return "; classified_failure: gpu_runtime_unavailable: " + line.strip()
+    return ""
+
+
+def _stage_stdout_report(plan: HybridTemplatePlan, index: int) -> Path | None:
+    return {3: plan.cpu_init_report, 4: plan.cpu_report, 6: plan.hybrid_report}.get(index)
+
+
+def _stage_success_note(plan: HybridTemplatePlan, index: int, log_path: Path | None) -> str:
+    parts = []
+    if log_path is not None:
+        parts.append(f"log: {_display_path(log_path)}")
+    stdout_report = _stage_stdout_report(plan, index)
+    if stdout_report is not None:
+        parts.append(f"report: {_display_path(stdout_report)}")
+    if not parts:
+        return ""
+    return " (" + ", ".join(parts) + ")"
+
+
+def _stage_failure_note(plan: HybridTemplatePlan, index: int, stage: str) -> str:
+    parts = [f"log: {_display_path(_stage_log_path(plan, stage))}"]
+    stdout_report = _stage_stdout_report(plan, index)
+    if stdout_report is not None:
+        parts.append(f"report: {_display_path(stdout_report)}")
+    return "; " + "; ".join(parts)
+
+
+def _run_stage(
+    *,
+    plan: HybridTemplatePlan,
+    index: int,
+    stage: str,
+    command: list[str],
+    verbose: bool,
+) -> Path | None:
+    stdout_report = _stage_stdout_report(plan, index)
+    if verbose:
+        env = os.environ.copy()
+        if stage == "hybrid_sidecar_run":
+            env["RUN_VL_HYBRID_VERBOSE_SANITIZE"] = "1"
+        if stdout_report is not None:
+            stdout_report.parent.mkdir(parents=True, exist_ok=True)
+            with stdout_report.open("w", encoding="utf-8") as out:
+                subprocess.run(command, cwd=REPO_ROOT, check=True, stdout=out, env=env)
+        else:
+            subprocess.run(command, cwd=REPO_ROOT, check=True, env=env)
+        return None
+
+    log_path = _stage_log_path(plan, stage)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with log_path.open("w", encoding="utf-8") as log:
+        log.write("$ " + _command_text(command, sanitize=True) + "\n\n")
+        log.flush()
+        if stdout_report is not None:
+            stdout_report.parent.mkdir(parents=True, exist_ok=True)
+            with stdout_report.open("w", encoding="utf-8") as out:
+                completed = subprocess.run(
+                    command,
+                    cwd=REPO_ROOT,
+                    check=False,
+                    stdout=out,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                )
+            log.write(_log_text(completed.stderr))
+        else:
+            completed = subprocess.run(
+                command,
+                cwd=REPO_ROOT,
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+            )
+            log.write(_log_text(completed.stdout))
+        if completed.returncode != 0:
+            raise subprocess.CalledProcessError(completed.returncode, command, output=completed.stdout, stderr=completed.stderr)
+    return log_path
+
+
+def run_plan(plan: HybridTemplatePlan, *, dry_run: bool = False, verbose: bool = False) -> None:
+    staged_commands = staged_command_plan(plan)
+    total = len(staged_commands)
+    for index, (stage, command) in enumerate(staged_commands, start=1):
+        if dry_run or verbose:
+            print("+ " + _command_text(command))
         if dry_run:
             continue
-        if index == 3:
-            plan.cpu_init_report.parent.mkdir(parents=True, exist_ok=True)
-            with plan.cpu_init_report.open("w", encoding="utf-8") as out:
-                subprocess.run(command, cwd=REPO_ROOT, check=True, stdout=out)
-        elif index == 4:
-            plan.cpu_report.parent.mkdir(parents=True, exist_ok=True)
-            with plan.cpu_report.open("w", encoding="utf-8") as out:
-                subprocess.run(command, cwd=REPO_ROOT, check=True, stdout=out)
-        elif index == 6:
-            plan.hybrid_report.parent.mkdir(parents=True, exist_ok=True)
-            with plan.hybrid_report.open("w", encoding="utf-8") as out:
-                subprocess.run(command, cwd=REPO_ROOT, check=True, stdout=out)
-        else:
-            subprocess.run(command, cwd=REPO_ROOT, check=True)
+        label = TEMPLATE_STAGE_LABELS[stage]
+        if not verbose:
+            print(f"[{index}/{total}] {label}: start", flush=True)
+        try:
+            log_path = _run_stage(plan=plan, index=index, stage=stage, command=command, verbose=verbose)
+        except FileNotFoundError as exc:
+            raise HybridTemplateStageError(f"{label} failed: command not found: {command[0]}") from exc
+        except subprocess.CalledProcessError as exc:
+            failure_note = ""
+            log_note = ""
+            if not verbose:
+                failure_note = _classified_failure_note(exc)
+                log_note = _stage_failure_note(plan, index, stage)
+            raise HybridTemplateStageError(
+                f"{label} failed with exit code {exc.returncode}{failure_note}{log_note}"
+            ) from exc
+        if not verbose:
+            print(f"[{index}/{total}] {label}: ok{_stage_success_note(plan, index, log_path)}", flush=True)

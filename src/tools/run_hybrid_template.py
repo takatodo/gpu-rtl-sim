@@ -33,6 +33,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Print the generated commands without executing them.",
     )
     parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Stream stage commands and tool logs to the terminal instead of the concise stage summary.",
+    )
+    parser.add_argument(
         "--estimate-efficiency",
         action="store_true",
         help="Print a short human-readable efficiency estimate after the command plan.",
@@ -55,7 +60,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         if not args.dry_run:
             validate_source_closure_for_execution(plan)
-        run_plan(plan, dry_run=args.dry_run)
+        run_plan(plan, dry_run=args.dry_run, verbose=args.verbose)
         if args.estimate_efficiency or args.estimate_efficiency_json:
             report = template_efficiency_report(plan)
             if args.estimate_efficiency_json:
