@@ -440,6 +440,38 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertFalse(report["sidecar_execution_invoked"])
         self.assertFalse(report["gpu_execution_claimed"])
 
+    def test_observation_preserves_runner_reported_fail_closed_statuses(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_execution_observation import (
+            build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation,
+        )
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner import materialize_rtlmeter_stdout_cycles_sidecar_runner_command
+
+        statuses = (
+            "rtlmeter_stdout_cycles_sidecar_runner_vsim_sidecar_proxy_target_unusable",
+            "rtlmeter_stdout_cycles_sidecar_runner_blocked_wrapper_phase_guard",
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = materialize_rtlmeter_stdout_cycles_sidecar_runner_command(plan)
+            reports = [
+                build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
+                    stdout_cycles_plan=plan,
+                    command_result={"command": command, "returncode": 1, "stdout": json.dumps({"status": status}), "stderr": ""},
+                    repo_root=root,
+                )
+                for status in statuses
+            ]
+
+        self.assertEqual([report["status"] for report in reports], list(statuses))
+        for report in reports:
+            self.assertEqual(report["runner_stdout_report"]["status"], report["status"])
+            self.assertFalse(report["execution_authority"])
+            self.assertFalse(report["sidecar_execution_invoked"])
+            self.assertFalse(report["gpu_execution_claimed"])
+
     def test_cli_blocks_reentry_without_mutating_stale_observables(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan

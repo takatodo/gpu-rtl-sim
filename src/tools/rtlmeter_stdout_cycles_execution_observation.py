@@ -41,6 +41,7 @@ STATUS_VSIM_PROXY_ENV_MISSING = "rtlmeter_stdout_cycles_sidecar_runner_vsim_side
 STATUS_EXECUTION_FAILED = "rtlmeter_stdout_cycles_sidecar_runner_execution_failed"
 STATUS_OUTPUTS_MISSING = "rtlmeter_stdout_cycles_sidecar_runner_outputs_missing"
 STATUS_OBSERVABLES_READY = "rtlmeter_stdout_cycles_sidecar_runner_observables_ready"
+RUNNER_REPORTED_FAILURE_STATUSES = {STATUS_VSIM_PROXY_ENV_MISSING, STATUS_EXECUTION_FAILED, STATUS_OUTPUTS_MISSING, "rtlmeter_stdout_cycles_sidecar_runner_vsim_sidecar_proxy_target_unusable", "rtlmeter_stdout_cycles_sidecar_runner_blocked_wrapper_phase_guard"}
 
 
 def _sanitize_text(text: str) -> str:
@@ -220,8 +221,7 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         status = STATUS_EXECUTION_NOT_REQUESTED
     elif (
         isinstance(runner_stdout_report, Mapping)
-        and runner_stdout_report.get("status")
-        in {STATUS_VSIM_PROXY_ENV_MISSING, STATUS_EXECUTION_FAILED, STATUS_OUTPUTS_MISSING}
+        and runner_stdout_report.get("status") in RUNNER_REPORTED_FAILURE_STATUSES
     ):
         status = str(runner_stdout_report["status"])
     elif command_failed and _vsim_sidecar_proxy_env_missing(

@@ -184,13 +184,12 @@ class RtlmeterMaterializedVsimProxyHandoffTest(HybridCliTestCase):
         self.add_tools_to_path()
         from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan, rtlmeter_compile_dir
         from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN
-        from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, write_rtlmeter_verilator_wrapper
+        from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, write_rtlmeter_verilator_wrapper; from rtlmeter_vsim_main_proxy_patch import PROXY_ENV
 
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             wrapper = write_rtlmeter_verilator_wrapper(root / "wrapper" / "verilator", python_executable=sys.executable)
-            real = root / "real" / "verilator"
-            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            real = root / "real" / "verilator"; plan = build_rtlmeter_stdout_cycles_execution_plan()
             compile_dir = root / rtlmeter_compile_dir(Path(str(plan["gpu_candidate"]["work_root"])), str(plan["seed"]))
             obj_dir = compile_dir / "obj_dir"
             main_cpp = obj_dir / "Vsim__main.cpp"
@@ -224,10 +223,11 @@ class RtlmeterMaterializedVsimProxyHandoffTest(HybridCliTestCase):
                 check=False,
             )
             vsim_completed = subprocess.run([str(vsim), "--from-test"], text=True, capture_output=True, check=False)
+            missing_proxy_completed = subprocess.run([str(vsim), "--from-test"], env={**os.environ, PROXY_ENV: (root / "missing-proxy").as_posix()}, text=True, capture_output=True, check=False)
 
         self.assertEqual(wrapper_completed.returncode, 0, wrapper_completed.stderr)
-        self.assertEqual(vsim_completed.returncode, 125)
-        self.assertIn("missing RTLMETER_VSIM_SIDECAR_PROXY", vsim_completed.stderr)
+        self.assertEqual((vsim_completed.returncode, missing_proxy_completed.returncode), (125, 127))
+        for needle, stderr in (("missing RTLMETER_VSIM_SIDECAR_PROXY", vsim_completed.stderr), ("missing-proxy", missing_proxy_completed.stderr)): self.assertIn(needle, stderr)
         self.assertFalse(ordinary_log.exists())
 
     def test_materialized_wrapper_uses_repo_root_env_when_rtlmeter_runs_from_compile_dir(self) -> None:
