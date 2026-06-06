@@ -6,10 +6,12 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 try:
+    from .rtlmeter_stdout_cycles_sidecar_runner_cli import _resolve_vsim_sidecar_proxy_target
     from .rtlmeter_stdout_cycles_runner_adapter import STATUS_HANDOFF_BLOCKED
     from .rtlmeter_vsim_main_proxy_patch import patch_rtlmeter_vsim_main_proxy_marker
     from .rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN, PHASE_SIDECAR_VERILATE
 except ImportError:  # pragma: no cover - exercised when invoked as a script.
+    from rtlmeter_stdout_cycles_sidecar_runner_cli import _resolve_vsim_sidecar_proxy_target
     from rtlmeter_stdout_cycles_runner_adapter import STATUS_HANDOFF_BLOCKED
     from rtlmeter_vsim_main_proxy_patch import patch_rtlmeter_vsim_main_proxy_marker
     from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN, PHASE_SIDECAR_VERILATE
@@ -181,7 +183,7 @@ def _install_vsim_execute_proxy(expected_vsim: Path | None, main_patch: object, 
     }
 
 
-def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: Path | None) -> dict[str, object]:
+def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: Path | None, environ: Mapping[str, str] | None = None) -> dict[str, object]:
     plan = report.get("stdout_cycles_execution_plan")
     gpu_candidate = plan.get("gpu_candidate") if isinstance(plan, Mapping) else None
     seed = plan.get("seed") if isinstance(plan, Mapping) else None
@@ -202,6 +204,8 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
     )
     execute_proxy = _install_vsim_execute_proxy(expected_vsim, main_patch, repo_root)
     proxy_installed = execute_proxy.get("execution_authority") is True
+    _proxy_path, proxy_target = _resolve_vsim_sidecar_proxy_target(repo_root=repo_root or Path.cwd(), env=environ or {})
+    proxy_target_reviewed = isinstance(proxy_target, Mapping) and proxy_target.get("reviewed_proxy_target") is True
     proxy_source_patch = (
         isinstance(main_patch, Mapping)
         and main_patch.get("patched_by_wrapper_branch") is True
@@ -216,6 +220,9 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
         missing_context.extend(str(item) for item in execute_proxy.get("missing_proxy_context", []))
         if not execute_proxy.get("missing_proxy_context"):
             missing_context.append("execute_proxy_installer")
+    if not proxy_target_reviewed:
+        missing_context.append("reviewed_vsim_sidecar_proxy_target")
+    proxy_authorized = proxy_installed and proxy_target_reviewed
 
     return {
         "schema_version": 1,
@@ -236,11 +243,12 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
         "expected_vsim_present": bool(expected_vsim is not None and expected_vsim.exists()),
         "vsim_main_proxy_patch": main_patch,
         "vsim_execute_proxy": execute_proxy,
+        "vsim_sidecar_proxy_target": proxy_target,
         "proxy_installable": proxy_installed,
         "proxy_installed_by_wrapper_branch": proxy_installed,
         "proxy_source_patch_by_wrapper_branch": proxy_source_patch,
-        "proxy_authorized_by_wrapper_branch": proxy_installed,
+        "proxy_authorized_by_wrapper_branch": proxy_authorized,
         "ordinary_vsim_unclaimable": True,
-        "execution_authority": proxy_installed,
+        "execution_authority": proxy_authorized,
         "missing_proxy_context": missing_context,
     }

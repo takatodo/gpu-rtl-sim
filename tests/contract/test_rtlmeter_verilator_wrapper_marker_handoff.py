@@ -83,10 +83,7 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
         from rtlmeter_sidecar_proxy_marker import MARKER_FILENAME
         from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan, rtlmeter_compile_dir
         from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN, PHASE_SIDECAR_VERILATE
-        from rtlmeter_verilator_wrapper_runtime import (
-            SIDECAR_CONTEXT_JSON_ENV,
-            run_rtlmeter_verilator_wrapper,
-        )
+        from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, run_rtlmeter_verilator_wrapper
 
         argv = [
             "--cc",
@@ -162,10 +159,8 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
         from rtlmeter_sidecar_proxy_marker import MARKER_FILENAME
         from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan, rtlmeter_compile_dir
         from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN
-        from rtlmeter_verilator_wrapper_runtime import (
-            SIDECAR_CONTEXT_JSON_ENV,
-            run_rtlmeter_verilator_wrapper,
-        )
+        from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, run_rtlmeter_verilator_wrapper
+        from rtlmeter_vsim_main_proxy_patch import PROXY_ENV
 
         argv = [
             "--cc",
@@ -196,6 +191,9 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
             )
             main_cpp = compile_dir / "obj_dir" / "Vsim__main.cpp"
             vsim = compile_dir / "obj_dir" / "Vsim"
+            proxy = root / "proxy" / "rtlmeter-vsim-proxy"
+            proxy.parent.mkdir(); self._touch_executable(proxy)
+            (proxy.parent / f"{proxy.name}.review.json").write_text(json.dumps({"schema_role": "rtlmeter_vsim_sidecar_proxy_target_review", "target_path": proxy.relative_to(root).as_posix(), "reviewed_proxy_target": True}) + "\n", encoding="utf-8")
 
             def fake_runner(command, **kwargs):
                 main_cpp.parent.mkdir(parents=True)
@@ -210,6 +208,7 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
                 environ={
                     SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._sidecar_context()),
                     PHASE_ENV: PHASE_RTL_METER_RUN,
+                    PROXY_ENV: proxy.as_posix(),
                     "PWD": str(root),
                     "PATH": f"{wrapper.parent}{os.pathsep}{real.parent}",
                 },
@@ -220,11 +219,13 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
 
         self.assertEqual(code, 0)
         self.assertTrue(marker_payload["execute_proxy_installed_by_wrapper_branch"])
+        self.assertTrue(marker_payload["execute_proxy_authorized_by_wrapper_branch"])
         self.assert_no_local_absolute_paths(json.dumps(marker_payload, sort_keys=True))
         readiness = marker_payload["direct_sidecar_proxy_readiness"]
         self.assertEqual(readiness["status"], "rtlmeter_direct_sidecar_proxy_installed")
         self.assertTrue(readiness["proxy_installed_by_wrapper_branch"])
         self.assertTrue(readiness["execution_authority"])
+        self.assertTrue(readiness["vsim_sidecar_proxy_target"]["reviewed_proxy_target"])
         self.assertTrue(readiness["vsim_main_proxy_patch"]["execution_authority"])
         self.assertTrue(readiness["vsim_execute_proxy"]["execution_authority"])
         self.assertIn("RTLMETER_VSIM_SIDECAR_PROXY", patched_main)

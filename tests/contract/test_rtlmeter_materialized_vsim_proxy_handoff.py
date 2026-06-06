@@ -124,8 +124,7 @@ class RtlmeterMaterializedVsimProxyHandoffTest(HybridCliTestCase):
             ordinary_log = root / "ordinary-vsim.log"
             proxy_log = root / "proxy.log"
             proxy = root / "proxy" / "rtlmeter-vsim-proxy"
-            real.parent.mkdir()
-            proxy.parent.mkdir()
+            real.parent.mkdir(); proxy.parent.mkdir()
             self._write_executable(
                 real,
                 "#!/bin/sh\n"
@@ -147,11 +146,12 @@ class RtlmeterMaterializedVsimProxyHandoffTest(HybridCliTestCase):
                 f"echo proxy-ran \"$@\" >> {shlex.quote(proxy_log.as_posix())}\n"
                 "exit 0\n",
             )
-
+            (proxy.parent / f"{proxy.name}.review.json").write_text(json.dumps({"schema_role": "rtlmeter_vsim_sidecar_proxy_target_review", "target_path": proxy.relative_to(root).as_posix(), "reviewed_proxy_target": True}) + "\n", encoding="utf-8")
             env = {
                 **os.environ,
                 SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._sidecar_context()),
                 PHASE_ENV: PHASE_RTL_METER_RUN,
+                PROXY_ENV: proxy.as_posix(),
                 "PATH": f"{wrapper.parent}{os.pathsep}{real.parent}{os.pathsep}{os.environ.get('PATH', '')}",
                 "PWD": root.as_posix(),
             }

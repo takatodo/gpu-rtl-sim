@@ -258,7 +258,7 @@ def run_rtlmeter_verilator_wrapper(
         if returncode != 0:
             return returncode
         repo_root = Path(env.get(REPO_ROOT_ENV) or env.get("PWD") or Path.cwd())
-        proxy_readiness = direct_sidecar_proxy_readiness(report, repo_root=repo_root)
+        proxy_readiness = direct_sidecar_proxy_readiness(report, repo_root=repo_root, environ=env)
         write_rtlmeter_sidecar_proxy_marker(
             observable_execute_dir=direct_sidecar_observable_execute_dir(report),
             repo_root=repo_root,

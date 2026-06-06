@@ -43,8 +43,8 @@ def build_rtlmeter_sidecar_proxy_marker_payload(
     proxy_installed = (
         isinstance(proxy_readiness, Mapping)
         and proxy_readiness.get("proxy_installed_by_wrapper_branch") is True
-        and proxy_readiness.get("execution_authority") is True
     )
+    proxy_authorized = proxy_installed and isinstance(proxy_readiness, Mapping) and proxy_readiness.get("proxy_authorized_by_wrapper_branch") is True and proxy_readiness.get("execution_authority") is True
     main_patch = proxy_readiness.get("vsim_main_proxy_patch") if isinstance(proxy_readiness, Mapping) else None
     proxy_source_patch = (
         isinstance(main_patch, Mapping)
@@ -60,7 +60,7 @@ def build_rtlmeter_sidecar_proxy_marker_payload(
         "ordinary_vsim_output": False,
         "execute_proxy_installed_by_wrapper_branch": proxy_installed,
         "execute_proxy_source_patch_by_wrapper_branch": proxy_source_patch,
-        "execute_proxy_authorized_by_wrapper_branch": proxy_installed and proxy_source_patch,
+        "execute_proxy_authorized_by_wrapper_branch": proxy_authorized and proxy_source_patch,
     }
     if proxy_readiness is not None:
         payload["direct_sidecar_proxy_readiness"] = dict(proxy_readiness)
@@ -123,6 +123,9 @@ def _missing_marker_context(payload: object) -> list[str]:
                 missing.append("direct_sidecar_proxy_readiness.execution_authority")
             if readiness.get("proxy_authorized_by_wrapper_branch", True) is not True:
                 missing.append("direct_sidecar_proxy_readiness.proxy_authorized_by_wrapper_branch")
+            target = readiness.get("vsim_sidecar_proxy_target")
+            if not isinstance(target, Mapping) or target.get("reviewed_proxy_target") is not True:
+                missing.append("direct_sidecar_proxy_readiness.vsim_sidecar_proxy_target.reviewed_proxy_target")
             if proxy_installed is True and readiness.get("proxy_installed_by_wrapper_branch") is not True:
                 missing.append("direct_sidecar_proxy_readiness.proxy_installed_by_wrapper_branch")
             main_patch = readiness.get("vsim_main_proxy_patch")

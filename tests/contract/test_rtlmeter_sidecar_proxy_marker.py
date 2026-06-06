@@ -179,11 +179,10 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
                     "execute_proxy_source_patch_by_wrapper_branch": True,
                     "direct_sidecar_proxy_readiness": {
                         "proxy_installed_by_wrapper_branch": True,
+                        "proxy_authorized_by_wrapper_branch": True,
                         "execution_authority": True,
-                        "vsim_main_proxy_patch": {
-                            "patched_by_wrapper_branch": True,
-                            "execution_authority": True,
-                        },
+                        "vsim_sidecar_proxy_target": {"reviewed_proxy_target": True},
+                        "vsim_main_proxy_patch": {"patched_by_wrapper_branch": True, "execution_authority": True},
                     },
                 },
             )
