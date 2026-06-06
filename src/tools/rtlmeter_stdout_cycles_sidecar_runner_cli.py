@@ -11,6 +11,8 @@ from pathlib import Path
 
 try:
     from .rtlmeter_stdout_cycles_execution_observation import (
+        STATUS_EXECUTION_FAILED,
+        STATUS_VSIM_PROXY_ENV_MISSING,
         build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation,
         rtlmeter_stdout_cycles_observable_paths,
     )
@@ -37,6 +39,8 @@ try:
     )
 except ImportError:  # pragma: no cover - exercised when invoked as a script.
     from rtlmeter_stdout_cycles_execution_observation import (
+        STATUS_EXECUTION_FAILED,
+        STATUS_VSIM_PROXY_ENV_MISSING,
         build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation,
         rtlmeter_stdout_cycles_observable_paths,
     )
@@ -64,6 +68,13 @@ except ImportError:  # pragma: no cover - exercised when invoked as a script.
 
 
 STATUS_BLOCKED_WRAPPER_PHASE = "rtlmeter_stdout_cycles_sidecar_runner_blocked_wrapper_phase_guard"
+
+
+def _repo_display_path(repo_root: Path, path: Path) -> str:
+    try:
+        return path.resolve(strict=False).relative_to(repo_root.resolve()).as_posix()
+    except ValueError:
+        return "<local-absolute-path>"
 
 
 def _option_value(command: list[str], option: str) -> str | None:
@@ -106,6 +117,31 @@ def _remove_existing_observable_files(*, observable_execute_dir: str, repo_root:
             path.unlink()
 
 
+def _resolve_vsim_sidecar_proxy_target(
+    *,
+    repo_root: Path,
+    env: Mapping[str, str],
+) -> tuple[str | None, dict[str, object] | None]:
+    if env.get(VSIM_SIDECAR_PROXY_ENV):
+        proxy_path = Path(env[VSIM_SIDECAR_PROXY_ENV])
+        if not proxy_path.is_absolute():
+            proxy_path = repo_root / proxy_path
+        return proxy_path.as_posix(), {
+            "schema_version": 1,
+            "surface": "rtlmeter_reviewed_vsim_sidecar_proxy_target",
+            "status": "rtlmeter_vsim_sidecar_proxy_target_from_environment",
+            "env": VSIM_SIDECAR_PROXY_ENV,
+            "path": _repo_display_path(repo_root, proxy_path),
+            "source": VSIM_SIDECAR_PROXY_ENV,
+            "executable": proxy_path.is_file() and os.access(proxy_path, os.X_OK),
+            "cpu_as_gpu_fallback": False,
+            "gpu_execution_claimed": False,
+            "timing_measured": False,
+            "speedup_claimed": False,
+        }
+    return None, None
+
+
 def run_rtlmeter_stdout_cycles_sidecar_runner(
     *,
     observable_execute_dir: str,
@@ -118,26 +154,30 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
     root = (repo_root or Path.cwd()).resolve()
     plan = _plan_from_command(command, observable_execute_dir) if command is not None else None
     command_result = None
+    vsim_sidecar_proxy_target = None
     env_source = os.environ if environ is None else environ
     phase_guard = wrapper_phase_guard_report(env_source)
     if command is not None and plan is not None and not _plan_missing_context(plan) and not _rejected_command_inputs(command):
         if phase_guard["status"] == STATUS_PHASE_CLEAR:
             child_env = env_with_rtlmeter_run_phase(env_source)
             child_env[REPO_ROOT_ENV] = root.as_posix()
-            _remove_existing_observable_files(observable_execute_dir=observable_execute_dir, repo_root=root)
-            raw_result = _run_command(command, repo_root=root, env=child_env, runner=runner)
-            command_result = _runner_command_result(plan, raw_result)
-            phase_guard = {
-                **phase_guard,
-                "status": STATUS_PHASE_ENTER_RTL_METER_RUN,
-                "child_phase": PHASE_RTL_METER_RUN,
-                "child_phase_env": PHASE_ENV,
-                "repo_root_env": REPO_ROOT_ENV,
-                "repo_root_env_present": True,
-                "vsim_sidecar_proxy_env": VSIM_SIDECAR_PROXY_ENV,
-                "vsim_sidecar_proxy_env_present": bool(child_env.get(VSIM_SIDECAR_PROXY_ENV)),
-                "diagnostic": "RTLMeter runner subprocess entered the rtlmeter_run wrapper phase",
-            }
+            proxy_path, vsim_sidecar_proxy_target = _resolve_vsim_sidecar_proxy_target(repo_root=root, env=child_env)
+            if proxy_path is not None:
+                child_env[VSIM_SIDECAR_PROXY_ENV] = proxy_path
+                _remove_existing_observable_files(observable_execute_dir=observable_execute_dir, repo_root=root)
+                raw_result = _run_command(command, repo_root=root, env=child_env, runner=runner)
+                command_result = _runner_command_result(plan, raw_result)
+                phase_guard = {
+                    **phase_guard,
+                    "status": STATUS_PHASE_ENTER_RTL_METER_RUN,
+                    "child_phase": PHASE_RTL_METER_RUN,
+                    "child_phase_env": PHASE_ENV,
+                    "repo_root_env": REPO_ROOT_ENV,
+                    "repo_root_env_present": True,
+                    "vsim_sidecar_proxy_env": VSIM_SIDECAR_PROXY_ENV,
+                    "vsim_sidecar_proxy_env_present": True,
+                    "diagnostic": "RTLMeter runner subprocess entered the rtlmeter_run wrapper phase",
+                }
     report = build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         stdout_cycles_plan=plan,
         command_result=command_result,
@@ -146,7 +186,31 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
     report["runner_source_cli_implemented"] = True
     report["vsim_sidecar_proxy_env"] = VSIM_SIDECAR_PROXY_ENV
     report["vsim_sidecar_proxy_env_present"] = bool(env_source.get(VSIM_SIDECAR_PROXY_ENV))
+    report["vsim_sidecar_proxy_target"] = vsim_sidecar_proxy_target
     report["wrapper_phase_guard"] = phase_guard
+    if (
+        command_result is None
+        and command is not None
+        and plan is not None
+        and not _plan_missing_context(plan)
+        and not _rejected_command_inputs(command)
+        and phase_guard["status"] == STATUS_PHASE_CLEAR
+        and not env_source.get(VSIM_SIDECAR_PROXY_ENV)
+    ):
+        report["status"] = STATUS_VSIM_PROXY_ENV_MISSING
+        report["missing_observables"] = []
+        report["observables_ready"] = False
+        report["normalized_stdout_sha256"] = None
+        report["cycle_count"] = None
+        report["observable_stdout_has_missing_proxy_env"] = False
+        report["observable_read_skipped"] = "missing_vsim_sidecar_proxy_env_pre_execution"
+    if (
+        command_result is not None
+        and report["status"] == STATUS_EXECUTION_FAILED
+        and not env_source.get(VSIM_SIDECAR_PROXY_ENV)
+        and "missing RTLMETER_VSIM_SIDECAR_PROXY" in str(command_result.get("stderr", ""))
+    ):
+        report["status"] = STATUS_VSIM_PROXY_ENV_MISSING
     if (
         command_result is None
         and command is not None
@@ -175,7 +239,10 @@ def main(argv: list[str] | None = None) -> int:
     print(json.dumps(report, indent=2))
     if report["status"] == "rtlmeter_stdout_cycles_sidecar_runner_observables_ready":
         return 0
-    if report["status"] == "rtlmeter_stdout_cycles_sidecar_runner_execution_failed":
+    if report["status"] in {
+        "rtlmeter_stdout_cycles_sidecar_runner_execution_failed",
+        "rtlmeter_stdout_cycles_sidecar_runner_vsim_sidecar_proxy_env_missing",
+    }:
         result = report.get("command_result")
         return int(result.get("returncode", 1)) if isinstance(result, Mapping) else 1
     return 1

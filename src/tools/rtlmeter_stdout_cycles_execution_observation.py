@@ -218,6 +218,12 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         status = STATUS_BLOCKED_PLAN
     elif not subprocess_invoked:
         status = STATUS_EXECUTION_NOT_REQUESTED
+    elif (
+        isinstance(runner_stdout_report, Mapping)
+        and runner_stdout_report.get("status")
+        in {STATUS_VSIM_PROXY_ENV_MISSING, STATUS_EXECUTION_FAILED, STATUS_OUTPUTS_MISSING}
+    ):
+        status = str(runner_stdout_report["status"])
     elif command_failed and _vsim_sidecar_proxy_env_missing(
         command_result,
         runner_stdout_report,

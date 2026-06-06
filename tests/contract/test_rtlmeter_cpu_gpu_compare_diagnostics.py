@@ -128,7 +128,7 @@ class RtlmeterCpuGpuCompareDiagnosticsTest(HybridCliTestCase):
         self.assertEqual(report["gpu_failure_blocker"], BLOCKER_RTL_METER_VSIM_OBSERVABLES_MISSING)
         self.assertEqual(
             report["stdout_cycles_sidecar_runner"]["status"],
-            "rtlmeter_stdout_cycles_sidecar_runner_execution_failed",
+            "rtlmeter_stdout_cycles_sidecar_runner_outputs_missing",
         )
         self.assertEqual(
             report["stdout_cycles_sidecar_runner"]["runner_stdout_report"]["missing_observables"],

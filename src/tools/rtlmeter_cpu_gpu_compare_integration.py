@@ -45,6 +45,7 @@ from rtlmeter_stdout_cycles_plan import (
     rtlmeter_execute_dir as _execute_dir,
 )
 from rtlmeter_stdout_cycles_execution_observation import (
+    STATUS_OUTPUTS_MISSING,
     STATUS_OBSERVABLES_READY,
     build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation,
 )
@@ -227,6 +228,11 @@ def run_rtlmeter_cpu_gpu_compare_integration(
                 else None
             ),
         )
+        return _maybe_write_report(report, root, write_report, report_rel)
+
+    if report["stdout_cycles_sidecar_runner"]["status"] == STATUS_OUTPUTS_MISSING:
+        report["status"] = "observables_missing"
+        report["missing_observables"] = report["stdout_cycles_sidecar_runner"]["missing_observables"]
         return _maybe_write_report(report, root, write_report, report_rel)
 
     cpu_execute_dir = root / _execute_dir(cpu_work_root, seed)
