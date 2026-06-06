@@ -23,6 +23,7 @@ if str(TOOLS_DIR) not in sys.path:
 
 import build_vl_gpu_stage_env
 from results_reproduction_io import sanitize_local_absolute_paths
+import run_vl_hybrid
 import run_vl_hybrid_launch
 import run_vl_hybrid_launch_env
 
@@ -167,6 +168,81 @@ class CleanSimPrerequisiteTest(unittest.TestCase):
             sanitize_local_absolute_paths(text),
             "-I<local-absolute-path> --load-pass-plugin=<local-absolute-path>",
         )
+
+    def test_run_vl_hybrid_reports_runner_failure_without_traceback(self) -> None:
+        resolution = SimpleNamespace()
+        with mock.patch.object(
+            sys,
+            "argv",
+            ["run_vl_hybrid.py", "--cubin", "demo.cubin", "--storage-size", "1"],
+        ), mock.patch.object(run_vl_hybrid, "resolve_launch_inputs", return_value=resolution), mock.patch.object(
+            run_vl_hybrid,
+            "require_launch_files",
+        ), mock.patch.object(
+            run_vl_hybrid,
+            "build_runner_command",
+            return_value=["/home/example/src/hybrid/run_vl_hybrid", "/tmp/demo.cubin"],
+        ), mock.patch.object(
+            run_vl_hybrid,
+            "configure_launch_env",
+            return_value={},
+        ), mock.patch.object(
+            run_vl_hybrid,
+            "prepare_init_state_env",
+            return_value=None,
+        ), mock.patch.object(
+            run_vl_hybrid.subprocess,
+            "run",
+            side_effect=subprocess.CalledProcessError(100, ["runner"]),
+        ), self.assertRaises(SystemExit) as raised, redirect_stdout(io.StringIO()) as stdout, redirect_stderr(
+            io.StringIO()
+        ) as stderr:
+            run_vl_hybrid.main()
+
+        self.assertEqual(raised.exception.code, 100)
+        self.assertIn("<local-absolute-path>", stdout.getvalue())
+        self.assertNotIn("/home/example", stdout.getvalue())
+        self.assertIn("hybrid runtime failed with exit code 100", stderr.getvalue())
+        self.assertNotIn("Traceback", stderr.getvalue())
+
+    def test_run_vl_hybrid_classifies_direct_cuda_init_failure(self) -> None:
+        resolution = SimpleNamespace()
+        with mock.patch.object(
+            sys,
+            "argv",
+            ["run_vl_hybrid.py", "--cubin", "demo.cubin", "--storage-size", "1"],
+        ), mock.patch.object(run_vl_hybrid, "resolve_launch_inputs", return_value=resolution), mock.patch.object(
+            run_vl_hybrid,
+            "require_launch_files",
+        ), mock.patch.object(
+            run_vl_hybrid,
+            "build_runner_command",
+            return_value=["/home/example/artifacts/tool_bins/hybrid/run_vl_hybrid", "/tmp/demo.cubin"],
+        ), mock.patch.object(
+            run_vl_hybrid,
+            "configure_launch_env",
+            return_value={},
+        ), mock.patch.object(
+            run_vl_hybrid,
+            "prepare_init_state_env",
+            return_value=None,
+        ), mock.patch.object(
+            run_vl_hybrid.subprocess,
+            "run",
+            return_value=SimpleNamespace(
+                returncode=304,
+                stdout="",
+                stderr="/home/example/src/hybrid/run_vl_hybrid.c:1189 CUDA error 304: operating system call failed (cuInit)\n",
+            ),
+        ), self.assertRaises(SystemExit) as raised, redirect_stdout(io.StringIO()) as stdout, redirect_stderr(
+            io.StringIO()
+        ) as stderr:
+            run_vl_hybrid.main()
+
+        self.assertEqual(raised.exception.code, 304)
+        self.assertIn("<local-absolute-path>", stdout.getvalue())
+        self.assertIn("CUDA error 304", stderr.getvalue())
+        self.assertIn("classified_failure: gpu_runtime_unavailable", stderr.getvalue())
 
 
     def test_sanitize_summary_is_compact_by_default(self) -> None:
