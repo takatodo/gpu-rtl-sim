@@ -16,6 +16,8 @@ from rtlmeter_verilator_wrapper_runtime import REAL_VERILATOR_ENV, resolve_real_
 BLOCKER_REAL_VERILATOR_NOT_SIDECAR_CAPABLE = "real_verilator_not_sidecar_capable_for_expanded_rtlmeter_argv"
 BLOCKER_RTL_METER_VSIM_OBSERVABLES_MISSING = "rtlmeter_vsim_stdout_cycles_observables_missing"
 BLOCKER_RTL_METER_VSIM_SIDECAR_PROXY_ENV_MISSING = "rtlmeter_vsim_sidecar_proxy_env_missing"
+BLOCKER_RTL_METER_VSIM_SIDECAR_PROXY_TARGET_UNUSABLE = "rtlmeter_vsim_sidecar_proxy_target_unusable"
+BLOCKER_RTL_METER_WRAPPER_PHASE_GUARD = "rtlmeter_vsim_sidecar_wrapper_phase_guard"
 BLOCKER_GPU_RUNNER_EXECUTION_FAILED = "rtlmeter_sidecar_runner_execution_failed"
 REAL_VERILATOR_PREFLIGHT_SURFACE = "rtlmeter_real_verilator_preflight"
 REAL_VERILATOR_PREFLIGHT_MISSING = "real_verilator_missing"
@@ -172,6 +174,8 @@ def classify_gpu_failure_blocker(*, diagnostic_log: str | None, runner_observati
     if diagnostic_log and "Invalid option: --sim-accel" in diagnostic_log:
         return BLOCKER_REAL_VERILATOR_NOT_SIDECAR_CAPABLE
     runner_report = runner_observation.get("runner_stdout_report") if isinstance(runner_observation, Mapping) else None
+    runner_status = runner_observation.get("status") if isinstance(runner_observation, Mapping) else None
+    nested_status = runner_report.get("status") if isinstance(runner_report, Mapping) else None
     if (
         isinstance(runner_observation, Mapping)
         and runner_observation.get("status") == "rtlmeter_stdout_cycles_sidecar_runner_outputs_missing"
@@ -182,6 +186,10 @@ def classify_gpu_failure_blocker(*, diagnostic_log: str | None, runner_observati
         and runner_report.get("missing_observables")
     ):
         return BLOCKER_RTL_METER_VSIM_OBSERVABLES_MISSING
+    if runner_status == "rtlmeter_stdout_cycles_sidecar_runner_vsim_sidecar_proxy_target_unusable" or nested_status == "rtlmeter_stdout_cycles_sidecar_runner_vsim_sidecar_proxy_target_unusable":
+        return BLOCKER_RTL_METER_VSIM_SIDECAR_PROXY_TARGET_UNUSABLE
+    if runner_status == "rtlmeter_stdout_cycles_sidecar_runner_blocked_wrapper_phase_guard" or nested_status == "rtlmeter_stdout_cycles_sidecar_runner_blocked_wrapper_phase_guard":
+        return BLOCKER_RTL_METER_WRAPPER_PHASE_GUARD
     if isinstance(runner_observation, Mapping) and runner_observation.get("status") == STATUS_VSIM_PROXY_ENV_MISSING:
         return BLOCKER_RTL_METER_VSIM_SIDECAR_PROXY_ENV_MISSING
     return BLOCKER_GPU_RUNNER_EXECUTION_FAILED
