@@ -11,11 +11,23 @@ from tests.contract.hybrid_cli_helpers import HybridCliTestCase
 
 
 class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
-    def _executable_proxy(self, root: Path) -> str:
+    def _executable_proxy(self, root: Path, *, reviewed: bool = True) -> str:
         proxy = root / "bin" / "rtlmeter-vsim-sidecar-proxy"
         proxy.parent.mkdir()
         proxy.write_text("#!/bin/sh\nexit 126\n", encoding="utf-8")
         proxy.chmod(0o755)
+        if reviewed:
+            (proxy.parent / f"{proxy.name}.review.json").write_text(
+                json.dumps(
+                    {
+                        "schema_role": "rtlmeter_vsim_sidecar_proxy_target_review",
+                        "target_path": proxy.relative_to(root).as_posix(),
+                        "reviewed_proxy_target": True,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
         return proxy.as_posix()
 
     def test_cli_fails_closed_without_vsim_sidecar_proxy_env(self) -> None:
@@ -114,6 +126,12 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
             report["vsim_sidecar_proxy_target"]["status"],
             "rtlmeter_vsim_sidecar_proxy_target_from_environment",
         )
+        self.assertTrue(report["vsim_sidecar_proxy_target"]["reviewed_proxy_target"])
+        self.assertEqual(
+            report["vsim_sidecar_proxy_target"]["reviewed_proxy_target_status"],
+            "rtlmeter_vsim_sidecar_proxy_target_reviewed",
+        )
+        self.assertEqual(report["vsim_sidecar_proxy_target"]["missing_proxy_target_context"], [])
         self.assertFalse(report["execution_authority"])
         self.assertFalse(report["gpu_execution_claimed"])
 
@@ -154,9 +172,41 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertEqual(calls[0][1]["env"][VSIM_SIDECAR_PROXY_ENV], proxy_path.as_posix())
         self.assertEqual(report["vsim_sidecar_proxy_target"]["path"], proxy_rel)
         self.assertTrue(report["vsim_sidecar_proxy_target"]["executable"])
+        self.assertTrue(report["vsim_sidecar_proxy_target"]["reviewed_proxy_target"])
+        self.assertEqual(
+            report["vsim_sidecar_proxy_target"]["reviewed_proxy_target_status"],
+            "rtlmeter_vsim_sidecar_proxy_target_reviewed",
+        )
         self.assertTrue(report["vsim_sidecar_proxy_env_present"])
         self.assertFalse(report["execution_authority"])
         self.assertFalse(report["gpu_execution_claimed"])
+
+    def test_cli_fails_closed_when_vsim_sidecar_proxy_target_is_unreviewed(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import (
+            STATUS_VSIM_PROXY_TARGET_UNUSABLE,
+            VSIM_SIDECAR_PROXY_ENV,
+            run_rtlmeter_stdout_cycles_sidecar_runner,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                observable_execute_dir=plan["gpu_candidate"]["observable_execute_dir"],
+                command_argv=["--", *plan["gpu_candidate"]["command"]],
+                repo_root=root,
+                environ={VSIM_SIDECAR_PROXY_ENV: self._executable_proxy(root, reviewed=False)},
+                runner=lambda *_args, **_kwargs: self.fail("unreviewed proxy target must not run"),
+            )
+
+        self.assertEqual(report["status"], STATUS_VSIM_PROXY_TARGET_UNUSABLE)
+        self.assertEqual(report["observable_read_skipped"], "unreviewed_vsim_sidecar_proxy_pre_execution")
+        self.assertTrue(report["vsim_sidecar_proxy_target"]["executable"])
+        self.assertFalse(report["vsim_sidecar_proxy_target"]["reviewed_proxy_target"])
+        self.assertIn("review_manifest", report["vsim_sidecar_proxy_target"]["missing_proxy_target_context"])
+        self.assertFalse(report["subprocess_invoked"])
 
     def test_cli_fails_closed_when_vsim_sidecar_proxy_target_is_unusable(self) -> None:
         self.add_tools_to_path()
@@ -193,6 +243,11 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertFalse(report["subprocess_invoked"])
         self.assertTrue(report["vsim_sidecar_proxy_env_present"])
         self.assertFalse(report["vsim_sidecar_proxy_target"]["executable"])
+        self.assertFalse(report["vsim_sidecar_proxy_target"]["reviewed_proxy_target"])
+        self.assertEqual(
+            report["vsim_sidecar_proxy_target"]["reviewed_proxy_target_status"],
+            "rtlmeter_vsim_sidecar_proxy_target_env_unusable",
+        )
         self.assertEqual(report["observable_read_skipped"], "unusable_vsim_sidecar_proxy_pre_execution")
         self.assertFalse(report["execution_performed"])
         self.assertFalse(report["execution_authority"])

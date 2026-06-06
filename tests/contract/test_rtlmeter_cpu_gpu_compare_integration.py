@@ -41,6 +41,17 @@ def _write_executable_vsim_sidecar_proxy(root: Path) -> str:
     proxy.parent.mkdir(exist_ok=True)
     proxy.write_text("#!/bin/sh\nexit 126\n", encoding="utf-8")
     proxy.chmod(0o755)
+    (proxy.parent / f"{proxy.name}.review.json").write_text(
+        json.dumps(
+            {
+                "schema_role": "rtlmeter_vsim_sidecar_proxy_target_review",
+                "target_path": proxy.relative_to(root).as_posix(),
+                "reviewed_proxy_target": True,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     return proxy.as_posix()
 
 
