@@ -6,7 +6,6 @@ import json
 from collections.abc import Mapping
 from pathlib import Path
 
-
 MARKER_FILENAME = "_rtlmeter_sidecar_proxy_marker.json"
 MARKER_SCHEMA_VERSION = 1
 MARKER_SCHEMA_ROLE = "rtlmeter_sidecar_proxy_marker"
@@ -15,7 +14,6 @@ MARKER_PHASE = "sidecar_verilate"
 STATUS_MISSING = "rtlmeter_sidecar_proxy_marker_missing"
 STATUS_INVALID = "rtlmeter_sidecar_proxy_marker_invalid"
 STATUS_VALID = "rtlmeter_sidecar_proxy_marker_valid"
-
 
 def _relative_path(path: Path, repo_root: Path | None) -> str:
     if repo_root is not None:
@@ -204,6 +202,8 @@ def build_rtlmeter_sidecar_proxy_execution_evidence(
         "sidecar_execute_proxy_authorized_by_wrapper_branch": proxy_marker.get("sidecar_execute_proxy_authorized_by_wrapper_branch") is True,
         "execution_performed": execution_performed,
         "execution_authority": execution_authority,
+        "rtlmeter_vsim_proxy_handoff_status": "ready" if execution_authority else "blocked",
+        "rtlmeter_vsim_proxy_handoff_reached": execution_authority,
         "sidecar_execution_invoked": execution_authority,
         "cpu_as_gpu_fallback": False,
         "gpu_execution_claimed": False,

@@ -268,6 +268,8 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         "rtlmeter_invoked": executed_runner_command and _command_names_rtlmeter(candidate_command),
         "adapter_invoked": executed_runner_command,
         "sidecar_runner_invoked": executed_runner_command and sidecar_candidate,
+        "rtlmeter_vsim_proxy_handoff_status": "ready" if authorized_execution else "blocked",
+        "rtlmeter_vsim_proxy_handoff_reached": authorized_execution,
         "sidecar_execution_invoked": authorized_execution,
         "coverage_output_compare_reached": False,
         "execution_performed": execution_performed,
