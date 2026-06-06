@@ -1129,3 +1129,36 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         self.assertIn("authority_registry.runtime_launchable", invocation["missing_invocation_context"])
         self.assertIsNone(invocation["launcher_command_argv"])
         self.assertFalse(invocation["execution_performed"])
+
+    def test_rtlmeter_sidecar_launcher_invocation_materializes_argv_without_execution(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            template = root / "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            template.parent.mkdir(parents=True)
+            template.write_text(
+                json.dumps(self._reviewed_template_payload_for_launcher_guard()),
+                encoding="utf-8",
+            )
+            context = self._reviewed_rtlmeter_context_for_reentry_guard()
+            context["template_or_target_registry_entry"] = (
+                "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            )
+            invocation = self._launcher_invocation_for_guard(context, repo_root=root)
+
+        self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_metadata_ready")
+        self.assertEqual(
+            invocation["launcher_command_argv"],
+            [
+                "python3",
+                "src/tools/run_hybrid_template.py",
+                "config/slice_launch_templates/rtlmeter_example_kind_hello.json",
+                "--shape",
+                "64x1",
+            ],
+        )
+        self.assertEqual(invocation["launcher_command_role"], "materialized_for_later_run_not_invoked")
+        self.assertFalse(invocation["sidecar_launcher_invoked"])
+        self.assertFalse(invocation["sidecar_execution_invoked"])
+        self.assertFalse(invocation["coverage_output_compare_reached"])
+        self.assertFalse(invocation["execution_performed"])
+        self.assertFalse(invocation["measurement_performed"])
