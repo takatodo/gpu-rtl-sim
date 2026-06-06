@@ -94,11 +94,13 @@ def _missing_marker_context(payload: object) -> list[str]:
         missing.append("cpu_as_gpu_fallback")
     if payload.get("ordinary_vsim_output") is not False:
         missing.append("ordinary_vsim_output")
-    if payload.get("wrapper_executed_obj_dir_vsim", False) is not False:
+    if payload.get("wrapper_executed_obj_dir_vsim") is not False:
         missing.append("wrapper_executed_obj_dir_vsim")
     for runtime_field in ("obj_dir_vsim_execution_observed", "runtime_execution_authority", "vsim_runtime_execution_claimed"):
-        if payload.get(runtime_field, False) is not False:
+        if payload.get(runtime_field) is not False:
             missing.append(runtime_field)
+    if payload.get("missing_runtime_execution_context") != ["wrapper_executed_obj_dir_vsim"]:
+        missing.append("missing_runtime_execution_context")
     proxy_installed = payload.get("execute_proxy_installed_by_wrapper_branch")
     if proxy_installed not in (False, True):
         missing.append("execute_proxy_installed_by_wrapper_branch")

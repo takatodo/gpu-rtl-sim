@@ -174,6 +174,16 @@ class RtlmeterMaterializedVsimProxyHandoffTest(HybridCliTestCase):
         self.assertFalse(ordinary_log_exists)
         self.assertEqual(proxy_log_text, "proxy-ran --from-test\n")
         self.assertEqual((marker_payload["execute_proxy_installed_by_wrapper_branch"], marker_payload["wrapper_executed_obj_dir_vsim"], marker_payload["runtime_execution_authority"], marker_payload["obj_dir_vsim_execution_observed"]), (True, False, False, False))
+        self.assertEqual(
+            (
+                marker_payload["wrapper_executed_obj_dir_vsim"],
+                marker_payload["obj_dir_vsim_execution_observed"],
+                marker_payload["runtime_execution_authority"],
+                marker_payload["vsim_runtime_execution_claimed"],
+                marker_payload["missing_runtime_execution_context"],
+            ),
+            (False, False, False, False, ["wrapper_executed_obj_dir_vsim"]),
+        )
         readiness = marker_payload["direct_sidecar_proxy_readiness"]
         self.assertEqual(readiness["status"], "rtlmeter_direct_sidecar_proxy_installed")
         self.assertTrue(readiness["vsim_main_proxy_patch"]["execution_authority"])
