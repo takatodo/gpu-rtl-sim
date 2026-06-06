@@ -62,7 +62,6 @@ from rtlmeter_verilator_wrapper_runtime import (
 SURFACE = "rtlmeter_cpu_gpu_compare_integration"
 OPT_IN_ENV = "RTLMETER_CPU_GPU_COMPARE_EXECUTE"
 
-
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
@@ -93,7 +92,6 @@ def _clean_generated_work_roots(repo_root: Path, work_roots: list[Path]) -> list
             shutil.rmtree(target)
             cleaned.append(work_root.as_posix())
     return cleaned
-
 
 def run_rtlmeter_cpu_gpu_compare_integration(
     *,
@@ -216,6 +214,14 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         command_result=gpu_result,
         repo_root=root,
     )
+    if (
+        gpu_result["returncode"] == 0
+        and isinstance(report.get("stdout_cycles_sidecar_runner"), Mapping)
+        and report["stdout_cycles_sidecar_runner"].get("runner_stdout_report") is None
+    ):
+        report["status"] = "gpu_observables_not_ready"
+        report["missing_runner_report"] = "rtlmeter_stdout_cycles_sidecar_runner_json_stdout"
+        return _maybe_write_report(report, root, write_report, report_rel)
     if gpu_result["returncode"] != 0:
         report["status"] = "gpu_execution_failed"
         diagnostic_log = _read_optional_log(root / _compile_dir(gpu_work_root, seed) / "_verilate" / "stdout.log")
@@ -274,25 +280,19 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--execute", action="store_true", help=f"Run only when explicit; {OPT_IN_ENV}=1 is also accepted.")
     parser.add_argument("--write-report", action="store_true", help="Write the generated report under reports/.")
     parser.add_argument("--report-out", help="Override report output path.")
-    parser.add_argument("--seed", default=SELECTED_SEED)
-    parser.add_argument("--compile-args", default=DEFAULT_COMPILE_ARGS)
+    parser.add_argument("--seed", default=SELECTED_SEED); parser.add_argument("--compile-args", default=DEFAULT_COMPILE_ARGS)
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     report = run_rtlmeter_cpu_gpu_compare_integration(
-        seed=args.seed,
-        compile_args=args.compile_args,
-        execute=args.execute,
-        write_report=args.write_report,
-        report_path=args.report_out,
+        seed=args.seed, compile_args=args.compile_args, execute=args.execute,
+        write_report=args.write_report, report_path=args.report_out,
     )
     print(json.dumps(report, indent=2))
-    if report["status"] in {"failed", "cpu_execution_failed", "gpu_execution_failed"}:
-        return 1
-    if args.execute and report["status"] == "cannot_execute":
-        return 2
+    if report["status"] in {"failed", "cpu_execution_failed", "gpu_execution_failed"}: return 1
+    if args.execute and report["status"] == "cannot_execute": return 2
     return 0
 
 

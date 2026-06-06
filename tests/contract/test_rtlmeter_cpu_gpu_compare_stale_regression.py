@@ -102,14 +102,10 @@ class RtlmeterCpuGpuCompareStaleRegressionTest(HybridCliTestCase):
                 rtlmeter_sidecar_contract_mapping.capture_rtlmeter_verilator_command = original_capture
                 rtlmeter_verilator_command_capture._repo_root = original_repo_root
 
-        self.assertEqual(report["status"], "observables_missing")
+        self.assertEqual(report["status"], "gpu_observables_not_ready")
+        self.assertEqual(report["missing_runner_report"], "rtlmeter_stdout_cycles_sidecar_runner_json_stdout")
         self.assertIsNone(report["comparison"])
-        self.assertEqual(
-            report["stdout_cycles_sidecar_runner"]["status"],
-            "rtlmeter_stdout_cycles_sidecar_runner_outputs_missing",
-        )
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["observables_ready"])
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_performed"])
+        self.assertTrue(report["stdout_cycles_sidecar_runner"]["execution_performed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_authority"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["sidecar_execution_invoked"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["gpu_execution_claimed"])
