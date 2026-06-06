@@ -519,7 +519,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
             reports = [
                 build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
                     stdout_cycles_plan=plan,
-                    command_result={"command": command, "returncode": 1, "stdout": json.dumps({"status": status}), "stderr": ""},
+                    command_result={"command": command, "returncode": 1, "stdout": json.dumps({"status": status, "sidecar_proxy_execution_evidence": {"status": "blocked", "blocking_context": [f"nested:{status}"], "execution_authority": False}}), "stderr": ""},
                     repo_root=root,
                 )
                 for status in statuses
@@ -528,6 +528,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertEqual([report["status"] for report in reports], list(statuses))
         for report in reports:
             self.assertEqual(report["runner_stdout_report"]["status"], report["status"])
+            self.assertIn(f"nested:{report['status']}", report["sidecar_proxy_execution_evidence"]["blocking_context"])
             self.assertFalse(report["execution_authority"])
             self.assertFalse(report["sidecar_execution_invoked"])
             self.assertFalse(report["gpu_execution_claimed"])

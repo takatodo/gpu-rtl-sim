@@ -241,6 +241,9 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
     proxy_authorized = proxy_marker.get("sidecar_execute_proxy_authorized_by_wrapper_branch") is True
     authorized_execution = execution_performed and proxy_authorized
     proxy_execution_evidence = build_rtlmeter_sidecar_proxy_execution_evidence(proxy_marker=proxy_marker, observables_ready=observable_status["observables_ready"], missing_observables=observable_status["missing_observables"], runner_command_observed=executed_runner_command, execution_performed=execution_performed, execution_authority=authorized_execution)
+    nested_proxy_evidence = runner_stdout_report.get("sidecar_proxy_execution_evidence") if isinstance(runner_stdout_report, Mapping) else None
+    if isinstance(nested_proxy_evidence, Mapping) and isinstance(nested_proxy_evidence.get("blocking_context"), list):
+        proxy_execution_evidence["blocking_context"] = sorted({*proxy_execution_evidence["blocking_context"], *(str(item) for item in nested_proxy_evidence["blocking_context"])})
     return {
         "schema_version": 1,
         "surface": "rtlmeter_stdout_cycles_sidecar_runner_execution_observation_boundary",
