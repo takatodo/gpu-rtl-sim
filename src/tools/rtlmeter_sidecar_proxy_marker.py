@@ -226,17 +226,7 @@ def observe_rtlmeter_sidecar_proxy_marker(
             proxy_authorized=False,
             missing_context=["marker_file"],
         )
-        return {
-            "sidecar_proxy_marker_status": STATUS_MISSING,
-            "sidecar_proxy_marker_path": marker_path_text,
-            "sidecar_proxy_marker_present": False,
-            "sidecar_proxy_marker_valid": False,
-            "sidecar_execute_proxy_installed_by_wrapper_branch": False,
-            "sidecar_execute_proxy_source_patch_by_wrapper_branch": False,
-            "sidecar_execute_proxy_authorized_by_wrapper_branch": False,
-            "sidecar_proxy_marker_missing_context": ["marker_file"],
-            "sidecar_proxy_evidence": evidence,
-        }
+        return {**evidence, "sidecar_proxy_evidence": evidence}
     try:
         payload = json.loads(marker_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -250,17 +240,7 @@ def observe_rtlmeter_sidecar_proxy_marker(
             proxy_authorized=False,
             missing_context=["marker_json"],
         )
-        return {
-            "sidecar_proxy_marker_status": STATUS_INVALID,
-            "sidecar_proxy_marker_path": marker_path_text,
-            "sidecar_proxy_marker_present": True,
-            "sidecar_proxy_marker_valid": False,
-            "sidecar_execute_proxy_installed_by_wrapper_branch": False,
-            "sidecar_execute_proxy_source_patch_by_wrapper_branch": False,
-            "sidecar_execute_proxy_authorized_by_wrapper_branch": False,
-            "sidecar_proxy_marker_missing_context": ["marker_json"],
-            "sidecar_proxy_evidence": evidence,
-        }
+        return {**evidence, "sidecar_proxy_evidence": evidence}
     missing = _missing_marker_context(payload)
     marker_valid = not missing
     proxy_installed = marker_valid and payload.get("execute_proxy_installed_by_wrapper_branch") is True
@@ -285,14 +265,4 @@ def observe_rtlmeter_sidecar_proxy_marker(
         proxy_authorized=proxy_authorized,
         missing_context=missing,
     )
-    return {
-        "sidecar_proxy_marker_status": marker_status,
-        "sidecar_proxy_marker_path": marker_path_text,
-        "sidecar_proxy_marker_present": True,
-        "sidecar_proxy_marker_valid": marker_valid,
-        "sidecar_execute_proxy_installed_by_wrapper_branch": proxy_installed,
-        "sidecar_execute_proxy_source_patch_by_wrapper_branch": source_patch,
-        "sidecar_execute_proxy_authorized_by_wrapper_branch": proxy_authorized,
-        "sidecar_proxy_marker_missing_context": missing,
-        "sidecar_proxy_evidence": evidence,
-    }
+    return {**evidence, "sidecar_proxy_evidence": evidence}
