@@ -2,6 +2,7 @@ import io
 import json
 import os
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -11,6 +12,10 @@ from tests.contract.hybrid_cli_helpers import HybridCliTestCase
 class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
     def _touch_executable(self, path: Path) -> None:
         path.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        path.chmod(0o755)
+
+    def _write_executable(self, path: Path, text: str) -> None:
+        path.write_text(text, encoding="utf-8")
         path.chmod(0o755)
 
     def _minimal_sidecar_context(self) -> dict[str, object]:
@@ -543,3 +548,117 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
             self.assertEqual(wrapper.name, "verilator")
             self.assertTrue(os.access(wrapper, os.X_OK))
             self.assertIn("rtlmeter_verilator_wrapper_runtime.py", wrapper.read_text(encoding="utf-8"))
+
+    def test_materialized_wrapper_delegates_no_gpu_argv_preserving_process_behavior(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_verilator_wrapper_runtime import write_rtlmeter_verilator_wrapper
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            wrapper = write_rtlmeter_verilator_wrapper(
+                root / "wrapper" / "verilator",
+                python_executable=sys.executable,
+            )
+            real = root / "real" / "verilator"
+            real.parent.mkdir()
+            self._write_executable(
+                real,
+                "#!/bin/sh\n"
+                "printf 'real stdout:%s\\n' \"$*\"\n"
+                "printf 'real stderr:%s\\n' \"$*\" >&2\n"
+                "exit 7\n",
+            )
+
+            completed = subprocess.run(
+                [str(wrapper), "--cc", "--top-module", "top", "-f", "filelist"],
+                env={**os.environ, "PATH": f"{wrapper.parent}{os.pathsep}{real.parent}"},
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertEqual(completed.returncode, 7)
+        self.assertIn("real stdout:--cc --top-module top -f filelist", completed.stdout)
+        self.assertIn("real stderr:--cc --top-module top -f filelist", completed.stderr)
+
+    def test_materialized_wrapper_gpu_intent_fails_closed_without_delegating(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_verilator_wrapper_runtime import write_rtlmeter_verilator_wrapper
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            wrapper = write_rtlmeter_verilator_wrapper(
+                root / "wrapper" / "verilator",
+                python_executable=sys.executable,
+            )
+            real = root / "real" / "verilator"
+            real.parent.mkdir()
+            self._write_executable(
+                real,
+                "#!/bin/sh\n"
+                "echo should-not-delegate\n"
+                "exit 99\n",
+            )
+
+            completed = subprocess.run(
+                [str(wrapper), "--cc", "--top-module", "top", "-f", "filelist", "--use-gpu"],
+                env={**os.environ, "PATH": f"{wrapper.parent}{os.pathsep}{real.parent}"},
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            report = json.loads(completed.stderr)
+
+        self.assertEqual(completed.returncode, 2)
+        self.assertEqual(report["status"], "use_gpu_requires_explicit_sidecar_schedule")
+        self.assertFalse(report["cpu_as_gpu_fallback"])
+        self.assertFalse(report["delegated_to_real_verilator"])
+        self.assertIsNone(report["launcher_invocation"])
+        self.assertIsNone(report["stdout_cycles_execution_plan"])
+        self.assertIsNone(report["stdout_cycles_runner_contract"])
+        self.assertIsNone(report["stdout_cycles_runner_implementation"])
+        self.assertIsNone(report["stdout_cycles_runner_adapter_implementation"])
+        self.assertNotIn("should-not-delegate", completed.stdout)
+
+    def test_materialized_wrapper_gpu_intent_with_missing_inputs_reports_inspection(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_verilator_wrapper_runtime import write_rtlmeter_verilator_wrapper
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            wrapper = write_rtlmeter_verilator_wrapper(
+                root / "wrapper" / "verilator",
+                python_executable=sys.executable,
+            )
+            real = root / "real" / "verilator"
+            real.parent.mkdir()
+            self._write_executable(
+                real,
+                "#!/bin/sh\n"
+                "echo should-not-delegate\n"
+                "exit 99\n",
+            )
+
+            completed = subprocess.run(
+                [str(wrapper), "--cc", "--use-gpu"],
+                env={**os.environ, "PATH": f"{wrapper.parent}{os.pathsep}{real.parent}"},
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            report = json.loads(completed.stderr)
+
+        self.assertEqual(completed.returncode, 2)
+        self.assertEqual(report["status"], "unsupported_gpu_request_fail_closed")
+        self.assertEqual(report["inspection_status"], "unsupported_rtlmeter_sidecar_request")
+        self.assertIn("--top-module <top>", report["missing_required_inputs"])
+        self.assertIn("-f <filelist>", report["missing_required_inputs"])
+        self.assertEqual(report["wrapper_inspection"]["status"], "unsupported_rtlmeter_sidecar_request")
+        self.assertFalse(report["cpu_as_gpu_fallback"])
+        self.assertFalse(report["delegated_to_real_verilator"])
+        self.assertIsNone(report["launcher_invocation"])
+        self.assertIsNone(report["stdout_cycles_execution_plan"])
+        self.assertIsNone(report["stdout_cycles_runner_contract"])
+        self.assertIsNone(report["stdout_cycles_runner_implementation"])
+        self.assertIsNone(report["stdout_cycles_runner_adapter_implementation"])
+        self.assertNotIn("should-not-delegate", completed.stdout)
