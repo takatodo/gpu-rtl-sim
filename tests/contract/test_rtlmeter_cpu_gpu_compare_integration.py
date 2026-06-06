@@ -7,6 +7,35 @@ from pathlib import Path
 from tests.contract.hybrid_cli_helpers import HybridCliTestCase
 
 
+def _write_minimal_rtlmeter_tree(root: Path) -> None:
+    rtlmeter_root = root / "third_party/rtlmeter"
+    (rtlmeter_root / "venv/bin").mkdir(parents=True)
+    (rtlmeter_root / "src").mkdir(parents=True)
+    (rtlmeter_root / "designs/Example/src").mkdir(parents=True)
+    (rtlmeter_root / "rtl").mkdir(parents=True)
+    (rtlmeter_root / "rtlmeter").write_text("#!/bin/sh\n", encoding="utf-8")
+    (rtlmeter_root / "venv/bin/python3").write_text("#!/bin/sh\n", encoding="utf-8")
+    (rtlmeter_root / "designs/Example/descriptor.yaml").write_text(
+        "\n".join(
+            [
+                "compile:",
+                "  verilogSourceFiles:",
+                "    - src/top.v",
+                "  topModule: top",
+                "  mainClock: top.clk",
+                "configurations:",
+                "  kind:",
+                "    compile: {}",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (rtlmeter_root / "designs/Example/src/top.v").write_text("module top; endmodule\n", encoding="utf-8")
+    (rtlmeter_root / "rtl/__rtlmeter_utils.sv").write_text("", encoding="utf-8")
+    (rtlmeter_root / "rtl/__rtlmeter_top_include.vh").write_text("", encoding="utf-8")
+
+
 class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
     def test_default_run_is_non_executing_and_report_safe(self) -> None:
         self.add_tools_to_path()
@@ -62,9 +91,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            (root / "third_party/rtlmeter/venv/bin").mkdir(parents=True)
-            (root / "third_party/rtlmeter/rtlmeter").write_text("#!/bin/sh\n", encoding="utf-8")
-            (root / "third_party/rtlmeter/venv/bin/python3").write_text("#!/bin/sh\n", encoding="utf-8")
+            _write_minimal_rtlmeter_tree(root)
             real_verilator_dir = root / "bin"
             real_verilator_dir.mkdir()
             real_verilator = real_verilator_dir / "verilator"
@@ -82,10 +109,116 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
 
         self.assertIn("RTLMETER_SIDECAR_VERILATOR_WRAPPER executable bit", missing)
 
+    def test_preflight_accepts_explicit_real_verilator_without_path_real(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_cpu_gpu_compare_integration import (
+            REAL_VERILATOR_ENV,
+            REAL_VERILATOR_PREFLIGHT_SELECTED,
+            _sanitize,
+            build_real_verilator_preflight,
+        )
+
+        self.assertEqual(_sanitize("/usr/local/bin/verilator"), "<local-absolute-path>")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            _write_minimal_rtlmeter_tree(root)
+            real_verilator = root / "real" / "verilator"
+            real_verilator.parent.mkdir()
+            real_verilator.write_text("#!/bin/sh\n", encoding="utf-8")
+            real_verilator.chmod(0o755)
+            wrapper = root / "wrapper" / "verilator"
+            wrapper.parent.mkdir()
+            wrapper.write_text("#!/bin/sh\n", encoding="utf-8")
+            wrapper.chmod(0o755)
+
+            report = build_real_verilator_preflight(
+                repo_root=root,
+                sidecar_wrapper=wrapper.as_posix(),
+                environ={REAL_VERILATOR_ENV: real_verilator.as_posix(), "PATH": ""},
+            )
+
+        self.assertEqual(report["status"], REAL_VERILATOR_PREFLIGHT_SELECTED)
+        self.assertEqual(report["selected_real_verilator_source"], REAL_VERILATOR_ENV)
+        self.assertEqual(report["missing_prerequisites"], [])
+        self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
+
+    def test_execution_env_absolutizes_repo_relative_real_verilator(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_cpu_gpu_compare_integration import (
+            OPT_IN_ENV,
+            REAL_VERILATOR_ENV,
+            REAL_VERILATOR_PREFLIGHT_SELECTED,
+            WRAPPER_ENV,
+            run_rtlmeter_cpu_gpu_compare_integration,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            _write_minimal_rtlmeter_tree(root)
+            bin_dir = root / "bin"
+            bin_dir.mkdir()
+            real_verilator = bin_dir / "verilator"
+            real_verilator.write_text("#!/bin/sh\n", encoding="utf-8")
+            real_verilator.chmod(0o755)
+            wrapper = root / "wrapper" / "verilator"
+            wrapper.parent.mkdir()
+            wrapper.write_text("#!/bin/sh\n", encoding="utf-8")
+            wrapper.chmod(0o755)
+            calls = []
+
+            def fake_runner(command, **kwargs):
+                calls.append((command, kwargs))
+                return subprocess.CompletedProcess(command, 1, stdout="", stderr="stop after CPU")
+
+            report = run_rtlmeter_cpu_gpu_compare_integration(
+                repo_root=root,
+                environ={
+                    OPT_IN_ENV: "1",
+                    WRAPPER_ENV: wrapper.as_posix(),
+                    REAL_VERILATOR_ENV: "bin/verilator",
+                    "PATH": "",
+                },
+                runner=fake_runner,
+            )
+
+        self.assertEqual(report["status"], "cpu_execution_failed")
+        self.assertEqual(report["real_verilator_preflight"]["status"], REAL_VERILATOR_PREFLIGHT_SELECTED)
+        self.assertEqual(report["real_verilator_preflight"]["selected_real_verilator_source"], REAL_VERILATOR_ENV)
+        self.assertEqual(calls[0][1]["env"][REAL_VERILATOR_ENV], real_verilator.as_posix())
+
+    def test_preflight_rejects_wrapper_only_path_as_real_verilator_missing(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_cpu_gpu_compare_integration import (
+            REAL_VERILATOR_PREFLIGHT_MISSING,
+            build_real_verilator_preflight,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            _write_minimal_rtlmeter_tree(root)
+            wrapper = root / "wrapper" / "verilator"
+            wrapper.parent.mkdir()
+            wrapper.write_text("#!/bin/sh\n", encoding="utf-8")
+            wrapper.chmod(0o755)
+
+            report = build_real_verilator_preflight(
+                repo_root=root,
+                sidecar_wrapper=wrapper.as_posix(),
+                environ={"PATH": wrapper.parent.as_posix()},
+            )
+
+        self.assertEqual(report["status"], REAL_VERILATOR_PREFLIGHT_MISSING)
+        self.assertEqual(report["real_verilator_resolution"], "missing_after_excluding_wrapper")
+        self.assertFalse(report["cpu_as_gpu_fallback"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
+
     def test_execution_env_prepends_rtlmeter_root_for_repo_root_launch(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_cpu_gpu_compare_integration import (
             OPT_IN_ENV,
+            REAL_VERILATOR_PREFLIGHT_SELECTED,
             SIDECAR_CONTEXT_JSON_ENV,
             WRAPPER_ENV,
             run_rtlmeter_cpu_gpu_compare_integration,
@@ -93,9 +226,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            (root / "third_party/rtlmeter/venv/bin").mkdir(parents=True)
-            (root / "third_party/rtlmeter/rtlmeter").write_text("#!/bin/sh\n", encoding="utf-8")
-            (root / "third_party/rtlmeter/venv/bin/python3").write_text("#!/bin/sh\n", encoding="utf-8")
+            _write_minimal_rtlmeter_tree(root)
             bin_dir = root / "bin"
             bin_dir.mkdir()
             real_verilator = bin_dir / "verilator"
@@ -123,6 +254,8 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
             )
 
         self.assertEqual(report["status"], "cpu_execution_failed")
+        self.assertEqual(report["real_verilator_preflight"]["status"], REAL_VERILATOR_PREFLIGHT_SELECTED)
+        self.assertEqual(report["real_verilator_preflight"]["selected_real_verilator_source"], "wrapper_filtered_PATH")
         pythonpath = calls[0][1]["env"]["PYTHONPATH"].split(os.pathsep)
         self.assertEqual(pythonpath[:2], [(root / "third_party/rtlmeter").as_posix(), "existing"])
         metadata = report["sidecar_contract"]["frontend_owned_build_metadata"]
