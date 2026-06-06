@@ -257,6 +257,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
                     "ordinary_vsim_output": False,
                     "execute_proxy_installed_by_wrapper_branch": False,
                     "execute_proxy_authorized_by_wrapper_branch": True,
+                    "wrapper_executed_obj_dir_vsim": True,
                 },
             )
 
@@ -265,7 +266,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
             "execute_proxy_installed_by_wrapper_branch",
             report["sidecar_proxy_marker_missing_context"],
         )
-        self.assertIn("direct_sidecar_proxy_readiness", report["sidecar_proxy_marker_missing_context"])
+        self.assertTrue({"direct_sidecar_proxy_readiness", "wrapper_executed_obj_dir_vsim"}.issubset(report["sidecar_proxy_marker_missing_context"]))
         self.assertFalse(report["execution_authority"])
         self.assertFalse(report["sidecar_execution_invoked"])
         self.assertFalse(report["sidecar_execute_proxy_authorized_by_wrapper_branch"])

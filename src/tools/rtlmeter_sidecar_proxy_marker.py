@@ -6,14 +6,9 @@ import json
 from collections.abc import Mapping
 from pathlib import Path
 
-MARKER_FILENAME = "_rtlmeter_sidecar_proxy_marker.json"
-MARKER_SCHEMA_VERSION = 1
-MARKER_SCHEMA_ROLE = "rtlmeter_sidecar_proxy_marker"
-MARKER_PRODUCER = "rtlmeter_verilator_wrapper_runtime"
-MARKER_PHASE = "sidecar_verilate"
-STATUS_MISSING = "rtlmeter_sidecar_proxy_marker_missing"
-STATUS_INVALID = "rtlmeter_sidecar_proxy_marker_invalid"
-STATUS_VALID = "rtlmeter_sidecar_proxy_marker_valid"
+MARKER_FILENAME = "_rtlmeter_sidecar_proxy_marker.json"; MARKER_SCHEMA_VERSION = 1
+MARKER_SCHEMA_ROLE = "rtlmeter_sidecar_proxy_marker"; MARKER_PRODUCER = "rtlmeter_verilator_wrapper_runtime"; MARKER_PHASE = "sidecar_verilate"
+STATUS_MISSING = "rtlmeter_sidecar_proxy_marker_missing"; STATUS_INVALID = "rtlmeter_sidecar_proxy_marker_invalid"; STATUS_VALID = "rtlmeter_sidecar_proxy_marker_valid"
 
 def _relative_path(path: Path, repo_root: Path | None) -> str:
     if repo_root is not None:
@@ -24,8 +19,6 @@ def _relative_path(path: Path, repo_root: Path | None) -> str:
     if path.is_absolute():
         return "<local-absolute-path>"
     return path.as_posix()
-
-
 def rtlmeter_sidecar_proxy_marker_path(observable_execute_dir: object, repo_root: Path | None) -> Path | None:
     if not isinstance(observable_execute_dir, str) or not observable_execute_dir:
         return None
@@ -33,8 +26,6 @@ def rtlmeter_sidecar_proxy_marker_path(observable_execute_dir: object, repo_root
     if not execute_dir.is_absolute() and repo_root is not None:
         execute_dir = repo_root / execute_dir
     return execute_dir / MARKER_FILENAME
-
-
 def build_rtlmeter_sidecar_proxy_marker_payload(
     *, proxy_readiness: Mapping[str, object] | None = None
 ) -> dict[str, object]:
@@ -57,8 +48,11 @@ def build_rtlmeter_sidecar_proxy_marker_payload(
         "cpu_as_gpu_fallback": False,
         "ordinary_vsim_output": False,
         "execute_proxy_installed_by_wrapper_branch": proxy_installed,
+        "vsim_binary_proxy_installed_by_wrapper_branch": proxy_installed,
         "execute_proxy_source_patch_by_wrapper_branch": proxy_source_patch,
+        "vsim_main_source_patch_applied_by_wrapper_branch": proxy_source_patch,
         "execute_proxy_authorized_by_wrapper_branch": proxy_authorized and proxy_source_patch,
+        "wrapper_executed_obj_dir_vsim": False,
     }
     if proxy_readiness is not None:
         payload["direct_sidecar_proxy_readiness"] = dict(proxy_readiness)
@@ -96,6 +90,8 @@ def _missing_marker_context(payload: object) -> list[str]:
         missing.append("cpu_as_gpu_fallback")
     if payload.get("ordinary_vsim_output") is not False:
         missing.append("ordinary_vsim_output")
+    if payload.get("wrapper_executed_obj_dir_vsim", False) is not False:
+        missing.append("wrapper_executed_obj_dir_vsim")
     proxy_installed = payload.get("execute_proxy_installed_by_wrapper_branch")
     if proxy_installed not in (False, True):
         missing.append("execute_proxy_installed_by_wrapper_branch")
@@ -159,6 +155,9 @@ def _sidecar_proxy_evidence(
         "sidecar_execute_proxy_installed_by_wrapper_branch": proxy_installed,
         "sidecar_execute_proxy_source_patch_by_wrapper_branch": source_patch,
         "sidecar_execute_proxy_authorized_by_wrapper_branch": proxy_authorized,
+        "vsim_binary_proxy_installed_by_wrapper_branch": proxy_installed,
+        "vsim_main_source_patch_applied_by_wrapper_branch": source_patch,
+        "wrapper_executed_obj_dir_vsim": False,
         "sidecar_proxy_marker_missing_context": list(missing_context),
         "cpu_as_gpu_fallback": False,
         "gpu_execution_claimed": False,

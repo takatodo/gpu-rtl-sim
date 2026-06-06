@@ -556,6 +556,8 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["gpu_execution_claimed"])
         evidence = report["sidecar_proxy_evidence"]
         self.assertFalse(evidence["execution_authority"])
+        self.assertEqual(evidence["rtlmeter_vsim_proxy_handoff_status"], "blocked")
+        self.assertFalse(evidence["rtlmeter_vsim_proxy_handoff_reached"])
         self.assertTrue(evidence["execution_authority_requires_valid_proxy_marker"])
         self.assertTrue(evidence["execution_authority_requires_execute_proxy_install"])
         self.assertTrue(evidence["execution_authority_requires_source_patch_marker"])
@@ -670,6 +672,8 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["gpu_execution_claimed"])
         evidence = report["sidecar_proxy_evidence"]
         self.assertTrue(evidence["execution_authority"])
+        self.assertEqual(evidence["rtlmeter_vsim_proxy_handoff_status"], "ready")
+        self.assertTrue(evidence["rtlmeter_vsim_proxy_handoff_reached"])
         self.assertTrue(evidence["execution_authority_requires_valid_proxy_marker"])
         self.assertTrue(evidence["execution_authority_requires_execute_proxy_install"])
         self.assertTrue(evidence["execution_authority_requires_source_patch_marker"])
