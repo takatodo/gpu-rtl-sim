@@ -29,7 +29,7 @@ class RtlmeterPathWrapperTest(HybridCliTestCase):
         self.assertTrue(report["prototype_exits_without_delegation"])
         self.assertFalse(report["delegate_to_real_verilator_required"])
         self.assertIn("--cc", report["minimal_supported_argv_surface_for_first_run"])
-        self.assertIn("not an installable delegating wrapper yet", " ".join(report["non_claims"]))
+        self.assertIn("not the delegating runtime", " ".join(report["non_claims"]))
         self.assertIn("not prove RTLMeter acceleration", " ".join(report["non_claims"]))
 
     def test_ready_for_planning_requires_expanded_sidecar_schedule(self) -> None:

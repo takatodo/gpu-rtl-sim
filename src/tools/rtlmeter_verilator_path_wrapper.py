@@ -143,7 +143,7 @@ def inspect_rtlmeter_verilator_wrapper_argv(argv: Sequence[str]) -> dict[str, ob
         "minimal_supported_argv_surface_for_first_run": list(MINIMAL_SUPPORTED_ARGV_SURFACE),
         "non_claims": [
             "PATH wrapper inspection does not compile RTLMeter or run Verilator",
-            "PATH wrapper inspection is not an installable delegating wrapper yet",
+            "PATH wrapper inspection is not the delegating runtime; use rtlmeter_verilator_wrapper_runtime.py or a materialized verilator wrapper for execution",
             "PATH wrapper inspection does not build GPU artifacts, run sidecar stages, compare outputs, or measure timing",
             "capturing --use-gpu pass-through does not prove RTLMeter acceleration",
             "no CPU-only fallback is reported as GPU acceleration",
