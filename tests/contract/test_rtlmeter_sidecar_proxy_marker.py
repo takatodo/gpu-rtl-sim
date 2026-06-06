@@ -189,7 +189,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
 
         self.assertEqual(report["sidecar_proxy_marker_status"], "rtlmeter_sidecar_proxy_marker_valid")
         self.assertTrue(report["sidecar_execute_proxy_installed_by_wrapper_branch"])
-        self.assertEqual((report["execution_authority"], report["rtlmeter_vsim_proxy_handoff_status"], report["rtlmeter_vsim_proxy_handoff_reached"]), (True, "ready", True))
+        self.assertEqual((report["execution_authority"], report["rtlmeter_vsim_proxy_handoff_status"], report["rtlmeter_vsim_proxy_handoff_reached"], report["runtime_execution_authority"], report["obj_dir_vsim_execution_observed"]), (True, "ready", True, False, False))
         self.assertTrue(report["execution_authority_requires_source_patch_marker"])
         self.assertTrue(report["sidecar_execution_invoked"])
         evidence = report["sidecar_proxy_evidence"]
@@ -198,13 +198,13 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
         self.assertTrue(evidence["sidecar_execute_proxy_installed_by_wrapper_branch"])
         self.assertTrue(evidence["sidecar_execute_proxy_source_patch_by_wrapper_branch"])
         self.assertTrue(evidence["sidecar_execute_proxy_authorized_by_wrapper_branch"])
-        self.assertFalse(evidence["gpu_execution_claimed"])
+        self.assertEqual((evidence["gpu_execution_claimed"], evidence["vsim_runtime_execution_claimed"], evidence["runtime_execution_authority"]), (False, False, False))
         execution_evidence = report["sidecar_proxy_execution_evidence"]
         self.assertEqual(execution_evidence["status"], "ready")
         self.assertTrue(execution_evidence["observables_ready"])
         self.assertTrue(execution_evidence["runner_command_observed"])
         self.assertEqual((execution_evidence["execution_authority"], execution_evidence["rtlmeter_vsim_proxy_handoff_status"], execution_evidence["rtlmeter_vsim_proxy_handoff_reached"]), (True, "ready", True))
-        self.assertTrue(execution_evidence["sidecar_execution_invoked"])
+        self.assertEqual((execution_evidence["sidecar_execution_invoked"], execution_evidence["runtime_execution_authority"], execution_evidence["obj_dir_vsim_execution_observed"]), (True, False, False))
         self.assertEqual(execution_evidence["blocking_context"], [])
         self.assertFalse(report["gpu_execution_claimed"])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))

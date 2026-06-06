@@ -53,6 +53,10 @@ def build_rtlmeter_sidecar_proxy_marker_payload(
         "vsim_main_source_patch_applied_by_wrapper_branch": proxy_source_patch,
         "execute_proxy_authorized_by_wrapper_branch": proxy_authorized and proxy_source_patch,
         "wrapper_executed_obj_dir_vsim": False,
+        "obj_dir_vsim_execution_observed": False,
+        "runtime_execution_authority": False,
+        "vsim_runtime_execution_claimed": False,
+        "missing_runtime_execution_context": ["wrapper_executed_obj_dir_vsim"],
     }
     if proxy_readiness is not None:
         payload["direct_sidecar_proxy_readiness"] = dict(proxy_readiness)
@@ -92,6 +96,9 @@ def _missing_marker_context(payload: object) -> list[str]:
         missing.append("ordinary_vsim_output")
     if payload.get("wrapper_executed_obj_dir_vsim", False) is not False:
         missing.append("wrapper_executed_obj_dir_vsim")
+    for runtime_field in ("obj_dir_vsim_execution_observed", "runtime_execution_authority", "vsim_runtime_execution_claimed"):
+        if payload.get(runtime_field, False) is not False:
+            missing.append(runtime_field)
     proxy_installed = payload.get("execute_proxy_installed_by_wrapper_branch")
     if proxy_installed not in (False, True):
         missing.append("execute_proxy_installed_by_wrapper_branch")
@@ -158,6 +165,10 @@ def _sidecar_proxy_evidence(
         "vsim_binary_proxy_installed_by_wrapper_branch": proxy_installed,
         "vsim_main_source_patch_applied_by_wrapper_branch": source_patch,
         "wrapper_executed_obj_dir_vsim": False,
+        "obj_dir_vsim_execution_observed": False,
+        "runtime_execution_authority": False,
+        "vsim_runtime_execution_claimed": False,
+        "missing_runtime_execution_context": ["wrapper_executed_obj_dir_vsim"],
         "sidecar_proxy_marker_missing_context": list(missing_context),
         "cpu_as_gpu_fallback": False,
         "gpu_execution_claimed": False,
@@ -204,6 +215,10 @@ def build_rtlmeter_sidecar_proxy_execution_evidence(
         "rtlmeter_vsim_proxy_handoff_status": "ready" if execution_authority else "blocked",
         "rtlmeter_vsim_proxy_handoff_reached": execution_authority,
         "sidecar_execution_invoked": execution_authority,
+        "obj_dir_vsim_execution_observed": False,
+        "runtime_execution_authority": False,
+        "vsim_runtime_execution_claimed": False,
+        "missing_runtime_execution_context": ["wrapper_executed_obj_dir_vsim"],
         "cpu_as_gpu_fallback": False,
         "gpu_execution_claimed": False,
         "blocking_context": sorted(set(blocking_context)),

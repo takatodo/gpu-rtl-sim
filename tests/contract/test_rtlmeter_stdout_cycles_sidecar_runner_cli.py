@@ -384,6 +384,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertTrue(report["execution_authority_requires_source_patch_marker"])
         self.assertTrue(report["execution_authority"])
         self.assertTrue(report["sidecar_execution_invoked"])
+        self.assertEqual((report["runtime_execution_authority"], report["obj_dir_vsim_execution_observed"], report["vsim_runtime_execution_claimed"]), (False, False, False))
         self.assertFalse(report["gpu_execution_claimed"])
 
     def test_cli_removes_stale_observables_before_inner_command(self) -> None:
