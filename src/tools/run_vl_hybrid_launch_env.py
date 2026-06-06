@@ -8,6 +8,7 @@ from typing import Any
 
 from run_vl_hybrid_persistent_env import configure_persistent_resident_env
 from run_vl_hybrid_state_sanitize import _prepare_sanitized_init_state
+from results_reproduction_io import sanitize_local_absolute_paths
 
 
 _CUBIN_CHAIN_ENV = "RUN_VL_HYBRID_CUBINS"
@@ -112,15 +113,20 @@ def prepare_init_state_env(
             if sanitized is not None:
                 sanitized_init_tmp, applied = sanitized
                 init_state = sanitized_init_tmp
-                details = ", ".join(
-                    f"{entry['field_name']}[{entry['sanitized_start']}:{entry['sanitized_end']}]"
-                    for entry in applied
-                )
-                print(
-                    "info: sanitized host-only init-state regions: "
-                    f"{details} -> {sanitized_init_tmp}",
-                    file=sys.stderr,
-                )
+                verbose_sanitize = env.get("RUN_VL_HYBRID_VERBOSE_SANITIZE") == "1"
+                if verbose_sanitize:
+                    details = ", ".join(
+                        f"{entry['field_name']}[{entry['sanitized_start']}:{entry['sanitized_end']}]"
+                        for entry in applied
+                    )
+                    message = f"{details} -> {sanitized_init_tmp}"
+                else:
+                    sanitized_output = sanitize_local_absolute_paths(str(sanitized_init_tmp))
+                    message = (
+                        f"count={len(applied)} output={sanitized_output} "
+                        "(set RUN_VL_HYBRID_VERBOSE_SANITIZE=1 for region details)"
+                    )
+                print(f"info: sanitized host-only init-state regions: {message}", file=sys.stderr)
         env["RUN_VL_HYBRID_INIT_STATE"] = str(init_state)
     else:
         env.pop("RUN_VL_HYBRID_INIT_STATE", None)

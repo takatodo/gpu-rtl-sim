@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import io
 import shutil
 import subprocess
@@ -23,6 +24,7 @@ if str(TOOLS_DIR) not in sys.path:
 import build_vl_gpu_stage_env
 from results_reproduction_io import sanitize_local_absolute_paths
 import run_vl_hybrid_launch
+import run_vl_hybrid_launch_env
 
 
 class CleanSimPrerequisiteTest(unittest.TestCase):
@@ -166,6 +168,61 @@ class CleanSimPrerequisiteTest(unittest.TestCase):
             "-I<local-absolute-path> --load-pass-plugin=<local-absolute-path>",
         )
 
+
+    def test_sanitize_summary_is_compact_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            init_state = root / "init.bin"
+            sanitized_state = root / "sanitized.bin"
+            init_state.write_bytes(b"init")
+            sanitized_state.write_bytes(b"safe")
+            applied = [
+                {"field_name": "very_long_host_only_field_a", "sanitized_start": 1, "sanitized_end": 2},
+                {"field_name": "very_long_host_only_field_b", "sanitized_start": 3, "sanitized_end": 4},
+            ]
+            parser = argparse.ArgumentParser()
+            args = SimpleNamespace(init_state=init_state, sanitize_host_only_internals=True)
+            resolution = SimpleNamespace(mdir=root / "obj_dir")
+            env: dict[str, str] = {}
+
+            with mock.patch.object(
+                run_vl_hybrid_launch_env,
+                "_prepare_sanitized_init_state",
+                return_value=(sanitized_state, applied),
+            ), redirect_stderr(io.StringIO()) as stderr:
+                run_vl_hybrid_launch_env.prepare_init_state_env(parser, args, resolution, env)
+
+            output = stderr.getvalue()
+            self.assertIn("count=2", output)
+            self.assertIn("RUN_VL_HYBRID_VERBOSE_SANITIZE=1", output)
+            self.assertIn("output=<local-absolute-path>", output)
+            self.assertNotIn(str(sanitized_state), output)
+            self.assertNotIn("very_long_host_only_field_a[1:2]", output)
+            self.assertEqual(env["RUN_VL_HYBRID_INIT_STATE"], str(sanitized_state))
+
+    def test_sanitize_summary_can_emit_verbose_region_details(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            init_state = root / "init.bin"
+            sanitized_state = root / "sanitized.bin"
+            init_state.write_bytes(b"init")
+            sanitized_state.write_bytes(b"safe")
+            applied = [
+                {"field_name": "host_only_field", "sanitized_start": 5, "sanitized_end": 8},
+            ]
+            parser = argparse.ArgumentParser()
+            args = SimpleNamespace(init_state=init_state, sanitize_host_only_internals=True)
+            resolution = SimpleNamespace(mdir=root / "obj_dir")
+            env = {"RUN_VL_HYBRID_VERBOSE_SANITIZE": "1"}
+
+            with mock.patch.object(
+                run_vl_hybrid_launch_env,
+                "_prepare_sanitized_init_state",
+                return_value=(sanitized_state, applied),
+            ), redirect_stderr(io.StringIO()) as stderr:
+                run_vl_hybrid_launch_env.prepare_init_state_env(parser, args, resolution, env)
+
+            self.assertIn("host_only_field[5:8]", stderr.getvalue())
 
 if __name__ == "__main__":
     unittest.main()
