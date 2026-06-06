@@ -148,19 +148,15 @@ class RtlmeterMaterializedVsimProxyHandoffTest(HybridCliTestCase):
                 "exit 0\n",
             )
 
+            env = {
+                **os.environ,
+                SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._sidecar_context()),
+                PHASE_ENV: PHASE_RTL_METER_RUN,
+                "PATH": f"{wrapper.parent}{os.pathsep}{real.parent}{os.pathsep}{os.environ.get('PATH', '')}",
+                "PWD": root.as_posix(),
+            }
             wrapper_completed = subprocess.run(
-                [str(wrapper), *self._expanded_sidecar_argv()],
-                cwd=root,
-                env={
-                    **os.environ,
-                    SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._sidecar_context()),
-                    PHASE_ENV: PHASE_RTL_METER_RUN,
-                    "PATH": f"{wrapper.parent}{os.pathsep}{real.parent}{os.pathsep}{os.environ.get('PATH', '')}",
-                    "PWD": root.as_posix(),
-                },
-                text=True,
-                capture_output=True,
-                check=False,
+                [str(wrapper), *self._expanded_sidecar_argv()], cwd=root, env=env, text=True, capture_output=True, check=False
             )
             vsim_completed = subprocess.run(
                 [str(vsim), "--from-test"],
@@ -183,6 +179,56 @@ class RtlmeterMaterializedVsimProxyHandoffTest(HybridCliTestCase):
         self.assertTrue(readiness["vsim_main_proxy_patch"]["execution_authority"])
         self.assertTrue(readiness["vsim_execute_proxy"]["execution_authority"])
         self.assertTrue(readiness["execution_authority"])
+
+    def test_materialized_vsim_proxy_fails_closed_without_proxy_env(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan, rtlmeter_compile_dir
+        from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN
+        from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, write_rtlmeter_verilator_wrapper
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            wrapper = write_rtlmeter_verilator_wrapper(root / "wrapper" / "verilator", python_executable=sys.executable)
+            real = root / "real" / "verilator"
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            compile_dir = root / rtlmeter_compile_dir(Path(str(plan["gpu_candidate"]["work_root"])), str(plan["seed"]))
+            obj_dir = compile_dir / "obj_dir"
+            main_cpp = obj_dir / "Vsim__main.cpp"
+            vsim = obj_dir / "Vsim"
+            ordinary_log = root / "ordinary-vsim.log"
+            real.parent.mkdir()
+            real_script = (
+                "#!/bin/sh\n"
+                f"mkdir -p {shlex.quote(obj_dir.as_posix())}\n"
+                f"cat > {shlex.quote(main_cpp.as_posix())} <<'EOF_MAIN'\n{self._generated_main()}EOF_MAIN\n"
+                f"cat > {shlex.quote(vsim.as_posix())} <<'EOF_VSIM'\n"
+                "#!/bin/sh\n"
+                f"echo ordinary-vsim-ran \"$@\" >> {shlex.quote(ordinary_log.as_posix())}\n"
+                "exit 0\nEOF_VSIM\n"
+                f"chmod +x {shlex.quote(vsim.as_posix())}\nexit 0\n"
+            )
+            self._write_executable(real, real_script)
+
+            wrapper_completed = subprocess.run(
+                [str(wrapper), *self._expanded_sidecar_argv()],
+                cwd=root,
+                env={
+                    **os.environ,
+                    SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._sidecar_context()),
+                    PHASE_ENV: PHASE_RTL_METER_RUN,
+                    "PATH": f"{wrapper.parent}{os.pathsep}{real.parent}{os.pathsep}{os.environ.get('PATH', '')}",
+                    "PWD": root.as_posix(),
+                },
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            vsim_completed = subprocess.run([str(vsim), "--from-test"], text=True, capture_output=True, check=False)
+
+        self.assertEqual(wrapper_completed.returncode, 0, wrapper_completed.stderr)
+        self.assertEqual(vsim_completed.returncode, 125)
+        self.assertIn("missing RTLMETER_VSIM_SIDECAR_PROXY", vsim_completed.stderr)
+        self.assertFalse(ordinary_log.exists())
 
     def test_materialized_wrapper_uses_repo_root_env_when_rtlmeter_runs_from_compile_dir(self) -> None:
         self.add_tools_to_path()

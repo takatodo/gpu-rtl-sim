@@ -254,6 +254,9 @@ def run_rtlmeter_verilator_wrapper(
             [str(real_verilator), *map(str, argv)],
             env=env_with_sidecar_verilate_phase(env),
         )
+        returncode = int(completed.returncode)
+        if returncode != 0:
+            return returncode
         repo_root = Path(env.get(REPO_ROOT_ENV) or env.get("PWD") or Path.cwd())
         proxy_readiness = direct_sidecar_proxy_readiness(report, repo_root=repo_root)
         write_rtlmeter_sidecar_proxy_marker(
@@ -261,7 +264,7 @@ def run_rtlmeter_verilator_wrapper(
             repo_root=repo_root,
             proxy_readiness=proxy_readiness,
         )
-        return int(completed.returncode)
+        return returncode
 
     print(
         json.dumps(report, indent=2),

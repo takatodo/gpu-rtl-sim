@@ -260,16 +260,15 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
             real.parent.mkdir()
             self._touch_executable(wrapper)
             self._touch_executable(real)
+            calls: list[tuple[list[str], dict[str, object]]] = []
             plan = build_rtlmeter_stdout_cycles_execution_plan()
             marker = root / plan["gpu_candidate"]["observable_execute_dir"] / MARKER_FILENAME
-            compile_dir = root / rtlmeter_compile_dir(
-                Path(str(plan["gpu_candidate"]["work_root"])),
-                str(plan["seed"]),
-            )
+            compile_dir = root / rtlmeter_compile_dir(Path(str(plan["gpu_candidate"]["work_root"])), str(plan["seed"]))
             main_cpp = compile_dir / "obj_dir" / "Vsim__main.cpp"
             vsim = compile_dir / "obj_dir" / "Vsim"
 
             def fake_runner(command, **kwargs):
+                calls.append((command, kwargs))
                 main_cpp.parent.mkdir(parents=True)
                 main_cpp.write_text(self._generated_main(), encoding="utf-8")
                 vsim.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
@@ -287,6 +286,12 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
                 },
                 runner=fake_runner,
             )
+            marker_exists = marker.exists()
+            patched_main = main_cpp.read_text(encoding="utf-8")
+            vsim_text = vsim.read_text(encoding="utf-8")
 
         self.assertEqual(code, 9)
-        self.assertFalse(marker.exists())
+        self.assertEqual(calls[0][1]["env"][PHASE_ENV], "sidecar_verilate")
+        self.assertFalse(marker_exists)
+        self.assertNotIn("RTLMETER_VSIM_SIDECAR_PROXY", patched_main)
+        self.assertEqual(vsim_text, "#!/bin/sh\nexit 0\n")
