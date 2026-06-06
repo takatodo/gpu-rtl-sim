@@ -1,6 +1,11 @@
+import io
+import json
+import os
 import subprocess
 import tempfile
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 from tests.contract.hybrid_cli_helpers import HybridCliTestCase
 
@@ -154,6 +159,38 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertFalse(report["gpu_execution_claimed"])
         self.assertTrue(stale_stdout_exists)
         self.assertTrue(stale_cycles_exists)
+
+    def test_main_returns_failure_for_unusable_vsim_sidecar_proxy_target(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import (
+            STATUS_VSIM_PROXY_TARGET_UNUSABLE,
+            VSIM_SIDECAR_PROXY_ENV,
+            main,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = plan["gpu_candidate"]["command"]
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            stdout = io.StringIO()
+            previous_cwd = Path.cwd()
+            try:
+                os.chdir(root)
+                with patch.dict(os.environ, {VSIM_SIDECAR_PROXY_ENV: proxy_path}), redirect_stdout(stdout):
+                    code = main(["--observable-execute-dir", observable_dir, "--", *command])
+            finally:
+                os.chdir(previous_cwd)
+            report = json.loads(stdout.getvalue())
+
+        self.assertEqual(code, 1)
+        self.assertEqual(report["status"], STATUS_VSIM_PROXY_TARGET_UNUSABLE)
+        self.assertFalse(report["subprocess_invoked"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["gpu_execution_claimed"])
 
     def test_cli_valid_marker_alone_does_not_grant_execution_authority(self) -> None:
         self.add_tools_to_path()
