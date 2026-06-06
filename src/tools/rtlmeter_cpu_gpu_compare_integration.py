@@ -58,9 +58,8 @@ from rtlmeter_verilator_wrapper_runtime import (
     write_rtlmeter_verilator_wrapper,
 )
 
-
-SURFACE = "rtlmeter_cpu_gpu_compare_integration"
-OPT_IN_ENV = "RTLMETER_CPU_GPU_COMPARE_EXECUTE"
+SURFACE = "rtlmeter_cpu_gpu_compare_integration"; OPT_IN_ENV = "RTLMETER_CPU_GPU_COMPARE_EXECUTE"
+SIDECAR_PROXY_EVIDENCE_FIELDS = ("execution_authority", "execution_authority_requires_valid_proxy_marker", "execution_authority_requires_execute_proxy_install", "execution_authority_requires_source_patch_marker", "sidecar_proxy_marker_status", "sidecar_proxy_marker_valid", "sidecar_execute_proxy_installed_by_wrapper_branch", "sidecar_execute_proxy_source_patch_by_wrapper_branch", "sidecar_execute_proxy_authorized_by_wrapper_branch", "gpu_execution_claimed", "cpu_as_gpu_fallback", "timing_measured", "speedup_claimed")
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
@@ -214,6 +213,7 @@ def run_rtlmeter_cpu_gpu_compare_integration(
         command_result=gpu_result,
         repo_root=root,
     )
+    report["sidecar_proxy_evidence"] = {field: report["stdout_cycles_sidecar_runner"].get(field) for field in SIDECAR_PROXY_EVIDENCE_FIELDS}
     if (
         gpu_result["returncode"] == 0
         and isinstance(report.get("stdout_cycles_sidecar_runner"), Mapping)
