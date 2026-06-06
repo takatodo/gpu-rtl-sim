@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 import io
+import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 
@@ -26,9 +28,11 @@ class CleanSimPrerequisiteTest(unittest.TestCase):
     def test_build_vl_gpu_rebuilds_missing_pass_tools(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             passes_dir = Path(temp_dir) / "passes"
+            pass_tool_dir = Path(temp_dir) / "artifacts" / "tool_bins" / "passes"
             passes_dir.mkdir()
-            existing_so = passes_dir / "VlGpuPasses.so"
-            missing_vlgpugen = passes_dir / "vlgpugen"
+            pass_tool_dir.mkdir(parents=True)
+            existing_so = pass_tool_dir / "VlGpuPasses.so"
+            missing_vlgpugen = pass_tool_dir / "vlgpugen"
             existing_so.write_text("", encoding="utf-8")
             calls = []
 
@@ -45,8 +49,10 @@ class CleanSimPrerequisiteTest(unittest.TestCase):
     def test_build_vl_gpu_skips_make_when_pass_tools_exist(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             passes_dir = Path(temp_dir) / "passes"
+            pass_tool_dir = Path(temp_dir) / "artifacts" / "tool_bins" / "passes"
             passes_dir.mkdir()
-            pass_tools = (passes_dir / "VlGpuPasses.so", passes_dir / "vlgpugen")
+            pass_tool_dir.mkdir(parents=True)
+            pass_tools = (pass_tool_dir / "VlGpuPasses.so", pass_tool_dir / "vlgpugen")
             for path in pass_tools:
                 path.write_text("", encoding="utf-8")
             calls = []
@@ -61,12 +67,60 @@ class CleanSimPrerequisiteTest(unittest.TestCase):
 
             self.assertEqual(calls, [])
 
+    def test_generated_helper_binary_paths_are_outside_src(self) -> None:
+        repo_root = Path(build_vl_gpu_stage_env.REPO_ROOT)
+        self.assertEqual(
+            build_vl_gpu_stage_env.PASS_TOOL_OUTPUTS,
+            (
+                repo_root / "artifacts" / "tool_bins" / "passes" / "VlGpuPasses.so",
+                repo_root / "artifacts" / "tool_bins" / "passes" / "vlgpugen",
+            ),
+        )
+        self.assertEqual(
+            run_vl_hybrid_launch.HYBRID_BIN,
+            REPO_ROOT / "artifacts" / "tool_bins" / "hybrid" / "run_vl_hybrid",
+        )
+        for path in (*build_vl_gpu_stage_env.PASS_TOOL_OUTPUTS, run_vl_hybrid_launch.HYBRID_BIN):
+            self.assertIn("artifacts/tool_bins", path.as_posix())
+            self.assertNotIn("/src/passes/", path.as_posix())
+            self.assertNotIn("/src/hybrid/", path.as_posix())
+
+    def test_runner_command_uses_artifact_runtime_binary(self) -> None:
+        args = SimpleNamespace(nstates=2, block_size=64, steps=3, patch=[])
+        resolution = SimpleNamespace(cubin=Path("demo.cubin"), storage=128)
+        command = run_vl_hybrid_launch.build_runner_command(args, resolution)
+
+        self.assertEqual(Path(command[0]), run_vl_hybrid_launch.HYBRID_BIN)
+        self.assertIn("artifacts/tool_bins/hybrid/run_vl_hybrid", command[0])
+
+    def test_make_compat_targets_do_not_write_helper_binaries_under_src(self) -> None:
+        if shutil.which("make") is None:
+            self.skipTest("make is not installed")
+
+        cases = (
+            ("src/passes", "vlgpugen", "../../artifacts/tool_bins/passes/vlgpugen", r"-o\s+vlgpugen(\s|$)"),
+            ("src/passes", "VlGpuPasses.so", "../../artifacts/tool_bins/passes/VlGpuPasses.so", r"-o\s+VlGpuPasses\.so(\s|$)"),
+            ("src/hybrid", "run_vl_hybrid", "../../artifacts/tool_bins/hybrid/run_vl_hybrid", r"-o\s+run_vl_hybrid(\s|$)"),
+        )
+        for make_dir, target, artifact_output, forbidden_output in cases:
+            with self.subTest(target=target):
+                result = subprocess.run(
+                    ["make", "-B", "-n", "-C", make_dir, "--no-print-directory", target],
+                    cwd=REPO_ROOT,
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+                output = result.stdout + result.stderr
+                self.assertIn(artifact_output, output)
+                self.assertNotRegex(output, forbidden_output)
+
     def test_run_vl_hybrid_rebuilds_missing_runtime(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             repo_root = Path(temp_dir)
-            hybrid_dir = repo_root / "src" / "hybrid"
-            hybrid_dir.mkdir(parents=True)
-            hybrid_bin = hybrid_dir / "run_vl_hybrid"
+            hybrid_src_dir = repo_root / "src" / "hybrid"
+            hybrid_src_dir.mkdir(parents=True)
+            hybrid_bin = repo_root / "artifacts" / "tool_bins" / "hybrid" / "run_vl_hybrid"
 
             with mock.patch.object(run_vl_hybrid_launch, "REPO_ROOT", repo_root), mock.patch.object(
                 run_vl_hybrid_launch,
@@ -77,7 +131,7 @@ class CleanSimPrerequisiteTest(unittest.TestCase):
                     run_vl_hybrid_launch.ensure_hybrid_runtime_built()
 
             run.assert_called_once_with(
-                ["make", "-C", str(hybrid_dir), "--no-print-directory"],
+                ["make", "-C", str(hybrid_src_dir), "--no-print-directory"],
                 cwd=repo_root,
                 check=True,
             )
@@ -85,9 +139,9 @@ class CleanSimPrerequisiteTest(unittest.TestCase):
     def test_run_vl_hybrid_reports_runtime_build_failure_without_traceback(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             repo_root = Path(temp_dir)
-            hybrid_dir = repo_root / "src" / "hybrid"
-            hybrid_dir.mkdir(parents=True)
-            hybrid_bin = hybrid_dir / "run_vl_hybrid"
+            hybrid_src_dir = repo_root / "src" / "hybrid"
+            hybrid_src_dir.mkdir(parents=True)
+            hybrid_bin = repo_root / "artifacts" / "tool_bins" / "hybrid" / "run_vl_hybrid"
 
             with mock.patch.object(run_vl_hybrid_launch, "REPO_ROOT", repo_root), mock.patch.object(
                 run_vl_hybrid_launch,

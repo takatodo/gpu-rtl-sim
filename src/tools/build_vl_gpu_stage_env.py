@@ -7,9 +7,11 @@ from pathlib import Path
 
 
 SCRIPT_DIR = Path(__file__).parent
+REPO_ROOT = SCRIPT_DIR.parent.parent
 PASSES_DIR = SCRIPT_DIR.parent / "passes"
-PASSES_SO = PASSES_DIR / "VlGpuPasses.so"
-VLGPUGEN = PASSES_DIR / "vlgpugen"
+PASS_TOOL_DIR = REPO_ROOT / "artifacts" / "tool_bins" / "passes"
+PASSES_SO = PASS_TOOL_DIR / "VlGpuPasses.so"
+VLGPUGEN = PASS_TOOL_DIR / "vlgpugen"
 PASS_TOOL_OUTPUTS = (PASSES_SO, VLGPUGEN)
 
 

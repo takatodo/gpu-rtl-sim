@@ -22,7 +22,11 @@ from run_vl_hybrid_state_sanitize import (
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent.parent
-HYBRID_BIN = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid"
+HYBRID_BIN = REPO_ROOT / "artifacts" / "tool_bins" / "hybrid" / "run_vl_hybrid"
+
+
+def _hybrid_src_dir() -> Path:
+    return REPO_ROOT / "src" / "hybrid"
 
 
 @dataclass(frozen=True)
@@ -52,7 +56,8 @@ def _resolve_meta_cubins(mdir: Path, meta: dict[str, object]) -> list[Path]:
 def ensure_hybrid_runtime_built() -> None:
     if HYBRID_BIN.is_file():
         return
-    command = ["make", "-C", str(HYBRID_BIN.parent), "--no-print-directory"]
+    src_dir = _hybrid_src_dir()
+    command = ["make", "-C", str(src_dir), "--no-print-directory"]
     print(f"info: building missing hybrid runtime: {' '.join(command)}", file=sys.stderr)
     try:
         subprocess.run(command, cwd=REPO_ROOT, check=True)
@@ -116,7 +121,7 @@ def require_launch_files(resolution: LaunchResolution) -> None:
     ensure_hybrid_runtime_built()
     if not HYBRID_BIN.is_file():
         print(
-            f"error: {HYBRID_BIN} not found — run: make -C {HYBRID_BIN.parent}",
+            f"error: {HYBRID_BIN} not found — run: make -C {_hybrid_src_dir()}",
             file=sys.stderr,
         )
         sys.exit(1)
