@@ -82,6 +82,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertFalse(report["sidecar_execution_invoked"])
         self.assertFalse(report["gpu_execution_claimed"])
         self.assertFalse(report["cpu_as_gpu_fallback"])
+        self.assertIn("missing_vsim_sidecar_proxy_env", report["sidecar_proxy_execution_evidence"]["blocking_context"])
         self.assertTrue(stale_stdout_exists)
         self.assertTrue(stale_cycles_exists)
 
@@ -206,6 +207,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertTrue(report["vsim_sidecar_proxy_target"]["executable"])
         self.assertFalse(report["vsim_sidecar_proxy_target"]["reviewed_proxy_target"])
         self.assertIn("review_manifest", report["vsim_sidecar_proxy_target"]["missing_proxy_target_context"])
+        self.assertIn("review_manifest", report["sidecar_proxy_execution_evidence"]["blocking_context"])
         self.assertFalse(report["subprocess_invoked"])
 
     def test_cli_fails_closed_when_vsim_sidecar_proxy_target_is_unusable(self) -> None:
@@ -253,6 +255,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
         self.assertFalse(report["execution_authority"])
         self.assertFalse(report["sidecar_execution_invoked"])
         self.assertFalse(report["gpu_execution_claimed"])
+        self.assertIn("reviewed_vsim_sidecar_proxy_target", report["sidecar_proxy_execution_evidence"]["blocking_context"])
         self.assertTrue(stale_stdout_exists)
         self.assertTrue(stale_cycles_exists)
 
@@ -560,6 +563,7 @@ class RtlmeterStdoutCyclesSidecarRunnerCliTest(HybridCliTestCase):
             self.assertTrue((out / "_rtlmeter_cycles.txt").exists())
 
         self.assertEqual(report["status"], STATUS_BLOCKED_WRAPPER_PHASE)
+        self.assertIn("wrapper_phase_guard", report["sidecar_proxy_execution_evidence"]["blocking_context"])
         self.assertFalse(report["execution_performed"])
         self.assertFalse(report["execution_authority"])
         self.assertFalse(report["sidecar_execution_invoked"])

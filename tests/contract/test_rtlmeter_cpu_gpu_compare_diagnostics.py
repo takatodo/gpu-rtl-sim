@@ -136,6 +136,7 @@ class RtlmeterCpuGpuCompareDiagnosticsTest(HybridCliTestCase):
     def test_classifies_narrow_runner_fail_closed_statuses(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_cpu_gpu_compare_diagnostics import (
+            BLOCKER_RTL_METER_VSIM_SIDECAR_PROXY_ENV_MISSING,
             BLOCKER_RTL_METER_VSIM_SIDECAR_PROXY_TARGET_UNUSABLE,
             BLOCKER_RTL_METER_WRAPPER_PHASE_GUARD,
             classify_gpu_failure_blocker,
@@ -149,6 +150,10 @@ class RtlmeterCpuGpuCompareDiagnosticsTest(HybridCliTestCase):
             (
                 "rtlmeter_stdout_cycles_sidecar_runner_blocked_wrapper_phase_guard",
                 BLOCKER_RTL_METER_WRAPPER_PHASE_GUARD,
+            ),
+            (
+                "rtlmeter_stdout_cycles_sidecar_runner_vsim_sidecar_proxy_env_missing",
+                BLOCKER_RTL_METER_VSIM_SIDECAR_PROXY_ENV_MISSING,
             ),
         )
         for status, blocker in cases:

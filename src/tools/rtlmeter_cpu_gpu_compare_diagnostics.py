@@ -190,6 +190,6 @@ def classify_gpu_failure_blocker(*, diagnostic_log: str | None, runner_observati
         return BLOCKER_RTL_METER_VSIM_SIDECAR_PROXY_TARGET_UNUSABLE
     if runner_status == "rtlmeter_stdout_cycles_sidecar_runner_blocked_wrapper_phase_guard" or nested_status == "rtlmeter_stdout_cycles_sidecar_runner_blocked_wrapper_phase_guard":
         return BLOCKER_RTL_METER_WRAPPER_PHASE_GUARD
-    if isinstance(runner_observation, Mapping) and runner_observation.get("status") == STATUS_VSIM_PROXY_ENV_MISSING:
+    if runner_status == STATUS_VSIM_PROXY_ENV_MISSING or nested_status == STATUS_VSIM_PROXY_ENV_MISSING:
         return BLOCKER_RTL_METER_VSIM_SIDECAR_PROXY_ENV_MISSING
     return BLOCKER_GPU_RUNNER_EXECUTION_FAILED

@@ -118,6 +118,13 @@ def _remove_existing_observable_files(*, observable_execute_dir: str, repo_root:
         if path is not None and path.is_file():
             path.unlink()
 
+def _extend_proxy_blocking_context(report: dict[str, object], *items: object) -> None:
+    evidence = report.get("sidecar_proxy_execution_evidence")
+    if not isinstance(evidence, Mapping):
+        return
+    existing = evidence.get("blocking_context", [])
+    context = [*(str(item) for item in existing if item), *(str(item) for item in items if item)]
+    evidence["blocking_context"] = sorted(set(context))
 
 def _resolve_vsim_sidecar_proxy_target(*, repo_root: Path, env: Mapping[str, str]) -> tuple[str | None, dict[str, object] | None]:
     if not env.get(VSIM_SIDECAR_PROXY_ENV):
@@ -224,6 +231,7 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
         report["cycle_count"] = None
         report["observable_stdout_has_missing_proxy_env"] = False
         report["observable_read_skipped"] = "missing_vsim_sidecar_proxy_env_pre_execution"
+        _extend_proxy_blocking_context(report, "missing_vsim_sidecar_proxy_env", VSIM_SIDECAR_PROXY_ENV)
     if (
         command_result is None
         and command is not None
@@ -241,6 +249,7 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
         report["normalized_stdout_sha256"] = None
         report["cycle_count"] = None
         report["observable_read_skipped"] = "unreviewed_vsim_sidecar_proxy_pre_execution" if vsim_sidecar_proxy_target.get("executable") is True else "unusable_vsim_sidecar_proxy_pre_execution"
+        _extend_proxy_blocking_context(report, *vsim_sidecar_proxy_target.get("missing_proxy_target_context", []))
     if (
         command_result is not None
         and report["status"] == STATUS_EXECUTION_FAILED
@@ -257,6 +266,7 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
         and phase_guard["status"] != STATUS_PHASE_CLEAR
     ):
         report["status"] = STATUS_BLOCKED_WRAPPER_PHASE
+        _extend_proxy_blocking_context(report, "wrapper_phase_guard", phase_guard.get("status"))
     return report
 
 
