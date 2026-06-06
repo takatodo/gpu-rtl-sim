@@ -202,6 +202,11 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
     )
     execute_proxy = _install_vsim_execute_proxy(expected_vsim, main_patch, repo_root)
     proxy_installed = execute_proxy.get("execution_authority") is True
+    proxy_source_patch = (
+        isinstance(main_patch, Mapping)
+        and main_patch.get("patched_by_wrapper_branch") is True
+        and main_patch.get("execution_authority") is True
+    )
     missing_context: list[str] = []
     if compile_dir is None:
         missing_context.append("rtlmeter_compile_dir")
@@ -218,7 +223,11 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
         "status": (
             "rtlmeter_direct_sidecar_proxy_installed"
             if proxy_installed
-            else "rtlmeter_direct_sidecar_proxy_not_installed"
+            else (
+                "rtlmeter_direct_sidecar_proxy_source_patch_applied"
+                if proxy_source_patch
+                else "rtlmeter_direct_sidecar_proxy_not_installed"
+            )
         ),
         "observable_execute_dir": observable_execute_dir,
         "rtlmeter_compile_dir": _relative_path(compile_dir, repo_root),
@@ -229,6 +238,8 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
         "vsim_execute_proxy": execute_proxy,
         "proxy_installable": proxy_installed,
         "proxy_installed_by_wrapper_branch": proxy_installed,
+        "proxy_source_patch_by_wrapper_branch": proxy_source_patch,
+        "proxy_authorized_by_wrapper_branch": proxy_installed,
         "ordinary_vsim_unclaimable": True,
         "execution_authority": proxy_installed,
         "missing_proxy_context": missing_context,

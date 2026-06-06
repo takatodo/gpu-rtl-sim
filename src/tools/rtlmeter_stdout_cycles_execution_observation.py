@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 from collections.abc import Mapping
 from pathlib import Path
@@ -36,6 +37,7 @@ except ImportError:  # pragma: no cover - exercised when imported via sys.path.
 
 
 STATUS_EXECUTION_NOT_REQUESTED = "rtlmeter_stdout_cycles_sidecar_runner_execution_not_requested"
+STATUS_VSIM_PROXY_ENV_MISSING = "rtlmeter_stdout_cycles_sidecar_runner_vsim_sidecar_proxy_env_missing"
 STATUS_EXECUTION_FAILED = "rtlmeter_stdout_cycles_sidecar_runner_execution_failed"
 STATUS_OUTPUTS_MISSING = "rtlmeter_stdout_cycles_sidecar_runner_outputs_missing"
 STATUS_OBSERVABLES_READY = "rtlmeter_stdout_cycles_sidecar_runner_observables_ready"
@@ -128,6 +130,48 @@ def _read_observables(*, observable_execute_dir: object, repo_root: Path | None)
     }
 
 
+def _observable_stdout_contains(*, observable_execute_dir: object, repo_root: Path | None, needle: str) -> bool:
+    stdout_log, _cycle_count_file = _observable_paths(observable_execute_dir, repo_root)
+    if stdout_log is None or not stdout_log.is_file():
+        return False
+    return needle in stdout_log.read_text(encoding="utf-8", errors="replace")
+
+
+def _runner_stdout_report(command_result: Mapping[str, object] | None) -> Mapping[str, object] | None:
+    if not isinstance(command_result, Mapping):
+        return None
+    stdout = command_result.get("stdout")
+    if not isinstance(stdout, str) or not stdout.strip():
+        return None
+    try:
+        parsed = json.loads(stdout)
+    except json.JSONDecodeError:
+        return None
+    return parsed if isinstance(parsed, Mapping) else None
+
+
+def _vsim_sidecar_proxy_env_missing(
+    command_result: Mapping[str, object] | None,
+    runner_report: Mapping[str, object] | None,
+    *,
+    observable_stdout_has_missing_proxy_env: bool,
+) -> bool:
+    if isinstance(runner_report, Mapping):
+        if runner_report.get("status") == STATUS_VSIM_PROXY_ENV_MISSING:
+            return True
+        if runner_report.get("vsim_sidecar_proxy_env_present") is False:
+            inner = runner_report.get("command_result")
+            if isinstance(inner, Mapping) and "missing RTLMETER_VSIM_SIDECAR_PROXY" in str(inner.get("stderr", "")):
+                return True
+    if observable_stdout_has_missing_proxy_env:
+        return True
+    if isinstance(command_result, Mapping):
+        return "missing RTLMETER_VSIM_SIDECAR_PROXY" in " ".join(
+            str(command_result.get(name, "")) for name in ("stdout", "stderr")
+        )
+    return False
+
+
 def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
     *,
     stdout_cycles_plan: Mapping[str, object] | None,
@@ -155,10 +199,16 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         isinstance(command_result, Mapping) and _command_equals(command_result.get("command"), runner_command)
     )
     observable_status = _read_observables(observable_execute_dir=observable_execute_dir, repo_root=repo_root)
+    observable_stdout_has_missing_proxy_env = _observable_stdout_contains(
+        observable_execute_dir=observable_execute_dir,
+        repo_root=repo_root,
+        needle="missing RTLMETER_VSIM_SIDECAR_PROXY",
+    )
     proxy_marker = observe_rtlmeter_sidecar_proxy_marker(
         observable_execute_dir=observable_execute_dir,
         repo_root=repo_root,
     )
+    runner_stdout_report = _runner_stdout_report(command_result)
     missing_context = _plan_missing_context(stdout_cycles_plan)
     rejected = _rejected_command_inputs(candidate_command or [])
 
@@ -168,6 +218,12 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         status = STATUS_BLOCKED_PLAN
     elif not subprocess_invoked:
         status = STATUS_EXECUTION_NOT_REQUESTED
+    elif command_failed and _vsim_sidecar_proxy_env_missing(
+        command_result,
+        runner_stdout_report,
+        observable_stdout_has_missing_proxy_env=observable_stdout_has_missing_proxy_env,
+    ):
+        status = STATUS_VSIM_PROXY_ENV_MISSING
     elif command_failed:
         status = STATUS_EXECUTION_FAILED
     elif not observable_status["observables_ready"]:
@@ -176,8 +232,8 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         status = STATUS_OBSERVABLES_READY
 
     execution_performed = status == STATUS_OBSERVABLES_READY and executed_runner_command and sidecar_candidate
-    proxy_installed = proxy_marker.get("sidecar_execute_proxy_installed_by_wrapper_branch") is True
-    authorized_execution = execution_performed and proxy_installed
+    proxy_authorized = proxy_marker.get("sidecar_execute_proxy_authorized_by_wrapper_branch") is True
+    authorized_execution = execution_performed and proxy_authorized
     return {
         "schema_version": 1,
         "surface": "rtlmeter_stdout_cycles_sidecar_runner_execution_observation_boundary",
@@ -190,6 +246,8 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         "observable_execute_dir": observable_execute_dir,
         "observables": list(EXPECTED_OBSERVABLES),
         "command_result": _sanitize_object(command_result) if command_result is not None else None,
+        "runner_stdout_report": _sanitize_object(runner_stdout_report) if runner_stdout_report is not None else None,
+        "observable_stdout_has_missing_proxy_env": observable_stdout_has_missing_proxy_env,
         **observable_status,
         **proxy_marker,
         "uses_run_hybrid_template": False,
