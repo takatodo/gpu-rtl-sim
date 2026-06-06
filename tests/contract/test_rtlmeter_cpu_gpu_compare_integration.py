@@ -324,6 +324,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
             )
 
         self.assertEqual(report["status"], "gpu_execution_failed")
+        self.assertEqual(report["first_seed_handoff_evidence_status"], "blocked_before_compare")
         self.assertEqual(report["gpu_failure_blocker"], BLOCKER_GPU_RUNNER_EXECUTION_FAILED)
         self.assertEqual(
             report["cleaned_generated_work_roots"],
@@ -393,6 +394,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
             )
 
         self.assertEqual(report["status"], "gpu_execution_failed")
+        self.assertEqual(report["first_seed_handoff_evidence_status"], "blocked_before_compare")
         self.assertEqual(report["gpu_failure_blocker"], BLOCKER_RTL_METER_VSIM_SIDECAR_PROXY_ENV_MISSING)
         self.assertEqual(
             report["stdout_cycles_sidecar_runner"]["status"],
@@ -674,6 +676,93 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertEqual(execution_evidence["blocking_context"], [])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 
+    def test_ready_proxy_marker_with_compare_mismatch_reports_compare_failed(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_cpu_gpu_compare_integration import (
+            OPT_IN_ENV,
+            WRAPPER_ENV,
+            run_rtlmeter_cpu_gpu_compare_integration,
+        )
+        from rtlmeter_sidecar_proxy_marker import write_rtlmeter_sidecar_proxy_marker
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import (
+            VSIM_SIDECAR_PROXY_ENV,
+            run_rtlmeter_stdout_cycles_sidecar_runner,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            _write_minimal_rtlmeter_tree(root)
+            bin_dir = root / "bin"
+            bin_dir.mkdir()
+            (bin_dir / "verilator").write_text("#!/bin/sh\n", encoding="utf-8")
+            (bin_dir / "verilator").chmod(0o755)
+            wrapper = root / "wrapper" / "verilator"
+            wrapper.parent.mkdir()
+            wrapper.write_text("#!/bin/sh\n", encoding="utf-8")
+            wrapper.chmod(0o755)
+            proxy_path = _write_executable_vsim_sidecar_proxy(root)
+            base = root / "artifacts/rtlmeter_example_kind_hello_cpu_gpu_compare"
+            cpu_execute = base / "cpu/Example/kind/execute-0/hello"
+            gpu_execute = base / "gpu/Example/kind/execute-0/hello"
+            calls = []
+
+            def write_observables(path: Path, cycles: int) -> None:
+                (path / "_execute").mkdir(parents=True)
+                (path / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
+                (path / "_rtlmeter_cycles.txt").write_text(f"{cycles}\n", encoding="utf-8")
+
+            def fake_runner(command, **kwargs):
+                calls.append((command, kwargs))
+                if len(calls) == 1:
+                    write_observables(cpu_execute, 1000000)
+                    return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+                observable_index = command.index("--observable-execute-dir")
+                separator_index = command.index("--")
+
+                def inner_runner(inner_command, **inner_kwargs):
+                    write_observables(gpu_execute, 1000001)
+                    write_rtlmeter_sidecar_proxy_marker(
+                        observable_execute_dir=gpu_execute.relative_to(root).as_posix(),
+                        repo_root=root,
+                        proxy_readiness={
+                            "proxy_installed_by_wrapper_branch": True,
+                            "execution_authority": True,
+                            "vsim_main_proxy_patch": {
+                                "patched_by_wrapper_branch": True,
+                                "execution_authority": True,
+                            },
+                        },
+                    )
+                    return subprocess.CompletedProcess(inner_command, 0, stdout="", stderr="")
+
+                runner_report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                    observable_execute_dir=command[observable_index + 1],
+                    command_argv=command[separator_index:],
+                    repo_root=root,
+                    environ={**kwargs["env"], VSIM_SIDECAR_PROXY_ENV: proxy_path},
+                    runner=inner_runner,
+                )
+                return subprocess.CompletedProcess(command, 0, stdout=json.dumps(runner_report), stderr="")
+
+            report = run_rtlmeter_cpu_gpu_compare_integration(
+                repo_root=root,
+                environ={
+                    OPT_IN_ENV: "1",
+                    WRAPPER_ENV: wrapper.as_posix(),
+                    VSIM_SIDECAR_PROXY_ENV: proxy_path,
+                    "PATH": bin_dir.as_posix(),
+                },
+                runner=fake_runner,
+            )
+
+        self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["comparison"]["status"], "failed")
+        self.assertEqual(report["first_seed_handoff_evidence_status"], "compare_failed")
+        self.assertTrue(report["stdout_cycles_sidecar_runner"]["execution_authority"])
+        self.assertEqual(report["sidecar_proxy_execution_evidence"]["status"], "ready")
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["gpu_execution_claimed"])
+        self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
+
     def test_gpu_success_without_observables_fails_closed(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_cpu_gpu_compare_integration import (
@@ -704,6 +793,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
             )
 
         self.assertEqual(report["status"], "gpu_observables_not_ready")
+        self.assertEqual(report["first_seed_handoff_evidence_status"], "blocked_before_compare")
         self.assertEqual(report["missing_runner_report"], "rtlmeter_stdout_cycles_sidecar_runner_json_stdout")
         self.assertEqual(
             report["stdout_cycles_sidecar_runner"]["status"],
@@ -774,6 +864,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
             )
 
         self.assertEqual(report["status"], "gpu_observables_not_ready")
+        self.assertEqual(report["first_seed_handoff_evidence_status"], "blocked_before_compare")
         self.assertNotEqual(report["stdout_cycles_sidecar_runner"]["status"], "rtlmeter_stdout_cycles_sidecar_runner_observables_ready")
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_performed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["sidecar_execution_invoked"])
