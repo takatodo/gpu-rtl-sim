@@ -224,18 +224,19 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
         missing_context.append("reviewed_vsim_sidecar_proxy_target")
     proxy_authorized = proxy_installed and proxy_target_reviewed
 
+    if proxy_authorized:
+        readiness_status = "rtlmeter_direct_sidecar_proxy_installed"
+    elif proxy_installed:
+        readiness_status = "rtlmeter_direct_sidecar_proxy_installed_authorization_blocked"
+    elif proxy_source_patch:
+        readiness_status = "rtlmeter_direct_sidecar_proxy_source_patch_applied"
+    else:
+        readiness_status = "rtlmeter_direct_sidecar_proxy_not_installed"
+
     return {
         "schema_version": 1,
         "surface": "rtlmeter_direct_sidecar_proxy_readiness",
-        "status": (
-            "rtlmeter_direct_sidecar_proxy_installed"
-            if proxy_installed
-            else (
-                "rtlmeter_direct_sidecar_proxy_source_patch_applied"
-                if proxy_source_patch
-                else "rtlmeter_direct_sidecar_proxy_not_installed"
-            )
-        ),
+        "status": readiness_status,
         "observable_execute_dir": observable_execute_dir,
         "rtlmeter_compile_dir": _relative_path(compile_dir, repo_root),
         "expected_vsim_path": _relative_path(expected_vsim, repo_root),

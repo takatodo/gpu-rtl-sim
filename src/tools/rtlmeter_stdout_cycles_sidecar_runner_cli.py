@@ -10,17 +10,14 @@ from collections.abc import Mapping
 from pathlib import Path
 
 try:
+    from .rtlmeter_sidecar_proxy_marker import rtlmeter_sidecar_proxy_marker_path
     from .rtlmeter_stdout_cycles_execution_observation import (
         STATUS_EXECUTION_FAILED,
         STATUS_VSIM_PROXY_ENV_MISSING,
         build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation,
         rtlmeter_stdout_cycles_observable_paths,
     )
-    from .rtlmeter_stdout_cycles_plan import (
-        DEFAULT_COMPILE_ARGS,
-        SELECTED_SEED,
-        build_rtlmeter_stdout_cycles_execution_plan,
-    )
+    from .rtlmeter_stdout_cycles_plan import DEFAULT_COMPILE_ARGS, SELECTED_SEED, build_rtlmeter_stdout_cycles_execution_plan
     from .rtlmeter_stdout_cycles_sidecar_runner import (
         _plan_missing_context,
         _rejected_command_inputs,
@@ -38,17 +35,14 @@ try:
         wrapper_phase_guard_report,
     )
 except ImportError:  # pragma: no cover - exercised when invoked as a script.
+    from rtlmeter_sidecar_proxy_marker import rtlmeter_sidecar_proxy_marker_path
     from rtlmeter_stdout_cycles_execution_observation import (
         STATUS_EXECUTION_FAILED,
         STATUS_VSIM_PROXY_ENV_MISSING,
         build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation,
         rtlmeter_stdout_cycles_observable_paths,
     )
-    from rtlmeter_stdout_cycles_plan import (
-        DEFAULT_COMPILE_ARGS,
-        SELECTED_SEED,
-        build_rtlmeter_stdout_cycles_execution_plan,
-    )
+    from rtlmeter_stdout_cycles_plan import DEFAULT_COMPILE_ARGS, SELECTED_SEED, build_rtlmeter_stdout_cycles_execution_plan
     from rtlmeter_stdout_cycles_sidecar_runner import (
         _plan_missing_context,
         _rejected_command_inputs,
@@ -117,6 +111,9 @@ def _remove_existing_observable_files(*, observable_execute_dir: str, repo_root:
     for path in rtlmeter_stdout_cycles_observable_paths(observable_execute_dir, repo_root):
         if path is not None and path.is_file():
             path.unlink()
+    marker_path = rtlmeter_sidecar_proxy_marker_path(observable_execute_dir, repo_root)
+    if marker_path is not None and marker_path.is_file():
+        marker_path.unlink()
 
 def _extend_proxy_blocking_context(report: dict[str, object], *items: object) -> None:
     evidence = report.get("sidecar_proxy_execution_evidence")
