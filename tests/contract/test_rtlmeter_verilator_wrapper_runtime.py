@@ -1162,3 +1162,38 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         self.assertFalse(invocation["coverage_output_compare_reached"])
         self.assertFalse(invocation["execution_performed"])
         self.assertFalse(invocation["measurement_performed"])
+
+    def test_runtime_wrapper_missing_real_verilator_fails_without_cpu_fallback(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, run_rtlmeter_verilator_wrapper
+        from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN
+
+        argv = [
+            "--cc", "--top-module", "top", "-f", "filelist",
+            "--sim-accel", "sidecar-gpu", "--sim-accel-states", "64", "--sim-accel-steps", "1",
+        ]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            wrapper = Path(temp_dir) / "wrapper" / "verilator"
+            wrapper.parent.mkdir()
+            self._touch_executable(wrapper)
+            stderr = io.StringIO()
+            code = run_rtlmeter_verilator_wrapper(
+                argv,
+                executable=wrapper,
+                environ={
+                    SIDECAR_CONTEXT_JSON_ENV: json.dumps(self._reviewed_rtlmeter_context_for_reentry_guard()),
+                    PHASE_ENV: PHASE_RTL_METER_RUN,
+                    "PATH": str(wrapper.parent),
+                },
+                runner=lambda *args, **kwargs: self.fail("missing real Verilator must fail closed"),
+                stderr=stderr,
+            )
+        report = json.loads(stderr.getvalue())
+
+        self.assertEqual(code, 127)
+        self.assertEqual(report["status"], "real_verilator_missing")
+        self.assertEqual(report["wrapper_phase"], PHASE_RTL_METER_RUN)
+        self.assertTrue(report["direct_sidecar_verilate_attempted"])
+        self.assertFalse(report["cpu_as_gpu_fallback"])
+        self.assertFalse(report["delegated_to_real_verilator"])
+        self.assertFalse(report["sidecar_execution_invoked"])
