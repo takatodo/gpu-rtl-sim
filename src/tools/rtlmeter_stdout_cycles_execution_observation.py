@@ -9,7 +9,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 try:
-    from .rtlmeter_sidecar_proxy_marker import observe_rtlmeter_sidecar_proxy_marker
+    from .rtlmeter_sidecar_proxy_marker import build_rtlmeter_sidecar_proxy_execution_evidence, observe_rtlmeter_sidecar_proxy_marker
     from .rtlmeter_stdout_cycles_observables import normalized_rtlmeter_stdout
     from .rtlmeter_stdout_cycles_plan import EXPECTED_OBSERVABLES
     from .rtlmeter_stdout_cycles_sidecar_runner import (
@@ -22,7 +22,7 @@ try:
         materialize_rtlmeter_stdout_cycles_sidecar_runner_command,
     )
 except ImportError:  # pragma: no cover - exercised when imported via sys.path.
-    from rtlmeter_sidecar_proxy_marker import observe_rtlmeter_sidecar_proxy_marker
+    from rtlmeter_sidecar_proxy_marker import build_rtlmeter_sidecar_proxy_execution_evidence, observe_rtlmeter_sidecar_proxy_marker
     from rtlmeter_stdout_cycles_observables import normalized_rtlmeter_stdout
     from rtlmeter_stdout_cycles_plan import EXPECTED_OBSERVABLES
     from rtlmeter_stdout_cycles_sidecar_runner import (
@@ -240,6 +240,7 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
     execution_performed = status == STATUS_OBSERVABLES_READY and executed_runner_command and sidecar_candidate
     proxy_authorized = proxy_marker.get("sidecar_execute_proxy_authorized_by_wrapper_branch") is True
     authorized_execution = execution_performed and proxy_authorized
+    proxy_execution_evidence = build_rtlmeter_sidecar_proxy_execution_evidence(proxy_marker=proxy_marker, observables_ready=observable_status["observables_ready"], missing_observables=observable_status["missing_observables"], runner_command_observed=executed_runner_command, execution_performed=execution_performed, execution_authority=authorized_execution)
     return {
         "schema_version": 1,
         "surface": "rtlmeter_stdout_cycles_sidecar_runner_execution_observation_boundary",
@@ -256,6 +257,7 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         "observable_stdout_has_missing_proxy_env": observable_stdout_has_missing_proxy_env,
         **observable_status,
         **proxy_marker,
+        "sidecar_proxy_execution_evidence": proxy_execution_evidence,
         "uses_run_hybrid_template": False,
         "requires_runtime_launch_template": False,
         "run_hybrid_template_compatible": False,

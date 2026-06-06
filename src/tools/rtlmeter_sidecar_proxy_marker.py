@@ -135,12 +135,93 @@ def _missing_marker_context(payload: object) -> list[str]:
     return missing
 
 
+def _sidecar_proxy_evidence(
+    *,
+    marker_status: str,
+    marker_path: str | None,
+    marker_present: bool,
+    marker_valid: bool,
+    proxy_installed: bool,
+    source_patch: bool,
+    proxy_authorized: bool,
+    missing_context: list[str],
+) -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "surface": "rtlmeter_sidecar_proxy_marker_evidence",
+        "sidecar_proxy_marker_status": marker_status,
+        "sidecar_proxy_marker_path": marker_path,
+        "sidecar_proxy_marker_present": marker_present,
+        "sidecar_proxy_marker_valid": marker_valid,
+        "sidecar_execute_proxy_installed_by_wrapper_branch": proxy_installed,
+        "sidecar_execute_proxy_source_patch_by_wrapper_branch": source_patch,
+        "sidecar_execute_proxy_authorized_by_wrapper_branch": proxy_authorized,
+        "sidecar_proxy_marker_missing_context": list(missing_context),
+        "cpu_as_gpu_fallback": False,
+        "gpu_execution_claimed": False,
+        "timing_measured": False,
+        "speedup_claimed": False,
+    }
+
+
+def build_rtlmeter_sidecar_proxy_execution_evidence(
+    *,
+    proxy_marker: Mapping[str, object],
+    observables_ready: bool,
+    missing_observables: object,
+    runner_command_observed: bool,
+    execution_performed: bool,
+    execution_authority: bool,
+) -> dict[str, object]:
+    blocking_context = list(proxy_marker.get("sidecar_proxy_marker_missing_context", []))
+    if not observables_ready and isinstance(missing_observables, list):
+        blocking_context.extend(str(item) for item in missing_observables)
+    if not runner_command_observed:
+        blocking_context.append("runner_command_not_observed")
+    for field in (
+        "sidecar_proxy_marker_valid",
+        "sidecar_execute_proxy_installed_by_wrapper_branch",
+        "sidecar_execute_proxy_source_patch_by_wrapper_branch",
+        "sidecar_execute_proxy_authorized_by_wrapper_branch",
+    ):
+        if proxy_marker.get(field) is not True:
+            blocking_context.append(field)
+    return {
+        "schema_version": 1,
+        "surface": "rtlmeter_stdout_cycles_sidecar_proxy_execution_evidence",
+        "status": "ready" if execution_authority else "blocked",
+        "observables_ready": observables_ready,
+        "runner_command_observed": runner_command_observed,
+        "sidecar_proxy_marker_status": proxy_marker.get("sidecar_proxy_marker_status"),
+        "sidecar_proxy_marker_valid": proxy_marker.get("sidecar_proxy_marker_valid") is True,
+        "sidecar_execute_proxy_installed_by_wrapper_branch": proxy_marker.get("sidecar_execute_proxy_installed_by_wrapper_branch") is True,
+        "sidecar_execute_proxy_source_patch_by_wrapper_branch": proxy_marker.get("sidecar_execute_proxy_source_patch_by_wrapper_branch") is True,
+        "sidecar_execute_proxy_authorized_by_wrapper_branch": proxy_marker.get("sidecar_execute_proxy_authorized_by_wrapper_branch") is True,
+        "execution_performed": execution_performed,
+        "execution_authority": execution_authority,
+        "sidecar_execution_invoked": execution_authority,
+        "cpu_as_gpu_fallback": False,
+        "gpu_execution_claimed": False,
+        "blocking_context": sorted(set(blocking_context)),
+    }
+
+
 def observe_rtlmeter_sidecar_proxy_marker(
     *, observable_execute_dir: object, repo_root: Path | None
 ) -> dict[str, object]:
     marker_path = rtlmeter_sidecar_proxy_marker_path(observable_execute_dir, repo_root)
     marker_path_text = _relative_path(marker_path, repo_root) if marker_path is not None else None
     if marker_path is None or not marker_path.is_file():
+        evidence = _sidecar_proxy_evidence(
+            marker_status=STATUS_MISSING,
+            marker_path=marker_path_text,
+            marker_present=False,
+            marker_valid=False,
+            proxy_installed=False,
+            source_patch=False,
+            proxy_authorized=False,
+            missing_context=["marker_file"],
+        )
         return {
             "sidecar_proxy_marker_status": STATUS_MISSING,
             "sidecar_proxy_marker_path": marker_path_text,
@@ -150,10 +231,21 @@ def observe_rtlmeter_sidecar_proxy_marker(
             "sidecar_execute_proxy_source_patch_by_wrapper_branch": False,
             "sidecar_execute_proxy_authorized_by_wrapper_branch": False,
             "sidecar_proxy_marker_missing_context": ["marker_file"],
+            "sidecar_proxy_evidence": evidence,
         }
     try:
         payload = json.loads(marker_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
+        evidence = _sidecar_proxy_evidence(
+            marker_status=STATUS_INVALID,
+            marker_path=marker_path_text,
+            marker_present=True,
+            marker_valid=False,
+            proxy_installed=False,
+            source_patch=False,
+            proxy_authorized=False,
+            missing_context=["marker_json"],
+        )
         return {
             "sidecar_proxy_marker_status": STATUS_INVALID,
             "sidecar_proxy_marker_path": marker_path_text,
@@ -163,27 +255,40 @@ def observe_rtlmeter_sidecar_proxy_marker(
             "sidecar_execute_proxy_source_patch_by_wrapper_branch": False,
             "sidecar_execute_proxy_authorized_by_wrapper_branch": False,
             "sidecar_proxy_marker_missing_context": ["marker_json"],
+            "sidecar_proxy_evidence": evidence,
         }
     missing = _missing_marker_context(payload)
+    marker_valid = not missing
+    proxy_installed = marker_valid and payload.get("execute_proxy_installed_by_wrapper_branch") is True
+    source_patch = marker_valid and payload.get("execute_proxy_source_patch_by_wrapper_branch", False) is True
+    proxy_authorized = (
+        marker_valid
+        and payload.get(
+            "execute_proxy_authorized_by_wrapper_branch",
+            payload.get("execute_proxy_installed_by_wrapper_branch") is True
+            and payload.get("execute_proxy_source_patch_by_wrapper_branch") is True,
+        )
+        is True
+    )
+    marker_status = STATUS_VALID if marker_valid else STATUS_INVALID
+    evidence = _sidecar_proxy_evidence(
+        marker_status=marker_status,
+        marker_path=marker_path_text,
+        marker_present=True,
+        marker_valid=marker_valid,
+        proxy_installed=proxy_installed,
+        source_patch=source_patch,
+        proxy_authorized=proxy_authorized,
+        missing_context=missing,
+    )
     return {
-        "sidecar_proxy_marker_status": STATUS_VALID if not missing else STATUS_INVALID,
+        "sidecar_proxy_marker_status": marker_status,
         "sidecar_proxy_marker_path": marker_path_text,
         "sidecar_proxy_marker_present": True,
-        "sidecar_proxy_marker_valid": not missing,
-        "sidecar_execute_proxy_installed_by_wrapper_branch": (
-            not missing and payload.get("execute_proxy_installed_by_wrapper_branch") is True
-        ),
-        "sidecar_execute_proxy_source_patch_by_wrapper_branch": (
-            not missing and payload.get("execute_proxy_source_patch_by_wrapper_branch", False) is True
-        ),
-        "sidecar_execute_proxy_authorized_by_wrapper_branch": (
-            not missing
-            and payload.get(
-                "execute_proxy_authorized_by_wrapper_branch",
-                payload.get("execute_proxy_installed_by_wrapper_branch") is True
-                and payload.get("execute_proxy_source_patch_by_wrapper_branch") is True,
-            )
-            is True
-        ),
+        "sidecar_proxy_marker_valid": marker_valid,
+        "sidecar_execute_proxy_installed_by_wrapper_branch": proxy_installed,
+        "sidecar_execute_proxy_source_patch_by_wrapper_branch": source_patch,
+        "sidecar_execute_proxy_authorized_by_wrapper_branch": proxy_authorized,
         "sidecar_proxy_marker_missing_context": missing,
+        "sidecar_proxy_evidence": evidence,
     }
