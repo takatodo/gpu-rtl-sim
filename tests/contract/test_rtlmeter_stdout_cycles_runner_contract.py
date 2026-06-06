@@ -173,7 +173,8 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
             build_rtlmeter_stdout_cycles_runner_implementation_boundary,
         )
 
-        authority_registry = json.loads((REPO_ROOT / REGISTRY_PATH).read_text(encoding="utf-8"))
+        authority_registry = self._complete_authority_registry()
+        authority_registry["source_closure"] = {"status": "frontend_metadata_only_not_source_closure"}
         boundary = build_rtlmeter_stdout_cycles_runner_implementation_boundary(
             runner_contract=self._contract(authority_registry=authority_registry),
         )
@@ -296,7 +297,7 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertIn("third_party/rtlmeter/rtlmeter", boundary["runner_command_argv"])
         self.assertNotIn("--execute", boundary["runner_command_argv"])
         self.assertIsNone(boundary["launcher_command_argv"])
-        self.assertFalse(boundary["runner_source_cli_implemented"])
+        self.assertTrue(boundary["runner_source_cli_implemented"])
         self.assertFalse(boundary["subprocess_invoked"])
         self.assertFalse(boundary["rtlmeter_invoked"])
         self.assertFalse(boundary["adapter_invoked"])
@@ -389,15 +390,13 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertFalse(boundary["execution_performed"])
         self.assertFalse(boundary["measurement_performed"])
 
-    def test_metadata_only_tracked_registry_stays_blocked(self) -> None:
+    def test_tracked_registry_source_closure_leaves_only_runner_blocker(self) -> None:
         authority_registry = json.loads((REPO_ROOT / REGISTRY_PATH).read_text(encoding="utf-8"))
         contract = self._contract(authority_registry=authority_registry)
 
         self.assertEqual(contract["status"], "rtlmeter_stdout_cycles_runner_contract_blocked")
         self.assertEqual(contract["authority_registry_entry"], REGISTRY_PATH)
-        self.assertIn("authority_registry.source_closure.status", contract["missing_runner_context"])
-        self.assertIn("authority_registry.source_closure.authority", contract["missing_runner_context"])
-        self.assertIn("rtlmeter_stdout_cycles_runner_implementation", contract["missing_runner_context"])
+        self.assertEqual(contract["missing_runner_context"], ["rtlmeter_stdout_cycles_runner_implementation"])
         self.assertFalse(contract["execution_performed"])
         self.assertFalse(contract["measurement_performed"])
 
