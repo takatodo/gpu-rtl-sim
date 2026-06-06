@@ -236,13 +236,18 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
                     "observable_execute_dir": observable_dir,
                     "cpu_as_gpu_fallback": False,
                     "ordinary_vsim_output": False,
+                    "direct_sidecar_proxy_marker_status": "rtlmeter_direct_sidecar_proxy_marker_authorized",
+                    "direct_sidecar_proxy_readiness_status": "rtlmeter_direct_sidecar_proxy_installed",
+                    "direct_sidecar_execute_proxy_status": "rtlmeter_vsim_execute_proxy_installed",
                     "execute_proxy_installed_by_wrapper_branch": True,
                     "execute_proxy_source_patch_by_wrapper_branch": True,
                     **self._runtime_non_claim_context(),
                     "direct_sidecar_proxy_readiness": {
+                        "status": "rtlmeter_direct_sidecar_proxy_installed",
                         "proxy_installed_by_wrapper_branch": True,
                         "proxy_authorized_by_wrapper_branch": True,
                         "execution_authority": True,
+                        "vsim_execute_proxy": {"status": "rtlmeter_vsim_execute_proxy_installed", "execution_authority": True},
                         "vsim_sidecar_proxy_target": {"reviewed_proxy_target": True},
                         "vsim_main_proxy_patch": {"patched_by_wrapper_branch": True, "execution_authority": True},
                     },
@@ -283,13 +288,18 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
                     "observable_execute_dir": "artifacts/other/execute-dir",
                     "cpu_as_gpu_fallback": False,
                     "ordinary_vsim_output": False,
+                    "direct_sidecar_proxy_marker_status": "rtlmeter_direct_sidecar_proxy_marker_authorized",
+                    "direct_sidecar_proxy_readiness_status": "rtlmeter_direct_sidecar_proxy_installed",
+                    "direct_sidecar_execute_proxy_status": "rtlmeter_vsim_execute_proxy_installed",
                     "execute_proxy_installed_by_wrapper_branch": True,
                     "execute_proxy_source_patch_by_wrapper_branch": True,
                     **self._runtime_non_claim_context(),
                     "direct_sidecar_proxy_readiness": {
+                        "status": "rtlmeter_direct_sidecar_proxy_installed",
                         "proxy_installed_by_wrapper_branch": True,
                         "proxy_authorized_by_wrapper_branch": True,
                         "execution_authority": True,
+                        "vsim_execute_proxy": {"status": "rtlmeter_vsim_execute_proxy_installed", "execution_authority": True},
                         "vsim_sidecar_proxy_target": {"reviewed_proxy_target": True},
                         "vsim_main_proxy_patch": {"patched_by_wrapper_branch": True, "execution_authority": True},
                     },
@@ -384,14 +394,19 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
                     "observable_execute_dir": observable_dir,
                     "cpu_as_gpu_fallback": False,
                     "ordinary_vsim_output": False,
+                    "direct_sidecar_proxy_marker_status": "rtlmeter_direct_sidecar_proxy_marker_authorized",
+                    "direct_sidecar_proxy_readiness_status": "rtlmeter_direct_sidecar_proxy_installed",
+                    "direct_sidecar_execute_proxy_status": "rtlmeter_vsim_execute_proxy_installed",
                     "execute_proxy_installed_by_wrapper_branch": True,
                     "execute_proxy_source_patch_by_wrapper_branch": True,
                     "execute_proxy_authorized_by_wrapper_branch": True,
                     **self._runtime_non_claim_context(),
                     "direct_sidecar_proxy_readiness": {
+                        "status": "rtlmeter_direct_sidecar_proxy_installed",
                         "proxy_authorized_by_wrapper_branch": False,
                         "execution_authority": True,
                         "proxy_installed_by_wrapper_branch": True,
+                        "vsim_execute_proxy": {"status": "rtlmeter_vsim_execute_proxy_installed", "execution_authority": True},
                         "vsim_main_proxy_patch": {"patched_by_wrapper_branch": True, "execution_authority": True},
                     },
                 },
@@ -400,3 +415,42 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
         self.assertEqual(report["sidecar_proxy_marker_status"], "rtlmeter_sidecar_proxy_marker_invalid")
         self.assertIn("direct_sidecar_proxy_readiness.proxy_authorized_by_wrapper_branch", report["sidecar_proxy_marker_missing_context"])
         self.assertFalse(report["execution_authority"])
+
+    def test_authorized_marker_with_execute_proxy_status_disagreement_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            observable_dir = self._observable_dir()
+            report = self._observed_report(
+                Path(temp_dir),
+                {
+                    "schema_version": 1,
+                    "schema_role": "rtlmeter_sidecar_proxy_marker",
+                    "producer": "rtlmeter_verilator_wrapper_runtime",
+                    "phase": "sidecar_verilate",
+                    "observable_execute_dir": observable_dir,
+                    "cpu_as_gpu_fallback": False,
+                    "ordinary_vsim_output": False,
+                    "direct_sidecar_proxy_marker_status": "rtlmeter_direct_sidecar_proxy_marker_authorized",
+                    "direct_sidecar_proxy_readiness_status": "rtlmeter_direct_sidecar_proxy_installed",
+                    "direct_sidecar_execute_proxy_status": "rtlmeter_vsim_execute_proxy_blocked_by_source_patch",
+                    "execute_proxy_installed_by_wrapper_branch": True,
+                    "execute_proxy_source_patch_by_wrapper_branch": True,
+                    "execute_proxy_authorized_by_wrapper_branch": True,
+                    **self._runtime_non_claim_context(),
+                    "direct_sidecar_proxy_readiness": {
+                        "status": "rtlmeter_direct_sidecar_proxy_installed",
+                        "proxy_authorized_by_wrapper_branch": True,
+                        "execution_authority": True,
+                        "proxy_installed_by_wrapper_branch": True,
+                        "vsim_execute_proxy": {"status": "rtlmeter_vsim_execute_proxy_installed", "execution_authority": False},
+                        "vsim_sidecar_proxy_target": {"reviewed_proxy_target": True},
+                        "vsim_main_proxy_patch": {"patched_by_wrapper_branch": True, "execution_authority": True},
+                    },
+                },
+            )
+
+        self.assertEqual(report["sidecar_proxy_marker_status"], "rtlmeter_sidecar_proxy_marker_invalid")
+        self.assertIn("direct_sidecar_execute_proxy_status", report["sidecar_proxy_marker_missing_context"])
+        self.assertIn("direct_sidecar_proxy_readiness.vsim_execute_proxy.execution_authority", report["sidecar_proxy_marker_missing_context"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["gpu_execution_claimed"])

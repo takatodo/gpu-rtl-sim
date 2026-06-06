@@ -139,6 +139,9 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
         self.assertEqual(calls[0][1]["env"][PHASE_ENV], PHASE_SIDECAR_VERILATE)
         self.assertEqual(marker_payload["schema_role"], "rtlmeter_sidecar_proxy_marker")
         self.assertEqual(marker_payload["producer"], "rtlmeter_verilator_wrapper_runtime")
+        self.assertEqual(marker_payload["direct_sidecar_proxy_marker_status"], "rtlmeter_direct_sidecar_proxy_marker_blocked")
+        self.assertEqual(marker_payload["direct_sidecar_proxy_readiness_status"], "rtlmeter_direct_sidecar_proxy_not_installed")
+        self.assertEqual(marker_payload["direct_sidecar_execute_proxy_status"], "rtlmeter_vsim_execute_proxy_blocked_by_source_patch")
         self.assert_no_local_absolute_paths(json.dumps(marker_payload, sort_keys=True))
         self.assertFalse(marker_payload["cpu_as_gpu_fallback"])
         self.assertEqual((marker_payload["ordinary_vsim_output"], marker_payload["execute_proxy_installed_by_wrapper_branch"], marker_payload["wrapper_executed_obj_dir_vsim"]), (False, False, False))
@@ -230,6 +233,9 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
         self.assertEqual(code, 0)
         self.assertTrue(marker_payload["execute_proxy_installed_by_wrapper_branch"])
         self.assertTrue(marker_payload["execute_proxy_authorized_by_wrapper_branch"])
+        self.assertEqual(marker_payload["direct_sidecar_proxy_marker_status"], "rtlmeter_direct_sidecar_proxy_marker_authorized")
+        self.assertEqual(marker_payload["direct_sidecar_proxy_readiness_status"], "rtlmeter_direct_sidecar_proxy_installed")
+        self.assertEqual(marker_payload["direct_sidecar_execute_proxy_status"], "rtlmeter_vsim_execute_proxy_installed")
         self.assertEqual((marker_payload["vsim_binary_proxy_installed_by_wrapper_branch"], marker_payload["vsim_main_source_patch_applied_by_wrapper_branch"], marker_payload["wrapper_executed_obj_dir_vsim"]), (True, True, False))
         self.assertEqual(
             (

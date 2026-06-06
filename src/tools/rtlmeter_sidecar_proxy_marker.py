@@ -26,15 +26,14 @@ def rtlmeter_sidecar_proxy_marker_path(observable_execute_dir: object, repo_root
     if not execute_dir.is_absolute() and repo_root is not None:
         execute_dir = repo_root / execute_dir
     return execute_dir / MARKER_FILENAME
-def build_rtlmeter_sidecar_proxy_marker_payload(
-    *, observable_execute_dir: str | None = None, proxy_readiness: Mapping[str, object] | None = None
-) -> dict[str, object]:
+def build_rtlmeter_sidecar_proxy_marker_payload(*, observable_execute_dir: str | None = None, proxy_readiness: Mapping[str, object] | None = None) -> dict[str, object]:
     proxy_installed = (
         isinstance(proxy_readiness, Mapping)
         and proxy_readiness.get("proxy_installed_by_wrapper_branch") is True
     )
     proxy_authorized = proxy_installed and isinstance(proxy_readiness, Mapping) and proxy_readiness.get("proxy_authorized_by_wrapper_branch") is True and proxy_readiness.get("execution_authority") is True
     main_patch = proxy_readiness.get("vsim_main_proxy_patch") if isinstance(proxy_readiness, Mapping) else None
+    execute_proxy = proxy_readiness.get("vsim_execute_proxy") if isinstance(proxy_readiness, Mapping) else None
     proxy_source_patch = (
         isinstance(main_patch, Mapping)
         and main_patch.get("patched_by_wrapper_branch") is True
@@ -46,6 +45,9 @@ def build_rtlmeter_sidecar_proxy_marker_payload(
         "producer": MARKER_PRODUCER,
         "phase": MARKER_PHASE,
         "observable_execute_dir": observable_execute_dir,
+        "direct_sidecar_proxy_marker_status": "rtlmeter_direct_sidecar_proxy_marker_authorized" if proxy_authorized and proxy_source_patch else "rtlmeter_direct_sidecar_proxy_marker_blocked",
+        "direct_sidecar_proxy_readiness_status": proxy_readiness.get("status") if isinstance(proxy_readiness, Mapping) else None,
+        "direct_sidecar_execute_proxy_status": execute_proxy.get("status") if isinstance(execute_proxy, Mapping) else None,
         "cpu_as_gpu_fallback": False,
         "ordinary_vsim_output": False,
         "execute_proxy_installed_by_wrapper_branch": proxy_installed,
@@ -64,12 +66,7 @@ def build_rtlmeter_sidecar_proxy_marker_payload(
     return payload
 
 
-def write_rtlmeter_sidecar_proxy_marker(
-    *,
-    observable_execute_dir: object,
-    repo_root: Path | None,
-    proxy_readiness: Mapping[str, object] | None = None,
-) -> Path:
+def write_rtlmeter_sidecar_proxy_marker(*, observable_execute_dir: object, repo_root: Path | None, proxy_readiness: Mapping[str, object] | None = None) -> Path:
     marker_path = rtlmeter_sidecar_proxy_marker_path(observable_execute_dir, repo_root)
     if marker_path is None:
         raise ValueError("observable_execute_dir is required to write the RTLMeter sidecar proxy marker")
@@ -86,22 +83,15 @@ def _missing_marker_context(payload: object, *, expected_observable_execute_dir:
     if not isinstance(payload, Mapping):
         return ["payload"]
     missing: list[str] = []
-    if payload.get("schema_version") != MARKER_SCHEMA_VERSION:
-        missing.append("schema_version")
-    if payload.get("schema_role") != MARKER_SCHEMA_ROLE:
-        missing.append("schema_role")
-    if payload.get("producer") != MARKER_PRODUCER:
-        missing.append("producer")
-    if payload.get("phase") != MARKER_PHASE:
-        missing.append("phase")
-    if payload.get("observable_execute_dir") != expected_observable_execute_dir:
-        missing.append("observable_execute_dir")
-    if payload.get("cpu_as_gpu_fallback") is not False:
-        missing.append("cpu_as_gpu_fallback")
-    if payload.get("ordinary_vsim_output") is not False:
-        missing.append("ordinary_vsim_output")
-    if payload.get("wrapper_executed_obj_dir_vsim") is not False:
-        missing.append("wrapper_executed_obj_dir_vsim")
+    for field, value in (
+        ("schema_version", MARKER_SCHEMA_VERSION), ("schema_role", MARKER_SCHEMA_ROLE),
+        ("producer", MARKER_PRODUCER), ("phase", MARKER_PHASE),
+        ("observable_execute_dir", expected_observable_execute_dir),
+        ("cpu_as_gpu_fallback", False), ("ordinary_vsim_output", False),
+        ("wrapper_executed_obj_dir_vsim", False),
+    ):
+        if payload.get(field) != value:
+            missing.append(field)
     for runtime_field in ("obj_dir_vsim_execution_observed", "runtime_execution_authority", "vsim_runtime_execution_claimed"):
         if payload.get(runtime_field) is not False:
             missing.append(runtime_field)
@@ -124,6 +114,13 @@ def _missing_marker_context(payload: object, *, expected_observable_execute_dir:
     if proxy_authorized is True and proxy_source_patch is not True:
         missing.append("execute_proxy_source_patch_by_wrapper_branch")
     if proxy_authorized is True:
+        for field, value in (
+            ("direct_sidecar_proxy_marker_status", "rtlmeter_direct_sidecar_proxy_marker_authorized"),
+            ("direct_sidecar_proxy_readiness_status", "rtlmeter_direct_sidecar_proxy_installed"),
+            ("direct_sidecar_execute_proxy_status", "rtlmeter_vsim_execute_proxy_installed"),
+        ):
+            if payload.get(field) != value:
+                missing.append(field)
         readiness = payload.get("direct_sidecar_proxy_readiness")
         if not isinstance(readiness, Mapping):
             missing.append("direct_sidecar_proxy_readiness")
@@ -137,6 +134,11 @@ def _missing_marker_context(payload: object, *, expected_observable_execute_dir:
                 missing.append("direct_sidecar_proxy_readiness.vsim_sidecar_proxy_target.reviewed_proxy_target")
             if proxy_installed is True and readiness.get("proxy_installed_by_wrapper_branch") is not True:
                 missing.append("direct_sidecar_proxy_readiness.proxy_installed_by_wrapper_branch")
+            execute_proxy = readiness.get("vsim_execute_proxy")
+            if not isinstance(execute_proxy, Mapping) or execute_proxy.get("status") != "rtlmeter_vsim_execute_proxy_installed":
+                missing.append("direct_sidecar_proxy_readiness.vsim_execute_proxy.status")
+            if not isinstance(execute_proxy, Mapping) or execute_proxy.get("execution_authority") is not True:
+                missing.append("direct_sidecar_proxy_readiness.vsim_execute_proxy.execution_authority")
             main_patch = readiness.get("vsim_main_proxy_patch")
             readiness_source_patch = readiness.get("proxy_source_patch_by_wrapper_branch") is True
             readiness_source_patch = readiness_source_patch or (

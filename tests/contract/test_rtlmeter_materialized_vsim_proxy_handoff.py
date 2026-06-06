@@ -173,6 +173,9 @@ class RtlmeterMaterializedVsimProxyHandoffTest(HybridCliTestCase):
         self.assertEqual(vsim_completed.returncode, 0, vsim_completed.stderr)
         self.assertFalse(ordinary_log_exists)
         self.assertEqual(proxy_log_text, "proxy-ran --from-test\n")
+        self.assertEqual(marker_payload["direct_sidecar_proxy_marker_status"], "rtlmeter_direct_sidecar_proxy_marker_authorized")
+        self.assertEqual(marker_payload["direct_sidecar_proxy_readiness_status"], "rtlmeter_direct_sidecar_proxy_installed")
+        self.assertEqual(marker_payload["direct_sidecar_execute_proxy_status"], "rtlmeter_vsim_execute_proxy_installed")
         self.assertEqual((marker_payload["execute_proxy_installed_by_wrapper_branch"], marker_payload["wrapper_executed_obj_dir_vsim"], marker_payload["runtime_execution_authority"], marker_payload["obj_dir_vsim_execution_observed"]), (True, False, False, False))
         self.assertEqual(
             (
@@ -244,6 +247,9 @@ class RtlmeterMaterializedVsimProxyHandoffTest(HybridCliTestCase):
         self.assertFalse(ordinary_log.exists())
         self.assertTrue(marker_payload["execute_proxy_installed_by_wrapper_branch"])
         self.assertFalse(marker_payload["execute_proxy_authorized_by_wrapper_branch"])
+        self.assertEqual(marker_payload["direct_sidecar_proxy_marker_status"], "rtlmeter_direct_sidecar_proxy_marker_blocked")
+        self.assertEqual(marker_payload["direct_sidecar_proxy_readiness_status"], "rtlmeter_direct_sidecar_proxy_installed_authorization_blocked")
+        self.assertEqual(marker_payload["direct_sidecar_execute_proxy_status"], "rtlmeter_vsim_execute_proxy_installed")
         readiness = marker_payload["direct_sidecar_proxy_readiness"]
         self.assertEqual(readiness["status"], "rtlmeter_direct_sidecar_proxy_installed_authorization_blocked")
         self.assertTrue(readiness["proxy_installed_by_wrapper_branch"])
