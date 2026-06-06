@@ -121,6 +121,8 @@ def _missing_marker_context(payload: object) -> list[str]:
         else:
             if readiness.get("execution_authority") is not True:
                 missing.append("direct_sidecar_proxy_readiness.execution_authority")
+            if readiness.get("proxy_authorized_by_wrapper_branch", True) is not True:
+                missing.append("direct_sidecar_proxy_readiness.proxy_authorized_by_wrapper_branch")
             if proxy_installed is True and readiness.get("proxy_installed_by_wrapper_branch") is not True:
                 missing.append("direct_sidecar_proxy_readiness.proxy_installed_by_wrapper_branch")
             main_patch = readiness.get("vsim_main_proxy_patch")

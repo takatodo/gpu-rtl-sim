@@ -271,3 +271,30 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
         self.assertFalse(report["sidecar_execution_invoked"])
         self.assertFalse(report["sidecar_execute_proxy_authorized_by_wrapper_branch"])
         self.assertFalse(report["gpu_execution_claimed"])
+
+    def test_authorized_marker_with_readiness_authority_disagreement_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            report = self._observed_report(
+                Path(temp_dir),
+                {
+                    "schema_version": 1,
+                    "schema_role": "rtlmeter_sidecar_proxy_marker",
+                    "producer": "rtlmeter_verilator_wrapper_runtime",
+                    "phase": "sidecar_verilate",
+                    "cpu_as_gpu_fallback": False,
+                    "ordinary_vsim_output": False,
+                    "execute_proxy_installed_by_wrapper_branch": True,
+                    "execute_proxy_source_patch_by_wrapper_branch": True,
+                    "execute_proxy_authorized_by_wrapper_branch": True,
+                    "direct_sidecar_proxy_readiness": {
+                        "proxy_authorized_by_wrapper_branch": False,
+                        "execution_authority": True,
+                        "proxy_installed_by_wrapper_branch": True,
+                        "vsim_main_proxy_patch": {"patched_by_wrapper_branch": True, "execution_authority": True},
+                    },
+                },
+            )
+
+        self.assertEqual(report["sidecar_proxy_marker_status"], "rtlmeter_sidecar_proxy_marker_invalid")
+        self.assertIn("direct_sidecar_proxy_readiness.proxy_authorized_by_wrapper_branch", report["sidecar_proxy_marker_missing_context"])
+        self.assertFalse(report["execution_authority"])
