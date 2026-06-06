@@ -198,6 +198,47 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         self.assertFalse(handoff["sidecar_execution_invoked"])
         self.assertFalse(handoff["coverage_output_compare_reached"])
 
+    def test_rtlmeter_sidecar_handoff_rejects_complete_status_without_execution_authority(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_handoff
+
+        context = self._minimal_sidecar_context()
+        context["source_closure"] = {
+            "status": "complete",
+            "source_files": ["third_party/rtlmeter/designs/Example/src/top.v"],
+            "include_files": ["third_party/rtlmeter/rtl/__rtlmeter_top_include.vh"],
+        }
+        handoff = build_rtlmeter_sidecar_handoff(
+            self._expanded_sidecar_argv_with_mdir(),
+            sidecar_context=context,
+        )
+
+        self.assertEqual(handoff["status"], "rtlmeter_sidecar_handoff_blocked_missing_context")
+        self.assertIn("source_closure", handoff["missing_sidecar_context"])
+        self.assertFalse(handoff["sidecar_context_metadata_ready"])
+        self.assertFalse(handoff["sidecar_execution_invoked"])
+        self.assertFalse(handoff["execution_authority"])
+
+    def test_rtlmeter_sidecar_handoff_rejects_thin_complete_source_closure(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_handoff
+
+        context = self._minimal_sidecar_context()
+        context["source_closure"] = {
+            "status": "complete",
+            "authority": "reviewed_hybrid_execution_source_closure",
+        }
+        handoff = build_rtlmeter_sidecar_handoff(
+            self._expanded_sidecar_argv_with_mdir(),
+            sidecar_context=context,
+        )
+
+        self.assertEqual(handoff["status"], "rtlmeter_sidecar_handoff_blocked_missing_context")
+        self.assertIn("source_closure", handoff["missing_sidecar_context"])
+        self.assertFalse(handoff["sidecar_context_metadata_ready"])
+        self.assertFalse(handoff["sidecar_execution_invoked"])
+        self.assertFalse(handoff["execution_authority"])
+
     def test_rtlmeter_sidecar_handoff_lists_partial_context_gaps(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_handoff
