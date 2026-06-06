@@ -538,6 +538,104 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertFalse(report["execution_authority"])
         self.assertFalse(report["gpu_execution_claimed"])
 
+    def test_execution_observation_requires_materialized_runner_command_for_performed(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_execution_observation import (
+            build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation,
+        )
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            out = root / observable_dir
+            (out / "_execute").mkdir(parents=True)
+            (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
+            (out / "_rtlmeter_cycles.txt").write_text("1000000\n", encoding="utf-8")
+
+            report = build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
+                stdout_cycles_plan=plan,
+                command_result={
+                    "command": ["python3", "wrong_runner.py"],
+                    "returncode": 0,
+                    "stdout": "",
+                    "stderr": "",
+                },
+                repo_root=root,
+            )
+
+        self.assertEqual(report["status"], "rtlmeter_stdout_cycles_sidecar_runner_observables_ready")
+        self.assertTrue(report["observables_ready"])
+        self.assertFalse(report["adapter_invoked"])
+        self.assertFalse(report["sidecar_runner_invoked"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["execution_performed"])
+        self.assertFalse(report["gpu_execution_claimed"])
+
+    def test_sidecar_runner_cli_blocks_existing_wrapper_phase_without_subprocess(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import run_rtlmeter_stdout_cycles_sidecar_runner
+        from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = plan["gpu_candidate"]["command"]
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            out = root / observable_dir
+            (out / "_execute").mkdir(parents=True)
+            (out / "_execute/stdout.log").write_text("stale\n", encoding="utf-8")
+            (out / "_rtlmeter_cycles.txt").write_text("1000000\n", encoding="utf-8")
+            calls = []
+            report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                observable_execute_dir=observable_dir,
+                command_argv=["--", *command],
+                repo_root=root,
+                environ={PHASE_ENV: PHASE_RTL_METER_RUN},
+                runner=lambda command_argv, **kwargs: calls.append((command_argv, kwargs)),
+            )
+            self.assertTrue((out / "_execute/stdout.log").exists())
+            self.assertTrue((out / "_rtlmeter_cycles.txt").exists())
+
+        self.assertEqual(report["status"], "rtlmeter_stdout_cycles_sidecar_runner_blocked_wrapper_phase_guard")
+        self.assertEqual(calls, [])
+        self.assertEqual(
+            report["wrapper_phase_guard"]["status"],
+            "rtlmeter_wrapper_phase_guard_blocked_reentry",
+        )
+        self.assertEqual(report["wrapper_phase_guard"]["current_phase"], PHASE_RTL_METER_RUN)
+        self.assertIsNone(report["command_result"])
+        self.assertFalse(report["subprocess_invoked"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["execution_performed"])
+        self.assertFalse(report["cpu_as_gpu_fallback"])
+        self.assertFalse(report["gpu_execution_claimed"])
+
+    def test_sidecar_runner_cli_rejects_run_hybrid_template_without_subprocess(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import run_rtlmeter_stdout_cycles_sidecar_runner
+
+        calls = []
+        report = run_rtlmeter_stdout_cycles_sidecar_runner(
+            observable_execute_dir="artifacts/rtlmeter_example_kind_hello_cpu_gpu_compare/gpu/Example/kind/execute-0/hello",
+            command_argv=["--", "python3", "src/tools/run_hybrid_template.py"],
+            repo_root=REPO_ROOT,
+            environ={},
+            runner=lambda command, **kwargs: calls.append(command),
+        )
+
+        self.assertEqual(report["status"], "rtlmeter_stdout_cycles_sidecar_runner_blocked_rejected_command")
+        self.assertEqual(calls, [])
+        self.assertIsNone(report["command_result"])
+        self.assertFalse(report["subprocess_invoked"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["gpu_execution_claimed"])
+
     def test_sidecar_runner_source_argv_boundary_rejects_run_hybrid_template(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_stdout_cycles_sidecar_runner import (
