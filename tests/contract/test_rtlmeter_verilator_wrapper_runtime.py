@@ -1014,6 +1014,31 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         self.assertFalse(report["delegated_to_real_verilator"])
         self.assertFalse(report["sidecar_execution_invoked"])
 
+    def test_runtime_wrapper_rejects_invalid_env_context_json_without_delegating(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, run_rtlmeter_verilator_wrapper
+
+        stderr = io.StringIO()
+        code = run_rtlmeter_verilator_wrapper(
+            self._expanded_sidecar_argv(),
+            environ={SIDECAR_CONTEXT_JSON_ENV: "{not json", "PATH": ""},
+            runner=lambda *args, **kwargs: self.fail("invalid env context must not delegate"),
+            stderr=stderr,
+        )
+        report = json.loads(stderr.getvalue())
+
+        self.assertEqual(code, 2)
+        self.assertEqual(
+            report["status"],
+            "rtlmeter_sidecar_execution_handoff_blocked_missing_reviewed_source_closure",
+        )
+        self.assertEqual(report["sidecar_context_parse_error"]["env"], SIDECAR_CONTEXT_JSON_ENV)
+        self.assertIn("Expecting property name", report["sidecar_context_parse_error"]["error"])
+        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["cpu_as_gpu_fallback"])
+        self.assertFalse(report["delegated_to_real_verilator"])
+        self.assertFalse(report["sidecar_execution_invoked"])
+
 
     def test_runtime_wrapper_rejects_thin_env_source_closure_without_delegating(self) -> None:
         self.add_tools_to_path()
