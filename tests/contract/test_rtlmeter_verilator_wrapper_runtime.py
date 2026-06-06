@@ -966,3 +966,105 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         self.assertIn("source_closure", handoff["missing_sidecar_context"])
         self.assertFalse(handoff["sidecar_context_metadata_ready"])
         self.assertFalse(handoff["sidecar_execution_invoked"])
+
+    def _reviewed_template_payload_for_launcher_guard(
+        self,
+        target: str = "rtlmeter_example_kind_hello",
+    ) -> dict[str, object]:
+        return {
+            "target": target,
+            "template_execution_role": "runnable_hybrid_template",
+            "source_closure": self._reviewed_source_closure_for_reentry_guard(),
+        }
+
+    def _launcher_invocation_for_guard(
+        self,
+        context: dict[str, object],
+        *,
+        repo_root: Path | None = None,
+    ) -> dict[str, object]:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_handoff import (
+            build_rtlmeter_sidecar_handoff,
+            build_rtlmeter_sidecar_launcher_invocation,
+        )
+
+        handoff = build_rtlmeter_sidecar_handoff(
+            [
+                "--cc",
+                "-Mdir",
+                "obj_dir",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            sidecar_context=context,
+        )
+        if repo_root is None:
+            return build_rtlmeter_sidecar_launcher_invocation(handoff)
+        return build_rtlmeter_sidecar_launcher_invocation(handoff, repo_root=repo_root)
+
+    def test_rtlmeter_launcher_invocation_blocks_template_without_source_closure_authority(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            template = root / "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            template.parent.mkdir(parents=True)
+            template.write_text(
+                json.dumps({"target": "rtlmeter_example_kind_hello", "source_closure": {"status": "complete"}}),
+                encoding="utf-8",
+            )
+            context = self._reviewed_rtlmeter_context_for_reentry_guard()
+            context["template_or_target_registry_entry"] = (
+                "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            )
+            invocation = self._launcher_invocation_for_guard(context, repo_root=root)
+
+        self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_blocked")
+        self.assertIn("template_source_closure.authority", invocation["missing_invocation_context"])
+        self.assertIsNone(invocation["launcher_command_argv"])
+        self.assertFalse(invocation["execution_performed"])
+
+    def test_rtlmeter_launcher_invocation_blocks_runtime_template_without_execution_role(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            template = root / "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            template.parent.mkdir(parents=True)
+            payload = self._reviewed_template_payload_for_launcher_guard()
+            payload.pop("template_execution_role")
+            template.write_text(json.dumps(payload), encoding="utf-8")
+            context = self._reviewed_rtlmeter_context_for_reentry_guard()
+            context["template_or_target_registry_entry"] = (
+                "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            )
+            invocation = self._launcher_invocation_for_guard(context, repo_root=root)
+
+        self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_blocked")
+        self.assertIn("template_execution_role", invocation["missing_invocation_context"])
+        self.assertIsNone(invocation["launcher_command_argv"])
+        self.assertFalse(invocation["execution_performed"])
+
+    def test_rtlmeter_launcher_invocation_blocks_metadata_only_runtime_template_role(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            template = root / "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            template.parent.mkdir(parents=True)
+            payload = self._reviewed_template_payload_for_launcher_guard()
+            payload["template_execution_role"] = "metadata_only"
+            template.write_text(json.dumps(payload), encoding="utf-8")
+            context = self._reviewed_rtlmeter_context_for_reentry_guard()
+            context["template_or_target_registry_entry"] = (
+                "config/slice_launch_templates/rtlmeter_example_kind_hello.json"
+            )
+            invocation = self._launcher_invocation_for_guard(context, repo_root=root)
+
+        self.assertEqual(invocation["status"], "rtlmeter_sidecar_launcher_invocation_blocked")
+        self.assertIn("template_execution_role", invocation["missing_invocation_context"])
+        self.assertIsNone(invocation["launcher_command_argv"])
+        self.assertFalse(invocation["execution_performed"])
