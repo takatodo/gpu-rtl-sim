@@ -870,3 +870,99 @@ class RtlmeterVerilatorWrapperRuntimeTest(HybridCliTestCase):
         self.assertFalse(reentry_guard["direct_sidecar_verilate_phase_allowed"])
         self.assertFalse(report["cpu_as_gpu_fallback"])
         self.assertFalse(report["sidecar_execution_invoked"])
+
+    def test_rtlmeter_sidecar_handoff_uses_verilator_default_mdir_when_omitted(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_handoff
+
+        handoff = build_rtlmeter_sidecar_handoff(
+            [
+                "--cc",
+                "--main",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            sidecar_context=self._reviewed_rtlmeter_context_for_reentry_guard(),
+        )
+
+        self.assertEqual(handoff["status"], "rtlmeter_sidecar_handoff_metadata_ready")
+        self.assertEqual(handoff["missing_sidecar_context"], [])
+        self.assertEqual(handoff["parser_payload"]["mdir"], "obj_dir")
+        self.assertEqual(handoff["parser_payload_mdir_source"], "verilator_default_obj_dir")
+        self.assertTrue(handoff["sidecar_context_metadata_ready"])
+        self.assertFalse(handoff["sidecar_execution_invoked"])
+
+    def test_rtlmeter_sidecar_handoff_rejects_complete_status_without_execution_authority(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_handoff
+
+        context = self._reviewed_rtlmeter_context_for_reentry_guard()
+        context["source_closure"] = {
+            "status": "complete",
+            "source_files": ["third_party/rtlmeter/designs/Example/src/top.v"],
+            "include_files": ["third_party/rtlmeter/rtl/__rtlmeter_top_include.vh"],
+        }
+        handoff = build_rtlmeter_sidecar_handoff(
+            [
+                "--cc",
+                "-Mdir",
+                "obj_dir",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            sidecar_context=context,
+        )
+
+        self.assertEqual(handoff["status"], "rtlmeter_sidecar_handoff_blocked_missing_context")
+        self.assertIn("source_closure", handoff["missing_sidecar_context"])
+        self.assertFalse(handoff["sidecar_context_metadata_ready"])
+        self.assertFalse(handoff["sidecar_execution_invoked"])
+
+    def test_rtlmeter_sidecar_handoff_rejects_thin_complete_source_closure(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_sidecar_handoff import build_rtlmeter_sidecar_handoff
+
+        context = self._reviewed_rtlmeter_context_for_reentry_guard()
+        context["source_closure"] = {
+            "status": "complete",
+            "authority": "reviewed_hybrid_execution_source_closure",
+        }
+        handoff = build_rtlmeter_sidecar_handoff(
+            [
+                "--cc",
+                "-Mdir",
+                "obj_dir",
+                "--top-module",
+                "top",
+                "-f",
+                "filelist",
+                "--sim-accel",
+                "sidecar-gpu",
+                "--sim-accel-states",
+                "64",
+                "--sim-accel-steps",
+                "1",
+            ],
+            sidecar_context=context,
+        )
+
+        self.assertEqual(handoff["status"], "rtlmeter_sidecar_handoff_blocked_missing_context")
+        self.assertIn("source_closure", handoff["missing_sidecar_context"])
+        self.assertFalse(handoff["sidecar_context_metadata_ready"])
+        self.assertFalse(handoff["sidecar_execution_invoked"])
