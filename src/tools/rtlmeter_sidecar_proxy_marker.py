@@ -60,7 +60,7 @@ def build_rtlmeter_sidecar_proxy_marker_payload(
         "ordinary_vsim_output": False,
         "execute_proxy_installed_by_wrapper_branch": proxy_installed,
         "execute_proxy_source_patch_by_wrapper_branch": proxy_source_patch,
-        "execute_proxy_authorized_by_wrapper_branch": proxy_installed,
+        "execute_proxy_authorized_by_wrapper_branch": proxy_installed and proxy_source_patch,
     }
     if proxy_readiness is not None:
         payload["direct_sidecar_proxy_readiness"] = dict(proxy_readiness)
@@ -104,11 +104,16 @@ def _missing_marker_context(payload: object) -> list[str]:
     proxy_source_patch = payload.get("execute_proxy_source_patch_by_wrapper_branch", False)
     if proxy_source_patch not in (False, True):
         missing.append("execute_proxy_source_patch_by_wrapper_branch")
-    proxy_authorized = payload.get("execute_proxy_authorized_by_wrapper_branch", proxy_installed is True)
+    proxy_authorized = payload.get(
+        "execute_proxy_authorized_by_wrapper_branch",
+        proxy_installed is True and proxy_source_patch is True,
+    )
     if proxy_authorized not in (False, True):
         missing.append("execute_proxy_authorized_by_wrapper_branch")
     if proxy_authorized is True and proxy_installed is not True:
         missing.append("execute_proxy_installed_by_wrapper_branch")
+    if proxy_authorized is True and proxy_source_patch is not True:
+        missing.append("execute_proxy_source_patch_by_wrapper_branch")
     if proxy_authorized is True:
         readiness = payload.get("direct_sidecar_proxy_readiness")
         if not isinstance(readiness, Mapping):
@@ -118,6 +123,15 @@ def _missing_marker_context(payload: object) -> list[str]:
                 missing.append("direct_sidecar_proxy_readiness.execution_authority")
             if proxy_installed is True and readiness.get("proxy_installed_by_wrapper_branch") is not True:
                 missing.append("direct_sidecar_proxy_readiness.proxy_installed_by_wrapper_branch")
+            main_patch = readiness.get("vsim_main_proxy_patch")
+            readiness_source_patch = readiness.get("proxy_source_patch_by_wrapper_branch") is True
+            readiness_source_patch = readiness_source_patch or (
+                isinstance(main_patch, Mapping)
+                and main_patch.get("patched_by_wrapper_branch") is True
+                and main_patch.get("execution_authority") is True
+            )
+            if proxy_source_patch is True and not readiness_source_patch:
+                missing.append("direct_sidecar_proxy_readiness.proxy_source_patch_by_wrapper_branch")
     return missing
 
 
@@ -163,7 +177,13 @@ def observe_rtlmeter_sidecar_proxy_marker(
             not missing and payload.get("execute_proxy_source_patch_by_wrapper_branch", False) is True
         ),
         "sidecar_execute_proxy_authorized_by_wrapper_branch": (
-            not missing and payload.get("execute_proxy_authorized_by_wrapper_branch", payload.get("execute_proxy_installed_by_wrapper_branch") is True) is True
+            not missing
+            and payload.get(
+                "execute_proxy_authorized_by_wrapper_branch",
+                payload.get("execute_proxy_installed_by_wrapper_branch") is True
+                and payload.get("execute_proxy_source_patch_by_wrapper_branch") is True,
+            )
+            is True
         ),
         "sidecar_proxy_marker_missing_context": missing,
     }

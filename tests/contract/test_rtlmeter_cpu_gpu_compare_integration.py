@@ -597,6 +597,10 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
                             proxy_readiness={
                                 "proxy_installed_by_wrapper_branch": True,
                                 "execution_authority": True,
+                                "vsim_main_proxy_patch": {
+                                    "patched_by_wrapper_branch": True,
+                                    "execution_authority": True,
+                                },
                             },
                         )
                         return subprocess.CompletedProcess(inner_command, 0, stdout="", stderr="")
