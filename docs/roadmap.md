@@ -647,8 +647,8 @@ PULP ITA softmax-top dependency/template boundary gate:
 Config minimization audit:
 
 - `records/scaling_gates/config_minimal_surface_completion_audit.json`
-- active `config/` file count: `145`
-- tracked gate JSON records under `records/scaling_gates/`: `927`
+- active `config/` file count: `146`
+- tracked gate JSON records under `records/scaling_gates/`: `966`
 - compatibility link: `config/scaling_gates -> ../records/scaling_gates`
 - generated files under `reports/` and `artifacts/`: reproducible evidence only, never source of truth
 
