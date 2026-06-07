@@ -45,14 +45,14 @@ RTLMeter launch template, or resolve RTLMeter source closure.
 
 ## Acceptance
 
-- After `git clean -fdX -e .codex -e .agents`, a template run may create
+- After `git clean -fdX -e '!.codex' -e '!.agents'`, a template run may create
   ignored generated files, but not `src/passes/VlGpuPasses.so`,
   `src/passes/vlgpugen`, or `src/hybrid/run_vl_hybrid`.
 - `build_vl_gpu.py` and `run_vl_hybrid.py` still rebuild missing local helper
   binaries on demand.
 - `git status --short --untracked-files=all` shows no extra git-visible files
   from the flow.
-- `git clean -ndX -e .codex -e .agents` shows generated outputs only under
+- `git clean -ndX -e '!.codex' -e '!.agents'` shows generated outputs only under
   ignored output locations, plus local busy metadata such as `.codex/` and
   `.agents/` if present.
 - The non-GPU contract path stays green by mocking, injecting, or skipping real
@@ -62,7 +62,7 @@ RTLMeter launch template, or resolve RTLMeter source closure.
 ## Validation
 
 ```sh
-git clean -fdX -e .codex -e .agents
+git clean -fdX -e '!.codex' -e '!.agents'
 log="$(mktemp)"
 if ! python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_fifo_sync.json --shape 1x1 >"$log" 2>&1; then
   grep -E "gpu_runtime_unavailable|CUDA driver|CUDA error 304|operating system" "$log"
