@@ -10,6 +10,24 @@ REGISTRY_PATH = "config/rtlmeter_sidecar_authorities/rtlmeter_example_kind_hello
 
 
 class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
+    def _reviewed_vsim_proxy(self, root: Path) -> str:
+        proxy = root / "bin" / "rtlmeter-vsim-sidecar-proxy"
+        proxy.parent.mkdir(parents=True, exist_ok=True)
+        proxy.write_text("#!/bin/sh\nexit 126\n", encoding="utf-8")
+        proxy.chmod(0o755)
+        (proxy.parent / f"{proxy.name}.review.json").write_text(
+            json.dumps(
+                {
+                    "schema_role": "rtlmeter_vsim_sidecar_proxy_target_review",
+                    "target_path": proxy.relative_to(root).as_posix(),
+                    "reviewed_proxy_target": True,
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        return proxy.as_posix()
+
     def _expanded_sidecar_argv(self) -> list[str]:
         return [
             "--cc",
@@ -329,7 +347,7 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
             plan = build_rtlmeter_stdout_cycles_execution_plan()
             command = plan["gpu_candidate"]["command"]
             observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
-            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            proxy_path = self._reviewed_vsim_proxy(root)
             calls = []
 
             def fake_runner(command_argv, **kwargs):
@@ -381,7 +399,7 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
             plan = build_rtlmeter_stdout_cycles_execution_plan()
             command = plan["gpu_candidate"]["command"]
             observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
-            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            proxy_path = self._reviewed_vsim_proxy(root)
             out = root / observable_dir
             (out / "_execute").mkdir(parents=True)
             (out / "_execute/stdout.log").write_text("    9.99 | stale output\n", encoding="utf-8")
@@ -427,7 +445,7 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
             plan = build_rtlmeter_stdout_cycles_execution_plan()
             command = plan["gpu_candidate"]["command"]
             observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
-            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            proxy_path = self._reviewed_vsim_proxy(root)
             out = root / observable_dir
             (out / "_execute").mkdir(parents=True)
             (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
@@ -474,7 +492,7 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
             plan = build_rtlmeter_stdout_cycles_execution_plan()
             command = plan["gpu_candidate"]["command"]
             observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
-            proxy_path = (root / "bin" / "rtlmeter-vsim-sidecar-proxy").as_posix()
+            proxy_path = self._reviewed_vsim_proxy(root)
             out = root / observable_dir
             (out / "_execute").mkdir(parents=True)
             (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
