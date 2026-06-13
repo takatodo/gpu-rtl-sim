@@ -355,8 +355,8 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         )
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["subprocess_invoked"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_performed"])
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["sidecar_execution_invoked"])
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_authority"])
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["rtlmeter_proxy_handoff_observed"])
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["reviewed_proxy_metadata_observed"])
         self.assertIn("<local-absolute-path>", report["gpu_failure_diagnostic_log"])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 
@@ -413,8 +413,8 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         )
         self.assertEqual(report["stdout_cycles_sidecar_runner"]["runner_stdout_report"]["command_result"]["returncode"], 125)
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_performed"])
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["sidecar_execution_invoked"])
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_authority"])
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["rtlmeter_proxy_handoff_observed"])
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["reviewed_proxy_metadata_observed"])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 
     def test_gpu_failure_classifies_real_verilator_without_sim_accel_support(self) -> None:
@@ -464,10 +464,10 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertEqual(report["gpu_failure_blocker"], BLOCKER_REAL_VERILATOR_NOT_SIDECAR_CAPABLE)
         self.assertIn("Invalid option: --sim-accel", report["gpu_failure_diagnostic_log"])
         self.assertFalse(report["cpu_as_gpu_fallback"])
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["sidecar_execution_invoked"])
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["rtlmeter_proxy_handoff_observed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["gpu_execution_claimed"])
 
-    def test_runner_backed_observables_only_success_has_no_execution_authority(self) -> None:
+    def test_runner_backed_observables_only_success_has_no_reviewed_proxy_metadata_observed(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_cpu_gpu_compare_integration import (
             OPT_IN_ENV,
@@ -550,17 +550,17 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertEqual(calls[1][0][1], "src/tools/rtlmeter_stdout_cycles_sidecar_runner.py")
         self.assertIn("third_party/rtlmeter/rtlmeter", calls[1][0])
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["adapter_invoked"])
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["sidecar_execution_invoked"])
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_authority"])
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["rtlmeter_proxy_handoff_observed"])
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["reviewed_proxy_metadata_observed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["sidecar_execute_proxy_installed_by_wrapper_branch"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["gpu_execution_claimed"])
         evidence = report["sidecar_proxy_evidence"]
-        self.assertFalse(evidence["execution_authority"])
+        self.assertFalse(evidence["reviewed_proxy_metadata_observed"])
         self.assertEqual(evidence["rtlmeter_vsim_proxy_handoff_status"], "blocked")
         self.assertFalse(evidence["rtlmeter_vsim_proxy_handoff_reached"])
-        self.assertTrue(evidence["execution_authority_requires_valid_proxy_marker"])
-        self.assertTrue(evidence["execution_authority_requires_execute_proxy_install"])
-        self.assertTrue(evidence["execution_authority_requires_source_patch_marker"])
+        self.assertTrue(evidence["reviewed_proxy_metadata_requires_valid_proxy_marker"])
+        self.assertTrue(evidence["reviewed_proxy_metadata_requires_execute_proxy_install"])
+        self.assertTrue(evidence["reviewed_proxy_metadata_requires_source_patch_marker"])
         self.assertFalse(evidence["sidecar_execute_proxy_installed_by_wrapper_branch"])
         self.assertFalse(evidence["sidecar_execute_proxy_authorized_by_wrapper_branch"])
         self.assertEqual((evidence["vsim_binary_proxy_installed_by_wrapper_branch"], evidence["vsim_main_source_patch_applied_by_wrapper_branch"], evidence["wrapper_executed_obj_dir_vsim"]), (False, False, False))
@@ -574,7 +574,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertEqual(execution_evidence["status"], "blocked")
         self.assertTrue(execution_evidence["observables_ready"])
         self.assertTrue(execution_evidence["runner_command_observed"])
-        self.assertFalse(execution_evidence["execution_authority"])
+        self.assertFalse(execution_evidence["reviewed_proxy_metadata_observed"])
         self.assertIn("sidecar_execute_proxy_installed_by_wrapper_branch", execution_evidence["blocking_context"])
         self.assertIn("RTLMETER_SIDECAR_VERILATOR_WRAPPER", calls[1][1]["env"])
         self.assertEqual(calls[1][1]["env"][VSIM_SIDECAR_PROXY_ENV], proxy_path)
@@ -634,12 +634,12 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
                                 "status": "rtlmeter_direct_sidecar_proxy_installed",
                                 "proxy_installed_by_wrapper_branch": True,
                                 "proxy_authorized_by_wrapper_branch": True,
-                                "execution_authority": True,
-                                "vsim_execute_proxy": {"status": "rtlmeter_vsim_execute_proxy_installed", "execution_authority": True},
+                                "reviewed_proxy_metadata_observed": True,
+                                "vsim_execute_proxy": {"status": "rtlmeter_vsim_execute_proxy_installed", "reviewed_proxy_metadata_observed": True},
                                 "vsim_sidecar_proxy_target": {"reviewed_proxy_target": True},
                                 "vsim_main_proxy_patch": {
                                     "patched_by_wrapper_branch": True,
-                                    "execution_authority": True,
+                                    "reviewed_proxy_metadata_observed": True,
                                 },
                             },
                         )
@@ -671,17 +671,17 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["execution_performed"])
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["sidecar_proxy_marker_valid"])
         self.assertTrue(report["stdout_cycles_sidecar_runner"]["sidecar_execute_proxy_installed_by_wrapper_branch"])
-        self.assertTrue(report["stdout_cycles_sidecar_runner"]["execution_authority_requires_source_patch_marker"])
-        self.assertTrue(report["stdout_cycles_sidecar_runner"]["execution_authority"])
-        self.assertTrue(report["stdout_cycles_sidecar_runner"]["sidecar_execution_invoked"])
+        self.assertTrue(report["stdout_cycles_sidecar_runner"]["reviewed_proxy_metadata_requires_source_patch_marker"])
+        self.assertTrue(report["stdout_cycles_sidecar_runner"]["reviewed_proxy_metadata_observed"])
+        self.assertTrue(report["stdout_cycles_sidecar_runner"]["rtlmeter_proxy_handoff_observed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["gpu_execution_claimed"])
         evidence = report["sidecar_proxy_evidence"]
-        self.assertTrue(evidence["execution_authority"])
+        self.assertTrue(evidence["reviewed_proxy_metadata_observed"])
         self.assertEqual(evidence["rtlmeter_vsim_proxy_handoff_status"], "ready")
         self.assertTrue(evidence["rtlmeter_vsim_proxy_handoff_reached"])
-        self.assertTrue(evidence["execution_authority_requires_valid_proxy_marker"])
-        self.assertTrue(evidence["execution_authority_requires_execute_proxy_install"])
-        self.assertTrue(evidence["execution_authority_requires_source_patch_marker"])
+        self.assertTrue(evidence["reviewed_proxy_metadata_requires_valid_proxy_marker"])
+        self.assertTrue(evidence["reviewed_proxy_metadata_requires_execute_proxy_install"])
+        self.assertTrue(evidence["reviewed_proxy_metadata_requires_source_patch_marker"])
         self.assertEqual(evidence["sidecar_proxy_marker_status"], "rtlmeter_sidecar_proxy_marker_valid")
         self.assertTrue(evidence["sidecar_proxy_marker_valid"])
         self.assertTrue(evidence["sidecar_execute_proxy_installed_by_wrapper_branch"])
@@ -696,8 +696,8 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertEqual(evidence["blocking_context"], [])
         execution_evidence = report["sidecar_proxy_execution_evidence"]
         self.assertEqual(execution_evidence["status"], "ready")
-        self.assertTrue(execution_evidence["execution_authority"])
-        self.assertTrue(execution_evidence["sidecar_execution_invoked"])
+        self.assertTrue(execution_evidence["reviewed_proxy_metadata_observed"])
+        self.assertTrue(execution_evidence["rtlmeter_proxy_handoff_observed"])
         self.assertEqual(execution_evidence["blocking_context"], [])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 
@@ -753,12 +753,12 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
                             "status": "rtlmeter_direct_sidecar_proxy_installed",
                             "proxy_installed_by_wrapper_branch": True,
                             "proxy_authorized_by_wrapper_branch": True,
-                            "execution_authority": True,
-                            "vsim_execute_proxy": {"status": "rtlmeter_vsim_execute_proxy_installed", "execution_authority": True},
+                            "reviewed_proxy_metadata_observed": True,
+                            "vsim_execute_proxy": {"status": "rtlmeter_vsim_execute_proxy_installed", "reviewed_proxy_metadata_observed": True},
                             "vsim_sidecar_proxy_target": {"reviewed_proxy_target": True},
                             "vsim_main_proxy_patch": {
                                 "patched_by_wrapper_branch": True,
-                                "execution_authority": True,
+                                "reviewed_proxy_metadata_observed": True,
                             },
                         },
                     )
@@ -787,7 +787,7 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertEqual(report["status"], "failed")
         self.assertEqual(report["comparison"]["status"], "failed")
         self.assertEqual(report["first_seed_handoff_evidence_status"], "compare_failed")
-        self.assertTrue(report["stdout_cycles_sidecar_runner"]["execution_authority"])
+        self.assertTrue(report["stdout_cycles_sidecar_runner"]["reviewed_proxy_metadata_observed"])
         self.assertEqual(report["sidecar_proxy_execution_evidence"]["status"], "ready")
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["gpu_execution_claimed"])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
@@ -831,8 +831,8 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_performed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["measurement_performed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["cpu_as_gpu_fallback"])
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["sidecar_execution_invoked"])
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_authority"])
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["rtlmeter_proxy_handoff_observed"])
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["reviewed_proxy_metadata_observed"])
 
     def test_gpu_runner_does_not_reuse_stale_matching_observables(self) -> None:
         self.add_tools_to_path()
@@ -896,8 +896,8 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
         self.assertEqual(report["first_seed_handoff_evidence_status"], "blocked_before_compare")
         self.assertNotEqual(report["stdout_cycles_sidecar_runner"]["status"], "rtlmeter_stdout_cycles_sidecar_runner_observables_ready")
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_performed"])
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["sidecar_execution_invoked"])
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_authority"])
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["rtlmeter_proxy_handoff_observed"])
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["reviewed_proxy_metadata_observed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["gpu_execution_claimed"])
         self.assertIsNone(report["comparison"])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))

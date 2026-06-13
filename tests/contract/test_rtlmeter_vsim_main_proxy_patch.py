@@ -39,7 +39,7 @@ class RtlmeterVsimMainProxyPatchTest(HybridCliTestCase):
 
         self.assertEqual(report["status"], "rtlmeter_vsim_main_proxy_patch_missing_source")
         self.assertFalse(report["patched_by_wrapper_branch"])
-        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["reviewed_proxy_metadata_observed"])
         self.assertIn("main_cpp", report["missing_patch_context"])
 
     def test_unsupported_vsim_main_without_main_fails_closed(self) -> None:
@@ -57,7 +57,7 @@ class RtlmeterVsimMainProxyPatchTest(HybridCliTestCase):
 
         self.assertEqual(report["status"], "rtlmeter_vsim_main_proxy_patch_unsupported_source")
         self.assertFalse(report["patched_by_wrapper_branch"])
-        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["reviewed_proxy_metadata_observed"])
         self.assertIn("#include \"verilated.h\"", report["missing_patch_context"])
         self.assertEqual(after, original)
 
@@ -97,7 +97,7 @@ class RtlmeterVsimMainProxyPatchTest(HybridCliTestCase):
         self.assertEqual(report["status"], "rtlmeter_vsim_main_proxy_patch_applied")
         self.assertEqual(report["main_cpp"], "obj_dir/Vsim__main.cpp")
         self.assertTrue(report["patched_by_wrapper_branch"])
-        self.assertTrue(report["execution_authority"])
+        self.assertTrue(report["reviewed_proxy_metadata_observed"])
         self.assertFalse(report["sidecar_execution_invoked"])
         self.assertFalse(report["cpu_as_gpu_fallback"])
         self.assertFalse(report["ordinary_vsim_output"])
@@ -127,7 +127,7 @@ class RtlmeterVsimMainProxyPatchTest(HybridCliTestCase):
         self.assertEqual(second["status"], "rtlmeter_vsim_main_proxy_patch_already_present")
         self.assertEqual(patched_text.count(PATCH_BEGIN), 1)
         self.assertTrue(second["patched_by_wrapper_branch"])
-        self.assertTrue(second["execution_authority"])
+        self.assertTrue(second["reviewed_proxy_metadata_observed"])
 
     def test_rejects_unbalanced_proxy_markers_without_mutating_file(self) -> None:
         self.add_tools_to_path()

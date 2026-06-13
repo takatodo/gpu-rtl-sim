@@ -240,7 +240,7 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
     execution_performed = status == STATUS_OBSERVABLES_READY and executed_runner_command and sidecar_candidate
     proxy_authorized = proxy_marker.get("sidecar_execute_proxy_authorized_by_wrapper_branch") is True
     authorized_execution = execution_performed and proxy_authorized
-    proxy_execution_evidence = build_rtlmeter_sidecar_proxy_execution_evidence(proxy_marker=proxy_marker, observables_ready=observable_status["observables_ready"], missing_observables=observable_status["missing_observables"], runner_command_observed=executed_runner_command, execution_performed=execution_performed, execution_authority=authorized_execution)
+    proxy_execution_evidence = build_rtlmeter_sidecar_proxy_execution_evidence(proxy_marker=proxy_marker, observables_ready=observable_status["observables_ready"], missing_observables=observable_status["missing_observables"], runner_command_observed=executed_runner_command, execution_performed=execution_performed, proxy_handoff_observed=authorized_execution)
     nested_proxy_evidence = runner_stdout_report.get("sidecar_proxy_execution_evidence") if isinstance(runner_stdout_report, Mapping) else None
     if isinstance(nested_proxy_evidence, Mapping) and isinstance(nested_proxy_evidence.get("blocking_context"), list):
         proxy_execution_evidence["blocking_context"] = sorted({*proxy_execution_evidence["blocking_context"], *(str(item) for item in nested_proxy_evidence["blocking_context"])})
@@ -273,16 +273,16 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
         "sidecar_runner_invoked": executed_runner_command and sidecar_candidate,
         "rtlmeter_vsim_proxy_handoff_status": "ready" if authorized_execution else "blocked",
         "rtlmeter_vsim_proxy_handoff_reached": authorized_execution,
-        "sidecar_execution_invoked": authorized_execution,
+        "rtlmeter_proxy_handoff_observed": authorized_execution,
         "coverage_output_compare_reached": False,
         "execution_performed": execution_performed,
         "measurement_performed": False,
-        "execution_authority": authorized_execution,
+        "reviewed_proxy_metadata_observed": authorized_execution,
         "runtime_abi": False,
         "cpu_as_gpu_fallback": False,
-        "execution_authority_requires_valid_proxy_marker": True,
-        "execution_authority_requires_execute_proxy_install": True,
-        "execution_authority_requires_source_patch_marker": True,
+        "reviewed_proxy_metadata_requires_valid_proxy_marker": True,
+        "reviewed_proxy_metadata_requires_execute_proxy_install": True,
+        "reviewed_proxy_metadata_requires_source_patch_marker": True,
         "gpu_execution_claim_requires_valid_proxy_marker": True,
         "gpu_execution_claimed": False,
         "generated_report_is_source_of_truth": False,
@@ -293,8 +293,8 @@ def build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
             "execution observation does not use run_hybrid_template.py",
             "execution observation does not treat generated reports as source of truth",
             "CPU execution is never reported as GPU execution",
-            "RTLMeter stdout/cycles observation does not claim GPU runtime execution",
-            "RTLMeter stdout/cycles equivalence alone does not prove sidecar proxy execution",
+            "RTLMeter stdout/cycles observation and equivalence alone do not claim GPU runtime or prove sidecar proxy execution",
+            "reviewed proxy metadata is self-attested handoff evidence, not GPU execution authority",
             "A sidecar proxy marker alone does not prove RTLMeter-compatible Vsim execute proxy installation",
         ],
     }

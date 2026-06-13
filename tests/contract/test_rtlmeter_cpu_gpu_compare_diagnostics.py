@@ -130,7 +130,7 @@ class RtlmeterCpuGpuCompareDiagnosticsTest(HybridCliTestCase):
             report["stdout_cycles_sidecar_runner"]["runner_stdout_report"]["missing_observables"],
             ["gpu:_rtlmeter_cycles.txt"],
         )
-        self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_authority"])
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["reviewed_proxy_metadata_observed"])
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 
     def test_classifies_narrow_runner_fail_closed_statuses(self) -> None:

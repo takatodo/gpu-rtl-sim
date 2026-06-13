@@ -158,7 +158,7 @@ def _resolve_vsim_sidecar_proxy_target(*, repo_root: Path, env: Mapping[str, str
             "reviewed_proxy_target": reviewed,
             "reviewed_proxy_target_status": "rtlmeter_vsim_sidecar_proxy_target_reviewed" if reviewed else ("rtlmeter_vsim_sidecar_proxy_target_env_executable_unreviewed" if executable else "rtlmeter_vsim_sidecar_proxy_target_env_unusable"),
             "missing_proxy_target_context": [] if reviewed else ["reviewed_vsim_sidecar_proxy_target", *review_missing],
-            "execution_authority": reviewed,
+            "reviewed_proxy_metadata_observed": reviewed,
             "cpu_as_gpu_fallback": False,
             "gpu_execution_claimed": False,
             "timing_measured": False,

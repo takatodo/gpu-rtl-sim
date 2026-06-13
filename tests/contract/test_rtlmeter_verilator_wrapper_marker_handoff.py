@@ -164,8 +164,8 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
         self.assertFalse(readiness["proxy_installed_by_wrapper_branch"])
         self.assertEqual((readiness["vsim_binary_proxy_installed_by_wrapper_branch"], readiness["vsim_main_source_patch_applied_by_wrapper_branch"], readiness["wrapper_executed_obj_dir_vsim"]), (False, False, False))
         self.assertTrue(readiness["ordinary_vsim_unclaimable"])
-        self.assertFalse(readiness["execution_authority"])
-        self.assertIn("vsim_main_proxy_patch.execution_authority", readiness["missing_proxy_context"])
+        self.assertFalse(readiness["reviewed_proxy_metadata_observed"])
+        self.assertIn("vsim_main_proxy_patch.reviewed_proxy_metadata_observed", readiness["missing_proxy_context"])
 
     def test_rtlmeter_run_phase_marks_proxy_installed_when_generated_main_is_patched(self) -> None:
         self.add_tools_to_path()
@@ -252,10 +252,10 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
         self.assertEqual(readiness["status"], "rtlmeter_direct_sidecar_proxy_installed")
         self.assertTrue(readiness["proxy_installed_by_wrapper_branch"])
         self.assertEqual((readiness["vsim_binary_proxy_installed_by_wrapper_branch"], readiness["vsim_main_source_patch_applied_by_wrapper_branch"], readiness["wrapper_executed_obj_dir_vsim"]), (True, True, False))
-        self.assertTrue(readiness["execution_authority"])
+        self.assertTrue(readiness["reviewed_proxy_metadata_observed"])
         self.assertTrue(readiness["vsim_sidecar_proxy_target"]["reviewed_proxy_target"])
-        self.assertTrue(readiness["vsim_main_proxy_patch"]["execution_authority"])
-        self.assertTrue(readiness["vsim_execute_proxy"]["execution_authority"])
+        self.assertTrue(readiness["vsim_main_proxy_patch"]["reviewed_proxy_metadata_observed"])
+        self.assertTrue(readiness["vsim_execute_proxy"]["reviewed_proxy_metadata_observed"])
         self.assertIn("RTLMETER_VSIM_SIDECAR_PROXY", patched_main)
 
     def test_failed_direct_verilate_does_not_write_proxy_authority_marker(self) -> None:

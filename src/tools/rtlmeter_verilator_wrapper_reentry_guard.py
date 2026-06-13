@@ -142,7 +142,7 @@ def _install_vsim_execute_proxy(expected_vsim: Path | None, main_patch: object, 
             "status": "rtlmeter_vsim_execute_proxy_missing_vsim_path",
             "expected_vsim_path": None,
             "installed_by_wrapper_branch": False,
-            "execution_authority": False,
+            "reviewed_proxy_metadata_observed": False,
             "missing_proxy_context": ["expected_vsim"],
         }
     if not expected_vsim.exists():
@@ -150,16 +150,16 @@ def _install_vsim_execute_proxy(expected_vsim: Path | None, main_patch: object, 
             "status": "rtlmeter_vsim_execute_proxy_missing_vsim",
             "expected_vsim_path": _relative_path(expected_vsim, repo_root),
             "installed_by_wrapper_branch": False,
-            "execution_authority": False,
+            "reviewed_proxy_metadata_observed": False,
             "missing_proxy_context": ["expected_vsim"],
         }
-    if not isinstance(main_patch, Mapping) or main_patch.get("execution_authority") is not True:
+    if not isinstance(main_patch, Mapping) or main_patch.get("reviewed_proxy_metadata_observed") is not True:
         return {
             "status": "rtlmeter_vsim_execute_proxy_blocked_by_source_patch",
             "expected_vsim_path": _relative_path(expected_vsim, repo_root),
             "installed_by_wrapper_branch": False,
-            "execution_authority": False,
-            "missing_proxy_context": ["vsim_main_proxy_patch.execution_authority"],
+            "reviewed_proxy_metadata_observed": False,
+            "missing_proxy_context": ["vsim_main_proxy_patch.reviewed_proxy_metadata_observed"],
         }
 
     expected_vsim.write_text(
@@ -178,7 +178,7 @@ def _install_vsim_execute_proxy(expected_vsim: Path | None, main_patch: object, 
         "status": "rtlmeter_vsim_execute_proxy_installed",
         "expected_vsim_path": _relative_path(expected_vsim, repo_root),
         "installed_by_wrapper_branch": True,
-        "execution_authority": True,
+        "reviewed_proxy_metadata_observed": True,
         "missing_proxy_context": [],
     }
 
@@ -203,13 +203,13 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
         else None
     )
     execute_proxy = _install_vsim_execute_proxy(expected_vsim, main_patch, repo_root)
-    proxy_installed = execute_proxy.get("execution_authority") is True
+    proxy_installed = execute_proxy.get("reviewed_proxy_metadata_observed") is True
     _proxy_path, proxy_target = _resolve_vsim_sidecar_proxy_target(repo_root=repo_root or Path.cwd(), env=environ or {})
     proxy_target_reviewed = isinstance(proxy_target, Mapping) and proxy_target.get("reviewed_proxy_target") is True
     proxy_source_patch = (
         isinstance(main_patch, Mapping)
         and main_patch.get("patched_by_wrapper_branch") is True
-        and main_patch.get("execution_authority") is True
+        and main_patch.get("reviewed_proxy_metadata_observed") is True
     )
     missing_context: list[str] = []
     if compile_dir is None:
@@ -253,6 +253,6 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
         "proxy_authorized_by_wrapper_branch": proxy_authorized,
         "wrapper_executed_obj_dir_vsim": False,
         "ordinary_vsim_unclaimable": True,
-        "execution_authority": proxy_authorized,
+        "reviewed_proxy_metadata_observed": proxy_authorized,
         "missing_proxy_context": missing_context,
     }

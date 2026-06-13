@@ -189,9 +189,9 @@ class RtlmeterMaterializedVsimProxyHandoffTest(HybridCliTestCase):
         )
         readiness = marker_payload["direct_sidecar_proxy_readiness"]
         self.assertEqual(readiness["status"], "rtlmeter_direct_sidecar_proxy_installed")
-        self.assertTrue(readiness["vsim_main_proxy_patch"]["execution_authority"])
-        self.assertTrue(readiness["vsim_execute_proxy"]["execution_authority"])
-        self.assertTrue(readiness["execution_authority"])
+        self.assertTrue(readiness["vsim_main_proxy_patch"]["reviewed_proxy_metadata_observed"])
+        self.assertTrue(readiness["vsim_execute_proxy"]["reviewed_proxy_metadata_observed"])
+        self.assertTrue(readiness["reviewed_proxy_metadata_observed"])
 
     def test_materialized_vsim_proxy_fails_closed_without_proxy_env(self) -> None:
         self.add_tools_to_path()
@@ -254,7 +254,7 @@ class RtlmeterMaterializedVsimProxyHandoffTest(HybridCliTestCase):
         self.assertEqual(readiness["status"], "rtlmeter_direct_sidecar_proxy_installed_authorization_blocked")
         self.assertTrue(readiness["proxy_installed_by_wrapper_branch"])
         self.assertFalse(readiness["proxy_authorized_by_wrapper_branch"])
-        self.assertFalse(readiness["execution_authority"])
+        self.assertFalse(readiness["reviewed_proxy_metadata_observed"])
         self.assertIn("reviewed_vsim_sidecar_proxy_target", readiness["missing_proxy_context"])
 
     def test_materialized_wrapper_uses_repo_root_env_when_rtlmeter_runs_from_compile_dir(self) -> None:

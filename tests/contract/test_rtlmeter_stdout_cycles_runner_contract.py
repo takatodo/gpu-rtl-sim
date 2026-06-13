@@ -379,8 +379,8 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertTrue(report["runner_source_cli_implemented"])
         self.assertTrue(report["adapter_invoked"])
         self.assertTrue(report["sidecar_runner_invoked"])
-        self.assertFalse(report["sidecar_execution_invoked"])
-        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["rtlmeter_proxy_handoff_observed"])
+        self.assertFalse(report["reviewed_proxy_metadata_observed"])
         self.assertTrue(report["execution_performed"])
         self.assertFalse(report["measurement_performed"])
         self.assertFalse(report["cpu_as_gpu_fallback"])
@@ -429,7 +429,7 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertTrue(report["observables_ready"])
         self.assertEqual(report["cycle_count"], 1000000)
         self.assertTrue(report["execution_performed"])
-        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["reviewed_proxy_metadata_observed"])
         self.assertFalse(report["gpu_execution_claimed"])
 
     def test_sidecar_runner_cli_does_not_reuse_stale_observables_when_child_writes_nothing(self) -> None:
@@ -474,8 +474,8 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertIsNone(report["cycle_count"])
         self.assertTrue(report["subprocess_invoked"])
         self.assertTrue(report["sidecar_runner_invoked"])
-        self.assertFalse(report["sidecar_execution_invoked"])
-        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["rtlmeter_proxy_handoff_observed"])
+        self.assertFalse(report["reviewed_proxy_metadata_observed"])
         self.assertFalse(report["execution_performed"])
         self.assertFalse(report["gpu_execution_claimed"])
 
@@ -514,8 +514,8 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertIsNone(report["normalized_stdout_sha256"])
         self.assertIsNone(report["cycle_count"])
         self.assertFalse(report["execution_performed"])
-        self.assertFalse(report["sidecar_execution_invoked"])
-        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["rtlmeter_proxy_handoff_observed"])
+        self.assertFalse(report["reviewed_proxy_metadata_observed"])
         self.assertFalse(report["gpu_execution_claimed"])
 
     def test_sidecar_runner_cli_classifies_missing_vsim_sidecar_proxy_env(self) -> None:
@@ -552,8 +552,8 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertFalse(report["observable_stdout_has_missing_proxy_env"])
         self.assertFalse(report["vsim_sidecar_proxy_env_present"])
         self.assertFalse(report["execution_performed"])
-        self.assertFalse(report["sidecar_execution_invoked"])
-        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["rtlmeter_proxy_handoff_observed"])
+        self.assertFalse(report["reviewed_proxy_metadata_observed"])
         self.assertFalse(report["gpu_execution_claimed"])
 
     def test_execution_observation_requires_materialized_runner_command_for_performed(self) -> None:
@@ -587,8 +587,8 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertTrue(report["observables_ready"])
         self.assertFalse(report["adapter_invoked"])
         self.assertFalse(report["sidecar_runner_invoked"])
-        self.assertFalse(report["sidecar_execution_invoked"])
-        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["rtlmeter_proxy_handoff_observed"])
+        self.assertFalse(report["reviewed_proxy_metadata_observed"])
         self.assertFalse(report["execution_performed"])
         self.assertFalse(report["gpu_execution_claimed"])
 
@@ -627,8 +627,8 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertEqual(report["wrapper_phase_guard"]["current_phase"], PHASE_RTL_METER_RUN)
         self.assertIsNone(report["command_result"])
         self.assertFalse(report["subprocess_invoked"])
-        self.assertFalse(report["sidecar_execution_invoked"])
-        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["rtlmeter_proxy_handoff_observed"])
+        self.assertFalse(report["reviewed_proxy_metadata_observed"])
         self.assertFalse(report["execution_performed"])
         self.assertFalse(report["cpu_as_gpu_fallback"])
         self.assertFalse(report["gpu_execution_claimed"])
@@ -650,8 +650,8 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertEqual(calls, [])
         self.assertIsNone(report["command_result"])
         self.assertFalse(report["subprocess_invoked"])
-        self.assertFalse(report["sidecar_execution_invoked"])
-        self.assertFalse(report["execution_authority"])
+        self.assertFalse(report["rtlmeter_proxy_handoff_observed"])
+        self.assertFalse(report["reviewed_proxy_metadata_observed"])
         self.assertFalse(report["gpu_execution_claimed"])
 
     def test_sidecar_runner_source_argv_boundary_rejects_run_hybrid_template(self) -> None:
