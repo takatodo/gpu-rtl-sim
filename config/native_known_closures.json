@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "schema_role": "verilator_native_known_closures",
+  "non_claims": [
+    "recognition covers tracked known closures only, not arbitrary filelists",
+    "recognition is not dependency inference",
+    "recognition success is not GPU execution evidence"
+  ],
+  "closures": [
+    {
+      "target": "pulp_ita_mha",
+      "top_module": "pulp_ita_mha_gpu_cov_tb",
+      "launch_template": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json"
+    }
+  ]
+}
