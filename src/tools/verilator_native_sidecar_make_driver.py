@@ -1,9 +1,11 @@
-"""Bridge a recognized native sidecar closure to the build_vl_gpu pipeline.
+"""Bridge a recognized native sidecar closure to the reviewed template GPU flow.
 
 This is the repo-side driver invoked from the generated Makefile hook when
 ``verilator --sim-accel sidecar-gpu`` is used. It recognizes the filelist/top
 pair against the tracked known closures and, only for a recognized closure,
-hands the verilated ``mdir`` to the existing ``build_vl_gpu`` GPU pipeline.
+delegates the closure to the existing reviewed ``run_hybrid_template`` flow
+(Verilator --cc, host probe, CPU init/reference, GPU cubin build, hybrid run,
+coverage-output compare).
 
 Recognition and plan construction are compile-side metadata only: they never
 claim GPU execution, never fall back to CPU, and fail closed for any
@@ -30,7 +32,8 @@ NON_CLAIMS = (
     "recognition and plan construction are compile-side metadata, not GPU execution evidence",
     "the driver never falls back to CPU when the GPU pipeline is unavailable",
     "no speedup, timing, or arbitrary-RTL claim is made",
-    "only a tracked known closure can reach the build_vl_gpu pipeline",
+    "only a tracked known closure can reach the reviewed template GPU flow",
+    "GPU execution and coverage-output equivalence come from the delegated template flow, not from the make-emitted CPU executable",
 )
 
 
@@ -92,7 +95,7 @@ def plan_native_sidecar_build(
     registry_path: str | Path | None = None,
     mdir_override: str | Path | None = None,
 ) -> dict[str, object]:
-    """Recognize the closure and resolve the build_vl_gpu mdir without building.
+    """Recognize the closure and resolve the make mdir without running anything.
 
     ``mdir_override`` lets the generated Makefile hook pass the directory
     Verilator actually emitted into (``--Mdir``); when absent the canonical
@@ -158,7 +161,7 @@ def plan_native_sidecar_build(
         mdir_display=mdir_display,
         mdir_verilated=True,
         missing_context=[],
-        diagnostic="recognized closure resolved to a verilated mdir ready for the build_vl_gpu pipeline",
+        diagnostic="recognized closure resolved to a verilated mdir ready for the template GPU flow",
     )
 
 
@@ -169,9 +172,18 @@ def run_native_sidecar_build(
     repo_root: Path | None = None,
     registry_path: str | Path | None = None,
     mdir_override: str | Path | None = None,
-    builder=None,
+    shape: str = "64x1",
+    template_runner=None,
 ) -> dict[str, object]:
-    """Plan, then drive build_vl_gpu only when the plan is ready. Fail closed otherwise."""
+    """Plan, then drive the recognized closure through the reviewed template flow.
+
+    Only a recognized closure reaches the GPU+equivalence flow. The native path
+    is a thin bridge: it delegates to the existing reviewed ``run_hybrid_template``
+    seven-stage flow (Verilator --cc, host probe, CPU init/reference, GPU cubin
+    build, hybrid sidecar run, coverage-output compare) for the closure's launch
+    template, rather than building the cubin in isolation. The make-emitted
+    ``--main`` CPU executable is a separate artifact and is not GPU-wired.
+    """
     root = (repo_root or Path.cwd()).resolve()
     plan = plan_native_sidecar_build(
         filelist_path=filelist_path,
@@ -180,17 +192,24 @@ def run_native_sidecar_build(
         registry_path=registry_path,
         mdir_override=mdir_override,
     )
-    plan["build_invoked"] = False
+    plan["template_flow_shape"] = shape
+    plan["template_flow_invoked"] = False
+    plan["template_flow_passed"] = False
+    plan["diagnostic_native_exe_is_cpu_only"] = (
+        "the make-emitted --main executable is a CPU binary; GPU execution and "
+        "coverage-output equivalence are produced by the delegated template flow"
+    )
     if plan["status"] != STATUS_BUILD_PLAN_READY:
         return plan
 
-    if builder is None:
-        from build_vl_gpu import build_vl_gpu as builder  # noqa: PLC0415
+    launch_template = str(plan["launch_template"])
+    if template_runner is None:
+        from run_hybrid_template import main as template_runner  # noqa: PLC0415
 
-    cubin, storage_size = builder(root / str(plan["mdir"]))
-    plan["build_invoked"] = True
-    plan["cubin"] = _display_path(Path(cubin), root)
-    plan["syms_storage_size"] = int(storage_size)
+    returncode = template_runner([str(root / launch_template), "--shape", shape])
+    plan["template_flow_invoked"] = True
+    plan["template_flow_returncode"] = int(returncode)
+    plan["template_flow_passed"] = returncode == 0
     return plan
 
 
@@ -213,19 +232,34 @@ def build_parser():
     return parser
 
 
+def _shape_from_args(states: str | None, steps: str | None) -> str:
+    n = int(states) if states else 64
+    s = int(steps) if steps else 1
+    return f"{n}x{s}"
+
+
 def main(argv: list[str] | None = None) -> int:
     import json as _json
 
     args = build_parser().parse_args(argv)
     repo_root = Path(args.repo_root).resolve() if args.repo_root else Path.cwd().resolve()
-    kwargs = dict(
-        filelist_path=args.filelist,
-        top_module=args.top_module,
-        repo_root=repo_root,
-        registry_path=args.registry,
-        mdir_override=args.mdir,
-    )
-    report = plan_native_sidecar_build(**kwargs) if args.command == "plan" else run_native_sidecar_build(**kwargs)
+    if args.command == "plan":
+        report = plan_native_sidecar_build(
+            filelist_path=args.filelist,
+            top_module=args.top_module,
+            repo_root=repo_root,
+            registry_path=args.registry,
+            mdir_override=args.mdir,
+        )
+    else:
+        report = run_native_sidecar_build(
+            filelist_path=args.filelist,
+            top_module=args.top_module,
+            repo_root=repo_root,
+            registry_path=args.registry,
+            mdir_override=args.mdir,
+            shape=_shape_from_args(args.sim_accel_states, args.sim_accel_steps),
+        )
     serialized = _json.dumps(report, indent=2)
     print(serialized)
     if args.summary_out:
@@ -238,7 +272,7 @@ def main(argv: list[str] | None = None) -> int:
         summary_path.write_text(serialized + "\n", encoding="utf-8")
     if args.command == "plan":
         return 0 if report["status"] == STATUS_BUILD_PLAN_READY else 1
-    return 0 if report.get("build_invoked") is True else 1
+    return 0 if report.get("template_flow_passed") is True else 1
 
 
 if __name__ == "__main__":

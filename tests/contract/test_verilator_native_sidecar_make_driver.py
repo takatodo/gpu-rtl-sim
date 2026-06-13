@@ -86,30 +86,31 @@ class VerilatorNativeSidecarMakeDriverTest(HybridCliTestCase):
         self.assertEqual(report["missing_build_context"], [])
         self._assert_fail_closed_non_claims(report)
 
-    def test_run_does_not_invoke_builder_when_blocked(self) -> None:
-        calls: list[Path] = []
+    def test_run_does_not_invoke_template_flow_when_blocked(self) -> None:
+        calls: list[list[str]] = []
 
-        def fake_builder(mdir):
-            calls.append(mdir)
-            return Path("artifacts/x.cubin"), 0
+        def fake_runner(argv):
+            calls.append(argv)
+            return 0
 
         with tempfile.TemporaryDirectory(dir=REPO_ROOT / "artifacts") as tmp:
             report = run_native_sidecar_build(
                 filelist_path=self._write_filelist(Path(tmp), [*self._known_entries(), "extra.sv"]),
                 top_module=KNOWN_TOP,
                 repo_root=REPO_ROOT,
-                builder=fake_builder,
+                template_runner=fake_runner,
             )
         self.assertEqual(calls, [])
-        self.assertFalse(report["build_invoked"])
+        self.assertFalse(report["template_flow_invoked"])
+        self.assertFalse(report["template_flow_passed"])
         self.assertEqual(report["status"], STATUS_BLOCKED_UNRECOGNIZED)
 
-    def test_run_invokes_builder_only_when_plan_ready(self) -> None:
-        calls: list[Path] = []
+    def test_run_delegates_recognized_closure_to_template_flow(self) -> None:
+        calls: list[list[str]] = []
 
-        def fake_builder(mdir):
-            calls.append(Path(mdir))
-            return Path("artifacts/native_sidecar.cubin"), 4096
+        def fake_runner(argv):
+            calls.append(argv)
+            return 0
 
         with tempfile.TemporaryDirectory(dir=REPO_ROOT / "artifacts") as tmp:
             tmp_path = Path(tmp)
@@ -120,12 +121,32 @@ class VerilatorNativeSidecarMakeDriverTest(HybridCliTestCase):
                 top_module=KNOWN_TOP,
                 repo_root=REPO_ROOT,
                 registry_path=registry,
-                builder=fake_builder,
+                shape="64x1",
+                template_runner=fake_runner,
             )
         self.assertEqual(len(calls), 1)
-        self.assertTrue(report["build_invoked"])
-        self.assertEqual(report["syms_storage_size"], 4096)
-        self.assertEqual(report["cubin"], "artifacts/native_sidecar.cubin")
+        argv = calls[0]
+        self.assertIn("--shape", argv)
+        self.assertEqual(argv[argv.index("--shape") + 1], "64x1")
+        self.assertTrue(argv[0].endswith(".json"))
+        self.assertTrue(report["template_flow_invoked"])
+        self.assertTrue(report["template_flow_passed"])
+
+    def test_run_records_template_flow_failure_without_passing(self) -> None:
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT / "artifacts") as tmp:
+            tmp_path = Path(tmp)
+            registry, mdir = self._registry_with_local_mdir(tmp_path)
+            (mdir / "Vtop_classes.mk").write_text("# verilated\n", encoding="utf-8")
+            report = run_native_sidecar_build(
+                filelist_path=self._write_filelist(tmp_path, self._known_entries()),
+                top_module=KNOWN_TOP,
+                repo_root=REPO_ROOT,
+                registry_path=registry,
+                template_runner=lambda argv: 1,
+            )
+        self.assertTrue(report["template_flow_invoked"])
+        self.assertFalse(report["template_flow_passed"])
+        self.assertEqual(report["template_flow_returncode"], 1)
 
     def test_cli_plan_returns_nonzero_for_unrecognized_closure(self) -> None:
         with tempfile.TemporaryDirectory(dir=REPO_ROOT / "artifacts") as tmp:

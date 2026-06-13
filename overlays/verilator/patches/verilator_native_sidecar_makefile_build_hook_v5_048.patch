@@ -1,8 +1,8 @@
 diff --git a/src/V3EmitMk.cpp b/src/V3EmitMk.cpp
-index f7694527..7eba1761 100644
+index f7694527..bc1f9079 100644
 --- a/src/V3EmitMk.cpp
 +++ b/src/V3EmitMk.cpp
-@@ -745,11 +745,57 @@ public:
+@@ -745,11 +745,58 @@ public:
                      + compilerIncludeFlag + " -c -o $@ $<\n");
          }
  
@@ -28,9 +28,10 @@ index f7694527..7eba1761 100644
 +                of.puts("PYTHON3 ?= python3\n");
 +                of.puts("VL_SIDECAR_STAMP = $(VM_PREFIX)__sidecar_build.stamp\n");
 +                of.puts("$(VL_SIDECAR_STAMP): $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a\n");
-+                // VERILATOR_ROOT is forwarded so the GPU build compiles the generated
-+                // classes against the same Verilator headers that emitted them.
-+                of.puts("\tVERILATOR_ROOT=$(VERILATOR_ROOT) $(PYTHON3) "
++                // The driver delegates the recognized closure to the reviewed
++                // template flow, which manages its own Verilator; VERILATOR_ROOT is
++                // intentionally not forwarded so that flow uses its expected toolchain.
++                of.puts("\t$(PYTHON3) "
 +                        "$(GPU_RTL_SIM_REPO_ROOT)/src/tools/verilator_native_sidecar_make_driver.py "
 +                        "run \\\n");
 +                of.puts("\t  --repo-root $(GPU_RTL_SIM_REPO_ROOT) \\\n");
