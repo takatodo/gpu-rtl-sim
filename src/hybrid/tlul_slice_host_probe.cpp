@@ -17,6 +17,8 @@
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
+#include <algorithm>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -28,6 +30,9 @@
 #include <vector>
 
 #include "verilated.h"
+
+#define HP_STRINGIFY_INNER(x) #x
+#define HP_STRINGIFY(x) HP_STRINGIFY_INNER(x)
 
 #ifndef MODEL_HEADER
 #error "MODEL_HEADER must be defined"
@@ -124,6 +129,12 @@ struct ProbeConfig {
   std::string edge_state_dir;
   uint32_t raw_root_eval_steps = 0;
   std::string raw_root_eval_state_out;
+  // CPU eval-only benchmark: from the post-reset init state, time nstates x steps
+  // calls of the same root ___eval the GPU kernel runs (apples-to-apples).
+  uint32_t eval_bench_states = 0;
+  uint32_t eval_bench_steps = 1;
+  uint32_t eval_bench_repeats = 1;
+  std::string eval_bench_state_out;
   std::string patch_script;
   std::vector<std::pair<std::string, uint32_t>> sets;
 };
@@ -368,6 +379,29 @@ ProbeConfig parse_args(int argc, char** argv) {
       cfg.raw_root_eval_steps =
           parse_u32("--raw-root-eval-steps", (i + 1) < argc ? argv[++i] : nullptr);
       if (cfg.raw_root_eval_steps == 0U) fail("--raw-root-eval-steps must be >= 1");
+      continue;
+    }
+    if (arg == "--eval-bench-states") {
+      cfg.eval_bench_states =
+          parse_u32("--eval-bench-states", (i + 1) < argc ? argv[++i] : nullptr);
+      if (cfg.eval_bench_states == 0U) fail("--eval-bench-states must be >= 1");
+      continue;
+    }
+    if (arg == "--eval-bench-steps") {
+      cfg.eval_bench_steps =
+          parse_u32("--eval-bench-steps", (i + 1) < argc ? argv[++i] : nullptr);
+      if (cfg.eval_bench_steps == 0U) fail("--eval-bench-steps must be >= 1");
+      continue;
+    }
+    if (arg == "--eval-bench-repeats") {
+      cfg.eval_bench_repeats =
+          parse_u32("--eval-bench-repeats", (i + 1) < argc ? argv[++i] : nullptr);
+      if (cfg.eval_bench_repeats == 0U) fail("--eval-bench-repeats must be >= 1");
+      continue;
+    }
+    if (arg == "--eval-bench-state-out") {
+      cfg.eval_bench_state_out = (i + 1) < argc ? argv[++i] : "";
+      if (cfg.eval_bench_state_out.empty()) fail("missing value for --eval-bench-state-out");
       continue;
     }
     if (arg == "--raw-root-eval-state-out") {
@@ -1067,6 +1101,91 @@ void emit_repeat_summary(
 int main(int argc, char** argv) {
   try {
     const ProbeConfig cfg = parse_args(argc, argv);
+
+    if (cfg.eval_bench_states != 0U) {
+#ifndef ROOT_EVAL_FN
+      fail("--eval-bench-states requires ROOT_EVAL_FN support in the compiled probe");
+#else
+      VerilatedContext context;
+      context.commandArgs(argc, argv);
+      context.randReset(0);
+      context.quiet(true);
+      context.time(0);
+      Model model(&context, TARGET_NAME);
+      Root* const root = model.rootp;
+      configure_defaults(model);
+      for (const auto& entry : cfg.sets) {
+        apply_setting(model, entry.first, entry.second);
+      }
+      // Reach the post-reset init state (same prelude as run_one_probe_state);
+      // this setup is excluded from the timed region, like the GPU side excludes
+      // host->device init upload from its launch-loop wall measurement.
+      root->ROOT_CLK_FIELD = 0U;
+      root->ROOT_RST_FIELD = HOST_RESET_CONTROL ? ROOT_RST_ASSERTED_VALUE : ROOT_RST_DEASSERTED_VALUE;
+      model.eval_step();
+      if (HOST_CLOCK_CONTROL) {
+        run_host_cycles(model, context, root, cfg.reset_cycles);
+        if (HOST_RESET_CONTROL) {
+          root->ROOT_RST_FIELD = ROOT_RST_DEASSERTED_VALUE;
+          model.eval_step();
+        }
+        run_host_cycles(model, context, root, cfg.post_reset_cycles);
+      } else {
+        run_scheduled_events(model, context, static_cast<int>(cfg.reset_cycles * 2U));
+        root->ROOT_RST_FIELD = ROOT_RST_DEASSERTED_VALUE;
+        model.eval_step();
+        run_scheduled_events(model, context, static_cast<int>(cfg.post_reset_cycles * 2U));
+      }
+
+      const size_t image_size = state_image_size();
+      void* const image_dst = const_cast<void*>(state_image_ptr(model, root));
+      std::vector<uint8_t> init_image(image_size);
+      std::memcpy(init_image.data(), image_dst, image_size);
+
+      // Timed region: for each of nstates, restore the shared init image and run
+      // `steps` calls of the SAME root ___eval the GPU kernel runs. nstates serial
+      // on CPU mirrors nstates parallel on GPU; total eval work is nstates*steps.
+      std::vector<double> samples;
+      samples.reserve(cfg.eval_bench_repeats);
+      for (uint32_t r = 0; r < cfg.eval_bench_repeats; ++r) {
+        const auto started = std::chrono::steady_clock::now();
+        for (uint32_t s = 0; s < cfg.eval_bench_states; ++s) {
+          std::memcpy(image_dst, init_image.data(), image_size);
+          for (uint32_t k = 0; k < cfg.eval_bench_steps; ++k) {
+            ::ROOT_EVAL_FN(root);
+          }
+        }
+        const auto finished = std::chrono::steady_clock::now();
+        samples.push_back(std::chrono::duration<double, std::milli>(finished - started).count());
+      }
+      std::vector<double> sorted = samples;
+      std::sort(sorted.begin(), sorted.end());
+      const double median_ms = sorted[sorted.size() / 2];
+      const uint64_t total_evals =
+          static_cast<uint64_t>(cfg.eval_bench_states) * cfg.eval_bench_steps;
+      if (!cfg.eval_bench_state_out.empty()) {
+        write_state_file(cfg.eval_bench_state_out, root);
+      }
+      std::cout << "{\n";
+      std::cout << "  \"surface\": \"cpu_eval_only_bench\",\n";
+      std::cout << "  \"root_eval_fn\": \"" << HP_STRINGIFY(ROOT_EVAL_FN) << "\",\n";
+      std::cout << "  \"eval_bench_states\": " << cfg.eval_bench_states << ",\n";
+      std::cout << "  \"eval_bench_steps\": " << cfg.eval_bench_steps << ",\n";
+      std::cout << "  \"eval_bench_repeats\": " << cfg.eval_bench_repeats << ",\n";
+      std::cout << "  \"total_evals\": " << total_evals << ",\n";
+      std::cout << "  \"cpu_eval_only_wall_ms_min\": " << sorted.front() << ",\n";
+      std::cout << "  \"cpu_eval_only_wall_ms_median\": " << median_ms << ",\n";
+      std::cout << "  \"cpu_eval_only_wall_ms_max\": " << sorted.back() << ",\n";
+      std::cout << "  \"cpu_eval_only_wall_us_per_eval\": "
+                << (total_evals > 0 ? (median_ms * 1000.0) / static_cast<double>(total_evals) : 0.0)
+                << ",\n";
+      std::cout << "  \"root_size\": " << image_size << ",\n";
+      std::cout << "  \"measures\": \"eval-only from shared init state; excludes build/verilate/reset setup\",\n";
+      std::cout << "  \"non_claims\": \"scoped timing evidence only; not production throughput or broad speedup\"\n";
+      std::cout << "}\n";
+      return 0;
+#endif
+    }
 
     if (cfg.repeat_states_requested) {
       std::vector<ProbeSummary> summaries;
