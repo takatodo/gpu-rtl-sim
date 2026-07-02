@@ -105,7 +105,10 @@ class RtlmeterCpuGpuCompareStaleRegressionTest(HybridCliTestCase):
         self.assertEqual(report["status"], "gpu_observables_not_ready")
         self.assertEqual(report["missing_runner_report"], "rtlmeter_stdout_cycles_sidecar_runner_json_stdout")
         self.assertIsNone(report["comparison"])
-        self.assertTrue(report["stdout_cycles_sidecar_runner"]["execution_performed"])
+        # execution_performed requires the nested runner status to be
+        # STATUS_OBSERVABLES_READY (see rtlmeter_stdout_cycles_execution_observation.py);
+        # a missing runner JSON report means that never holds, so this stays False here.
+        self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_performed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["reviewed_proxy_metadata_observed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["rtlmeter_proxy_handoff_observed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["gpu_execution_claimed"])

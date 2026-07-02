@@ -83,7 +83,11 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
         from rtlmeter_sidecar_proxy_marker import MARKER_FILENAME
         from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan, rtlmeter_compile_dir
         from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN, PHASE_SIDECAR_VERILATE
-        from rtlmeter_verilator_wrapper_runtime import SIDECAR_CONTEXT_JSON_ENV, run_rtlmeter_verilator_wrapper
+        from rtlmeter_verilator_wrapper_runtime import (
+            SIDECAR_CONTEXT_JSON_ENV,
+            run_rtlmeter_verilator_wrapper,
+            strip_sidecar_only_verilator_options,
+        )
 
         argv = [
             "--cc",
@@ -135,7 +139,9 @@ class RtlmeterVerilatorWrapperMarkerHandoffTest(HybridCliTestCase):
             marker_payload = json.loads(marker.read_text(encoding="utf-8"))
 
         self.assertEqual(code, 0)
-        self.assertEqual(calls[0][0], [str(real), *argv])
+        self.assertEqual(
+            calls[0][0], [str(real), *strip_sidecar_only_verilator_options(argv)]
+        )
         self.assertEqual(calls[0][1]["env"][PHASE_ENV], PHASE_SIDECAR_VERILATE)
         self.assertEqual(marker_payload["schema_role"], "rtlmeter_sidecar_proxy_marker")
         self.assertEqual(marker_payload["producer"], "rtlmeter_verilator_wrapper_runtime")
