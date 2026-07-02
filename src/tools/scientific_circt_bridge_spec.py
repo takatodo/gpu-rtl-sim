@@ -102,11 +102,6 @@ def bridge_spec_from_metadata_row(row: dict[str, Any], *, selected: dict[str, An
     symbols = row.get("gpu_symbols") if isinstance(row.get("gpu_symbols"), dict) else {}
     run_gpu_outputs_symbol = symbols.get("run_gpu_outputs")
     run_hybrid_json_symbol = symbols.get("run_hybrid_json")
-    if not isinstance(run_gpu_outputs_symbol, str) or not run_gpu_outputs_symbol.endswith("_run_gpu_outputs"):
-        raise BridgeSpecError("run_gpu_outputs symbol missing or malformed")
-    if not isinstance(run_hybrid_json_symbol, str) or not run_hybrid_json_symbol.endswith("_run_hybrid_json"):
-        raise BridgeSpecError("run_hybrid_json symbol missing or malformed")
-
     layout = row.get("layout") if isinstance(row.get("layout"), dict) else {}
     input_layout = layout.get("input") if isinstance(layout.get("input"), dict) else {}
     output_layout = layout.get("output") if isinstance(layout.get("output"), dict) else {}
@@ -127,6 +122,12 @@ def bridge_spec_from_metadata_row(row: dict[str, Any], *, selected: dict[str, An
     source_variant = row.get("source_variant")
     if not isinstance(source_variant, str) or source_variant not in PORT_NAMING:
         raise BridgeSpecError(f"no port naming registered for source variant {source_variant!r}")
+    expected_run_gpu_outputs = f"{source_variant}_run_gpu_outputs"
+    expected_run_hybrid_json = f"{source_variant}_run_hybrid_json"
+    if run_gpu_outputs_symbol != expected_run_gpu_outputs:
+        raise BridgeSpecError("run_gpu_outputs symbol does not match source variant")
+    if run_hybrid_json_symbol != expected_run_hybrid_json:
+        raise BridgeSpecError("run_hybrid_json symbol does not match source variant")
     input_ports, output_ports = PORT_NAMING[source_variant]()
     if len(input_ports) != input_element_count:
         raise BridgeSpecError(

@@ -151,7 +151,7 @@ def _parse_array_struct(source: str, name: str) -> dict[str, Any] | None:
     }
 
 
-def extract_gpu_metadata(gpu_source: object) -> dict[str, Any]:
+def extract_gpu_metadata(gpu_source: object, source_variant: str) -> dict[str, Any]:
     path = _rel_path(gpu_source)
     if path is None:
         return {"gpu_source": {"path": None, "present": False}, "symbols": {}, "layout": {}}
@@ -160,8 +160,8 @@ def extract_gpu_metadata(gpu_source: object) -> dict[str, Any]:
         return {"gpu_source": {"path": path, "present": False}, "symbols": {}, "layout": {}}
     text = source_path.read_text(encoding="utf-8")
     symbols = re.findall(r'extern\s+"C"\s+int\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(', text)
-    run_outputs = next((symbol for symbol in symbols if symbol.endswith("_run_gpu_outputs")), None)
-    run_hybrid_json = next((symbol for symbol in symbols if symbol.endswith("_run_hybrid_json")), None)
+    run_outputs = next((symbol for symbol in symbols if symbol == f"{source_variant}_run_gpu_outputs"), None)
+    run_hybrid_json = next((symbol for symbol in symbols if symbol == f"{source_variant}_run_hybrid_json"), None)
     layout = {
         "input": _parse_array_struct(text, "In"),
         "output": _parse_array_struct(text, "Out"),
@@ -202,7 +202,7 @@ def source_variant_metadata_row(
     if entrypoint is None:
         comparison = variant.get("comparison") if isinstance(variant.get("comparison"), dict) else {}
         entrypoint = "direct-binary" if comparison.get("speedup_improved") is True else "fallback-baseline"
-    gpu = extract_gpu_metadata(artifacts.get("gpu_library_source"))
+    gpu = extract_gpu_metadata(artifacts.get("gpu_library_source"), source_variant)
     runtime_boundary_kind = RUNTIME_BOUNDARY_BY_ENTRYPOINT[entrypoint]
     row: dict[str, Any] = {
         "source_variant": source_variant,
@@ -254,6 +254,7 @@ def source_variant_metadata_row(
 
 def metadata_row_complete(row: dict[str, Any]) -> bool:
     artifacts = row.get("artifacts") if isinstance(row.get("artifacts"), dict) else {}
+    boundary = row.get("boundary") if isinstance(row.get("boundary"), dict) else {}
     symbols = row.get("gpu_symbols") if isinstance(row.get("gpu_symbols"), dict) else {}
     layout = row.get("layout") if isinstance(row.get("layout"), dict) else {}
     required_artifacts = ["gpu_library", "gpu_library_source", "systemverilog", "verilator_mdir"]
@@ -265,6 +266,10 @@ def metadata_row_complete(row: dict[str, Any]) -> bool:
         and isinstance(row.get("shape"), str)
         and isinstance(row.get("entrypoint_kind"), str)
         and isinstance(row.get("runtime_boundary_kind"), str)
+        and boundary.get("candidate") == row.get("candidate")
+        and boundary.get("source_variant") == row.get("source_variant")
+        and boundary.get("shape") == row.get("shape")
+        and boundary.get("steps") == 1
         and all(isinstance(artifacts.get(key), dict) and artifacts[key].get("path") for key in required_artifacts)
         and isinstance(symbols.get("run_gpu_outputs"), str)
         and isinstance(symbols.get("run_hybrid_json"), str)
@@ -295,8 +300,8 @@ def _valid_layout_section(layout: dict[str, Any], name: str, expected_count: int
     return expected_count is None or section.get("element_count") == expected_count
 
 
-def _valid_symbol(value: object, suffix: str) -> bool:
-    return isinstance(value, str) and value.endswith(suffix)
+def _valid_symbol(value: object, source_variant: object, suffix: str) -> bool:
+    return isinstance(value, str) and isinstance(source_variant, str) and value == f"{source_variant}{suffix}"
 
 
 def src_hybrid_verilator_bridge_gate(
@@ -321,6 +326,7 @@ def src_hybrid_verilator_bridge_gate(
     shape = metadata_row.get("shape")
     entrypoint_kind = metadata_row.get("entrypoint_kind")
     runtime_boundary_kind = metadata_row.get("runtime_boundary_kind")
+    boundary = metadata_row.get("boundary") if isinstance(metadata_row.get("boundary"), dict) else {}
     symbols = metadata_row.get("gpu_symbols") if isinstance(metadata_row.get("gpu_symbols"), dict) else {}
     layout = metadata_row.get("layout") if isinstance(metadata_row.get("layout"), dict) else {}
     derived_counts = _derived_port_counts(source_variant)
@@ -330,13 +336,21 @@ def src_hybrid_verilator_bridge_gate(
         "candidate": isinstance(candidate, str) and candidate == selected.get("candidate"),
         "source_variant": isinstance(source_variant, str) and source_variant == selected.get("source_variant"),
         "shape": isinstance(shape, str) and shape == selected.get("shape"),
+        "steps": selected.get("steps") == 1,
+        "boundary_candidate": boundary.get("candidate") == candidate and boundary.get("candidate") == selected.get("candidate"),
+        "boundary_source_variant": (
+            boundary.get("source_variant") == source_variant
+            and boundary.get("source_variant") == selected.get("source_variant")
+        ),
+        "boundary_shape": boundary.get("shape") == shape and boundary.get("shape") == selected.get("shape"),
+        "boundary_steps": boundary.get("steps") == 1 and boundary.get("steps") == selected.get("steps"),
         "entrypoint_kind": entrypoint_kind in PROMOTED_RUNTIME_BOUNDARY_BY_ENTRYPOINT,
         "runtime_boundary_kind": runtime_boundary_kind == PROMOTED_RUNTIME_BOUNDARY_BY_ENTRYPOINT.get(entrypoint_kind),
         "policy": metadata_row.get("policy") == "promote_to_hls_gpu",
         "input_layout": _valid_layout_section(layout, "input", expected_input_count),
         "output_layout": _valid_layout_section(layout, "output", expected_output_count),
-        "run_gpu_outputs_symbol": _valid_symbol(symbols.get("run_gpu_outputs"), "_run_gpu_outputs"),
-        "run_hybrid_json_symbol": _valid_symbol(symbols.get("run_hybrid_json"), "_run_hybrid_json"),
+        "run_gpu_outputs_symbol": _valid_symbol(symbols.get("run_gpu_outputs"), source_variant, "_run_gpu_outputs"),
+        "run_hybrid_json_symbol": _valid_symbol(symbols.get("run_hybrid_json"), source_variant, "_run_hybrid_json"),
     }
 
     gate: dict[str, Any] = {

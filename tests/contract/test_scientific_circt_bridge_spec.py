@@ -37,8 +37,8 @@ class ScientificCirctBridgeSpecTest(HybridCliTestCase):
             "runtime_boundary_kind": "direct_callsite_hls_source_variant_boundary",
             "policy": "promote_to_hls_gpu",
             "gpu_symbols": {
-                "run_gpu_outputs": "attention_head4_hls_run_gpu_outputs",
-                "run_hybrid_json": "attention_head4_hls_run_hybrid_json",
+                "run_gpu_outputs": "attention_head4_hls_friendly_run_gpu_outputs",
+                "run_hybrid_json": "attention_head4_hls_friendly_run_hybrid_json",
             },
             "layout": {
                 "input": {"element_type": "uint8_t", "element_count": 80, "bytes_per_state": 80},
@@ -150,6 +150,12 @@ class ScientificCirctBridgeSpecTest(HybridCliTestCase):
     def test_fails_closed_on_missing_symbol(self) -> None:
         row = self._mlp4_row()
         del row["gpu_symbols"]["run_gpu_outputs"]
+        with self.assertRaises(bridge_spec.BridgeSpecError):
+            bridge_spec.bridge_spec_from_metadata_row(row)
+
+    def test_fails_closed_on_wrong_but_suffix_valid_symbol(self) -> None:
+        row = self._attention_head4_row()
+        row["gpu_symbols"]["run_gpu_outputs"] = "mlp4_hls_friendly_run_gpu_outputs"
         with self.assertRaises(bridge_spec.BridgeSpecError):
             bridge_spec.bridge_spec_from_metadata_row(row)
 

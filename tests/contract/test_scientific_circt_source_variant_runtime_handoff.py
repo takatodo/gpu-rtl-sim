@@ -114,7 +114,11 @@ class ScientificCirctSourceVariantRuntimeHandoffTest(HybridCliTestCase):
             }
 
         with tempfile.TemporaryDirectory() as temp_dir, mock.patch.object(handoff, "_run", side_effect=fake_run):
-            report = handoff.build_runtime_handoff_report(self._matrix(), self._summary(Path(temp_dir)))
+            report = handoff.build_runtime_handoff_report(
+                self._matrix(),
+                self._summary(Path(temp_dir)),
+                metadata_row=self._metadata_row(),
+            )
 
         self.assertEqual(report["status"], "runtime_handoff_boundary_measured")
         self.assertEqual(report["source_variant"], "inference2_hls_friendly")
@@ -131,6 +135,7 @@ class ScientificCirctSourceVariantRuntimeHandoffTest(HybridCliTestCase):
                 self._matrix(),
                 self._summary(Path(temp_dir)),
                 execute=False,
+                metadata_row=self._metadata_row(),
             )
 
         self.assertEqual(report["status"], "runtime_handoff_artifacts_ready")
@@ -297,6 +302,55 @@ class ScientificCirctSourceVariantRuntimeHandoffTest(HybridCliTestCase):
         run.assert_not_called()
         self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
 
+    def test_no_metadata_source_variant_handoff_is_rejected_before_run(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir, \
+             mock.patch.object(handoff, "_run") as run:
+            report = handoff.build_runtime_handoff_report(
+                self._matrix(),
+                self._summary(Path(temp_dir)),
+                execute=False,
+            )
+
+        self.assertEqual(report["status"], "src_hybrid_verilator_metadata_row_missing")
+        self.assertIsNone(report["metadata_gate"])
+        run.assert_not_called()
+        self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
+
+    def test_selected_hls_shape_mismatch_is_rejected_before_run(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir, \
+             mock.patch.object(handoff, "_run") as run:
+            summary = self._summary(Path(temp_dir))
+            summary["variants"][0]["shape"] = "2048x1"
+            report = handoff.build_runtime_handoff_report(
+                self._matrix(),
+                summary,
+                metadata_row=self._metadata_row(),
+            )
+
+        self.assertEqual(report["status"], "src_hybrid_verilator_metadata_gate_rejected")
+        self.assertIn("hls_shape", report["metadata_gate"]["failed_checks"])
+        run.assert_not_called()
+        self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
+
+    def test_steps_not_one_is_rejected_before_run(self) -> None:
+        matrix = self._matrix()
+        matrix["selected_next_source_variant_runtime_boundary"]["steps"] = 2
+        metadata = self._metadata_row()
+        metadata["boundary"]["steps"] = 2
+        with tempfile.TemporaryDirectory() as temp_dir, \
+             mock.patch.object(handoff, "_run") as run:
+            report = handoff.build_runtime_handoff_report(
+                matrix,
+                self._summary(Path(temp_dir)),
+                metadata_row=metadata,
+            )
+
+        self.assertEqual(report["status"], "src_hybrid_verilator_metadata_gate_rejected")
+        self.assertIn("steps", report["metadata_gate"]["failed_checks"])
+        self.assertIn("boundary_steps", report["metadata_gate"]["failed_checks"])
+        run.assert_not_called()
+        self.assert_no_local_absolute_paths(json.dumps(report, sort_keys=True))
+
     def test_cli_writes_report(self) -> None:
         def fake_run(argv: list[str]) -> dict[str, object]:
             return {
@@ -321,6 +375,8 @@ class ScientificCirctSourceVariantRuntimeHandoffTest(HybridCliTestCase):
             out = root / "handoff.json"
             matrix.write_text(json.dumps(self._matrix()), encoding="utf-8")
             summary.write_text(json.dumps(self._summary(root)), encoding="utf-8")
+            metadata_report = root / "metadata.json"
+            metadata_report.write_text(json.dumps({"rows": [self._metadata_row()]}), encoding="utf-8")
             stdout = StringIO()
             with redirect_stdout(stdout):
                 rc = handoff.main(
@@ -332,6 +388,8 @@ class ScientificCirctSourceVariantRuntimeHandoffTest(HybridCliTestCase):
                         "--write-report",
                         "--report-out",
                         out.as_posix(),
+                        "--metadata-report",
+                        metadata_report.as_posix(),
                     ]
                 )
             payload = json.loads(out.read_text(encoding="utf-8"))
@@ -360,6 +418,7 @@ class ScientificCirctSourceVariantRuntimeHandoffTest(HybridCliTestCase):
                 "candidate": candidate,
                 "source_variant": source_variant,
                 "shape": "1024x1",
+                "steps": 1,
             },
         }
 
@@ -403,8 +462,14 @@ class ScientificCirctSourceVariantRuntimeHandoffTest(HybridCliTestCase):
                 "output": {"element_type": "uint64_t", "element_count": 16, "bytes_per_state": 128},
             },
             "gpu_symbols": {
-                "run_gpu_outputs": "attention_head4_hls_run_gpu_outputs",
-                "run_hybrid_json": "attention_head4_hls_run_hybrid_json",
+                "run_gpu_outputs": "attention_head4_hls_friendly_run_gpu_outputs",
+                "run_hybrid_json": "attention_head4_hls_friendly_run_hybrid_json",
+            },
+            "boundary": {
+                "candidate": "microgpt_attention_head",
+                "source_variant": "attention_head4_hls_friendly",
+                "shape": "1024x1",
+                "steps": 1,
             },
             "metadata_complete": True,
         }
@@ -425,6 +490,12 @@ class ScientificCirctSourceVariantRuntimeHandoffTest(HybridCliTestCase):
                 "run_gpu_outputs": "mlp4_hls_friendly_run_gpu_outputs",
                 "run_hybrid_json": "mlp4_hls_friendly_run_hybrid_json",
             },
+            "boundary": {
+                "candidate": "microgpt_mlp_slice",
+                "source_variant": "mlp4_hls_friendly",
+                "shape": "1024x1",
+                "steps": 1,
+            },
             "metadata_complete": True,
         }
 
@@ -443,6 +514,12 @@ class ScientificCirctSourceVariantRuntimeHandoffTest(HybridCliTestCase):
             "gpu_symbols": {
                 "run_gpu_outputs": "block2_hls_friendly_run_gpu_outputs",
                 "run_hybrid_json": "block2_hls_friendly_run_hybrid_json",
+            },
+            "boundary": {
+                "candidate": "microgpt_block_slice",
+                "source_variant": "block2_hls_friendly",
+                "shape": "1024x1",
+                "steps": 1,
             },
             "metadata_complete": True,
         }

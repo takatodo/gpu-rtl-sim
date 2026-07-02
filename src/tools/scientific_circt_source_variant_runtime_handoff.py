@@ -80,12 +80,19 @@ def _positive_int(payload: dict[str, Any], key: str) -> int:
 
 
 def _shape_nstates(shape: object) -> int:
+    nstates, steps = _shape_dimensions(shape)
+    if steps != 1:
+        raise ValueError("variant shape must be Nx1")
+    return nstates
+
+
+def _shape_dimensions(shape: object) -> tuple[int, int]:
     if not isinstance(shape, str):
         raise ValueError("variant shape must be Nx1")
-    match = re.fullmatch(r"([1-9][0-9]*)x1", shape)
+    match = re.fullmatch(r"([1-9][0-9]*)x([1-9][0-9]*)", shape)
     if not match:
         raise ValueError("variant shape must be Nx1")
-    return int(match.group(1))
+    return int(match.group(1)), int(match.group(2))
 
 
 def _artifact(path: object) -> dict[str, Any]:
@@ -115,6 +122,28 @@ def _src_hybrid_metadata_gate(
     metadata_row: dict[str, Any] | None,
 ) -> tuple[dict[str, Any] | None, str | None]:
     return src_hybrid_verilator_bridge_gate(selected, metadata_row)
+
+
+def _bind_hls_summary_to_gate(
+    gate: dict[str, Any],
+    selected: dict[str, Any],
+    hls_variant: dict[str, Any],
+    *,
+    nstates: int,
+    shape_steps: int,
+) -> tuple[dict[str, Any], str | None]:
+    checks = gate.setdefault("checks", {})
+    checks["hls_candidate"] = hls_variant.get("candidate") == selected.get("candidate") == gate.get("candidate")
+    checks["hls_source_variant"] = hls_variant.get("variant") == selected.get("source_variant") == gate.get("source_variant")
+    checks["hls_shape"] = hls_variant.get("shape") == selected.get("shape") == gate.get("shape")
+    checks["hls_steps"] = shape_steps == 1 and selected.get("steps") == 1
+    gate["expected_nstates"] = _shape_nstates(gate.get("shape"))
+    checks["argv_nstates"] = gate["expected_nstates"] == nstates
+    failed = [name for name, passed in checks.items() if not passed]
+    if failed:
+        gate["failed_checks"] = failed
+        return gate, "src_hybrid_verilator_metadata_gate_rejected"
+    return gate, None
 
 
 def _verilator_root() -> tuple[Path | None, dict[str, Any] | None]:
@@ -231,7 +260,7 @@ def build_runtime_handoff_report(
         raise ValueError("variant report missing artifacts object")
 
     shape = str(variant.get("shape"))
-    nstates = _shape_nstates(shape)
+    nstates, shape_steps = _shape_dimensions(shape)
     repeat = _positive_int(variant, "repeat")
     inner_repeat = _positive_int(variant, "inner_repeat")
     integration_batches = _positive_int(variant, "integration_batches")
@@ -294,27 +323,29 @@ def build_runtime_handoff_report(
         ],
     }
 
-    if not binary_artifact["present"] or not library_artifact["present"]:
-        report["status"] = "runtime_handoff_artifacts_missing"
-        return report
-
     run_binary = Path(str(binary))
     expected_observed_status = "hls_variant_measured"
     bridge_gate: dict[str, Any] | None = None
-    # The metadata gate is spec-driven (scientific_circt_source_variant_metadata.
-    # src_hybrid_verilator_bridge_gate / BridgeSpec), so it applies fail-closed
-    # before dlopen/execution to any promoted row regardless of entrypoint kind,
-    # not only src-hybrid-verilator. Callers that never pass metadata_row (the
-    # direct-binary default) keep the pre-FC-074 unguarded direct-binary path.
-    if entrypoint == "src-hybrid-verilator" or metadata_row is not None:
-        bridge_gate, gate_rejection = _src_hybrid_metadata_gate(selected, metadata_row)
+    bridge_gate, gate_rejection = _src_hybrid_metadata_gate(selected, metadata_row)
+    report["metadata_gate"] = bridge_gate
+    if gate_rejection is None and bridge_gate is not None:
+        bridge_gate, gate_rejection = _bind_hls_summary_to_gate(
+            bridge_gate,
+            selected,
+            variant,
+            nstates=nstates,
+            shape_steps=shape_steps,
+        )
         report["metadata_gate"] = bridge_gate
-        if gate_rejection is not None:
-            report["status"] = gate_rejection
-            return report
-        if entrypoint == "src-hybrid-verilator" and mdir_path is None:
-            report["status"] = "src_hybrid_verilator_mdir_missing"
-            return report
+    if gate_rejection is not None:
+        report["status"] = gate_rejection
+        return report
+    if entrypoint == "src-hybrid-verilator" and mdir_path is None:
+        report["status"] = "src_hybrid_verilator_mdir_missing"
+        return report
+    if not binary_artifact["present"] or not library_artifact["present"]:
+        report["status"] = "runtime_handoff_artifacts_missing"
+        return report
     if not execute:
         report["status"] = "runtime_handoff_artifacts_ready"
         return report
