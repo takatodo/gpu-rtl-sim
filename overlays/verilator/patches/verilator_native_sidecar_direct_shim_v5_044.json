@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "descriptor_name": "verilator_native_sidecar_direct_shim_v5_044",
+  "descriptor_path": "overlays/verilator/patches/verilator_native_sidecar_direct_shim_v5_044.json",
+  "upstream_repository_url": "https://github.com/verilator/verilator.git",
+  "upstream_ref": "v5.044",
+  "upstream_commit": "8df584ca1ddde5c8afbd15dc5fdcb677a78f9af2",
+  "upstream_commit_kind": "peeled_release_tag_commit",
+  "patch_path": "overlays/verilator/patches/verilator_native_sidecar_direct_shim_v5_044.patch",
+  "patch_file": "verilator_native_sidecar_direct_shim_v5_044.patch",
+  "allowed_touched_files": [
+    "src/V3Options.h",
+    "src/V3Options.cpp",
+    "src/V3EmitMk.cpp"
+  ],
+  "fc_issue": "FC-061",
+  "github_issue": "https://github.com/takatodo/gpu-rtl-sim/issues/61",
+  "patch_behavior": {
+    "scope": "v5_044_direct_cuda_kernel_launch_smoke_parser_and_make_hook",
+    "adds_parser_options": [
+      "--sim-accel sidecar-gpu",
+      "--sim-accel-states <positive integer>",
+      "--sim-accel-steps <positive integer>"
+    ],
+    "preserves_original_filelist_for_make_hook": true,
+    "does_not_launch_sidecar_runtime_in_verilator_process": true,
+    "does_emit_makefile_rule_that_invokes_repo_sidecar_build_driver": true,
+    "make_hook_entrypoint": "build-direct-shim-smoke",
+    "does_not_claim_gpu_execution_from_verilate_success": true,
+    "does_not_modify_codegen_semantics": true,
+    "repo_root_resolution": "VL_SIDECAR_REPO_ROOT make variable defaults to RTLMETER_REPO_ROOT when present, otherwise $(abspath $(firstword $(VM_USER_DIR))), and is passed into the shim as GPU_RTL_SIM_REPO_ROOT_DEFAULT; normal executable runs do not require operator-provided GPU_RTL_SIM_REPO_ROOT",
+    "fails_closed_for_unsupported_or_unrecognized_closures": true,
+    "shim_object_enters_final_link_inputs": true,
+    "stamp_is_not_a_link_input": true
+  },
+  "driver_contract_ref": {
+    "module": "src/tools/verilator_native_sidecar_make_driver.py",
+    "entrypoint_cli": "build-direct-shim-smoke",
+    "recognition_module": "src/tools/verilator_native_known_closure.py",
+    "registry": "config/native_known_closures.json"
+  },
+  "apply_check_command": "git -C \"$VERILATOR_CHECKOUT\" apply --check \"$REPO_ROOT/overlays/verilator/patches/verilator_native_sidecar_direct_shim_v5_044.patch\"",
+  "expected_apply_check_exit_code": 0,
+  "descriptor_validation_command": "python3 -m json.tool \"$REPO_ROOT/overlays/verilator/patches/verilator_native_sidecar_direct_shim_v5_044.json\" >/dev/null",
+  "scope_exclusions": [
+    "codegen semantics",
+    "source closure inference",
+    "arbitrary filelist support",
+    "automatic GPU allocation",
+    "coverage-output equivalence",
+    "coverage compare",
+    "RTLMeter correctness or speedup"
+  ],
+  "non_claims": [
+    "direct CUDA module load and kernel launch smoke is not coverage-output equivalence",
+    "not a landed upstream Verilator patch",
+    "not GPU execution evidence from Verilate or Makefile generation success",
+    "not arbitrary RTL or arbitrary filelist support",
+    "not automatic optimal GPU allocation",
+    "not a codegen or ABI change",
+    "not a speedup or timing claim"
+  ]
+}

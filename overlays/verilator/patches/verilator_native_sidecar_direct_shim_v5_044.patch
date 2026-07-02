@@ -1,0 +1,207 @@
+diff --git a/src/V3EmitMk.cpp b/src/V3EmitMk.cpp
+index 393a845..297ae28 100644
+--- a/src/V3EmitMk.cpp
++++ b/src/V3EmitMk.cpp
+@@ -745,12 +745,77 @@ public:
+                     + compilerIncludeFlag + " -c -o $@ $<\n");
+         }
+ 
++        // --sim-accel sidecar-gpu: emit a Makefile rule that validates the
++        // known closure, builds the adjacent GPU artifact, and links a
++        // repo-owned direct CUDA smoke shim into the generated executable.
++        // Verilator itself never launches the sidecar runtime here; it only
++        // emits the rule.
++        // Fails closed for unsupported or incomplete sidecar requests.
++        string sidecarExeDeps;
++        string sidecarExeLibs;
++        if (!v3Global.opt.simAccel().empty()) {
++            if (v3Global.opt.simAccel() != "sidecar-gpu") {
++                v3fatal("--sim-accel only supports 'sidecar-gpu' for the Makefile build hook");
++            } else if (!v3Global.opt.exe()) {
++                v3fatal("--sim-accel sidecar-gpu requires --exe to emit the sidecar build hook");
++            } else if (v3Global.opt.topModule().empty()) {
++                v3fatal("--sim-accel sidecar-gpu requires --top-module for the sidecar build hook");
++            } else if (v3Global.opt.simAccelFilelist().empty()) {
++                v3fatal("--sim-accel sidecar-gpu requires a -f filelist for the sidecar build hook");
++            } else if (v3Global.opt.simAccelStates() <= 0 || v3Global.opt.simAccelSteps() <= 0) {
++                v3fatal("--sim-accel sidecar-gpu requires positive --sim-accel-states and "
++                        "--sim-accel-steps");
++            } else {
++                of.puts("\n### Sidecar GPU build hook... (from --sim-accel sidecar-gpu)\n");
++                of.puts("PYTHON3 ?= python3\n");
++                of.puts("VL_SIDECAR_REPO_ROOT ?= $(if $(RTLMETER_REPO_ROOT),$(abspath $(RTLMETER_REPO_ROOT)),$(abspath $(firstword $(VM_USER_DIR))))\n");
++                of.puts("VL_SIDECAR_STAMP = $(VM_PREFIX)__sidecar_build.stamp\n");
++                of.puts("VL_SIDECAR_SHIM_SRC = "
++                        "$(VL_SIDECAR_REPO_ROOT)/src/hybrid/native_sidecar_shim.c\n");
++                of.puts("VL_SIDECAR_SHIM_OBJ = $(VM_PREFIX)__native_sidecar_shim.o\n");
++                of.puts("$(VL_SIDECAR_SHIM_OBJ): $(VL_SIDECAR_SHIM_SRC) $(VL_SIDECAR_STAMP)\n");
++                of.puts("\t$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) "
++                        + compilerIncludeFlag
++                        + " -DGPU_RTL_SIM_REPO_ROOT_DEFAULT=\\\"$(VL_SIDECAR_REPO_ROOT)\\\""
++                        + " -c -o $@ $<\n");
++                of.puts("$(VL_SIDECAR_STAMP): $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a\n");
++                // The driver validates the recognized closure, builds adjacent
++                // vl_batch_gpu.meta.json / vl_batch_gpu.cubin files, and rejects
++                // known-unsupported artifact shapes before link. The linked shim
++                // dynamically resolves the CUDA Driver API and attempts module
++                // load + kernel launch at runtime.
++                of.puts("\t$(PYTHON3) "
++                        "$(VL_SIDECAR_REPO_ROOT)/src/tools/verilator_native_sidecar_make_driver.py "
++                        "build-direct-shim-smoke \\\n");
++                of.puts("\t  --repo-root $(VL_SIDECAR_REPO_ROOT) \\\n");
++                of.puts("\t  --filelist $(abspath $(firstword $(VM_USER_DIR))/"
++                        + v3Global.opt.simAccelFilelist() + ") \\\n");
++                of.puts("\t  --top-module " + v3Global.opt.topModule() + " \\\n");
++                of.puts("\t  --mdir . \\\n");
++                of.puts("\t  --sim-accel sidecar-gpu \\\n");
++                of.puts("\t  --sim-accel-states " + std::to_string(v3Global.opt.simAccelStates())
++                        + " \\\n");
++                of.puts("\t  --sim-accel-steps " + std::to_string(v3Global.opt.simAccelSteps())
++                        + " \\\n");
++                of.puts("\t  --summary-out native_sidecar_build.json\n");
++                of.puts("\ttouch $@\n");
++                of.puts("\n");
++                // Normal prerequisite: the shim object must enter the final link
++                // inputs ($^) so obj_dir/V<top> reaches repo-owned sidecar code.
++                // The stamp remains make-time metadata only and is not linked.
++                sidecarExeDeps = " $(VL_SIDECAR_SHIM_OBJ)";
++                sidecarExeLibs = " -ldl";
++            }
++        }
++
+         if (v3Global.opt.exe()) {
+             of.puts("\n### Link rules... (from --exe)\n");
+             // '{prefix}__ALL.a', contains all hierarchical libraries
+             of.puts(v3Global.opt.exeName()
+-                    + ": $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a\n");
+-            of.puts("\t$(LINK) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) $(LIBS) $(SC_LIBS) -o $@\n");
++                    + ": $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a" + sidecarExeDeps
++                    + "\n");
++            of.puts("\t$(LINK) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) $(LIBS) $(SC_LIBS)"
++                    + sidecarExeLibs + " -o $@\n");
+             of.puts("\n");
+         } else if (!v3Global.opt.libCreate().empty()) {
+             const string libCreateDeps = "$(VK_OBJS) $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) "
+diff --git a/src/V3Options.cpp b/src/V3Options.cpp
+index ac6a3b7..6db8f50 100644
+--- a/src/V3Options.cpp
++++ b/src/V3Options.cpp
+@@ -954,6 +954,17 @@ void V3Options::notify() VL_MT_DISABLED {
+     if (m_build && (m_gmake || m_cmake || m_makeJson)) {
+         cmdfl->v3error("--make cannot be used together with --build. Suggest see manual");
+     }
++    const bool hasSimAccel = !m_simAccel.empty();
++    const bool hasSimAccelStates = m_simAccelStates > 0;
++    const bool hasSimAccelSteps = m_simAccelSteps > 0;
++    if (hasSimAccel || hasSimAccelStates || hasSimAccelSteps) {
++        if (!hasSimAccel) {
++            cmdfl->v3error("--sim-accel-states/--sim-accel-steps require --sim-accel sidecar-gpu");
++        }
++        if (!hasSimAccelStates || !hasSimAccelSteps) {
++            cmdfl->v3error("--sim-accel requires both --sim-accel-states and --sim-accel-steps");
++        }
++    }
+ 
+     // m_build, m_preprocOnly, m_dpiHdrOnly, m_lintOnly, m_jsonOnly and m_xmlOnly are mutually
+     // exclusive
+@@ -1197,6 +1208,28 @@ void V3Options::parseOptsList(FileLine* fl, const string& optdir, int argc,
+     const auto callStrSetter = [this](void (V3Options::*cbStr)(const string&)) {
+         return [this, cbStr](const string& v) { (this->*cbStr)(v); };
+     };
++    const auto parsePositiveSimAccelCount = [fl](const char* optp, const char* valp) {
++        const char* const textp = valp ? valp : "";
++        bool valid = textp[0] != '\0';
++        int val = 0;
++        for (const char* cp = textp; valid && *cp; ++cp) {
++            if (!std::isdigit(static_cast<unsigned char>(*cp))) {
++                valid = false;
++                break;
++            }
++            const int digit = *cp - '0';
++            if (val > 214748364 || (val == 214748364 && digit > 7)) {
++                valid = false;
++                break;
++            }
++            val = (val * 10) + digit;
++        }
++        if (!valid || val <= 0) {
++            fl->v3error(optp << " requires a positive integer, but '" << textp << "' was passed");
++            val = 1;
++        }
++        return val;
++    };
+     // Usage
+     // DECL_OPTION("-option", action, pointer_or_lambda);
+     // action: one of Set, OnOff, CbCall, CbOnOff, CbVal, CbPartialMatch, and CbPartialMatchVal
+@@ -1434,6 +1467,10 @@ void V3Options::parseOptsList(FileLine* fl, const string& optdir, int argc,
+     DECL_OPTION("-FI", CbVal,
+                 [this, &optdir](const char* valp) { addForceInc(parseFileArg(optdir, valp)); });
+     DECL_OPTION("-f", CbVal, [this, fl, &optdir](const char* valp) VL_MT_DISABLED {
++        // Preserve the original -f filelist path so the sidecar Makefile hook can
++        // hand it to the repo-side known-closure build driver. Parsing behavior is
++        // unchanged; this only records metadata.
++        m_simAccelFilelist = parseFileArg(optdir, valp);
+         parseOptsFile(fl, parseFileArg(optdir, valp), false);
+     }).notForRerun();
+     DECL_OPTION("-flatten", OnOff, &m_flatten);
+@@ -1721,6 +1758,20 @@ void V3Options::parseOptsList(FileLine* fl, const string& optdir, int argc,
+         m_outFormatOk = true;
+         m_systemC = true;
+     });
++    DECL_OPTION("-sim-accel", CbVal, [this, fl](const char* valp) {
++        if (std::strcmp(valp, "sidecar-gpu")) {
++            fl->v3error("Unknown setting for --sim-accel: '"
++                        << valp << "'\n"
++                        << fl->warnMore() << "... Suggest 'sidecar-gpu'");
++        }
++        m_simAccel = valp;
++    }).undocumented();
++    DECL_OPTION("-sim-accel-states", CbVal, [this, &parsePositiveSimAccelCount](const char* valp) {
++        m_simAccelStates = parsePositiveSimAccelCount("--sim-accel-states", valp);
++    }).undocumented();
++    DECL_OPTION("-sim-accel-steps", CbVal, [this, &parsePositiveSimAccelCount](const char* valp) {
++        m_simAccelSteps = parsePositiveSimAccelCount("--sim-accel-steps", valp);
++    }).undocumented();
+     DECL_OPTION("-skip-identical", OnOff, &m_skipIdentical);
+     DECL_OPTION("-stats", OnOff, &m_stats);
+     DECL_OPTION("-stats-vars", CbOnOff, [this](bool flag) {
+diff --git a/src/V3Options.h b/src/V3Options.h
+index 6e75c37..6d48934 100644
+--- a/src/V3Options.h
++++ b/src/V3Options.h
+@@ -355,6 +355,8 @@ private:
+     int         m_unrollLimit = 16384;  // main switch: --unroll-limit
+     int         m_unrollStmts = 30000;  // main switch: --unroll-stmts
+     int         m_verilateJobs = -1;  // main switch: --verilate-jobs
++    int         m_simAccelStates = 0;  // main switch: --sim-accel-states
++    int         m_simAccelSteps = 0;  // main switch: --sim-accel-steps
+ 
+     int         m_compLimitBlocks = 0;  // compiler selection; number of nested blocks
+     int         m_compLimitMembers = 64;  // compiler selection; number of members in struct before make anon array
+@@ -374,6 +376,8 @@ private:
+     string      m_pipeFilter;   // main switch: --pipe-filter
+     string      m_prefix;       // main switch: --prefix
+     string      m_protectKey;   // main switch: --protect-key
++    string      m_simAccel;     // main switch: --sim-accel
++    string      m_simAccelFilelist;  // last -f filelist path, preserved for the sidecar Makefile hook
+     string      m_topModule;    // main switch: --top-module
+     string      m_unusedRegexp; // main switch: --unused-regexp
+     string      m_waiverOutput;  // main switch: --waiver-output {filename}
+@@ -641,6 +645,8 @@ public:
+     int unrollLimit() const { return m_unrollLimit; }
+     int unrollStmts() const { return m_unrollStmts; }
+     int verilateJobs() const { return m_verilateJobs; }
++    int simAccelStates() const { return m_simAccelStates; }
++    int simAccelSteps() const { return m_simAccelSteps; }
+ 
+     int compLimitBlocks() const { return m_compLimitBlocks; }
+     int compLimitMembers() const VL_MT_SAFE { return m_compLimitMembers; }
+@@ -673,6 +679,8 @@ public:
+     // Not just called protectKey() to avoid bugs of not using protectKeyDefaulted()
+     bool protectKeyProvided() const { return !m_protectKey.empty(); }
+     string protectKeyDefaulted() VL_MT_SAFE;  // Set default key if not set by user
++    string simAccel() const { return m_simAccel; }
++    string simAccelFilelist() const { return m_simAccelFilelist; }
+     string topModule() const { return m_topModule; }
+     bool noTraceTop() const { return m_noTraceTop; }
+     string unusedRegexp() const { return m_unusedRegexp; }
