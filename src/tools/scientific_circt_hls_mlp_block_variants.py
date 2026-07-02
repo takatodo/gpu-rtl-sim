@@ -37,6 +37,12 @@ class Variant:
     non_claims: tuple[str, ...]
 
 
+# Must match the inner_repeat mixing formula hardcoded in the GPU/CPU source
+# templates below: (r + j * MIX_J_MULT) & MIX_MASK.
+MIX_J_MULT = 3
+MIX_MASK = 255
+
+
 VARIANTS = {
     "mlp4_hls_friendly": Variant(
         name="mlp4_hls_friendly",

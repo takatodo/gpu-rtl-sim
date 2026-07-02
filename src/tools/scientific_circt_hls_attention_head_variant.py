@@ -82,6 +82,17 @@ def _tool(name: str) -> str | None:
     return None
 
 
+# Must match the extern "C" function names and the fill() formula in the
+# embedded GPU source template below.
+GPU_SYMBOL_STEM = "attention_head4_hls"
+FILL_A = 17
+FILL_B = 11
+FILL_C = 1
+FILL_MASK = 0x7F
+MIX_J_MULT = 1
+MIX_MASK = 31
+
+
 def input_port_names(heads: int = 4) -> tuple[str, ...]:
     """Return input port names in struct-field order (index k <-> in.x[k])."""
     return tuple(f"h{h}_x{i}" for h in range(heads) for i in range(20))

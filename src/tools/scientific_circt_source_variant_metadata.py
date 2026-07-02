@@ -14,6 +14,7 @@ from scientific_circt_bridge_spec import (
     PORT_NAMING,
     RUNTIME_BOUNDARY_BY_ENTRYPOINT as PROMOTED_RUNTIME_BOUNDARY_BY_ENTRYPOINT,
     BridgeSpecError,
+    expected_gpu_symbols,
     bridge_spec_from_metadata_row,
 )
 
@@ -301,7 +302,13 @@ def _valid_layout_section(layout: dict[str, Any], name: str, expected_count: int
 
 
 def _valid_symbol(value: object, source_variant: object, suffix: str) -> bool:
-    return isinstance(value, str) and isinstance(source_variant, str) and value == f"{source_variant}{suffix}"
+    if not isinstance(value, str) or not isinstance(source_variant, str):
+        return False
+    try:
+        run_gpu_outputs, run_hybrid_json = expected_gpu_symbols(source_variant)
+    except KeyError:
+        return False
+    return value == (run_gpu_outputs if suffix == "_run_gpu_outputs" else run_hybrid_json)
 
 
 def src_hybrid_verilator_bridge_gate(
@@ -336,14 +343,15 @@ def src_hybrid_verilator_bridge_gate(
         "candidate": isinstance(candidate, str) and candidate == selected.get("candidate"),
         "source_variant": isinstance(source_variant, str) and source_variant == selected.get("source_variant"),
         "shape": isinstance(shape, str) and shape == selected.get("shape"),
-        "steps": selected.get("steps") == 1,
+        "steps": selected.get("steps") in (None, 1),
         "boundary_candidate": boundary.get("candidate") == candidate and boundary.get("candidate") == selected.get("candidate"),
         "boundary_source_variant": (
             boundary.get("source_variant") == source_variant
             and boundary.get("source_variant") == selected.get("source_variant")
         ),
         "boundary_shape": boundary.get("shape") == shape and boundary.get("shape") == selected.get("shape"),
-        "boundary_steps": boundary.get("steps") == 1 and boundary.get("steps") == selected.get("steps"),
+        "boundary_steps": boundary.get("steps") == 1
+        and selected.get("steps") in (None, boundary.get("steps")),
         "entrypoint_kind": entrypoint_kind in PROMOTED_RUNTIME_BOUNDARY_BY_ENTRYPOINT,
         "runtime_boundary_kind": runtime_boundary_kind == PROMOTED_RUNTIME_BOUNDARY_BY_ENTRYPOINT.get(entrypoint_kind),
         "policy": metadata_row.get("policy") == "promote_to_hls_gpu",

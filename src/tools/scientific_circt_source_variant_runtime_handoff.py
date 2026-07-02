@@ -136,7 +136,7 @@ def _bind_hls_summary_to_gate(
     checks["hls_candidate"] = hls_variant.get("candidate") == selected.get("candidate") == gate.get("candidate")
     checks["hls_source_variant"] = hls_variant.get("variant") == selected.get("source_variant") == gate.get("source_variant")
     checks["hls_shape"] = hls_variant.get("shape") == selected.get("shape") == gate.get("shape")
-    checks["hls_steps"] = shape_steps == 1 and selected.get("steps") == 1
+    checks["hls_steps"] = shape_steps == 1 and selected.get("steps") in (None, 1)
     gate["expected_nstates"] = _shape_nstates(gate.get("shape"))
     checks["argv_nstates"] = gate["expected_nstates"] == nstates
     failed = [name for name, passed in checks.items() if not passed]

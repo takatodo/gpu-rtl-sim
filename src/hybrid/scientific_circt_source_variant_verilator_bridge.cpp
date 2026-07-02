@@ -99,9 +99,11 @@ static int json_double(const char *json, const char *key, double *out) {
 }
 
 static void fill(std::vector<BridgeIn> &input) {
+  // The GPU .so fills its own input batch with the same generated formula;
+  // the two sides must agree element-for-element for the compare to hold.
   for (size_t i = 0; i < input.size(); ++i) {
     for (int j = 0; j < SCI_CIRCT_BRIDGE_INPUT_ELEMENT_COUNT; ++j) {
-      input[i].x[j] = uint8_t((i * 17u + j * 23u + 7u) & 63u);
+      input[i].x[j] = SCI_CIRCT_BRIDGE_FILL_VALUE(i, j);
     }
   }
 }
@@ -114,7 +116,7 @@ static BridgeOut verilator_eval_fused(Vsim &top, const BridgeIn &in, int inner_r
   SCI_CIRCT_BRIDGE_READ_OUTPUTS(top, base);
   for (int r = 0; r < inner_repeat; ++r) {
     for (int j = 0; j < SCI_CIRCT_BRIDGE_OUTPUT_ELEMENT_COUNT; ++j) {
-      out.y[j] = (out.y[j] + base.y[j]) ^ uint64_t((r + j * 3) & 255);
+      out.y[j] = (out.y[j] + base.y[j]) ^ SCI_CIRCT_BRIDGE_MIX_VALUE(r, j);
     }
   }
   return out;

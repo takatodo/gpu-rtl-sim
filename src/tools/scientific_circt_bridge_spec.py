@@ -59,6 +59,12 @@ class BridgeSpec:
     run_hybrid_json_symbol: str
     input_ports: tuple[str, ...]
     output_ports: tuple[str, ...]
+    fill_a: int
+    fill_b: int
+    fill_c: int
+    fill_mask: int
+    mix_j_mult: int
+    mix_mask: int
 
 
 def _mlp_block_ports(source_variant: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
@@ -78,6 +84,54 @@ PORT_NAMING: dict[str, Callable[[], tuple[tuple[str, ...], tuple[str, ...]]]] = 
     "mlp4_hls_friendly": lambda: _mlp_block_ports("mlp4_hls_friendly"),
     "block2_hls_friendly": lambda: _mlp_block_ports("block2_hls_friendly"),
     "inference2_hls_friendly": lambda: _mlp_block_ports("inference2_hls_friendly"),
+}
+
+# Symbol stems come from the same generator modules that own the port names:
+# the attention generator hardcodes its extern "C" stem, the MLP-family
+# generators use the variant name.
+SYMBOL_STEMS: dict[str, str] = {
+    "attention_head4_hls_friendly": attention_head_variant.GPU_SYMBOL_STEM,
+    "mlp4_hls_friendly": mlp_block_variants.VARIANTS["mlp4_hls_friendly"].name,
+    "block2_hls_friendly": mlp_block_variants.VARIANTS["block2_hls_friendly"].name,
+    "inference2_hls_friendly": mlp_block_variants.VARIANTS["inference2_hls_friendly"].name,
+}
+
+
+def expected_gpu_symbols(source_variant: str) -> tuple[str, str]:
+    """Return the exact (run_gpu_outputs, run_hybrid_json) symbol names for a variant."""
+    stem = SYMBOL_STEMS[source_variant]
+    return f"{stem}_run_gpu_outputs", f"{stem}_run_hybrid_json"
+
+
+def _mlp_fill_params(source_variant: str) -> tuple[int, int, int, int]:
+    variant = mlp_block_variants.VARIANTS[source_variant]
+    return variant.fill_a, variant.fill_b, variant.fill_c, variant.fill_mask
+
+
+# The GPU .so generates its own deterministic input batch and inner_repeat
+# mixing; the CPU side of the bridge must reproduce the exact same formulas or
+# every output diverges. The parameters come from the same generator modules
+# that own the templates.
+FILL_PARAMS: dict[str, Callable[[], tuple[int, int, int, int]]] = {
+    "attention_head4_hls_friendly": lambda: (
+        attention_head_variant.FILL_A,
+        attention_head_variant.FILL_B,
+        attention_head_variant.FILL_C,
+        attention_head_variant.FILL_MASK,
+    ),
+    "mlp4_hls_friendly": lambda: _mlp_fill_params("mlp4_hls_friendly"),
+    "block2_hls_friendly": lambda: _mlp_fill_params("block2_hls_friendly"),
+    "inference2_hls_friendly": lambda: _mlp_fill_params("inference2_hls_friendly"),
+}
+
+MIX_PARAMS: dict[str, Callable[[], tuple[int, int]]] = {
+    "attention_head4_hls_friendly": lambda: (
+        attention_head_variant.MIX_J_MULT,
+        attention_head_variant.MIX_MASK,
+    ),
+    "mlp4_hls_friendly": lambda: (mlp_block_variants.MIX_J_MULT, mlp_block_variants.MIX_MASK),
+    "block2_hls_friendly": lambda: (mlp_block_variants.MIX_J_MULT, mlp_block_variants.MIX_MASK),
+    "inference2_hls_friendly": lambda: (mlp_block_variants.MIX_J_MULT, mlp_block_variants.MIX_MASK),
 }
 
 
@@ -122,13 +176,14 @@ def bridge_spec_from_metadata_row(row: dict[str, Any], *, selected: dict[str, An
     source_variant = row.get("source_variant")
     if not isinstance(source_variant, str) or source_variant not in PORT_NAMING:
         raise BridgeSpecError(f"no port naming registered for source variant {source_variant!r}")
-    expected_run_gpu_outputs = f"{source_variant}_run_gpu_outputs"
-    expected_run_hybrid_json = f"{source_variant}_run_hybrid_json"
+    expected_run_gpu_outputs, expected_run_hybrid_json = expected_gpu_symbols(source_variant)
     if run_gpu_outputs_symbol != expected_run_gpu_outputs:
         raise BridgeSpecError("run_gpu_outputs symbol does not match source variant")
     if run_hybrid_json_symbol != expected_run_hybrid_json:
         raise BridgeSpecError("run_hybrid_json symbol does not match source variant")
     input_ports, output_ports = PORT_NAMING[source_variant]()
+    fill_a, fill_b, fill_c, fill_mask = FILL_PARAMS[source_variant]()
+    mix_j_mult, mix_mask = MIX_PARAMS[source_variant]()
     if len(input_ports) != input_element_count:
         raise BridgeSpecError(
             f"derived input port count {len(input_ports)} != input element count {input_element_count}"
@@ -165,6 +220,12 @@ def bridge_spec_from_metadata_row(row: dict[str, Any], *, selected: dict[str, An
         run_hybrid_json_symbol=run_hybrid_json_symbol,
         input_ports=tuple(input_ports),
         output_ports=tuple(output_ports),
+        fill_a=fill_a,
+        fill_b=fill_b,
+        fill_c=fill_c,
+        fill_mask=fill_mask,
+        mix_j_mult=mix_j_mult,
+        mix_mask=mix_mask,
     )
 
 
@@ -180,6 +241,20 @@ def _render_apply_inputs_macro(input_ports: tuple[str, ...]) -> str:
 def _render_read_outputs_macro(output_ports: tuple[str, ...]) -> str:
     assignments = " ".join(f"base.y[{k}] = top.{port};" for k, port in enumerate(output_ports))
     return f"#define SCI_CIRCT_BRIDGE_READ_OUTPUTS(top, base) {assignments}"
+
+
+def _render_fill_value_macro(spec: BridgeSpec) -> str:
+    return (
+        "#define SCI_CIRCT_BRIDGE_FILL_VALUE(i, j) "
+        f"((uint8_t)(((i) * {spec.fill_a}u + (j) * {spec.fill_b}u + {spec.fill_c}u) & {spec.fill_mask:#x}u))"
+    )
+
+
+def _render_mix_value_macro(spec: BridgeSpec) -> str:
+    return (
+        "#define SCI_CIRCT_BRIDGE_MIX_VALUE(r, j) "
+        f"((uint64_t)(((r) + (j) * {spec.mix_j_mult}) & {spec.mix_mask}))"
+    )
 
 
 def render_bridge_gate_header(spec: BridgeSpec) -> str:
@@ -212,6 +287,10 @@ def render_bridge_gate_header(spec: BridgeSpec) -> str:
         _render_apply_inputs_macro(spec.input_ports),
         "",
         _render_read_outputs_macro(spec.output_ports),
+        "",
+        _render_fill_value_macro(spec),
+        "",
+        _render_mix_value_macro(spec),
         "",
     ]
     return "\n".join(lines)
