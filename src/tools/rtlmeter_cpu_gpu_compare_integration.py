@@ -40,6 +40,7 @@ from rtlmeter_stdout_cycles_observables import compare_rtlmeter_observables, req
 from rtlmeter_stdout_cycles_sidecar_runner import materialize_rtlmeter_stdout_cycles_sidecar_runner_command
 from rtlmeter_verilator_command_capture import RtlmeterCommandCaptureError
 from rtlmeter_verilator_wrapper_runtime import REAL_VERILATOR_ENV, SIDECAR_CONTEXT_JSON_ENV, write_rtlmeter_verilator_wrapper
+from rtlmeter_stdout_cycles_sidecar_runner_cli import DIRECT_NATIVE_SIDECAR_ENV
 
 SURFACE = "rtlmeter_cpu_gpu_compare_integration"; OPT_IN_ENV = "RTLMETER_CPU_GPU_COMPARE_EXECUTE"
 SIDECAR_PROXY_EVIDENCE_FIELDS = ("reviewed_proxy_metadata_observed", "reviewed_proxy_metadata_requires_valid_proxy_marker", "reviewed_proxy_metadata_requires_execute_proxy_install", "reviewed_proxy_metadata_requires_source_patch_marker", "rtlmeter_vsim_proxy_handoff_status", "rtlmeter_vsim_proxy_handoff_reached", "sidecar_proxy_marker_status", "sidecar_proxy_marker_valid", "sidecar_execute_proxy_installed_by_wrapper_branch", "sidecar_execute_proxy_source_patch_by_wrapper_branch", "sidecar_execute_proxy_authorized_by_wrapper_branch", "vsim_binary_proxy_installed_by_wrapper_branch", "vsim_main_source_patch_applied_by_wrapper_branch", "wrapper_executed_obj_dir_vsim", "obj_dir_vsim_execution_observed", "runtime_execution_authority", "vsim_runtime_execution_claimed", "missing_runtime_execution_context", "gpu_execution_evidence_level", "gpu_execution_claimed", "cpu_as_gpu_fallback", "timing_measured", "speedup_claimed")
@@ -63,6 +64,17 @@ def _run(command: list[str], *, repo_root: Path, env: Mapping[str, str], runner)
         "stdout": _sanitize(completed.stdout),
         "stderr": _sanitize(completed.stderr),
     }
+
+
+def _maybe_verilator_root_for_selected_binary(real_verilator: object, *, repo_root: Path) -> str | None:
+    if not isinstance(real_verilator, str) or not real_verilator:
+        return None
+    path = Path(real_verilator)
+    if not path.is_absolute():
+        path = repo_root / path
+    if path.name != "verilator_bin" or path.parent.name != "bin":
+        return None
+    return path.parent.parent.resolve().as_posix()
 
 
 def _clean_generated_work_roots(repo_root: Path, work_roots: list[Path]) -> list[str]:
@@ -197,6 +209,15 @@ def run_rtlmeter_cpu_gpu_compare_integration(
     assert sidecar_wrapper is not None
     gpu_env[WRAPPER_ENV] = sidecar_wrapper
     gpu_env["PATH"] = _path_with_wrapper_first(sidecar_wrapper=sidecar_wrapper, path_env=gpu_env.get("PATH"))
+    gpu_env[DIRECT_NATIVE_SIDECAR_ENV] = "1"
+    verilator_root = _maybe_verilator_root_for_selected_binary(
+        report["real_verilator_preflight"].get("selected_real_verilator")
+        if isinstance(report.get("real_verilator_preflight"), Mapping)
+        else None,
+        repo_root=root,
+    )
+    if verilator_root is not None:
+        gpu_env["VERILATOR_ROOT"] = verilator_root
     if report["sidecar_context_candidate"] is not None:
         gpu_env[SIDECAR_CONTEXT_JSON_ENV] = json.dumps(report["sidecar_context_candidate"], sort_keys=True)
     gpu_runner_command = materialize_rtlmeter_stdout_cycles_sidecar_runner_command(stdout_cycles_plan)

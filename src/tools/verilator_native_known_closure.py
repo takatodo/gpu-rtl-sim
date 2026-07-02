@@ -63,6 +63,13 @@ def _template_source_files(repo_root: Path, launch_template: object) -> list[str
     return [str(item) for item in source_files]
 
 
+def _closure_filelist_entries(repo_root: Path, closure: Mapping[str, object]) -> list[str] | None:
+    inline_entries = closure.get("filelist_entries")
+    if isinstance(inline_entries, list) and inline_entries:
+        return [str(item) for item in inline_entries]
+    return _template_source_files(repo_root, closure.get("launch_template"))
+
+
 def _report(
     *,
     status: str,
@@ -137,7 +144,7 @@ def recognize_verilator_native_known_closure(
     for closure in closures:
         if not isinstance(closure, Mapping) or closure.get("top_module") != top_module:
             continue
-        expected = _template_source_files(root, closure.get("launch_template"))
+        expected = _closure_filelist_entries(root, closure)
         if expected is not None and entries == expected:
             return _report(
                 status=STATUS_RECOGNIZED,

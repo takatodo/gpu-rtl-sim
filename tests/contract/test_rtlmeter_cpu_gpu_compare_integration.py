@@ -892,9 +892,12 @@ class RtlmeterCpuGpuCompareIntegrationTest(HybridCliTestCase):
                 runner=fake_runner,
             )
 
-        self.assertEqual(report["status"], "gpu_observables_not_ready")
+        self.assertEqual(report["status"], "observables_missing")
         self.assertEqual(report["first_seed_handoff_evidence_status"], "blocked_before_compare")
-        self.assertNotEqual(report["stdout_cycles_sidecar_runner"]["status"], "rtlmeter_stdout_cycles_sidecar_runner_observables_ready")
+        self.assertEqual(
+            report["stdout_cycles_sidecar_runner"]["status"],
+            "rtlmeter_stdout_cycles_sidecar_runner_outputs_missing",
+        )
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["execution_performed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["rtlmeter_proxy_handoff_observed"])
         self.assertFalse(report["stdout_cycles_sidecar_runner"]["reviewed_proxy_metadata_observed"])

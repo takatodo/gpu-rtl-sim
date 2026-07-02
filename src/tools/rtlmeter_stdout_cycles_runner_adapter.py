@@ -203,6 +203,49 @@ def _load_authority_registry(
         return None, {"path": path, "error": "authority_registry_payload_must_be_object"}
     return {str(key): value for key, value in payload.items()}, None
 
+def _context_string(context: Mapping[str, object] | None, field: str) -> str | None:
+    if not isinstance(context, Mapping):
+        return None
+    value = context.get(field)
+    return value if isinstance(value, str) and value else None
+
+def _context_source_closure_string(context: Mapping[str, object] | None, field: str) -> str | None:
+    if not isinstance(context, Mapping):
+        return None
+    closure = context.get("source_closure")
+    if not isinstance(closure, Mapping):
+        return None
+    value = closure.get(field)
+    return value if isinstance(value, str) and value else None
+
+def _context_path_rules(context: Mapping[str, object] | None) -> Mapping[str, object]:
+    if not isinstance(context, Mapping):
+        return {}
+    rules = context.get("state_and_report_path_rules")
+    return rules if isinstance(rules, Mapping) else {}
+
+def _stdout_cycles_plan_from_context(
+    *,
+    compile_args: str,
+    context: Mapping[str, object] | None,
+) -> dict[str, object]:
+    seed = _context_string(context, "rtlmeter_case") or _context_source_closure_string(context, "rtlmeter_case")
+    artifact_root = _context_string(context, "artifact_root")
+    path_rules = _context_path_rules(context)
+    if artifact_root is None:
+        rule_root = path_rules.get("artifact_root") or path_rules.get("root")
+        artifact_root = rule_root if isinstance(rule_root, str) and rule_root else None
+    authority_registry = _authority_registry_path({"authority_registry": None}, context)
+
+    kwargs: dict[str, object] = {"compile_args": compile_args}
+    if seed is not None:
+        kwargs["seed"] = seed
+    if artifact_root is not None:
+        kwargs["artifact_root"] = Path(artifact_root)
+    if authority_registry is not None:
+        kwargs["authority_registry"] = authority_registry
+    return build_rtlmeter_stdout_cycles_execution_plan(**kwargs)
+
 def _blocked_handoff_status(
     *,
     handoff_metadata: Mapping[str, object],
@@ -255,10 +298,11 @@ def build_rtlmeter_stdout_cycles_wrapper_handoff_diagnostics(
     """Return non-executing stdout/cycles diagnostics for a captured RTLMeter handoff."""
 
     launcher_invocation = build_rtlmeter_sidecar_launcher_invocation(handoff_metadata, repo_root=repo_root)
-    stdout_cycles_execution_plan = build_rtlmeter_stdout_cycles_execution_plan(
-        compile_args=sidecar_compile_args_from_wrapper_inspection(inspection)
-    )
     context = handoff_metadata.get("sidecar_context")
+    stdout_cycles_execution_plan = _stdout_cycles_plan_from_context(
+        compile_args=sidecar_compile_args_from_wrapper_inspection(inspection),
+        context=context if isinstance(context, Mapping) else None,
+    )
     registry_path = _authority_registry_path(
         stdout_cycles_execution_plan,
         context if isinstance(context, Mapping) else None,

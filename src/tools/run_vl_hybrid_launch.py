@@ -29,6 +29,19 @@ def _hybrid_src_dir() -> Path:
     return REPO_ROOT / "src" / "hybrid"
 
 
+def _hybrid_runtime_inputs(src_dir: Path) -> list[Path]:
+    if not src_dir.exists():
+        return []
+    return [path for path in src_dir.rglob("*") if path.is_file()]
+
+
+def _hybrid_runtime_build_required(src_dir: Path) -> bool:
+    if not HYBRID_BIN.is_file():
+        return True
+    bin_mtime = HYBRID_BIN.stat().st_mtime
+    return any(path.stat().st_mtime > bin_mtime for path in _hybrid_runtime_inputs(src_dir))
+
+
 @dataclass(frozen=True)
 class LaunchResolution:
     mdir: Path | None
@@ -54,11 +67,12 @@ def _resolve_meta_cubins(mdir: Path, meta: dict[str, object]) -> list[Path]:
 
 
 def ensure_hybrid_runtime_built() -> None:
-    if HYBRID_BIN.is_file():
-        return
     src_dir = _hybrid_src_dir()
+    if not _hybrid_runtime_build_required(src_dir):
+        return
     command = ["make", "-C", str(src_dir), "--no-print-directory"]
-    print(f"info: building missing hybrid runtime: {' '.join(command)}", file=sys.stderr)
+    reason = "stale" if HYBRID_BIN.is_file() else "missing"
+    print(f"info: building {reason} hybrid runtime: {' '.join(command)}", file=sys.stderr)
     try:
         subprocess.run(command, cwd=REPO_ROOT, check=True)
     except FileNotFoundError:

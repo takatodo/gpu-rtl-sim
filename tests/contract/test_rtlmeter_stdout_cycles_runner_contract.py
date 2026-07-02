@@ -556,6 +556,49 @@ class RtlmeterStdoutCyclesRunnerContractTest(HybridCliTestCase):
         self.assertFalse(report["reviewed_proxy_metadata_observed"])
         self.assertFalse(report["gpu_execution_claimed"])
 
+    def test_sidecar_runner_cli_direct_native_opt_in_executes_without_proxy_env(self) -> None:
+        self.add_tools_to_path()
+        from rtlmeter_stdout_cycles_plan import build_rtlmeter_stdout_cycles_execution_plan
+        from rtlmeter_stdout_cycles_sidecar_runner_cli import (
+            DIRECT_NATIVE_SIDECAR_ENV,
+            run_rtlmeter_stdout_cycles_sidecar_runner,
+        )
+        from rtlmeter_verilator_wrapper_phase import PHASE_ENV, PHASE_RTL_METER_RUN
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            plan = build_rtlmeter_stdout_cycles_execution_plan()
+            command = plan["gpu_candidate"]["command"]
+            observable_dir = plan["gpu_candidate"]["observable_execute_dir"]
+            calls = []
+
+            def fake_runner(command_argv, **kwargs):
+                calls.append((command_argv, kwargs))
+                out = root / observable_dir
+                (out / "_execute").mkdir(parents=True, exist_ok=True)
+                (out / "_execute/stdout.log").write_text("    0.01 | Hello World!\n", encoding="utf-8")
+                (out / "_rtlmeter_cycles.txt").write_text("1000000\n", encoding="utf-8")
+                return subprocess.CompletedProcess(command_argv, 0, stdout="", stderr="")
+
+            report = run_rtlmeter_stdout_cycles_sidecar_runner(
+                observable_execute_dir=observable_dir,
+                command_argv=["--", *command],
+                repo_root=root,
+                environ={DIRECT_NATIVE_SIDECAR_ENV: "1"},
+                runner=fake_runner,
+            )
+
+        self.assertEqual(report["status"], "rtlmeter_stdout_cycles_sidecar_runner_observables_ready")
+        self.assertEqual(calls[0][0], command)
+        self.assertEqual(calls[0][1]["env"][PHASE_ENV], PHASE_RTL_METER_RUN)
+        self.assertEqual(calls[0][1]["env"][DIRECT_NATIVE_SIDECAR_ENV], "1")
+        self.assertTrue(report["direct_native_sidecar_requested"])
+        self.assertFalse(report["vsim_sidecar_proxy_env_present"])
+        self.assertFalse(report["reviewed_proxy_metadata_observed"])
+        self.assertFalse(report["rtlmeter_proxy_handoff_observed"])
+        self.assertTrue(report["execution_performed"])
+        self.assertFalse(report["gpu_execution_claimed"])
+
     def test_execution_observation_requires_materialized_runner_command_for_performed(self) -> None:
         self.add_tools_to_path()
         from rtlmeter_stdout_cycles_execution_observation import (

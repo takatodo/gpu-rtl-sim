@@ -27,8 +27,19 @@ def sha256_file(path: Path) -> str:
 def extract_root_member_declarations(root_h: Path) -> list[dict[str, str]]:
     declarations: list[dict[str, str]] = []
     section = ""
+    root_class_name = root_h.stem
+    in_root_class = False
+    brace_depth = 0
     for raw_line in root_h.read_text(encoding="utf-8").splitlines():
         line = raw_line.strip()
+        if not in_root_class:
+            if line.startswith("class ") and root_class_name in line and "{" in line:
+                in_root_class = True
+                brace_depth = raw_line.count("{") - raw_line.count("}")
+            continue
+        brace_depth += raw_line.count("{") - raw_line.count("}")
+        if brace_depth <= 0:
+            break
         section_match = SECTION_COMMENT_RE.match(line)
         if section_match:
             section = section_match.group(1)

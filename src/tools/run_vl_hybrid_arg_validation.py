@@ -13,6 +13,14 @@ def persistent_phase_dump_parts(args: argparse.Namespace) -> list[str] | None:
 def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
     if args.resident_steps and args.patch:
         parser.error("--resident-steps rejects --patch; use --patch-script for a resident schedule")
+    if getattr(args, "feedback_edges", None) and not args.resident_steps:
+        parser.error("--feedback-edges requires --resident-steps")
+    if getattr(args, "feedback_increments", None) and not args.resident_steps:
+        parser.error("--feedback-increments requires --resident-steps")
+    if getattr(args, "feedback_phase_sets", None) and not args.resident_steps:
+        parser.error("--feedback-phase-sets requires --resident-steps")
+    if getattr(args, "schedule_lowering_plan", None) and not args.resident_steps:
+        parser.error("--schedule-lowering-plan requires --resident-steps")
     if (args.persistent_resident_state_abi_handle is None) != (
         args.persistent_resident_state_abi_phase is None
     ):
@@ -37,5 +45,10 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
         if phase_dumps is not None:
             if len(phase_dumps) != args.persistent_resident_state_abi_phases:
                 parser.error("--persistent-resident-state-abi-phase-dumps count must match --persistent-resident-state-abi-phases")
+    if getattr(args, "feedback_phase_sets", None) and (
+        args.persistent_resident_state_abi_phases is None
+        or args.persistent_resident_state_abi_phases < 2
+    ):
+        parser.error("--feedback-phase-sets requires multi-phase persistent resident ABI mode")
     if args.timing_repeats < 1:
         parser.error("--timing-repeats must be >= 1")

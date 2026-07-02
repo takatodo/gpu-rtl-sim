@@ -56,6 +56,15 @@ STATUS_DELEGATED = "delegated_to_real_verilator"
 STATUS_REAL_VERILATOR_MISSING = "real_verilator_missing"
 STATUS_USE_GPU_NEEDS_SCHEDULE = "use_gpu_requires_explicit_sidecar_schedule"
 STATUS_UNSUPPORTED_GPU_REQUEST = "unsupported_gpu_request_fail_closed"
+SIDECAR_ONLY_OPTIONS_WITH_VALUES = {
+    "--sim-accel",
+    "--sim-accel-states",
+    "--sim-accel-steps",
+    "--sim-accel-shape",
+}
+SIDECAR_ONLY_FLAGS = {
+    "--sim-accel-estimate-efficiency",
+}
 
 
 def _is_executable(path: Path) -> bool:
@@ -80,6 +89,27 @@ def _path_entries_without_wrapper(path_env: str, wrapper_path: Path) -> list[str
             continue
         entries.append(entry)
     return entries
+
+
+def strip_sidecar_only_verilator_options(argv: Sequence[str]) -> list[str]:
+    """Remove wrapper-only sidecar schedule options before invoking real Verilator."""
+
+    stripped: list[str] = []
+    index = 0
+    while index < len(argv):
+        item = str(argv[index])
+        if item in SIDECAR_ONLY_OPTIONS_WITH_VALUES:
+            index += 2
+            continue
+        if any(item.startswith(f"{option}=") for option in SIDECAR_ONLY_OPTIONS_WITH_VALUES):
+            index += 1
+            continue
+        if item in SIDECAR_ONLY_FLAGS:
+            index += 1
+            continue
+        stripped.append(item)
+        index += 1
+    return stripped
 
 
 def resolve_real_verilator(*, environ: Mapping[str, str], wrapper_path: Path) -> Path | None:
@@ -251,7 +281,7 @@ def run_rtlmeter_verilator_wrapper(
             )
             return 127
         completed = runner(
-            [str(real_verilator), *map(str, argv)],
+            [str(real_verilator), *strip_sidecar_only_verilator_options(argv)],
             env=env_with_sidecar_verilate_phase(env),
         )
         returncode = int(completed.returncode)

@@ -14,6 +14,7 @@ Usage:
   python3 run_vl_hybrid.py --mdir <verilator-cc-dir> --patch-script steps.txt
   python3 run_vl_hybrid.py --cubin path.cubin --storage-size BYTES --kernels k0,k1,k2
   python3 run_vl_hybrid.py --mdir <verilator-cc-dir> --trace-stages
+  python3 run_vl_hybrid.py --mdir <verilator-cc-dir> --resident-steps --schedule-lowering-plan plan.json --allow-ordering-aware-token-loop-probe-plan
 """
 
 from __future__ import annotations
@@ -82,14 +83,32 @@ def _gpu_runtime_failure_note(*parts: str | None) -> str:
 
 
 def _run_hybrid_runtime(cmd: list[str], env: dict[str, str]) -> int:
-    completed = subprocess.run(
-        cmd,
-        check=False,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
+    timeout_text = os.environ.get("RUN_VL_HYBRID_RUNTIME_TIMEOUT_SECONDS")
+    timeout_seconds = float(timeout_text) if timeout_text else None
+    try:
+        completed = subprocess.run(
+            cmd,
+            check=False,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode(errors="replace")
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode(errors="replace")
+        _write_sanitized(stdout, sys.stdout)
+        _write_sanitized(stderr, sys.stderr)
+        print(
+            f"error: hybrid runtime timed out after {timeout_seconds:g}s",
+            file=sys.stderr,
+        )
+        return 124
     _write_sanitized(completed.stdout, sys.stdout)
     _write_sanitized(completed.stderr, sys.stderr)
     if completed.returncode != 0:

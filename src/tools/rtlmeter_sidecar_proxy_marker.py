@@ -31,7 +31,6 @@ def build_rtlmeter_sidecar_proxy_marker_payload(*, observable_execute_dir: str |
         isinstance(proxy_readiness, Mapping)
         and proxy_readiness.get("proxy_installed_by_wrapper_branch") is True
     )
-    proxy_authorized = proxy_installed and isinstance(proxy_readiness, Mapping) and proxy_readiness.get("proxy_authorized_by_wrapper_branch") is True and proxy_readiness.get("reviewed_proxy_metadata_observed") is True
     main_patch = proxy_readiness.get("vsim_main_proxy_patch") if isinstance(proxy_readiness, Mapping) else None
     execute_proxy = proxy_readiness.get("vsim_execute_proxy") if isinstance(proxy_readiness, Mapping) else None
     proxy_source_patch = (
@@ -39,13 +38,21 @@ def build_rtlmeter_sidecar_proxy_marker_payload(*, observable_execute_dir: str |
         and main_patch.get("patched_by_wrapper_branch") is True
         and main_patch.get("reviewed_proxy_metadata_observed") is True
     )
+    proxy_target = proxy_readiness.get("vsim_sidecar_proxy_target") if isinstance(proxy_readiness, Mapping) else None
+    proxy_target_reviewed = isinstance(proxy_target, Mapping) and proxy_target.get("reviewed_proxy_target") is True
+    proxy_authorized = (
+        isinstance(proxy_readiness, Mapping)
+        and proxy_readiness.get("reviewed_proxy_metadata_observed") is True
+        and proxy_target_reviewed
+        and (proxy_installed or proxy_source_patch)
+    )
     payload = {
         "schema_version": MARKER_SCHEMA_VERSION,
         "schema_role": MARKER_SCHEMA_ROLE,
         "producer": MARKER_PRODUCER,
         "phase": MARKER_PHASE,
         "observable_execute_dir": observable_execute_dir,
-        "direct_sidecar_proxy_marker_status": "rtlmeter_direct_sidecar_proxy_marker_authorized" if proxy_authorized and proxy_source_patch else "rtlmeter_direct_sidecar_proxy_marker_blocked",
+        "direct_sidecar_proxy_marker_status": "rtlmeter_direct_sidecar_proxy_marker_authorized" if proxy_authorized else "rtlmeter_direct_sidecar_proxy_marker_blocked",
         "direct_sidecar_proxy_readiness_status": proxy_readiness.get("status") if isinstance(proxy_readiness, Mapping) else None,
         "direct_sidecar_execute_proxy_status": execute_proxy.get("status") if isinstance(execute_proxy, Mapping) else None,
         "cpu_as_gpu_fallback": False,
@@ -105,29 +112,38 @@ def _missing_marker_context(payload: object, *, expected_observable_execute_dir:
         missing.append("execute_proxy_source_patch_by_wrapper_branch")
     proxy_authorized = payload.get(
         "execute_proxy_authorized_by_wrapper_branch",
-        proxy_installed is True and proxy_source_patch is True,
+        proxy_installed is True or proxy_source_patch is True,
     )
     if proxy_authorized not in (False, True):
         missing.append("execute_proxy_authorized_by_wrapper_branch")
-    if proxy_authorized is True and proxy_installed is not True:
+    if proxy_authorized is True and proxy_installed is not True and proxy_source_patch is not True:
         missing.append("execute_proxy_installed_by_wrapper_branch")
     if proxy_authorized is True and proxy_source_patch is not True:
         missing.append("execute_proxy_source_patch_by_wrapper_branch")
     if proxy_authorized is True:
         for field, value in (
             ("direct_sidecar_proxy_marker_status", "rtlmeter_direct_sidecar_proxy_marker_authorized"),
-            ("direct_sidecar_proxy_readiness_status", "rtlmeter_direct_sidecar_proxy_installed"),
-            ("direct_sidecar_execute_proxy_status", "rtlmeter_vsim_execute_proxy_installed"),
         ):
             if payload.get(field) != value:
                 missing.append(field)
+        readiness_status = payload.get("direct_sidecar_proxy_readiness_status")
+        if proxy_installed is True and readiness_status != "rtlmeter_direct_sidecar_proxy_installed":
+            missing.append("direct_sidecar_proxy_readiness_status")
+        if (
+            proxy_source_patch is True
+            and proxy_installed is not True
+            and readiness_status != "rtlmeter_direct_sidecar_proxy_source_patch_applied"
+        ):
+            missing.append("direct_sidecar_proxy_readiness_status")
+        if proxy_installed is True and payload.get("direct_sidecar_execute_proxy_status") != "rtlmeter_vsim_execute_proxy_installed":
+            missing.append("direct_sidecar_execute_proxy_status")
         readiness = payload.get("direct_sidecar_proxy_readiness")
         if not isinstance(readiness, Mapping):
             missing.append("direct_sidecar_proxy_readiness")
         else:
             if readiness.get("reviewed_proxy_metadata_observed") is not True:
                 missing.append("direct_sidecar_proxy_readiness.reviewed_proxy_metadata_observed")
-            if readiness.get("proxy_authorized_by_wrapper_branch", True) is not True:
+            if proxy_installed is True and readiness.get("proxy_authorized_by_wrapper_branch", True) is not True:
                 missing.append("direct_sidecar_proxy_readiness.proxy_authorized_by_wrapper_branch")
             target = readiness.get("vsim_sidecar_proxy_target")
             if not isinstance(target, Mapping) or target.get("reviewed_proxy_target") is not True:
@@ -135,9 +151,9 @@ def _missing_marker_context(payload: object, *, expected_observable_execute_dir:
             if proxy_installed is True and readiness.get("proxy_installed_by_wrapper_branch") is not True:
                 missing.append("direct_sidecar_proxy_readiness.proxy_installed_by_wrapper_branch")
             execute_proxy = readiness.get("vsim_execute_proxy")
-            if not isinstance(execute_proxy, Mapping) or execute_proxy.get("status") != "rtlmeter_vsim_execute_proxy_installed":
+            if proxy_installed is True and (not isinstance(execute_proxy, Mapping) or execute_proxy.get("status") != "rtlmeter_vsim_execute_proxy_installed"):
                 missing.append("direct_sidecar_proxy_readiness.vsim_execute_proxy.status")
-            if not isinstance(execute_proxy, Mapping) or execute_proxy.get("reviewed_proxy_metadata_observed") is not True:
+            if proxy_installed is True and (not isinstance(execute_proxy, Mapping) or execute_proxy.get("reviewed_proxy_metadata_observed") is not True):
                 missing.append("direct_sidecar_proxy_readiness.vsim_execute_proxy.reviewed_proxy_metadata_observed")
             main_patch = readiness.get("vsim_main_proxy_patch")
             readiness_source_patch = readiness.get("proxy_source_patch_by_wrapper_branch") is True
@@ -201,14 +217,14 @@ def build_rtlmeter_sidecar_proxy_execution_evidence(
         blocking_context.extend(str(item) for item in missing_observables)
     if not runner_command_observed:
         blocking_context.append("runner_command_not_observed")
-    for field in (
-        "sidecar_proxy_marker_valid",
-        "sidecar_execute_proxy_installed_by_wrapper_branch",
-        "sidecar_execute_proxy_source_patch_by_wrapper_branch",
-        "sidecar_execute_proxy_authorized_by_wrapper_branch",
-    ):
-        if proxy_marker.get(field) is not True:
-            blocking_context.append(field)
+    if proxy_marker.get("sidecar_proxy_marker_valid") is not True:
+        blocking_context.append("sidecar_proxy_marker_valid")
+    proxy_installed = proxy_marker.get("sidecar_execute_proxy_installed_by_wrapper_branch") is True
+    source_patch = proxy_marker.get("sidecar_execute_proxy_source_patch_by_wrapper_branch") is True
+    if not (proxy_installed or source_patch):
+        blocking_context.append("sidecar_execute_proxy_installed_or_source_patch_by_wrapper_branch")
+    if proxy_marker.get("sidecar_execute_proxy_authorized_by_wrapper_branch") is not True:
+        blocking_context.append("sidecar_execute_proxy_authorized_by_wrapper_branch")
     return {
         "schema_version": 1,
         "surface": "rtlmeter_stdout_cycles_sidecar_proxy_execution_evidence",

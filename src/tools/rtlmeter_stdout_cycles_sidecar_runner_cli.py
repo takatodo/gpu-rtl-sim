@@ -63,6 +63,7 @@ except ImportError:  # pragma: no cover - exercised when invoked as a script.
 
 STATUS_BLOCKED_WRAPPER_PHASE = "rtlmeter_stdout_cycles_sidecar_runner_blocked_wrapper_phase_guard"
 STATUS_VSIM_PROXY_TARGET_UNUSABLE = "rtlmeter_stdout_cycles_sidecar_runner_vsim_sidecar_proxy_target_unusable"
+DIRECT_NATIVE_SIDECAR_ENV = "RTLMETER_DIRECT_NATIVE_SIDECAR"
 PROXY_TARGET_REVIEW_ROLE = "rtlmeter_vsim_sidecar_proxy_target_review"
 
 
@@ -180,14 +181,21 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
     command_result = None
     vsim_sidecar_proxy_target = None
     env_source = os.environ if environ is None else environ
+    direct_native_requested = env_source.get(DIRECT_NATIVE_SIDECAR_ENV) == "1"
     phase_guard = wrapper_phase_guard_report(env_source)
     if command is not None and plan is not None and not _plan_missing_context(plan) and not _rejected_command_inputs(command):
         if phase_guard["status"] == STATUS_PHASE_CLEAR:
             child_env = env_with_rtlmeter_run_phase(env_source)
             child_env[REPO_ROOT_ENV] = root.as_posix()
             proxy_path, vsim_sidecar_proxy_target = _resolve_vsim_sidecar_proxy_target(repo_root=root, env=child_env)
-            if proxy_path is not None and isinstance(vsim_sidecar_proxy_target, Mapping) and vsim_sidecar_proxy_target.get("executable") is True and vsim_sidecar_proxy_target.get("reviewed_proxy_target") is True:
-                child_env[VSIM_SIDECAR_PROXY_ENV] = proxy_path
+            if direct_native_requested or (
+                proxy_path is not None
+                and isinstance(vsim_sidecar_proxy_target, Mapping)
+                and vsim_sidecar_proxy_target.get("executable") is True
+                and vsim_sidecar_proxy_target.get("reviewed_proxy_target") is True
+            ):
+                if proxy_path is not None:
+                    child_env[VSIM_SIDECAR_PROXY_ENV] = proxy_path
                 _remove_existing_observable_files(observable_execute_dir=observable_execute_dir, repo_root=root)
                 raw_result = _run_command(command, repo_root=root, env=child_env, runner=runner)
                 command_result = _runner_command_result(plan, raw_result)
@@ -199,7 +207,9 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
                     "repo_root_env": REPO_ROOT_ENV,
                     "repo_root_env_present": True,
                     "vsim_sidecar_proxy_env": VSIM_SIDECAR_PROXY_ENV,
-                    "vsim_sidecar_proxy_env_present": True,
+                    "vsim_sidecar_proxy_env_present": proxy_path is not None,
+                    "direct_native_sidecar_env": DIRECT_NATIVE_SIDECAR_ENV,
+                    "direct_native_sidecar_requested": direct_native_requested,
                     "diagnostic": "RTLMeter runner subprocess entered the rtlmeter_run wrapper phase",
                 }
     report = build_rtlmeter_stdout_cycles_sidecar_runner_execution_observation(
@@ -210,6 +220,8 @@ def run_rtlmeter_stdout_cycles_sidecar_runner(
     report["runner_source_cli_implemented"] = True
     report["vsim_sidecar_proxy_env"] = VSIM_SIDECAR_PROXY_ENV
     report["vsim_sidecar_proxy_env_present"] = bool(env_source.get(VSIM_SIDECAR_PROXY_ENV))
+    report["direct_native_sidecar_env"] = DIRECT_NATIVE_SIDECAR_ENV
+    report["direct_native_sidecar_requested"] = direct_native_requested
     report["vsim_sidecar_proxy_target"] = vsim_sidecar_proxy_target
     report["wrapper_phase_guard"] = phase_guard
     if (

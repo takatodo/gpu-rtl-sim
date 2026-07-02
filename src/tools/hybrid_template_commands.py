@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+from dataclasses import replace
 from pathlib import Path
 
 from hybrid_template_normalize import normalize_template_payload
@@ -33,7 +34,24 @@ def _display_path(path: Path) -> str:
     return _display_path_with_root(path, repo_root=REPO_ROOT)
 
 
-def _compare_command_impl(plan: HybridTemplatePlan, *, repo_root: Path) -> list[str]:
+def resident_template_plan(plan: HybridTemplatePlan, *, resident_label: str = "resident_multistep") -> HybridTemplatePlan:
+    shape = f"{plan.nstates}x{plan.steps}"
+    return replace(
+        plan,
+        gpu_candidate_state=plan.mdir / f"{plan.target_name}_gpu_{resident_label}_{shape}.bin",
+        hybrid_report=REPO_ROOT / "reports" / f"{plan.target_name}_{resident_label}_{shape}.txt",
+        compare_report=REPO_ROOT
+        / "reports"
+        / f"{plan.target_name}_cpu_vs_{resident_label}_{shape}_coverage_output_compare.json",
+    )
+
+
+def _compare_command_impl(
+    plan: HybridTemplatePlan,
+    *,
+    repo_root: Path,
+    candidate_label_prefix: str = "hybrid_from_cpu_init",
+) -> list[str]:
     shape = f"{plan.nstates}x{plan.steps}"
     compare = [
         "python3",
@@ -45,7 +63,7 @@ def _compare_command_impl(plan: HybridTemplatePlan, *, repo_root: Path) -> list[
         "--reference-label",
         f"cpu_repeat_{shape}",
         "--candidate-label",
-        f"hybrid_from_cpu_init_{shape}",
+        f"{candidate_label_prefix}_{shape}",
         "--acceptance-policy",
         "coverage_output_equivalence",
         "--json-out",
@@ -126,8 +144,8 @@ def _gpu_build_command(plan: HybridTemplatePlan) -> list[str]:
     return ["python3", "src/tools/build_vl_gpu.py", _display_path(plan.mdir), "--force"]
 
 
-def _hybrid_command(plan: HybridTemplatePlan) -> list[str]:
-    return [
+def _hybrid_command(plan: HybridTemplatePlan, *, resident_patch_script: Path | None = None) -> list[str]:
+    command = [
         "python3",
         "src/tools/run_vl_hybrid.py",
         "--mdir",
@@ -142,13 +160,26 @@ def _hybrid_command(plan: HybridTemplatePlan) -> list[str]:
         "--dump-state",
         _display_path(plan.gpu_candidate_state),
     ]
+    if resident_patch_script is not None:
+        command += [
+            "--resident-steps",
+            "--patch-script",
+            _display_path(resident_patch_script),
+        ]
+    return command
 
 
-def _compare_command(plan: HybridTemplatePlan) -> list[str]:
-    return _compare_command_impl(plan, repo_root=REPO_ROOT)
+def _compare_command(plan: HybridTemplatePlan, *, candidate_label_prefix: str = "hybrid_from_cpu_init") -> list[str]:
+    return _compare_command_impl(plan, repo_root=REPO_ROOT, candidate_label_prefix=candidate_label_prefix)
 
 
-def command_plan(plan: HybridTemplatePlan) -> list[list[str]]:
+def command_plan(
+    plan: HybridTemplatePlan,
+    *,
+    resident_patch_script: Path | None = None,
+    resident_label: str = "resident_multistep",
+) -> list[list[str]]:
+    effective_plan = resident_template_plan(plan, resident_label=resident_label) if resident_patch_script else plan
     verilator = _verilator_command(plan)
     make_probe = _make_probe_command(plan)
     cpu_init = _host_probe_repeat_command(plan=plan, nstates=1, steps=1, output=plan.cpu_init_state)
@@ -158,11 +189,25 @@ def command_plan(plan: HybridTemplatePlan) -> list[list[str]]:
         steps=plan.steps,
         output=plan.cpu_reference_state,
     )
-    return [verilator, make_probe, cpu_init, cpu_ref, _gpu_build_command(plan), _hybrid_command(plan), _compare_command(plan)]
+    candidate_label_prefix = f"{resident_label}_from_cpu_init" if resident_patch_script else "hybrid_from_cpu_init"
+    return [
+        verilator,
+        make_probe,
+        cpu_init,
+        cpu_ref,
+        _gpu_build_command(plan),
+        _hybrid_command(effective_plan, resident_patch_script=resident_patch_script),
+        _compare_command(effective_plan, candidate_label_prefix=candidate_label_prefix),
+    ]
 
 
-def staged_command_plan(plan: HybridTemplatePlan) -> list[tuple[str, list[str]]]:
-    commands = command_plan(plan)
+def staged_command_plan(
+    plan: HybridTemplatePlan,
+    *,
+    resident_patch_script: Path | None = None,
+    resident_label: str = "resident_multistep",
+) -> list[tuple[str, list[str]]]:
+    commands = command_plan(plan, resident_patch_script=resident_patch_script, resident_label=resident_label)
     return list(zip(TEMPLATE_STAGE_NAMES, commands, strict=True))
 
 
@@ -268,8 +313,20 @@ def _run_stage(
     return log_path
 
 
-def run_plan(plan: HybridTemplatePlan, *, dry_run: bool = False, verbose: bool = False) -> None:
-    staged_commands = staged_command_plan(plan)
+def run_plan(
+    plan: HybridTemplatePlan,
+    *,
+    dry_run: bool = False,
+    verbose: bool = False,
+    resident_patch_script: Path | None = None,
+    resident_label: str = "resident_multistep",
+) -> None:
+    effective_plan = resident_template_plan(plan, resident_label=resident_label) if resident_patch_script else plan
+    staged_commands = staged_command_plan(
+        plan,
+        resident_patch_script=resident_patch_script,
+        resident_label=resident_label,
+    )
     total = len(staged_commands)
     for index, (stage, command) in enumerate(staged_commands, start=1):
         if dry_run or verbose:
@@ -280,7 +337,7 @@ def run_plan(plan: HybridTemplatePlan, *, dry_run: bool = False, verbose: bool =
         if not verbose:
             print(f"[{index}/{total}] {label}: start", flush=True)
         try:
-            log_path = _run_stage(plan=plan, index=index, stage=stage, command=command, verbose=verbose)
+            log_path = _run_stage(plan=effective_plan, index=index, stage=stage, command=command, verbose=verbose)
         except FileNotFoundError as exc:
             raise HybridTemplateStageError(f"{label} failed: command not found: {command[0]}") from exc
         except subprocess.CalledProcessError as exc:
@@ -288,9 +345,9 @@ def run_plan(plan: HybridTemplatePlan, *, dry_run: bool = False, verbose: bool =
             log_note = ""
             if not verbose:
                 failure_note = _classified_failure_note(exc)
-                log_note = _stage_failure_note(plan, index, stage)
+                log_note = _stage_failure_note(effective_plan, index, stage)
             raise HybridTemplateStageError(
                 f"{label} failed with exit code {exc.returncode}{failure_note}{log_note}"
             ) from exc
         if not verbose:
-            print(f"[{index}/{total}] {label}: ok{_stage_success_note(plan, index, log_path)}", flush=True)
+            print(f"[{index}/{total}] {label}: ok{_stage_success_note(effective_plan, index, log_path)}", flush=True)

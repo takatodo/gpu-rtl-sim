@@ -35,7 +35,7 @@ endif
 
 INCLUDES = -I$(CUDA_INCLUDE_DIR)
 LDFLAGS  = -L$(CUDA_LIB_DIR) -Wl,-rpath,$(CUDA_LIB_DIR)
-LDLIBS   = -lcuda
+LDLIBS   = -lcuda -pthread
 
 .PHONY: all clean run_vl_hybrid tlul_slice_host_probe tlul_sink_host_probe xuantie_e902_host_probe veer_el2_host_probe
 

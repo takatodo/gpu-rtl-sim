@@ -214,18 +214,20 @@ def direct_sidecar_proxy_readiness(report: Mapping[str, object], *, repo_root: P
     missing_context: list[str] = []
     if compile_dir is None:
         missing_context.append("rtlmeter_compile_dir")
-    if expected_vsim is None or not expected_vsim.exists():
+    if (expected_vsim is None or not expected_vsim.exists()) and not proxy_source_patch:
         missing_context.append("expected_obj_dir_vsim")
-    if not proxy_installed:
+    if not proxy_installed and not proxy_source_patch:
         missing_context.extend(str(item) for item in execute_proxy.get("missing_proxy_context", []))
         if not execute_proxy.get("missing_proxy_context"):
             missing_context.append("execute_proxy_installer")
     if not proxy_target_reviewed:
         missing_context.append("reviewed_vsim_sidecar_proxy_target")
-    proxy_authorized = proxy_installed and proxy_target_reviewed
+    proxy_authorized = proxy_target_reviewed and (proxy_installed or proxy_source_patch)
 
-    if proxy_authorized:
+    if proxy_installed and proxy_authorized:
         readiness_status = "rtlmeter_direct_sidecar_proxy_installed"
+    elif proxy_source_patch and proxy_authorized:
+        readiness_status = "rtlmeter_direct_sidecar_proxy_source_patch_applied"
     elif proxy_installed:
         readiness_status = "rtlmeter_direct_sidecar_proxy_installed_authorization_blocked"
     elif proxy_source_patch:

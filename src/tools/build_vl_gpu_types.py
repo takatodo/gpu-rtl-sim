@@ -40,6 +40,7 @@ class BuildRequest:
     analyze_phases: bool
     kernel_split_phases: bool
     kernel_probe_act_sequent_chunk_size: int
+    disable_cfg_clone_diagnostics: bool
     reuse_gpu_patched_ll: bool
     reuse_ptx: bool
     syms_state_image: bool

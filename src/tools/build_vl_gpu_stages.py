@@ -78,6 +78,7 @@ def prepare_gpu_patched_ir(
     state_root_offset: int | None,
     kernel_split_phases: bool,
     kernel_probe_act_sequent_chunk_size: int,
+    disable_cfg_clone_diagnostics: bool,
 ) -> tuple[Path, list[str] | None]:
     ensure_pass_tools_built()
     return prepare_gpu_patched_ir_impl(
@@ -91,6 +92,7 @@ def prepare_gpu_patched_ir(
         state_root_offset=state_root_offset,
         kernel_split_phases=kernel_split_phases,
         kernel_probe_act_sequent_chunk_size=kernel_probe_act_sequent_chunk_size,
+        disable_cfg_clone_diagnostics=disable_cfg_clone_diagnostics,
         vlgpugen=VLGPUGEN,
         passes_dir=PASSES_DIR,
         passes_so=PASSES_SO,

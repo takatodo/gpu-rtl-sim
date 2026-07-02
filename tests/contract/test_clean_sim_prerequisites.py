@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import io
+import os
 import shutil
 import subprocess
 import sys
@@ -32,8 +33,14 @@ import run_vl_hybrid_launch_env
 
 def _dummy_template_plan(root: Path) -> HybridTemplatePlan:
     mdir = root / "artifacts" / "demo_obj_dir"
+    template_path = root / "config" / "slice_launch_templates" / "demo.json"
+    template_path.parent.mkdir(parents=True, exist_ok=True)
+    template_path.write_text(
+        '{"schema_version": 1, "build": {"host_probe_builder": "src/tools/build_host_probe.py"}}\n',
+        encoding="utf-8",
+    )
     return HybridTemplatePlan(
-        template_path=root / "config" / "slice_launch_templates" / "demo.json",
+        template_path=template_path,
         target="DEMO.demo",
         target_name="demo",
         top_module="demo_tb",
@@ -103,6 +110,32 @@ class CleanSimPrerequisiteTest(unittest.TestCase):
 
             self.assertEqual(calls, [])
 
+    def test_build_vl_gpu_rebuilds_stale_pass_tools(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            passes_dir = Path(temp_dir) / "passes"
+            pass_tool_dir = Path(temp_dir) / "artifacts" / "tool_bins" / "passes"
+            passes_dir.mkdir()
+            pass_tool_dir.mkdir(parents=True)
+            source = passes_dir / "vlgpugen.cpp"
+            source.write_text("// newer source\n", encoding="utf-8")
+            pass_tools = (pass_tool_dir / "VlGpuPasses.so", pass_tool_dir / "vlgpugen")
+            for path in pass_tools:
+                path.write_text("", encoding="utf-8")
+            old_mtime = source.stat().st_mtime - 10
+            for path in pass_tools:
+                os.utime(path, (old_mtime, old_mtime))
+            calls = []
+
+            with mock.patch.object(build_vl_gpu_stage_env, "PASSES_DIR", passes_dir), mock.patch.object(
+                build_vl_gpu_stage_env,
+                "PASS_TOOL_OUTPUTS",
+                pass_tools,
+            ):
+                with redirect_stdout(io.StringIO()):
+                    build_vl_gpu_stage_env.ensure_pass_tools_built(run_command=calls.append)
+
+            self.assertEqual(calls, [["make", "-C", str(passes_dir), "--no-print-directory"]])
+
     def test_generated_helper_binary_paths_are_outside_src(self) -> None:
         repo_root = Path(build_vl_gpu_stage_env.REPO_ROOT)
         self.assertEqual(
@@ -128,6 +161,196 @@ class CleanSimPrerequisiteTest(unittest.TestCase):
 
         self.assertEqual(Path(command[0]), run_vl_hybrid_launch.HYBRID_BIN)
         self.assertIn("artifacts/tool_bins/hybrid/run_vl_hybrid", command[0])
+
+    def test_run_vl_hybrid_launch_env_forwards_feedback_edges(self) -> None:
+        env: dict[str, str] = {}
+        args = SimpleNamespace(
+            resident_steps=True,
+            gpu_replicate_init_state=False,
+            timing_repeats=1,
+            feedback_edges="7:3,236:232",
+            feedback_increments="4:1",
+            feedback_phase_sets="1:6:1,2:6:1",
+            feedback_edge_mode="phase",
+        )
+
+        run_vl_hybrid_launch_env.configure_runtime_mode_env(env, args)
+
+        self.assertEqual(env["RUN_VL_HYBRID_RESIDENT_STEPS"], "1")
+        self.assertEqual(env["RUN_VL_HYBRID_FEEDBACK_EDGES"], "7:3,236:232")
+        self.assertEqual(env["RUN_VL_HYBRID_FEEDBACK_INCREMENTS"], "4:1")
+        self.assertEqual(env["RUN_VL_HYBRID_FEEDBACK_PHASE_SETS"], "1:6:1,2:6:1")
+        self.assertEqual(env["RUN_VL_HYBRID_FEEDBACK_EDGE_MODE"], "phase")
+
+    def test_run_vl_hybrid_launch_env_forwards_module_load_symbol_check(self) -> None:
+        env: dict[str, str] = {}
+        args = SimpleNamespace(module_load_symbol_check="vl_demo_kernel")
+
+        run_vl_hybrid_launch_env.configure_module_load_symbol_check_env(env, args)
+
+        self.assertEqual(
+            env["RUN_VL_HYBRID_MODULE_LOAD_SYMBOL_CHECK"],
+            "vl_demo_kernel",
+        )
+
+    def test_run_vl_hybrid_parser_accepts_module_load_symbol_check(self) -> None:
+        parser = run_vl_hybrid.build_parser()
+
+        args = parser.parse_args(
+            [
+                "--cubin",
+                "demo.ptx",
+                "--storage-size",
+                "64",
+                "--module-load-symbol-check",
+                "vl_demo_kernel",
+            ]
+        )
+
+        self.assertEqual(args.module_load_symbol_check, "vl_demo_kernel")
+
+    def test_hybrid_runtime_has_module_load_symbol_check_mode(self) -> None:
+        source = (REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid.c").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("RUN_VL_HYBRID_MODULE_LOAD_SYMBOL_CHECK", source)
+        self.assertIn("module_load_symbol_check: passed", source)
+        self.assertIn("before_module_load_symbol_check", source)
+
+    def test_run_vl_hybrid_launch_env_consumes_schedule_lowering_plan(self) -> None:
+        from gategpt_schedule_planner import (
+            build_padded_start_pair_cycle_loop_lowering_plan,
+            write_lowering_plan_artifact,
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plan_path = Path(tmpdir) / "lowering_plan.json"
+            write_lowering_plan_artifact(
+                plan_path,
+                build_padded_start_pair_cycle_loop_lowering_plan(
+                    nstates=2,
+                    phase_count=3,
+                    loop_chunk=1701,
+                ),
+            )
+            env: dict[str, str] = {}
+            args = SimpleNamespace(schedule_lowering_plan=plan_path)
+
+            validation = run_vl_hybrid_launch_env.configure_schedule_lowering_plan_env(env, args)
+
+        self.assertIsNotNone(validation)
+        self.assertEqual(validation["status"], "valid")
+        self.assertEqual(env["RUN_VL_HYBRID_SCHEDULE_LOWERING_SHAPE"], "padded_start_pair_cycle_loop")
+        self.assertEqual(env["RUN_VL_HYBRID_RESIDENT_PAIR_CYCLE"], "1")
+        self.assertEqual(env["RUN_VL_HYBRID_FUSED_PAIR_CYCLE"], "1")
+        self.assertEqual(env["RUN_VL_HYBRID_FUSED_PAIR_CYCLE_LOOP"], "1")
+        self.assertEqual(env["RUN_VL_HYBRID_FUSED_PAIR_CYCLE_LOOP_CHUNK"], "1701")
+
+    def test_run_vl_hybrid_launch_env_consumes_ordering_aware_plan_by_default(self) -> None:
+        from gategpt_schedule_planner import (
+            build_ordering_aware_phase_resident_token_loop_lowering_plan,
+            write_lowering_plan_artifact,
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plan_path = Path(tmpdir) / "ordering_aware_plan.json"
+            write_lowering_plan_artifact(
+                plan_path,
+                build_ordering_aware_phase_resident_token_loop_lowering_plan(
+                    nstates=16,
+                    phase_count=9,
+                    loop_chunk=1701,
+                ),
+            )
+            env: dict[str, str] = {}
+            args = SimpleNamespace(schedule_lowering_plan=plan_path)
+
+            validation = run_vl_hybrid_launch_env.configure_schedule_lowering_plan_env(env, args)
+
+        self.assertEqual(validation["status"], "ready_for_schedule_integrated_cpu_comparison")
+        self.assertTrue(validation["runtime_supported"])
+        self.assertEqual(
+            env["RUN_VL_HYBRID_SCHEDULE_LOWERING_SHAPE"],
+            "ordering_aware_phase_resident_token_loop",
+        )
+        self.assertEqual(env["RUN_VL_HYBRID_RESIDENT_PAIR_CYCLE"], "1")
+        self.assertEqual(env["RUN_VL_HYBRID_RESIDENT_PAIR_CYCLE_START"], "0")
+        self.assertEqual(env["RUN_VL_HYBRID_FUSED_PAIR_CYCLE"], "1")
+        self.assertEqual(env["RUN_VL_HYBRID_FUSED_PAIR_CYCLE_LOOP"], "1")
+        self.assertEqual(env["RUN_VL_HYBRID_FUSED_PAIR_CYCLE_LOOP_CHUNK"], "1701")
+        self.assertNotIn("RUN_VL_HYBRID_ORDERING_AWARE_TOKEN_LOOP_PROBE_PLAN_ONLY", env)
+
+    def test_run_vl_hybrid_launch_env_can_consume_ordering_aware_probe_plan_explicitly(self) -> None:
+        from gategpt_schedule_planner import (
+            build_ordering_aware_phase_resident_token_loop_lowering_plan,
+            write_lowering_plan_artifact,
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plan_path = Path(tmpdir) / "ordering_aware_plan.json"
+            write_lowering_plan_artifact(
+                plan_path,
+                build_ordering_aware_phase_resident_token_loop_lowering_plan(
+                    nstates=16,
+                    phase_count=9,
+                    loop_chunk=1701,
+                    terminal_mask_specs="0:6,1:8",
+                ),
+            )
+            env: dict[str, str] = {}
+            args = SimpleNamespace(
+                schedule_lowering_plan=plan_path,
+                allow_ordering_aware_token_loop_probe_plan=True,
+            )
+
+            validation = run_vl_hybrid_launch_env.configure_schedule_lowering_plan_env(env, args)
+
+        self.assertEqual(validation["status"], "ready_for_schedule_integrated_cpu_comparison")
+        self.assertTrue(validation["runtime_supported"])
+        self.assertEqual(
+            env["RUN_VL_HYBRID_SCHEDULE_LOWERING_SHAPE"],
+            "ordering_aware_phase_resident_token_loop",
+        )
+        self.assertEqual(env["RUN_VL_HYBRID_ORDERING_AWARE_TOKEN_LOOP_PROBE_PLAN_ONLY"], "1")
+        self.assertEqual(env["RUN_VL_HYBRID_ORDERING_AWARE_TOKEN_LOOP_ABI_PROBE"], "1")
+        self.assertEqual(env["RUN_VL_HYBRID_RESIDENT_PAIR_CYCLE"], "1")
+        self.assertEqual(env["RUN_VL_HYBRID_RESIDENT_PAIR_CYCLE_START"], "0")
+        self.assertEqual(env["RUN_VL_HYBRID_FUSED_PAIR_CYCLE"], "1")
+        self.assertEqual(env["RUN_VL_HYBRID_FUSED_PAIR_CYCLE_LOOP"], "1")
+        self.assertEqual(env["RUN_VL_HYBRID_FUSED_PAIR_CYCLE_LOOP_CHUNK"], "1701")
+        self.assertEqual(
+            env["RUN_VL_HYBRID_ORDERING_AWARE_TOKEN_LOOP_TERMINAL_MASK"],
+            "0:6,1:8",
+        )
+
+    def test_run_vl_hybrid_launch_env_rejects_chunked_ordering_aware_plan_without_continuation_abi(
+        self,
+    ) -> None:
+        from gategpt_schedule_planner import (
+            build_ordering_aware_phase_resident_token_loop_lowering_plan,
+            write_lowering_plan_artifact,
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plan_path = Path(tmpdir) / "ordering_aware_chunked_plan.json"
+            write_lowering_plan_artifact(
+                plan_path,
+                build_ordering_aware_phase_resident_token_loop_lowering_plan(
+                    nstates=16,
+                    phase_count=8,
+                    loop_chunk=256,
+                ),
+            )
+            env: dict[str, str] = {}
+            args = SimpleNamespace(schedule_lowering_plan=plan_path)
+
+            with self.assertRaises(SystemExit) as raised:
+                run_vl_hybrid_launch_env.configure_schedule_lowering_plan_env(env, args)
+
+        self.assertEqual(raised.exception.code, 1)
+        self.assertNotIn("RUN_VL_HYBRID_SCHEDULE_LOWERING_SHAPE", env)
+        self.assertNotIn("RUN_VL_HYBRID_FUSED_PAIR_CYCLE_LOOP_CHUNK", env)
 
     def test_make_compat_targets_do_not_write_helper_binaries_under_src(self) -> None:
         if shutil.which("make") is None:
@@ -171,6 +394,62 @@ class CleanSimPrerequisiteTest(unittest.TestCase):
                 cwd=repo_root,
                 check=True,
             )
+
+    def test_run_vl_hybrid_rebuilds_stale_runtime(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            hybrid_src_dir = repo_root / "src" / "hybrid"
+            hybrid_src_dir.mkdir(parents=True)
+            source = hybrid_src_dir / "run_vl_hybrid.c"
+            source.write_text("int main(void) { return 0; }\n", encoding="utf-8")
+            hybrid_bin = repo_root / "artifacts" / "tool_bins" / "hybrid" / "run_vl_hybrid"
+            hybrid_bin.parent.mkdir(parents=True)
+            hybrid_bin.write_text("old runtime\n", encoding="utf-8")
+            old_time = 1_700_000_000
+            new_time = old_time + 10
+            hybrid_bin.touch()
+            source.touch()
+            os.utime(hybrid_bin, (old_time, old_time))
+            os.utime(source, (new_time, new_time))
+
+            with mock.patch.object(run_vl_hybrid_launch, "REPO_ROOT", repo_root), mock.patch.object(
+                run_vl_hybrid_launch,
+                "HYBRID_BIN",
+                hybrid_bin,
+            ), mock.patch.object(run_vl_hybrid_launch.subprocess, "run") as run:
+                with redirect_stderr(io.StringIO()):
+                    run_vl_hybrid_launch.ensure_hybrid_runtime_built()
+
+            run.assert_called_once_with(
+                ["make", "-C", str(hybrid_src_dir), "--no-print-directory"],
+                cwd=repo_root,
+                check=True,
+            )
+
+    def test_run_vl_hybrid_keeps_fresh_runtime(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            hybrid_src_dir = repo_root / "src" / "hybrid"
+            hybrid_src_dir.mkdir(parents=True)
+            source = hybrid_src_dir / "run_vl_hybrid.c"
+            source.write_text("int main(void) { return 0; }\n", encoding="utf-8")
+            hybrid_bin = repo_root / "artifacts" / "tool_bins" / "hybrid" / "run_vl_hybrid"
+            hybrid_bin.parent.mkdir(parents=True)
+            hybrid_bin.write_text("fresh runtime\n", encoding="utf-8")
+            old_time = 1_700_000_000
+            new_time = old_time + 10
+            os.utime(source, (old_time, old_time))
+            os.utime(hybrid_bin, (new_time, new_time))
+
+            with mock.patch.object(run_vl_hybrid_launch, "REPO_ROOT", repo_root), mock.patch.object(
+                run_vl_hybrid_launch,
+                "HYBRID_BIN",
+                hybrid_bin,
+            ), mock.patch.object(run_vl_hybrid_launch.subprocess, "run") as run:
+                with redirect_stderr(io.StringIO()):
+                    run_vl_hybrid_launch.ensure_hybrid_runtime_built()
+
+            run.assert_not_called()
 
     def test_run_vl_hybrid_reports_runtime_build_failure_without_traceback(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -313,6 +592,48 @@ class CleanSimPrerequisiteTest(unittest.TestCase):
             output = stdout.getvalue()
             self.assertIn(str(repo_root / "tool"), output)
             self.assertNotIn("<local-absolute-path>", output)
+
+    def test_template_resident_command_plan_uses_patch_script_and_distinct_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            plan = _dummy_template_plan(repo_root)
+            patch_script = repo_root / "artifacts" / "packet_pattern.patch"
+
+            with mock.patch.object(hybrid_template_commands, "REPO_ROOT", repo_root):
+                commands = hybrid_template_commands.command_plan(plan, resident_patch_script=patch_script)
+
+            hybrid = commands[5]
+            compare = commands[6]
+            self.assertIn("--resident-steps", hybrid)
+            self.assertEqual(hybrid[hybrid.index("--patch-script") + 1], "artifacts/packet_pattern.patch")
+            self.assertEqual(
+                hybrid[hybrid.index("--dump-state") + 1],
+                "artifacts/demo_obj_dir/demo_gpu_resident_multistep_2x3.bin",
+            )
+            self.assertEqual(compare[compare.index("--candidate-label") + 1], "resident_multistep_from_cpu_init_2x3")
+            self.assertEqual(
+                compare[compare.index("--json-out") + 1],
+                "reports/demo_cpu_vs_resident_multistep_2x3_coverage_output_compare.json",
+            )
+
+    def test_template_resident_run_plan_dry_run_prints_resident_commands(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            plan = _dummy_template_plan(repo_root)
+            patch_script = repo_root / "artifacts" / "packet_pattern.patch"
+
+            with mock.patch.object(hybrid_template_commands, "REPO_ROOT", repo_root):
+                with redirect_stdout(io.StringIO()) as stdout:
+                    hybrid_template_commands.run_plan(
+                        plan,
+                        dry_run=True,
+                        resident_patch_script=patch_script,
+                    )
+
+            output = stdout.getvalue()
+            self.assertIn("--resident-steps --patch-script artifacts/packet_pattern.patch", output)
+            self.assertIn("demo_gpu_resident_multistep_2x3.bin", output)
+            self.assertIn("demo_cpu_vs_resident_multistep_2x3_coverage_output_compare.json", output)
 
     def test_template_run_plan_verbose_keeps_command_stream(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

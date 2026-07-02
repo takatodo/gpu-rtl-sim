@@ -18,12 +18,18 @@ from verilator_native_known_closure import (  # noqa: E402
 
 KNOWN_TOP = "pulp_ita_mha_gpu_cov_tb"
 KNOWN_TEMPLATE = "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json"
+VEER_TOP = "tb_top"
+VEER_AUTHORITY = "config/rtlmeter_sidecar_authorities/rtlmeter_veer_el2_default_hello.json"
 
 
 class VerilatorNativeKnownClosureTest(HybridCliTestCase):
     def _known_entries(self) -> list[str]:
         template = json.loads((REPO_ROOT / KNOWN_TEMPLATE).read_text(encoding="utf-8"))
         return [str(item) for item in template["source_files"]]
+
+    def _veer_entries(self) -> list[str]:
+        authority = json.loads((REPO_ROOT / VEER_AUTHORITY).read_text(encoding="utf-8"))
+        return [str(item) for item in authority["source_closure"]["filelist_entries"]]
 
     def _write_filelist(self, directory: Path, lines: list[str]) -> Path:
         filelist = directory / "native_known.f"
@@ -46,6 +52,45 @@ class VerilatorNativeKnownClosureTest(HybridCliTestCase):
         self.assertEqual(report["target"], "pulp_ita_mha")
         self.assertEqual(report["launch_template"], KNOWN_TEMPLATE)
         self.assertEqual(report["missing_recognition_context"], [])
+        self._assert_fail_closed_non_claims(report)
+
+    def test_tracked_rtlmeter_veer_el2_filelist_and_top_are_recognized(self) -> None:
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT / "artifacts") as tmp:
+            report = self._recognize(
+                self._write_filelist(Path(tmp), self._veer_entries()),
+                top_module=VEER_TOP,
+            )
+        self.assertEqual(report["status"], STATUS_RECOGNIZED)
+        self.assertTrue(report["recognized"])
+        self.assertEqual(report["target"], "rtlmeter_veer_el2_default_hello")
+        self.assertIsNone(report["launch_template"])
+        self.assertEqual(report["missing_recognition_context"], [])
+        self._assert_fail_closed_non_claims(report)
+
+    def test_veer_el2_reordered_entries_fail_closed_without_inference(self) -> None:
+        entries = self._veer_entries()
+        entries[0], entries[-1] = entries[-1], entries[0]
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT / "artifacts") as tmp:
+            report = self._recognize(
+                self._write_filelist(Path(tmp), entries),
+                top_module=VEER_TOP,
+            )
+        self.assertEqual(report["status"], STATUS_UNRECOGNIZED)
+        self.assertFalse(report["dependency_inference_performed"])
+        self._assert_fail_closed_non_claims(report)
+
+    def test_veer_el2_non_default_variant_filelist_fails_closed(self) -> None:
+        entries = [
+            item.replace("verilogSourceFiles/el2_def.sv", "verilogSourceFiles/hiperf/el2_param.vh")
+            for item in self._veer_entries()
+        ]
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT / "artifacts") as tmp:
+            report = self._recognize(
+                self._write_filelist(Path(tmp), entries),
+                top_module=VEER_TOP,
+            )
+        self.assertEqual(report["status"], STATUS_UNRECOGNIZED)
+        self.assertIsNone(report["target"])
         self._assert_fail_closed_non_claims(report)
 
     def test_extra_filelist_entry_fails_closed_as_unrecognized(self) -> None:

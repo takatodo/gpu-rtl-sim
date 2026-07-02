@@ -173,7 +173,7 @@ class RtlmeterSidecarProxyMarkerTest(HybridCliTestCase):
         self.assertEqual(execution_evidence["status"], "blocked")
         self.assertTrue(execution_evidence["sidecar_proxy_marker_valid"])
         self.assertIn(
-            "sidecar_execute_proxy_installed_by_wrapper_branch",
+            "sidecar_execute_proxy_installed_or_source_patch_by_wrapper_branch",
             execution_evidence["blocking_context"],
         )
         self.assertFalse(report["gpu_execution_claimed"])

@@ -24,6 +24,10 @@ from llvm_stub_gen import make_no_op_stub
 from vl_runtime_filter import is_runtime, detect_syms_buffer_size, detect_vlsyms_offset
 from gen_vl_gpu_kernel_templates import (
     batch_kernel_lines as _batch_kernel_lines,
+    feedback_edge_kernel_lines as _feedback_edge_kernel_lines,
+    feedback_combined_kernel_lines as _feedback_combined_kernel_lines,
+    feedback_increment_kernel_lines as _feedback_increment_kernel_lines,
+    feedback_set_kernel_lines as _feedback_set_kernel_lines,
     header_lines as _template_header_lines,
     init_replication_kernel_lines as _init_replication_kernel_lines,
     metadata_lines as _metadata_lines,
@@ -121,6 +125,10 @@ def generate_gpu_ll(merged_ll_path: Path, storage_size: int) -> str:
     lines.extend(_stub_and_function_lines(ext=ext, needed=needed, all_funcs=all_funcs, text=text))
     lines.extend(_batch_kernel_lines(storage_size=storage_size, eval_fn=eval_fn, vlsyms_offset=vlsyms_offset))
     lines.extend(_patch_schedule_kernel_lines())
+    lines.extend(_feedback_edge_kernel_lines())
+    lines.extend(_feedback_increment_kernel_lines())
+    lines.extend(_feedback_set_kernel_lines())
+    lines.extend(_feedback_combined_kernel_lines())
     lines.extend(_metadata_lines(text))
 
     return '\n'.join(lines)
