@@ -2,15 +2,16 @@ diff --git a/src/V3EmitMk.cpp b/src/V3EmitMk.cpp
 index f7694527..bc1f9079 100644
 --- a/src/V3EmitMk.cpp
 +++ b/src/V3EmitMk.cpp
-@@ -745,11 +745,58 @@ public:
+@@ -745,11 +745,66 @@ public:
                      + compilerIncludeFlag + " -c -o $@ $<\n");
          }
  
-+        // --sim-accel sidecar-gpu: emit a Makefile rule that runs the repo-side
-+        // known-closure GPU build driver as a prerequisite of the linked exe.
-+        // Verilator itself never launches the sidecar runtime here; it only emits
-+        // the rule. Fails closed for unsupported or incomplete sidecar requests.
-+        string sidecarExeDep;
++        // --sim-accel sidecar-gpu: emit a Makefile rule that validates the
++        // known closure and links a repo-owned smoke shim into the generated
++        // executable. Verilator itself never launches the sidecar runtime here;
++        // it only emits the rule. Fails closed for unsupported or incomplete
++        // sidecar requests.
++        string sidecarExeDeps;
 +        if (!v3Global.opt.simAccel().empty()) {
 +            if (v3Global.opt.simAccel() != "sidecar-gpu") {
 +                v3fatal("--sim-accel only supports 'sidecar-gpu' for the Makefile build hook");
@@ -27,13 +28,19 @@ index f7694527..bc1f9079 100644
 +                of.puts("\n### Sidecar GPU build hook... (from --sim-accel sidecar-gpu)\n");
 +                of.puts("PYTHON3 ?= python3\n");
 +                of.puts("VL_SIDECAR_STAMP = $(VM_PREFIX)__sidecar_build.stamp\n");
++                of.puts("VL_SIDECAR_SHIM_SRC = "
++                        "$(GPU_RTL_SIM_REPO_ROOT)/src/hybrid/native_sidecar_shim.c\n");
++                of.puts("VL_SIDECAR_SHIM_OBJ = $(VM_PREFIX)__native_sidecar_shim.o\n");
++                of.puts("$(VL_SIDECAR_SHIM_OBJ): $(VL_SIDECAR_SHIM_SRC) $(VL_SIDECAR_STAMP)\n");
++                of.puts("\t$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) "
++                        + compilerIncludeFlag + " -c -o $@ $<\n");
 +                of.puts("$(VL_SIDECAR_STAMP): $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a\n");
-+                // The driver delegates the recognized closure to the reviewed
-+                // template flow, which manages its own Verilator; VERILATOR_ROOT is
-+                // intentionally not forwarded so that flow uses its expected toolchain.
++                // The driver only validates the recognized closure and writes
++                // make-time metadata. Runtime evidence is written later by the
++                // linked shim when the generated executable is run.
 +                of.puts("\t$(PYTHON3) "
 +                        "$(GPU_RTL_SIM_REPO_ROOT)/src/tools/verilator_native_sidecar_make_driver.py "
-+                        "run \\\n");
++                        "prepare-direct-shim-smoke \\\n");
 +                of.puts("\t  --repo-root $(GPU_RTL_SIM_REPO_ROOT) \\\n");
 +                of.puts("\t  --filelist " + v3Global.opt.simAccelFilelist() + " \\\n");
 +                of.puts("\t  --top-module " + v3Global.opt.topModule() + " \\\n");
@@ -46,9 +53,10 @@ index f7694527..bc1f9079 100644
 +                of.puts("\t  --summary-out native_sidecar_build.json\n");
 +                of.puts("\ttouch $@\n");
 +                of.puts("\n");
-+                // Order-only prerequisite: the sidecar GPU build must run before the
-+                // exe is produced, but the stamp must not enter the link inputs ($^).
-+                sidecarExeDep = " | $(VL_SIDECAR_STAMP)";
++                // Normal prerequisite: the shim object must enter the final link
++                // inputs ($^) so obj_dir/V<top> reaches repo-owned sidecar code.
++                // The stamp remains make-time metadata only and is not linked.
++                sidecarExeDeps = " $(VL_SIDECAR_SHIM_OBJ)";
 +            }
 +        }
 +
@@ -57,7 +65,7 @@ index f7694527..bc1f9079 100644
              // '{prefix}__ALL.a', contains all hierarchical libraries
              of.puts(v3Global.opt.exeName()
 -                    + ": $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a\n");
-+                    + ": $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a" + sidecarExeDep
++                    + ": $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a" + sidecarExeDeps
 +                    + "\n");
              of.puts("\t$(LINK) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) $(LIBS) $(SC_LIBS) -o $@\n");
              of.puts("\n");

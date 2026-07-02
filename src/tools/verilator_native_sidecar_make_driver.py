@@ -1,16 +1,4 @@
-"""Bridge a recognized native sidecar closure to the reviewed template GPU flow.
-
-This is the repo-side driver invoked from the generated Makefile hook when
-``verilator --sim-accel sidecar-gpu`` is used. It recognizes the filelist/top
-pair against the tracked known closures and, only for a recognized closure,
-delegates the closure to the existing reviewed ``run_hybrid_template`` flow
-(Verilator --cc, host probe, CPU init/reference, GPU cubin build, hybrid run,
-coverage-output compare).
-
-Recognition and plan construction are compile-side metadata only: they never
-claim GPU execution, never fall back to CPU, and fail closed for any
-unrecognized closure or missing verilated ``mdir``.
-"""
+"""Repo-side driver for the native ``verilator --sim-accel sidecar-gpu`` make hook."""
 
 from __future__ import annotations
 
@@ -32,8 +20,8 @@ NON_CLAIMS = (
     "recognition and plan construction are compile-side metadata, not GPU execution evidence",
     "the driver never falls back to CPU when the GPU pipeline is unavailable",
     "no speedup, timing, or arbitrary-RTL claim is made",
-    "only a tracked known closure can reach the reviewed template GPU flow",
-    "GPU execution and coverage-output equivalence come from the delegated template flow, not from the make-emitted CPU executable",
+    "only a tracked known closure can reach sidecar make-time prep or the reviewed template GPU flow",
+    "direct shim smoke is not GPU artifact load, kernel launch, or coverage-output equivalence",
 )
 
 
@@ -95,12 +83,7 @@ def plan_native_sidecar_build(
     registry_path: str | Path | None = None,
     mdir_override: str | Path | None = None,
 ) -> dict[str, object]:
-    """Recognize the closure and resolve the make mdir without running anything.
-
-    ``mdir_override`` lets the generated Makefile hook pass the directory
-    Verilator actually emitted into (``--Mdir``); when absent the canonical
-    mdir is taken from the recognized closure template.
-    """
+    """Recognize the closure and resolve the make mdir without running anything."""
     root = (repo_root or Path.cwd()).resolve()
     recognition = recognize_verilator_native_known_closure(
         filelist_path=filelist_path,
@@ -119,9 +102,6 @@ def plan_native_sidecar_build(
         )
 
     if mdir_override is not None:
-        # The Makefile hook passes the directory make is running in (e.g. "."),
-        # so a relative override resolves against the current working directory,
-        # not the repo root.
         mdir = Path(mdir_override)
         if not mdir.is_absolute():
             mdir = Path.cwd() / mdir
@@ -161,7 +141,7 @@ def plan_native_sidecar_build(
         mdir_display=mdir_display,
         mdir_verilated=True,
         missing_context=[],
-        diagnostic="recognized closure resolved to a verilated mdir ready for the template GPU flow",
+        diagnostic="recognized closure resolved to a verilated mdir ready for sidecar make-time prep",
     )
 
 
@@ -175,15 +155,7 @@ def run_native_sidecar_build(
     shape: str = "64x1",
     template_runner=None,
 ) -> dict[str, object]:
-    """Plan, then drive the recognized closure through the reviewed template flow.
-
-    Only a recognized closure reaches the GPU+equivalence flow. The native path
-    is a thin bridge: it delegates to the existing reviewed ``run_hybrid_template``
-    seven-stage flow (Verilator --cc, host probe, CPU init/reference, GPU cubin
-    build, hybrid sidecar run, coverage-output compare) for the closure's launch
-    template, rather than building the cubin in isolation. The make-emitted
-    ``--main`` CPU executable is a separate artifact and is not GPU-wired.
-    """
+    """Plan, then delegate a recognized closure to the reviewed template flow (FC-055)."""
     root = (repo_root or Path.cwd()).resolve()
     plan = plan_native_sidecar_build(
         filelist_path=filelist_path,
@@ -213,19 +185,43 @@ def run_native_sidecar_build(
     return plan
 
 
+def prepare_direct_shim_smoke(
+    *,
+    filelist_path: str | Path,
+    top_module: str,
+    repo_root: Path | None = None,
+    registry_path: str | Path | None = None,
+    mdir_override: str | Path | None = None,
+) -> dict[str, object]:
+    """FC-059 make-time prep for the direct executable sidecar shim."""
+    plan = plan_native_sidecar_build(
+        filelist_path=filelist_path,
+        top_module=top_module,
+        repo_root=repo_root,
+        registry_path=registry_path,
+        mdir_override=mdir_override,
+    )
+    plan["mode"] = "prepare_direct_shim_smoke"
+    plan["template_flow_invoked"] = False
+    plan["run_hybrid_template_invoked"] = False
+    plan["direct_shim_link_prepared"] = plan["status"] == STATUS_BUILD_PLAN_READY
+    plan["runtime_evidence_written_by"] = "native_sidecar_shim executable at run time, not this build-time step"
+    if plan["status"] == STATUS_BUILD_PLAN_READY:
+        plan["diagnostic"] = "recognized closure is ready to link the direct executable shim smoke object"
+    return plan
+
+
 def build_parser():
     import argparse
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("plan", "run"))
+    parser.add_argument("command", choices=("plan", "run", "prepare-direct-shim-smoke"))
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--filelist", required=True)
     parser.add_argument("--top-module", required=True)
     parser.add_argument("--mdir", default=None)
     parser.add_argument("--registry", default=None)
     parser.add_argument("--summary-out", default=None)
-    # Accepted for forward compatibility with the Makefile hook; recognition,
-    # not these values, decides the closure.
     parser.add_argument("--sim-accel", default=None)
     parser.add_argument("--sim-accel-states", default=None)
     parser.add_argument("--sim-accel-steps", default=None)
@@ -251,6 +247,14 @@ def main(argv: list[str] | None = None) -> int:
             registry_path=args.registry,
             mdir_override=args.mdir,
         )
+    elif args.command == "prepare-direct-shim-smoke":
+        report = prepare_direct_shim_smoke(
+            filelist_path=args.filelist,
+            top_module=args.top_module,
+            repo_root=repo_root,
+            registry_path=args.registry,
+            mdir_override=args.mdir,
+        )
     else:
         report = run_native_sidecar_build(
             filelist_path=args.filelist,
@@ -263,14 +267,14 @@ def main(argv: list[str] | None = None) -> int:
     serialized = _json.dumps(report, indent=2)
     print(serialized)
     if args.summary_out:
-        # The Makefile hook runs in the obj_dir and passes a bare filename, so a
-        # relative summary path resolves against the current working directory.
         summary_path = Path(args.summary_out)
         if not summary_path.is_absolute():
             summary_path = Path.cwd() / summary_path
         summary_path.parent.mkdir(parents=True, exist_ok=True)
         summary_path.write_text(serialized + "\n", encoding="utf-8")
     if args.command == "plan":
+        return 0 if report["status"] == STATUS_BUILD_PLAN_READY else 1
+    if args.command == "prepare-direct-shim-smoke":
         return 0 if report["status"] == STATUS_BUILD_PLAN_READY else 1
     return 0 if report.get("template_flow_passed") is True else 1
 

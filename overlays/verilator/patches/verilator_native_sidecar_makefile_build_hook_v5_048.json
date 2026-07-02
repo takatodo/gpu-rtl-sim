@@ -15,10 +15,10 @@
     "src/V3Options.cpp",
     "src/V3EmitMk.cpp"
   ],
-  "fc_issue": "FC-054",
-  "github_issue": "https://github.com/takatodo/gpu-rtl-sim/issues/54",
+  "fc_issue": "FC-059",
+  "github_issue": "https://github.com/takatodo/gpu-rtl-sim/issues/59",
   "patch_behavior": {
-    "scope": "emit_makefile_sidecar_gpu_build_hook_only",
+    "scope": "emit_makefile_direct_shim_smoke_hook_only",
     "does_not_launch_sidecar_runtime_in_verilator_process": true,
     "does_emit_makefile_rule_that_invokes_repo_sidecar_build_driver": true,
     "does_not_claim_gpu_execution_from_verilate_success": true,
@@ -27,8 +27,10 @@
     "v3options_change_note": "V3Options.* changes are limited to preserving the original -f filelist argument (m_simAccelFilelist) for Makefile hook metadata. They do not broaden parser behavior or change the parse-only patch claims.",
     "emits": [
       "VL_SIDECAR_STAMP stamp variable",
-      "stamp rule invoking src/tools/verilator_native_sidecar_make_driver.py run",
-      "order-only prerequisite '| $(VL_SIDECAR_STAMP)' on the --exe link target"
+      "VL_SIDECAR_SHIM_SRC and VL_SIDECAR_SHIM_OBJ variables",
+      "stamp rule invoking src/tools/verilator_native_sidecar_make_driver.py prepare-direct-shim-smoke",
+      "shim object compile rule",
+      "normal prerequisite '$(VL_SIDECAR_SHIM_OBJ)' on the --exe link target"
     ],
     "fatal_conditions": [
       "--sim-accel value other than sidecar-gpu",
@@ -38,11 +40,12 @@
       "--sim-accel-states or --sim-accel-steps non-positive"
     ],
     "repo_root_resolution": "GPU_RTL_SIM_REPO_ROOT make variable, not VERILATOR_ROOT",
-    "stamp_is_order_only_to_keep_link_inputs_clean": true
+    "shim_object_enters_final_link_inputs": true,
+    "stamp_is_not_a_link_input": true
   },
   "driver_contract_ref": {
     "module": "src/tools/verilator_native_sidecar_make_driver.py",
-    "entrypoint_cli": "run",
+    "entrypoint_cli": "prepare-direct-shim-smoke",
     "recognition_module": "src/tools/verilator_native_known_closure.py",
     "registry": "config/native_known_closures.json"
   },
@@ -56,10 +59,12 @@
     "source closure inference",
     "arbitrary filelist support",
     "automatic GPU allocation",
-    "in-process sidecar runtime launch"
+    "GPU artifact load",
+    "GPU kernel launch",
+    "coverage compare"
   ],
   "non_claims": [
-    "not a native Verilator sidecar runtime launch",
+    "not GPU artifact load or kernel launch",
     "not a landed upstream Verilator patch",
     "not GPU execution evidence from Verilate or Makefile generation success",
     "not arbitrary RTL or arbitrary filelist support",

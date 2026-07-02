@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "gate_name": "native_obj_dir_executable_sidecar_shim_link_smoke_gate",
+  "github_issue": "https://github.com/takatodo/gpu-rtl-sim/issues/59",
+  "parent_umbrella": "https://github.com/takatodo/gpu-rtl-sim/issues/46",
+  "parent_task": "https://github.com/takatodo/gpu-rtl-sim/issues/57",
+  "goal_framing": "https://github.com/takatodo/gpu-rtl-sim/issues/1",
+  "objective": "Prove the make-built obj_dir/V<top> executable for the recognized native closure can link and enter a minimal in-process sidecar shim directly.",
+  "recognized_scope": {
+    "closure": "pulp_ita_mha 64x1 class",
+    "arbitrary_filelist_inference": false,
+    "unrecognized_filelist_policy": "fail_closed"
+  },
+  "required_evidence": {
+    "direct_executable_shim_reached": true,
+    "template_flow_invoked": false,
+    "cpu_as_gpu_fallback": false,
+    "generated_evidence_path_example": "obj_dir/native_sidecar_runtime.json"
+  },
+  "implementation_focus": [
+    "src/tools/verilator_native_sidecar_make_driver.py",
+    "tests/contract/test_verilator_native_sidecar_make_driver.py",
+    "src/hybrid minimal sidecar shim source",
+    "overlays/verilator/patches/verilator_native_sidecar_makefile_build_hook_v5_048.patch if link inputs must be changed"
+  ],
+  "acceptance_clarification": "A pre-link stamp or successful build-driver run is not shim-entry evidence; the final obj_dir/V<top> link inputs must include the sidecar shim object/library or an equivalent repo-owned main/runtime object.",
+  "non_claims": [
+    "not full FC-057 direct GPU runtime integration",
+    "not GPU artifact load unless separately recorded",
+    "not GPU kernel launch unless separately recorded",
+    "not coverage equivalence unless separately compared",
+    "not timing or speedup evidence",
+    "not arbitrary RTL or arbitrary filelist support",
+    "not CPU-as-GPU fallback"
+  ],
+  "next_after_acceptance": "FC-057 direct obj_dir/V<top> sidecar runtime integration"
+}

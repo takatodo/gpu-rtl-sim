@@ -1,4 +1,6 @@
 import json
+import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -13,6 +15,7 @@ from verilator_native_sidecar_make_driver import (  # noqa: E402
     STATUS_BUILD_PLAN_READY,
     main as make_driver_main,
     plan_native_sidecar_build,
+    prepare_direct_shim_smoke,
     run_native_sidecar_build,
 )
 
@@ -175,6 +178,83 @@ class VerilatorNativeSidecarMakeDriverTest(HybridCliTestCase):
             written = json.loads(summary.read_text(encoding="utf-8"))
         self.assertEqual(written["status"], STATUS_BUILD_PLAN_READY)
         self.assertTrue(written["mdir_verilated"])
+
+    def test_prepare_direct_shim_smoke_does_not_invoke_template_flow(self) -> None:
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT / "artifacts") as tmp:
+            tmp_path = Path(tmp)
+            registry, mdir = self._registry_with_local_mdir(tmp_path)
+            (mdir / "Vtop_classes.mk").write_text("# verilated\n", encoding="utf-8")
+            report = prepare_direct_shim_smoke(
+                filelist_path=self._write_filelist(tmp_path, self._known_entries()),
+                top_module=KNOWN_TOP,
+                repo_root=REPO_ROOT,
+                registry_path=registry,
+            )
+        self.assertEqual(report["mode"], "prepare_direct_shim_smoke")
+        self.assertEqual(report["status"], STATUS_BUILD_PLAN_READY)
+        self.assertFalse(report["template_flow_invoked"])
+        self.assertFalse(report["run_hybrid_template_invoked"])
+        self.assertTrue(report["direct_shim_link_prepared"])
+
+    def test_prepare_direct_shim_smoke_fails_closed_for_unrecognized(self) -> None:
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT / "artifacts") as tmp:
+            report = prepare_direct_shim_smoke(
+                filelist_path=self._write_filelist(Path(tmp), [*self._known_entries(), "extra.sv"]),
+                top_module=KNOWN_TOP,
+                repo_root=REPO_ROOT,
+            )
+        self.assertEqual(report["status"], STATUS_BLOCKED_UNRECOGNIZED)
+        self.assertFalse(report["direct_shim_link_prepared"])
+        self.assertFalse(report["run_hybrid_template_invoked"])
+
+    def test_cli_prepare_direct_shim_smoke_nonzero_for_unrecognized(self) -> None:
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT / "artifacts") as tmp:
+            filelist = self._write_filelist(Path(tmp), [*self._known_entries(), "extra.sv"])
+            rc = make_driver_main([
+                "prepare-direct-shim-smoke", "--repo-root", REPO_ROOT.as_posix(),
+                "--filelist", filelist.as_posix(), "--top-module", KNOWN_TOP,
+            ])
+        self.assertEqual(rc, 1)
+
+    def test_native_sidecar_shim_link_input_writes_smoke_runtime_evidence(self) -> None:
+        cc = shutil.which("cc") or shutil.which("gcc")
+        ar = shutil.which("ar")
+        if cc is None or ar is None:
+            self.skipTest("no C compiler/archive tool available for native sidecar shim smoke")
+        with tempfile.TemporaryDirectory(dir=REPO_ROOT / "artifacts") as tmp:
+            obj_dir = Path(tmp) / "obj_dir"
+            obj_dir.mkdir()
+            shim_obj = obj_dir / "Vtop__native_sidecar_shim.o"
+            archive_main_c = obj_dir / "verilator_archive_main.c"
+            archive_main_o = obj_dir / "verilator_archive_main.o"
+            archive = obj_dir / "Vtop__ALL.a"
+            exe = obj_dir / "Vtop"
+            archive_main_c.write_text("int main(void) { return 77; }\n", encoding="utf-8")
+            subprocess.run(
+                [cc, "-c", (REPO_ROOT / "src/hybrid/native_sidecar_shim.c").as_posix(), "-o", shim_obj.as_posix()],
+                check=True,
+                cwd=REPO_ROOT,
+            )
+            subprocess.run([cc, "-c", archive_main_c.as_posix(), "-o", archive_main_o.as_posix()], check=True)
+            subprocess.run([ar, "rcs", archive.as_posix(), archive_main_o.as_posix()], check=True)
+            subprocess.run(
+                [cc, shim_obj.as_posix(), archive.as_posix(), "-o", exe.as_posix()],
+                check=True,
+                cwd=REPO_ROOT,
+            )
+            run = subprocess.run([exe.as_posix()], check=True, cwd=REPO_ROOT, text=True, capture_output=True)
+            evidence_path = obj_dir / "native_sidecar_runtime.json"
+            evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+        self.assertIn("\"direct_executable_shim_reached\": true", run.stdout)
+        self.assertTrue(evidence["direct_executable_shim_reached"])
+        self.assertFalse(evidence["template_flow_invoked"])
+        self.assertFalse(evidence["run_hybrid_template_invoked"])
+        self.assertFalse(evidence["cpu_as_gpu_fallback"])
+        self.assertFalse(evidence["gpu_artifact_loaded"])
+        self.assertFalse(evidence["gpu_kernel_launched"])
+        self.assertFalse(evidence["coverage_equivalence_passed"])
+        self.assertFalse(evidence["gpu_execution_claimed"])
+        self.assertTrue(evidence["smoke_only"])
 
     def _registry_with_local_mdir(self, tmp_path: Path) -> tuple[str, Path]:
         """Build a registry whose closure template points its build mdir into tmp."""
