@@ -301,13 +301,18 @@ def build_runtime_handoff_report(
     run_binary = Path(str(binary))
     expected_observed_status = "hls_variant_measured"
     bridge_gate: dict[str, Any] | None = None
-    if entrypoint == "src-hybrid-verilator":
+    # The metadata gate is spec-driven (scientific_circt_source_variant_metadata.
+    # src_hybrid_verilator_bridge_gate / BridgeSpec), so it applies fail-closed
+    # before dlopen/execution to any promoted row regardless of entrypoint kind,
+    # not only src-hybrid-verilator. Callers that never pass metadata_row (the
+    # direct-binary default) keep the pre-FC-074 unguarded direct-binary path.
+    if entrypoint == "src-hybrid-verilator" or metadata_row is not None:
         bridge_gate, gate_rejection = _src_hybrid_metadata_gate(selected, metadata_row)
         report["metadata_gate"] = bridge_gate
         if gate_rejection is not None:
             report["status"] = gate_rejection
             return report
-        if mdir_path is None:
+        if entrypoint == "src-hybrid-verilator" and mdir_path is None:
             report["status"] = "src_hybrid_verilator_mdir_missing"
             return report
     if not execute:
