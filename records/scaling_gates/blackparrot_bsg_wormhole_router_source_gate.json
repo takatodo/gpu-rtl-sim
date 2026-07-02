@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "gate": "blackparrot_bsg_wormhole_router_source_gate",
+  "status": "candidate_first_pass_required",
+  "purpose": "Define the first BlackParrot BaseJump wormhole-router coverage-output equivalence smoke boundary.",
+  "coverage_domain": "toggle_real_subset_bitmap",
+  "coverage_output_contract": {
+    "strict_output_words": [
+      {
+        "prefix": "real_toggle_subset_word",
+        "count": 18
+      },
+      {
+        "prefix": "toggle_bitmap_word",
+        "count": 4
+      },
+      {
+        "prefix": "focused_wave_word",
+        "count": 8
+      }
+    ],
+    "total_words_per_state": 30,
+    "total_bytes_per_state": 120,
+    "acceptance_policy": "coverage_output_equivalence"
+  },
+  "target_scope": [
+    {
+      "target": "bsg_wormhole_router",
+      "launch_template": "config/slice_launch_templates/blackparrot_bsg_wormhole_router.json",
+      "coverage_manifest": "overlays/rtlmeter/designs/BlackParrot/tests/bsg_wormhole_router_coverage_regions.json",
+      "mdir": "artifacts/blackparrot_bsg_wormhole_router_obj_dir",
+      "cpu_reference_state": "artifacts/blackparrot_bsg_wormhole_router_obj_dir/bsg_wormhole_router_cpu_repeat_32x1.bin",
+      "gpu_candidate_state": "artifacts/blackparrot_bsg_wormhole_router_obj_dir/bsg_wormhole_router_gpu_from_cpu_init_32x1.bin"
+    }
+  ],
+  "acceptance": {
+    "first_pass_requires": [
+      "Verilator object directory builds from BaseJump source closure plus repo overlay",
+      "host probe builds with the shared slice host-probe builder",
+      "GPU cubin builds through existing shared tools",
+      "32x1 packet-pattern coverage_output_equivalence passes"
+    ],
+    "speedup_claim_allowed_by_gate_alone": false
+  },
+  "non_claims": [
+    "not full BlackParrot system NoC",
+    "not arbitrary BaseJump STL support",
+    "not timing or speedup evidence",
+    "not native Verilator option support"
+  ]
+}

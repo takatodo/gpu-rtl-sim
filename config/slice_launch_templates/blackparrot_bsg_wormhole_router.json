@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "slice_name": "blackparrot_bsg_wormhole_router",
+  "target": "BlackParrot.bsg_wormhole_router",
+  "status": "candidate",
+  "priority": 6,
+  "top_module": "bsg_wormhole_router_gpu_cov_tb",
+  "source_gate": "config/scaling_gates/blackparrot_bsg_wormhole_router_source_gate.json",
+  "source_files": [
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_noc_pkg.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_wormhole_router_pkg.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_dff_reset.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_mem_1r1w_synth.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_mem_1r1w.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_two_fifo.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_counter_set_down.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_round_robin_arb.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_concentrate_static.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_unconcentrate_static.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_array_concentrate_static.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_transpose.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_wormhole_router_decoder_dor.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_wormhole_router_input_control.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_wormhole_router_output_control.sv",
+    "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_wormhole_router.sv",
+    "overlays/rtlmeter/designs/BlackParrot/src/bsg_wormhole_router_gpu_cov_tb.sv"
+  ],
+  "source_closure": {
+    "status": "source_backed_template_defined",
+    "provenance": "heavy_rtl_candidate_matrix_source_closure_plan",
+    "first_pass_required": true,
+    "coverage_overlay_ready": true,
+    "coverage_manifest_ready": true,
+    "risk": "BaseJump router dependency closure is source-backed but first build/run/compare smoke is still required before promotion"
+  },
+  "verilator_args": [
+    "-Wno-fatal",
+    "-Wno-WIDTH",
+    "-Wno-CASEINCOMPLETE",
+    "-Ithird_party/rtlmeter/designs/BlackParrot/src/basejump_stl",
+    "-Ioverlays/rtlmeter/designs/BlackParrot/src"
+  ],
+  "verilator_defines": [
+    "BSG_HIDE_FROM_SYNTHESIS"
+  ],
+  "build": {
+    "mdir": "artifacts/blackparrot_bsg_wormhole_router_obj_dir",
+    "work_dir": "work/slice_pilots/blackparrot_bsg_wormhole_router",
+    "host_probe_target": "blackparrot_bsg_wormhole_router_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "host_probe": {
+      "output": "tlul_slice_host_probe",
+      "clock_field": "clk_i",
+      "clock_report_name": "clk_i",
+      "reset_field": "reset_like_w",
+      "reset_report_name": "reset_like_w",
+      "reset_asserted_value": "1U",
+      "reset_deasserted_value": "0U",
+      "host_clock_control": true,
+      "host_reset_control": false,
+      "probe_syms_state": false
+    },
+    "verilator_mode": "flattened"
+  },
+  "planned_overlay": {
+    "coverage_tb_path": "overlays/rtlmeter/designs/BlackParrot/src/bsg_wormhole_router_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/BlackParrot/tests/bsg_wormhole_router_coverage_regions.json",
+    "launch_template_path": "config/slice_launch_templates/blackparrot_bsg_wormhole_router.json",
+    "host_probe_target": "blackparrot_bsg_wormhole_router_host_probe",
+    "host_probe_builder": "src/tools/build_host_probe.py",
+    "status": "implemented"
+  },
+  "static_features": {
+    "schema_version": "blackparrot-bsg-wormhole-router-static-features-v1",
+    "target": "BlackParrot.bsg_wormhole_router",
+    "rtl_path": "third_party/rtlmeter/designs/BlackParrot/src/basejump_stl/bsg_wormhole_router.sv",
+    "coverage_tb_path": "overlays/rtlmeter/designs/BlackParrot/src/bsg_wormhole_router_gpu_cov_tb.sv",
+    "coverage_manifest_path": "overlays/rtlmeter/designs/BlackParrot/tests/bsg_wormhole_router_coverage_regions.json",
+    "tb_contract_ready": true,
+    "base_outputs_ready": true,
+    "real_toggle_outputs_ready": true,
+    "toggle_bitmap_outputs_ready": true,
+    "focused_wave_ready": true,
+    "real_toggle_word_count": 18,
+    "exclusive_word_count": 18,
+    "exclusive_word_fraction": 1.0,
+    "overlap_word_count": 0,
+    "region_count": 5,
+    "region_names": [
+      "local_input_acceptance",
+      "router_output_progress",
+      "stall_and_ready_context",
+      "packet_payload_and_route_signatures",
+      "progress_and_config_signatures"
+    ],
+    "required_output_count": 38,
+    "tb_output_count": 80,
+    "rtl_clock_ports": [
+      "clk_i"
+    ],
+    "rtl_reset_ports": [
+      "reset_i"
+    ],
+    "multi_clock": false,
+    "search_prior_class": "noc_router_packet_batch",
+    "structural_connectivity": {
+      "structural_connectivity_class": "source_backed_template_defined",
+      "instance_block_count": 1,
+      "nonclock_input_count": 2,
+      "nonclock_output_count": 2,
+      "reachable_output_fraction": null
+    }
+  },
+  "tb_core_contract": {
+    "kind": "gpu_toggle_shared_tb_v1",
+    "coverage_domain": "toggle_real_subset_bitmap",
+    "required_output_prefixes": [
+      "real_toggle_subset_word",
+      "toggle_bitmap_word",
+      "focused_wave_word"
+    ],
+    "baseline_reference_counts": {
+      "focused_wave_word": 8,
+      "real_toggle_subset_word": 18,
+      "toggle_bitmap_word": 4
+    },
+    "region_family_names": [
+      "local_input_acceptance",
+      "router_output_progress",
+      "stall_and_ready_context",
+      "packet_payload_and_route_signatures",
+      "progress_and_config_signatures"
+    ]
+  },
+  "acceptance": {
+    "candidate_only_until_first_pass": true,
+    "first_pass_requires": [
+      "Verilator object directory builds from BaseJump source closure plus repo overlay",
+      "GPU cubin builds through existing shared tools",
+      "32x1, 64x1, 128x1, and 256x1 packet-pattern repeat-median coverage_output_equivalence passes"
+    ],
+    "speedup_claim_allowed_by_template_alone": false
+  },
+  "resident_multistep_definition_gate": "config/scaling_gates/blackparrot_bsg_wormhole_router_resident_multistep_definition.json",
+  "next_action": "materialize_blackparrot_bsg_wormhole_router_packet_pattern_patch_script_or_record_named_blocker",
+  "non_claims": [
+    "not full BlackParrot system NoC",
+    "not arbitrary BaseJump STL coverage",
+    "not broad timing or speedup evidence beyond the scoped packet-batch shape sweep",
+    "not native Verilator option support"
+  ]
+}

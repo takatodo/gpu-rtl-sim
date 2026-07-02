@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "schema_role": "veer_el2_sidecar_executable_review",
+  "target": "rtlmeter_veer_el2_default_hello",
+  "executable_path": "src/tools/veer_el2_sidecar_executable.py",
+  "state_image_env": "VEER_EL2_SIDECAR_STATE_IMAGE",
+  "execute_dir_env": "VEER_EL2_SIDECAR_EXECUTE_DIR",
+  "emits_rtlmeter_observables": true,
+  "copies_cpu_observables": false,
+  "cpu_as_gpu_fallback_allowed": false
+}
