@@ -4,7 +4,8 @@
  * LLVM NewPM pass plugin for the stock-Verilator → NVPTX path (see README “Pipeline layout”).
  *
  * Passes (registered names for -passes=...):
- *   vl-strip-x86-attrs    FunctionPass  strip x86-only attrs, comdat, personality; demote linkonce_odr
+ *   vl-strip-x86-attrs    FunctionPass  strip x86-only attrs/comdat; demote linkonce_odr;
+ *                         clear personality only after EH pads are gone
  *   vl-stub-host-io-calls FunctionPass  erase GPU-incompatible Verilator host I/O call sites
  *   vl-stub-timing-scheduler-context
  *                         FunctionPass  stub timed-scheduler act phase on diagnostic GPU path
@@ -54,17 +55,41 @@ static cl::opt<bool> PreserveConvergenceThreshold(
 //
 //   - function attributes (#N)     → strip x86-only attrs while preserving GPU control attrs
 //   - comdat                     → setComdat(nullptr)
-//   - personality                → clearPersonalityFn()
+//   - personality                → clearPersonalityFn() only if no EH pads remain
 //   - linkonce_odr linkage       → internal (NVPTX linkers warn on linkonce_odr)
 
+static bool shouldPreserveGpuDiagnosticOptNone(Function &F) {
+    return F.getMetadata("vlgpu.eval_hot_path_compact_cluster_outline_callee") ||
+           F.getName().starts_with("__vlgpu_compact_cluster_outline_frame_stub");
+}
+
 struct VlStripX86AttrsPass : public PassInfoMixin<VlStripX86AttrsPass> {
+    static bool isRequired() { return true; }
+
     PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
         bool PreserveNoInline = F.hasFnAttribute(Attribute::NoInline);
+        bool PreserveOptNone =
+            F.hasFnAttribute(Attribute::OptimizeNone) &&
+            shouldPreserveGpuDiagnosticOptNone(F);
         F.setAttributes(F.getAttributes().removeFnAttributes(F.getContext()));
-        if (PreserveNoInline)
+        if (PreserveNoInline || PreserveOptNone)
             F.addFnAttr(Attribute::NoInline);
+        if (PreserveOptNone)
+            F.addFnAttr(Attribute::OptimizeNone);
         F.setComdat(nullptr);
-        if (F.hasPersonalityFn())
+        bool HasRemainingEhPad = false;
+        for (auto &BB : F) {
+            for (auto &I : BB) {
+                if (isa<LandingPadInst>(&I) || isa<ResumeInst>(&I) ||
+                    I.isEHPad()) {
+                    HasRemainingEhPad = true;
+                    break;
+                }
+            }
+            if (HasRemainingEhPad)
+                break;
+        }
+        if (F.hasPersonalityFn() && !HasRemainingEhPad)
             F.setPersonalityFn(nullptr);
         if (F.getLinkage() == GlobalValue::LinkOnceODRLinkage)
             F.setLinkage(GlobalValue::InternalLinkage);
@@ -88,41 +113,54 @@ static bool isHostIoRuntimeCall(StringRef Name) {
            Name.starts_with("_Z20VL_VALUEPLUSARGS_") ||
            Name.starts_with("_Z12VL_READMEM_") ||
            Name.starts_with("_Z12VL_WRITEF_NX") ||
+           Name.starts_with("_Z12VL_FINISH_MT") ||
            Name.starts_with("_Z10VL_STOP_MT") ||
-           Name == "_ZN9Verilated14threadContextpEv" ||
-           Name == "_ZN9Verilated12lastContextpEv" ||
-           Name == "_Z13sc_time_stampv" ||
-           Name == "_ZdlPv" ||
-           Name == "_ZdlPvSt11align_val_t" ||
+           Name.starts_with("_ZN9Verilated17runFlushCallbacksEv") ||
+           Name.starts_with("_ZN9Verilated14threadContextpEv") ||
+           Name.starts_with("_ZN9Verilated12lastContextpEv") ||
+           Name.starts_with("_Z13sc_time_stampv") ||
+           Name.starts_with("_ZdlPv") ||
+           Name.starts_with("_ZdlPvSt11align_val_t") ||
            Name.starts_with("_ZNSt7__cxx1112basic_string") ||
-           Name.starts_with("_ZNSt6vectorINSt7__cxx1112basic_string");
+           Name.starts_with("_ZNSt6vectorINSt7__cxx1112basic_string") ||
+           Name.contains("VlDelayScheduler") ||
+           Name.contains("VlCoroutineHandle") ||
+           Name.contains("_Rb_tree") ||
+           Name.contains("St8multimapIm");
 }
 
 struct VlStubHostIoCallsPass : public PassInfoMixin<VlStubHostIoCallsPass> {
+    static bool isRequired() { return true; }
+
     PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
-        SmallVector<std::pair<CallInst *, Function *>, 8> Calls;
+        SmallVector<std::pair<CallBase *, Function *>, 8> Calls;
         for (auto &BB : F) {
             for (auto &I : BB) {
-                auto *CI = dyn_cast<CallInst>(&I);
-                if (!CI)
+                auto *CB = dyn_cast<CallBase>(&I);
+                if (!CB)
                     continue;
                 auto *Callee = dyn_cast<Function>(
-                    CI->getCalledOperand()->stripPointerCasts());
+                    CB->getCalledOperand()->stripPointerCasts());
                 if (!Callee || !isHostIoRuntimeCall(Callee->getName()))
                     continue;
-                Calls.push_back({CI, Callee});
+                Calls.push_back({CB, Callee});
             }
         }
 
         if (Calls.empty())
             return PreservedAnalyses::all();
 
-        for (auto [CI, Callee] : Calls) {
-            if (!CI->getType()->isVoidTy())
-                CI->replaceAllUsesWith(Constant::getNullValue(CI->getType()));
+        for (auto [CB, Callee] : Calls) {
+            if (!CB->getType()->isVoidTy())
+                CB->replaceAllUsesWith(Constant::getNullValue(CB->getType()));
             errs() << "[vl-stub-host-io-calls] " << F.getName()
                    << ": erased @" << Callee->getName() << "\n";
-            CI->eraseFromParent();
+            if (auto *II = dyn_cast<InvokeInst>(CB)) {
+                BranchInst::Create(II->getNormalDest(), II);
+                II->eraseFromParent();
+            } else {
+                CB->eraseFromParent();
+            }
         }
         return PreservedAnalyses::none();
     }
@@ -140,13 +178,57 @@ static bool isTimedActPhaseFunction(StringRef Name) {
     return Name.contains("___024root___eval_phase__act");
 }
 
+static bool isDirectHostSchedulerContextCall(StringRef Name) {
+    return Name.contains("VerilatedContext") ||
+           Name == "_ZN9Verilated14threadContextpEv" ||
+           Name == "_ZN9Verilated12lastContextpEv" ||
+           Name.contains("VlDelayScheduler");
+}
+
+static bool isTriggerSchedulerProgressCall(StringRef Name) {
+    return Name.contains("VlTriggerScheduler6commit") ||
+           Name.contains("VlTriggerScheduler6resume");
+}
+
 struct VlStubTimingSchedulerContextPass
     : public PassInfoMixin<VlStubTimingSchedulerContextPass> {
+    static bool isRequired() { return true; }
+
     PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
         if (!isTimedActPhaseFunction(F.getName()))
             return PreservedAnalyses::all();
         if (!F.getReturnType()->isIntegerTy(1))
             return PreservedAnalyses::all();
+
+        bool HasDirectHostSchedulerContextCall = false;
+        bool HasTriggerSchedulerProgressCall = false;
+        for (auto &BB : F) {
+            for (auto &I : BB) {
+                auto *CI = dyn_cast<CallInst>(&I);
+                if (!CI)
+                    continue;
+                auto *Callee = dyn_cast<Function>(
+                    CI->getCalledOperand()->stripPointerCasts());
+                if (!Callee)
+                    continue;
+                if (isDirectHostSchedulerContextCall(Callee->getName())) {
+                    HasDirectHostSchedulerContextCall = true;
+                }
+                if (isTriggerSchedulerProgressCall(Callee->getName()))
+                    HasTriggerSchedulerProgressCall = true;
+            }
+            if (HasDirectHostSchedulerContextCall && HasTriggerSchedulerProgressCall)
+                break;
+        }
+
+        if (!HasDirectHostSchedulerContextCall)
+            return PreservedAnalyses::all();
+
+        if (HasTriggerSchedulerProgressCall) {
+            errs() << "[vl-stub-timing-scheduler-context] " << F.getName()
+                   << ": preserved trigger-bearing act phase\n";
+            return PreservedAnalyses::all();
+        }
 
         F.deleteBody();
         BasicBlock *BB = BasicBlock::Create(F.getContext(), "entry", &F);
@@ -247,6 +329,8 @@ static bool isHostIoHeapStringAllocation(CallBase &CB) {
 
 struct VlSanitizeHostIoNullWritesPass
     : public PassInfoMixin<VlSanitizeHostIoNullWritesPass> {
+    static bool isRequired() { return true; }
+
     PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
         SmallVector<CallBase *, 8> NullStringCopies;
         SmallVector<CallBase *, 8> HeapStringAllocs;
@@ -343,6 +427,8 @@ static BasicBlock *findLoopExit(BasicBlock *HeaderBB) {
 }
 
 struct VlPatchConvergencePass : public PassInfoMixin<VlPatchConvergencePass> {
+    static bool isRequired() { return true; }
+
     PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
         // Collect icmp ugt i32 %N, 100
         SmallVector<ICmpInst *, 4> Candidates;
