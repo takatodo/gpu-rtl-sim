@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "gate_name": "scientific_circt_source_variant_bridge_spec_generated_bridge_gate",
+  "github_issue": "https://github.com/takatodo/gpu-rtl-sim/issues/74",
+  "predecessors": [
+    "https://github.com/takatodo/gpu-rtl-sim/issues/71",
+    "https://github.com/takatodo/gpu-rtl-sim/issues/72"
+  ],
+  "objective": "Prove the metadata-row -> BridgeSpec -> generated bridge header path runs all promoted source-variant rows through the single reviewed bridge with GPU-vs-CPU equality, while fallback and unsupported rows fail closed before dlopen.",
+  "recognized_scope": {
+    "promoted_rows": [
+      "attention_head4_hls_friendly",
+      "mlp4_hls_friendly",
+      "inference2_hls_friendly"
+    ],
+    "fallback_row": "block2_hls_friendly",
+    "shape": "1024x1",
+    "steps": 1,
+    "arbitrary_variant_inference": false,
+    "unknown_variant_policy": "fail_closed_before_dlopen"
+  },
+  "measured_acceptance": {
+    "attention_head4_hls_friendly": {
+      "status": "src_hybrid_verilator_callsite_passed",
+      "mismatch_count": 0,
+      "cpu_vs_gpu_output_equal": true,
+      "cpu_vs_gpu_control_checksum_equal": true
+    },
+    "mlp4_hls_friendly": {
+      "status": "src_hybrid_verilator_callsite_passed",
+      "mismatch_count": 0,
+      "cpu_vs_gpu_output_equal": true,
+      "cpu_vs_gpu_control_checksum_equal": true
+    },
+    "inference2_hls_friendly": {
+      "status": "src_hybrid_verilator_callsite_passed",
+      "mismatch_count": 0,
+      "cpu_vs_gpu_output_equal": true,
+      "cpu_vs_gpu_control_checksum_equal": true
+    },
+    "block2_hls_friendly": {
+      "status": "fail_closed_nonzero_exit",
+      "reached_dlopen": false
+    }
+  },
+  "acceptance_clarification": "Correctness acceptance only. The GPU .so generates its own deterministic input batch and inner_repeat mixing, so the generated header must carry the per-variant fill and mix formulas from the generator modules; equality across all outputs is the authority, never the header itself. No timing or speedup is claimed by this gate.",
+  "implementation_commits": [
+    "5115f83",
+    "b53469f",
+    "3094017",
+    "213cbd3",
+    "9b83cc7",
+    "ccc64a5"
+  ],
+  "implementation_focus": [
+    "src/tools/scientific_circt_bridge_spec.py",
+    "src/hybrid/scientific_circt_source_variant_verilator_bridge.cpp",
+    "src/tools/scientific_circt_source_variant_runtime_handoff.py",
+    "src/tools/scientific_circt_source_variant_metadata.py",
+    "src/tools/scientific_circt_source_variant_bridge_emit.py",
+    "tests/contract/test_scientific_circt_bridge_spec.py"
+  ],
+  "non_claims": [
+    "not arbitrary RTL bridge generation",
+    "not automatic partitioning",
+    "not JSON-only runtime ABI authority",
+    "not full microGPT execution",
+    "no timing or speedup claim from this gate"
+  ]
+}
