@@ -912,7 +912,7 @@ class VerilatorNativeSidecarMakeDriverTest(HybridCliTestCase):
         self.assertIn("progress_high_patch_cond_record", source)
         self.assertIn("progress_high_patch_body", source)
         self.assertIn("progress_high_patch_record", source)
-        self.assertIn("progress_high_patch_offset_loaded", source)
+        self.assertIn("progress_high_patch_stage70_offset_after_load", source)
         self.assertIn("progress_high_patch_offset", source)
         self.assertIn("progress_high_patch_store_done", source)
         self.assertIn("progress_high_eval_predicate_gate", source)
