@@ -185,8 +185,11 @@ def render_bridge_gate_header(spec: BridgeSpec) -> str:
     """Render the generated bridge gate header for one BridgeSpec.
 
     The leading comment/pragma plus the 9 SCI_CIRCT_BRIDGE_EXPECTED_* macros
-    are byte-compatible with the pre-FC-074 hand-maintained header; the
-    SCI_CIRCT_BRIDGE_APPLY_INPUTS/READ_OUTPUTS macros are new.
+    are byte-compatible with the pre-FC-074 hand-maintained header. The
+    unquoted SCI_CIRCT_BRIDGE_{INPUT,OUTPUT}_ELEMENT_{TYPE,COUNT} macros and
+    the SCI_CIRCT_BRIDGE_APPLY_INPUTS/READ_OUTPUTS macros are new; they let
+    the bridge C++ size its I/O structs and assign ports without per-variant
+    hand-maintained code.
     """
     lines = [
         "/* Generated from source-variant metadata by scientific_circt_source_variant_runtime_handoff.py. */",
@@ -200,6 +203,10 @@ def render_bridge_gate_header(spec: BridgeSpec) -> str:
         f"#define SCI_CIRCT_BRIDGE_EXPECTED_INPUT_ELEMENT_COUNT {_cxx_string_literal(spec.input_element_count)}",
         f"#define SCI_CIRCT_BRIDGE_EXPECTED_OUTPUT_ELEMENT_TYPE {_cxx_string_literal(spec.output_element_type)}",
         f"#define SCI_CIRCT_BRIDGE_EXPECTED_OUTPUT_ELEMENT_COUNT {_cxx_string_literal(spec.output_element_count)}",
+        f"#define SCI_CIRCT_BRIDGE_INPUT_ELEMENT_TYPE {spec.input_element_type}",
+        f"#define SCI_CIRCT_BRIDGE_INPUT_ELEMENT_COUNT {spec.input_element_count}",
+        f"#define SCI_CIRCT_BRIDGE_OUTPUT_ELEMENT_TYPE {spec.output_element_type}",
+        f"#define SCI_CIRCT_BRIDGE_OUTPUT_ELEMENT_COUNT {spec.output_element_count}",
         "",
         _render_apply_inputs_macro(spec.input_ports),
         "",
