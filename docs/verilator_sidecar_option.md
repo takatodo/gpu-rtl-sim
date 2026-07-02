@@ -122,28 +122,81 @@ sidecar build/run/compare. The accepted correctness policy remains
 RTLMeter should stay a RTLMeter workflow. The intended user path is to keep
 RTLMeter's case selection and let the Verilator command path carry GPU intent:
 
+For the current repo-owned wrapper boundary, materialize an ignored wrapper
+named `verilator` and put its directory before the real Verilator:
+
 ```bash
-./rtlmeter run --cases <design>:<config>:<test> --compileArgs "--use-gpu"
-PATH=/path/to/gpu-verilator-wrapper:$PATH ./rtlmeter run --cases <design>:<config>:<test>
+python3 -c 'from src.tools.rtlmeter_verilator_wrapper_runtime import write_rtlmeter_verilator_wrapper; write_rtlmeter_verilator_wrapper("artifacts/rtlmeter-wrapper/verilator")'
+PATH="$PWD/artifacts/rtlmeter-wrapper:$PATH" ./rtlmeter run --cases <design>:<config>:<test> --compileArgs "--use-gpu"
 ```
 
-The current RTLMeter support is non-executing metadata only. The helper surface
-under `src/tools/rtlmeter_*` captures the Verilator argv RTLMeter would emit,
-classifies whether GPU intent reached a PATH-selected wrapper, and maps the
-frontend-owned build metadata into sidecar contract metadata. It does not run
-RTLMeter, invoke Verilator, build GPU artifacts, run sidecar stages, compare
-outputs, or measure timing.
+The wrapper also honors `RTLMETER_REAL_VERILATOR=/path/to/real/verilator` for
+explicit delegation. It excludes itself from real-Verilator resolution,
+delegates no-GPU argv to the real process, and keeps GPU-intent argv
+fail-closed unless the reviewed first-seed sidecar proxy/marker path is present.
+This is wrapper packaging and first-seed handoff evidence, not an acceleration
+claim.
 
-The first wrapper-visible surface is intentionally fail-closed. A GPU-intent
-request must preserve normal Verilator build inputs such as `--cc`, `-f
-<filelist>`, and `--top-module <top>`. Expanded sidecar requests must also carry
-`--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`. A bare
-`--use-gpu` proves only that RTLMeter `--compileArgs` reached the wrapper-visible
-argv; it is not a GPU execution, compare, timing, or acceleration claim.
+The current RTLMeter GPU-sidecar support has one scoped executing exception:
+`Example:kind:hello` can run through
+`src/tools/rtlmeter_cpu_gpu_compare_integration.py --execute`, preserve
+RTLMeter stdout/cycles observables, and report `status=passed`,
+`comparison.status=passed`,
+`stdout_cycles_sidecar_runner.execution_authority=true`, and
+`sidecar_execution_invoked=true`. The same report keeps
+`gpu_execution_claimed=false`, `speedup_claimed=false`, `runtime_abi=false`, and
+`cpu_as_gpu_fallback=false`.
+
+A GPU-intent request must preserve normal Verilator build inputs such as `--cc`,
+`-f <filelist>`, and `--top-module <top>`. Expanded sidecar requests must also
+carry `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>`.
+A bare `--use-gpu` proves only that RTLMeter `--compileArgs` reached the
+wrapper-visible argv; it is not a GPU execution, timing, broad RTLMeter
+acceleration, or speedup claim.
 
 Do not route RTLMeter users through `config/slice_launch_templates/*.json` as the
 normal path. Those templates remain useful for existing repo experiments, but
 they are not a simple RTLMeter acceleration UX.
+
+## LLVM IR Suitability Review Surface
+
+`src/tools/llvm_rtl_gpu_suitability_cli.py` is a static LLVM IR review helper
+for deciding whether a lowered RTL region looks like state-parallel GPU work,
+CPU-parallel work, or a new implementation / GEM-like mapping candidate. Its
+JSON includes branch density, memory regularity, state independence, observable
+pressure, reasons, and non-claims.
+
+This suitability JSON is debug/review metadata only. It is not Verilator parser
+authority, sidecar stage authority, runtime ABI, correctness equivalence,
+timing evidence, GPU execution evidence, or a speedup/usefulness claim.
+
+The FC-065 lowered-IR corpus gate uses the same CLI with `--write-report` for
+small reproducible samples. Those reports remain generated static suitability
+evidence only; they are not source of truth and do not authorize sidecar
+execution.
+
+For entry-scoped analysis, defined callees reachable from `--entry` are included
+in the static metrics. That makes branch, observable, volatile, and helper-level
+pressure visible before any later sidecar execution gate is considered.
+External calls and LLVM intrinsic calls in that reachable region are also
+reported as review metadata.
+
+`src/tools/gpu_sidecar_eligibility_policy.py` may consume the suitability JSON
+as FC-045 review input and return `recommended_action` metadata. That policy
+layer keeps small `64x1` state-parallel cases as correctness/UX smoke, routes
+poor design-CPU suitability toward CPU-parallel or new-mapping work, and fails
+closed when source closure is not reviewed. This still does not promote JSON to
+runtime ABI or sidecar execution authority.
+
+The policy layer has a thin dry-run CLI:
+
+```sh
+python3 src/tools/gpu_sidecar_eligibility_policy_cli.py \
+  --suitability-report reports/<case>_llvm_rtl_gpu_suitability.json \
+  --source-closure-status reviewed \
+  --write-report \
+  --report-out reports/<case>_gpu_sidecar_eligibility_policy.json
+```
 
 ## Source Patch Descriptor Boundary
 
@@ -255,11 +308,11 @@ The adapter payload is intentionally smaller than `sidecar_handoff_contract()`. 
 
 `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_fixture_implementation_gate.json` accepts that fixture only as argv materialization metadata and selects a scoped launcher-invocation run boundary definition next. Materialized argv is still not launcher execution evidence, native-path compare evidence, timing evidence, arbitrary filelist support, automatic allocation, runtime/ABI change, or direct Verilator sidecar execution.
 
-`config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json` defines that scoped launcher-invocation run boundary from reviewed fixture metadata and structured argv to a future `src/tools/run_hybrid_template.py` attempt for `pulp_ita_mha 64x1`. The definition itself still does not invoke the launcher, execute sidecar stages, prove native-path compare, measure timing, broaden filelist support, allocate GPUs automatically, change runtime/ABI behavior, or prove direct Verilator sidecar execution.
+`config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json` defines that scoped launcher-invocation run boundary from reviewed fixture metadata and structured argv to a future `src/tools/run_hybrid_template.py` attempt for `pulp_ita_mha 64x1`. `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json` accepts that boundary only for a scoped future run from reviewed invocation fixture metadata and structured argv. These definition/review gates still do not start the launcher, execute sidecar stages, prove native-path compare, measure timing, broaden filelist support, allocate GPUs automatically, change runtime/ABI behavior, or prove direct Verilator sidecar execution.
 
-`config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate.json` records the first scoped structured-argv launcher run after that boundary. It starts `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 64x1`, executes the existing sidecar stages, and reaches `coverage_output_equivalence` compare with mismatch count `0`. This is still not direct Verilator sidecar execution, broad native option support, timing or speedup evidence, automatic allocation, runtime/ABI change, arbitrary filelist support, raw-state equality, or production LLM-serving throughput.
+`config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate.json` records the first scoped structured-argv launcher run after that boundary, and `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate.json` accepts only that scoped structured launcher invocation evidence. The run starts `python3 src/tools/run_hybrid_template.py config/slice_launch_templates/pulp_ita_mha.json --shape 64x1`, executes the existing sidecar stages, and reaches `coverage_output_equivalence` compare with mismatch count `0`. This is still not direct Verilator sidecar execution, broad native option support, timing or speedup evidence, automatic allocation, runtime/ABI change, arbitrary filelist support, raw-state equality, or production LLM-serving throughput.
 
-`config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json` accepts that boundary only for a scoped future run from reviewed invocation fixture metadata and structured argv. The review still does not start the launcher, execute sidecar stages, prove native-path compare, measure timing, broaden filelist support, allocate GPUs automatically, change runtime/ABI behavior, or prove direct Verilator sidecar execution.
+`config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate.json` and `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate.json` define and accept the missing Verilator-facing process-to-launcher CLI boundary only for a scoped non-executing fixture. `config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_fixture_gate.json` implements that fixture as `define_process_to_launcher_cli_fixture`, and `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_fixture_implementation_gate.json` accepts it only as exact launcher argv materialization metadata. `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate.json` defines the first future execution boundary from reviewed fixture metadata to a `run_hybrid_template.py` launcher process start, `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate.json` accepts that definition only for a scoped future run, `config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_gate.json` records the scoped run reaching sidecar stages and coverage-output compare, and `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_run_gate.json` accepts that run only as process-to-launcher evidence from reviewed fixture metadata. `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate.json` then defines the wrapper-mediated Verilator-process-to-launcher bridge boundary, `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate.json` accepts only the definition boundary for a scoped non-executing bridge fixture, `config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_fixture_gate.json` implements that fixture as metadata-only `define_verilator_process_launcher_bridge_fixture`, `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_fixture_implementation_gate.json` accepts that implementation only as metadata, `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_execution_boundary_gate.json` defines the next execution boundary, `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_execution_boundary_gate.json` accepts that boundary only for a scoped future run, `config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_execution_gate.json` records `process_to_launcher_bridge_failure` because bridge metadata readiness still lacks observable wrapper-mediated bridge ordering before launcher start, `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_execution_run_gate.json` accepts that failure as honest, `config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_implementation_boundary_gate.json` defines only the future observable-ordering implementation boundary, `config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_implementation_boundary_gate.json` accepts that boundary only for helper implementation, and `config/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_gate.json` implements that helper without launcher execution. That lane is now prerequisite evidence; the current project priority is `external_user_readiness_audit_gate`. Timing, runtime/ABI change, broad native option support, arbitrary filelists, raw-state equality, direct Verilator sidecar execution, bridge-path launcher execution evidence, bridge-path compare evidence, and production throughput remain non-claims until later reviewed evidence proves them.
 
 `src/tools/verilator_sidecar_options.py` is the current shared mapping authority for `--sim-accel-states`, `--sim-accel-steps`, and compact `--sim-accel-shape`. On the wrapper, those `--sim-accel-*` shape spellings are enough to enter the sidecar preview path even if the explicit `--sim-accel sidecar-gpu` selector is omitted. The mapper rejects mixed shape spellings so the eventual Verilator implementation does not inherit ambiguous behavior.
 

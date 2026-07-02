@@ -2,16 +2,18 @@ diff --git a/src/V3EmitMk.cpp b/src/V3EmitMk.cpp
 index f7694527..bc1f9079 100644
 --- a/src/V3EmitMk.cpp
 +++ b/src/V3EmitMk.cpp
-@@ -745,11 +745,66 @@ public:
+@@ -745,11 +745,77 @@ public:
                      + compilerIncludeFlag + " -c -o $@ $<\n");
          }
  
 +        // --sim-accel sidecar-gpu: emit a Makefile rule that validates the
-+        // known closure and links a repo-owned smoke shim into the generated
-+        // executable. Verilator itself never launches the sidecar runtime here;
-+        // it only emits the rule. Fails closed for unsupported or incomplete
-+        // sidecar requests.
++        // known closure, builds the adjacent GPU artifact, and links a
++        // repo-owned direct CUDA smoke shim into the generated executable.
++        // Verilator itself never launches the sidecar runtime here; it only
++        // emits the rule.
++        // Fails closed for unsupported or incomplete sidecar requests.
 +        string sidecarExeDeps;
++        string sidecarExeLibs;
 +        if (!v3Global.opt.simAccel().empty()) {
 +            if (v3Global.opt.simAccel() != "sidecar-gpu") {
 +                v3fatal("--sim-accel only supports 'sidecar-gpu' for the Makefile build hook");
@@ -27,22 +29,28 @@ index f7694527..bc1f9079 100644
 +            } else {
 +                of.puts("\n### Sidecar GPU build hook... (from --sim-accel sidecar-gpu)\n");
 +                of.puts("PYTHON3 ?= python3\n");
++                of.puts("VL_SIDECAR_REPO_ROOT ?= $(if $(RTLMETER_REPO_ROOT),$(abspath $(RTLMETER_REPO_ROOT)),$(abspath $(firstword $(VM_USER_DIR))))\n");
 +                of.puts("VL_SIDECAR_STAMP = $(VM_PREFIX)__sidecar_build.stamp\n");
 +                of.puts("VL_SIDECAR_SHIM_SRC = "
-+                        "$(GPU_RTL_SIM_REPO_ROOT)/src/hybrid/native_sidecar_shim.c\n");
++                        "$(VL_SIDECAR_REPO_ROOT)/src/hybrid/native_sidecar_shim.c\n");
 +                of.puts("VL_SIDECAR_SHIM_OBJ = $(VM_PREFIX)__native_sidecar_shim.o\n");
 +                of.puts("$(VL_SIDECAR_SHIM_OBJ): $(VL_SIDECAR_SHIM_SRC) $(VL_SIDECAR_STAMP)\n");
 +                of.puts("\t$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) "
-+                        + compilerIncludeFlag + " -c -o $@ $<\n");
++                        + compilerIncludeFlag
++                        + " -DGPU_RTL_SIM_REPO_ROOT_DEFAULT=\\\"$(VL_SIDECAR_REPO_ROOT)\\\""
++                        + " -c -o $@ $<\n");
 +                of.puts("$(VL_SIDECAR_STAMP): $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a\n");
-+                // The driver only validates the recognized closure and writes
-+                // make-time metadata. Runtime evidence is written later by the
-+                // linked shim when the generated executable is run.
++                // The driver validates the recognized closure, builds adjacent
++                // vl_batch_gpu.meta.json / vl_batch_gpu.cubin files, and rejects
++                // known-unsupported artifact shapes before link. The linked shim
++                // dynamically resolves the CUDA Driver API and attempts module
++                // load + kernel launch at runtime.
 +                of.puts("\t$(PYTHON3) "
-+                        "$(GPU_RTL_SIM_REPO_ROOT)/src/tools/verilator_native_sidecar_make_driver.py "
-+                        "prepare-direct-shim-smoke \\\n");
-+                of.puts("\t  --repo-root $(GPU_RTL_SIM_REPO_ROOT) \\\n");
-+                of.puts("\t  --filelist " + v3Global.opt.simAccelFilelist() + " \\\n");
++                        "$(VL_SIDECAR_REPO_ROOT)/src/tools/verilator_native_sidecar_make_driver.py "
++                        "build-direct-shim-smoke \\\n");
++                of.puts("\t  --repo-root $(VL_SIDECAR_REPO_ROOT) \\\n");
++                of.puts("\t  --filelist $(abspath $(firstword $(VM_USER_DIR))/"
++                        + v3Global.opt.simAccelFilelist() + ") \\\n");
 +                of.puts("\t  --top-module " + v3Global.opt.topModule() + " \\\n");
 +                of.puts("\t  --mdir . \\\n");
 +                of.puts("\t  --sim-accel sidecar-gpu \\\n");
@@ -57,6 +65,7 @@ index f7694527..bc1f9079 100644
 +                // inputs ($^) so obj_dir/V<top> reaches repo-owned sidecar code.
 +                // The stamp remains make-time metadata only and is not linked.
 +                sidecarExeDeps = " $(VL_SIDECAR_SHIM_OBJ)";
++                sidecarExeLibs = " -ldl";
 +            }
 +        }
 +
@@ -67,7 +76,9 @@ index f7694527..bc1f9079 100644
 -                    + ": $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a\n");
 +                    + ": $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a" + sidecarExeDeps
 +                    + "\n");
-             of.puts("\t$(LINK) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) $(LIBS) $(SC_LIBS) -o $@\n");
+-            of.puts("\t$(LINK) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) $(LIBS) $(SC_LIBS) -o $@\n");
++            of.puts("\t$(LINK) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) $(LIBS) $(SC_LIBS)"
++                    + sidecarExeLibs + " -o $@\n");
              of.puts("\n");
          } else if (!v3Global.opt.libCreate().empty()) {
 diff --git a/src/V3Options.cpp b/src/V3Options.cpp

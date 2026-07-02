@@ -12,455 +12,44 @@ Goal: `modern_llm_serving_rtl_hybrid_conditions`
 
 Current priority: `partition_local_eval_continuation_guard_cpu_oracle_validation`
 
-Current next action: `clone_compact_cluster_body_into_outline_callee_and_rewire_control_flow`
+Current next action: `advance_stage124_source1029_after_sources976_1006_1020_diagnostic_atomic_suppression_cuda700`
 
 Current source artifact: `for_codex/issues.md`
 
-GitHub tracking: #69 / FC-069 is the active gateGPT `tb_core`
-ordering-aware token-loop task. #2 / FC-037 remains the RTLMeter timing lane,
-but it is not the current implementation blocker.
-#1 still records the owner goal and #46 remains the native-path umbrella;
-#59/#57/#58 are native-path prerequisites and related tracks.
+Latest FC-069 update: Stage118 block-source `1760` is clean/raw-clean through candidate `2021`, and extended Stage119 maps dirty `source_id=2` to `compact.cfg_clone.entry_phi.producer_selector.counters3969` with `skipped_count=1536`. Stage121 now suppresses selected diagnostic atomics/marker reads before Stage120 after-observation and applies the selected suppression ids across the candidate set, not only the selected probe source. The source625 global-suppression run is clean after suppressing source611/source613/source615/source618/source620/source624 atomics plus source622 marker-read, classifying that producer-selector frontier as diagnostic perturbation traffic. Stage122 expanded-progress ABI then proved the first post-suppression lifecycle edge is still dirty but has no concrete record318/adjacent write target. Stage123 source1324 is excluded as adjacent diagnostic-counter traffic because suppressing it removes the Stage123 concrete write-window event while the CPU oracle still fails and record318 remains polluted. Stage124 now probes the post-suppression record318 transition: `reports/gategpt_tb_core_ordering_aware_token_loop_full_phase_2state_stage124_record318_transition_source1_1536_after_source1324_suppression_ptxas300_runtime.json` times out in `ptxas`, while `1..256`, `257..512`, `513..768`, and `769..896` reach runtime with `stage124_record318_transition_found=false`, CPU oracle `mismatch_count=2`, and no semantic authority. Source897,count128, source960,count1, source968,count1, source972,count1, source974,count1, and source975,count1 reach runtime with no transition. Unsuppressed source976,count1 is incomplete, but adding source976 to Stage121 diagnostic atomic suppression restores source976 completion with `transition_found=false`; source977,count1 through source1005,count1 also reach runtime with no transition under that suppression frontier. Unsuppressed source1006,count1 is incomplete, but adding source1006 to the diagnostic atomic suppression list restores source1006 completion with `transition_found=false`. Source1007,count1 through source1019,count1 reach runtime under the source976/source1006 suppression frontier with `transition_found=false`. Unsuppressed source1020,count1 is incomplete; adding source1020 to the diagnostic atomic suppression list restores source1020 completion with `transition_found=false`, `scan_complete=true`, and no semantic authority. Source1021,count1 also reaches runtime under the source976/source1006/source1020 suppression frontier with `transition_found=false`, `scan_complete=true`, and no semantic authority. Source1022,count1 also reaches runtime under the source976/source1006/source1020 suppression frontier with `transition_found=false`, `scan_complete=true`, and no semantic authority. Source1023,count1 also reaches runtime under the source976/source1006/source1020 suppression frontier with `transition_found=false`, `scan_complete=true`, and no semantic authority. Source1024,count1 also reaches runtime under the same suppression frontier with `transition_found=false`, `scan_complete=true`, and no semantic authority. Source1025,count1 also reaches runtime under that suppression frontier with `transition_found=false`, `scan_complete=true`, and no semantic authority. Source1026,count1 also reaches runtime under that suppression frontier with `transition_found=false`, `scan_complete=true`, and no semantic authority. Source1027,count1 also reaches runtime under that suppression frontier with `transition_found=false`, `scan_complete=true`, and no semantic authority. Source1028,count1 also reaches runtime under that suppression frontier with `transition_found=false`, `scan_complete=true`, and no semantic authority. The next action is to retry at source1029 with source976, source1006, and source1020 diagnostic atomic suppression carried forward.
 
-The completed adapter and wrapper path proves one scoped Verilator-facing
-`--use-gpu` route as `filelist_known_template_pulp_ita_mha` /
-`pulp_ita_mha_gpu_cov_tb` with explicit `64x1` scheduling through reviewed
-sidecar metadata. The current RTLMeter VeeR-EL2 timing gate does not claim
-RTLMeter acceleration, broad `--use-gpu` execution, arbitrary filelist support,
-dependency inference, automatic GPU allocation, timing/speedup, CIRCT execution,
-raw full-state equality, or JSON as the runtime ABI.
-The RTLMeter advantage aggregator now emits
-`reports/rtlmeter_hybrid_advantage_summary.json` from the existing CPU-parallel,
-GPU-sidecar timing, launch-feasibility, and bounded-progress reports. The
-current aggregate counts one CPU-parallel favorable report, four GPU-sidecar
-unfavorable timing reports, one launch-feasibility blocker, and one bounded
-GPU-progress report; the recommendation is
-`prefer_cpu_parallel_control_with_gpu_bounded_batch_probes`, not a new speedup
-claim.
-The non-VeeR candidate summary now emits
-`reports/rtlmeter_non_veer_usefulness_candidates.json`: NVDLA has ten measured
-coverage-output-equivalent hybrid shapes and ten GPU-favorable shapes, with the
-best observed wall speedup `11764.742765273311x` at `1024x64` for
-`nvdla_cmac_a2cacc`; Vortex is a fail-closed first-gate candidate with `mini`
-tests `hello`, `sgemm`, and `saxpy` and now has a measured Vortex `mini:hello` CPU-vs-hybrid timing gate. The Vortex
-hybrid split summary
-`reports/rtlmeter_non_veer_hybrid_measurement_summary.json` now turns that into
-a direct measurement index: `measured_design_count=1`,
-`measured_shape_count=10`, `gpu_favorable_shape_count=10`,
-`unmeasured_first_gate_candidate_count=1`, NVDLA `favorable_ratio=1.0`, and
-Vortex `cpu_vs_hybrid_timing_present=false`. The current non-VeeR hybrid action
-is
-`extend_nvdla_hot_ss_measurement_before_claiming_broader_rtlmeter_gpu_usefulness`;
-this is still an index over existing evidence, not a new run or a new speedup
-claim. The next-queue report
-`reports/rtlmeter_non_veer_hybrid_next_queue.json` now makes the operational
-order explicit: priority 1 is `nvdla_hot_ss_measurement_extension`, repeating
-or extending the best observed NVDLA hot-SS bucket
-`state_batch_and_repeated_step` with preferred measured shape `1024x64` on
-`nvdla_cmac_a2cacc`; priority 2 is
-`vortex_mini_hello_first_cpu_vs_hybrid_gate`, now measured in
-`reports/rtlmeter_vortex_timing.json`: the canonical `vlgpugen` std::ref
-pointer-return fix CUBIN reaches `after_cuCtxSynchronize`, exports
-`memory_post_condition` authority, and the first CPU-vs-hybrid timing gate
-passes correctness. The measured hybrid wall median is `0.4504947270033881s`
-versus CPU reference `0.22s`, so `hybrid_vs_cpu_ratio=2.047703304560855` and
-`cpu_vs_hybrid_speedup=0.48835199795434103`; no speedup or usefulness claim is
-made. The queue is not a scheduler, runtime ABI, or broad GPU claim. The concrete NVDLA
-plan `reports/rtlmeter_nvdla_hot_ss_measurement_plan.json` now materializes the
-priority-1 queue item as `planned_not_run` for `NVDLA.nvdla_cmac_a2cacc` only:
-repeat-median `1024x64` confirmation, `512x64` lower-neighbor check, `2048x64`
-larger state-batch probe, and `1024x1` state-batch/repeated-step separation.
-`reports/rtlmeter_nvdla_hot_ss_plan_dry_run.json` now preflights those four
-planned commands with `all_dry_runs_passed=true`. The first plan item has been
-measured in `reports/nvdla_cmac_a2cacc_repeat_median_1024x64.json` with
-`repeat_count=3`, `coverage_output_equivalence_all_passed=true`, coverage-output
-mismatch count `0` for all samples, median CPU `2142.1 ms`, median hybrid wall
-`1.755 ms`, and median CPU/hybrid wall speedup `1430.950752393981x`. Raw
-final-state equality still fails on Verilator/internal fields, so the accepted
-claim remains coverage-output equivalence only. `NVDLA.nvdla_cmac_core_mac`
-remains deferred because the latest `32x1` refresh hit high `ptxas` compile
-cost. The lower-neighbor `512x64` plan item now also has repeat-median evidence
-in `reports/nvdla_cmac_a2cacc_repeat_median_512x64.json`:
-`coverage_output_equivalence_all_passed=true`, median CPU `1056.75 ms`, median
-hybrid wall `1.602 ms`, and median CPU/hybrid wall speedup
-`663.2209737827715x`. The larger-state `2048x64` plan item now has
-repeat-median evidence in `reports/nvdla_cmac_a2cacc_repeat_median_2048x64.json`:
-`coverage_output_equivalence_all_passed=true`, median CPU `4244.47 ms`, median
-hybrid wall `1.662 ms`, and median CPU/hybrid wall speedup
-`2553.8327316486166x`. The state-batch-only `1024x1` plan item now has
-repeat-median evidence in `reports/nvdla_cmac_a2cacc_repeat_median_1024x1.json`:
-`coverage_output_equivalence_all_passed=true`, median CPU `2090.2 ms`, median
-hybrid wall `2.628 ms`, and median CPU/hybrid wall speedup
-`791.3432267884323x`. `reports/rtlmeter_nvdla_hot_ss_repeat_summary.json`
-summarizes the plan as `planned_measurement_count=4`, `measured_count=4`,
-`coverage_passed_count=4`, and `gpu_favorable_count=4`; `2048x64` is the best
-measured shape in this plan. State batching alone is already favorable, while
-repeated-step batching improves the best observed wall ratio further.
-`reports/rtlmeter_gpu_favorable_conditions_audit.json` now records
-`status=goal_satisfied_by_nvdla_hot_ss`: the search for a GPU-favorable
-RTLMeter condition beyond VeeR portability evidence is satisfied by scoped NVDLA
-`a2cacc` hot-SS repeat-median evidence. Vortex now has an architecture-diverse first CPU-vs-hybrid timing gate, but it is a negative result for this tiny `mini:hello` path. The Vortex
-readiness report `reports/rtlmeter_vortex_first_gate_readiness.json` now selects
-`Vortex:mini:hello` as the first gate and verifies that `dcrs.bin`, `init.bin`,
-and `post.bin` exist. The fail-closed authority
-`config/rtlmeter_sidecar_authorities/rtlmeter_vortex_mini_hello.json` now exists
-with `runtime_launchable=false` and defines stdout `TEST PASSED` plus memory
-post-condition as the intended authority without granting execution authority.
-The fail-closed launch template
-`config/slice_launch_templates/vortex_mini_hello.json` now exists with
-`runtime_launchable=false`, `source_closure.status=incomplete`, and
-`speedup_claim_allowed_by_template_alone=false`; its non-dry-run path refuses
-execution until the DPI/runtime bridge closure is complete.
+Stage117 update: the previous `1..256` report is not accepted as Stage117 runtime evidence because generated IR lacked Stage117 instrumentation due stale `vlgpugen` pass-tool build order. Pass-tool freshness is now fixed so stale pass tools rebuild before IR generation. With the lightweight saved-address Stage117 probe and a 900s `ptxas` bound, `reports/gategpt_tb_core_ordering_aware_token_loop_full_phase_2state_stage117_light_block_body_boundary_range_1_2048_ptxas900_runtime.json` reaches runtime: all three entry slices pass `ptxas`, preflight passes, and classification is `token_loop_stage117_phase1_callee0_nested_body_block_body_boundary_same_saved_addr_changed`. The first `COUNT=1024` run was clean, but `COUNT=2048` finds a dirty Stage117 block-body boundary at `source_id=1760` with `split_result=same_saved_addr_changed`, `before_direct_param_record318=0`, `after_direct_param_record318=38666621`, `after_saved_addr_record318=38666621`, `saved_after_polluted=true`, and `semantic_authority=false`. The Stage117 source-id mapping is now parser-backed in `gategpt_testbench_probe.py`: `source_id=1760` maps to `artifacts/gategpt_local_eval/gateGPT/obj_tb_core/vl_batch_gpu.ll:834516` metadata row, control-word line `333831`, reconstructed block `vl_batch_gpu.ll:327571` / `%19690`, and first Stage117 probe line `327575` in `_Z40Vtb_core___024root___nba_sequent__TOP__0P18Vtb_core___024root`; `control_word=72058702139492064`. This is a dirty boundary, not final adjacent-window write-source authority.
 
-RTLMeter hybrid split summary:
+Stage119/120/121/122/123/124 implementation update: Stage119 skipped-span boundary diagnostics inspect contiguous spans that Stage118 intentionally skips, including compact CFG-clone/probe spans. Stage120 splits one mapped skipped span into instruction-level boundaries using `VLGPUGEN_STAGE120_BLOCK_SOURCE_ID`, `VLGPUGEN_STAGE120_SKIP_SPAN_SOURCE_ID`, `VLGPUGEN_STAGE120_INSTRUCTION_START`, and `VLGPUGEN_STAGE120_INSTRUCTION_COUNT`; `VLGPUGEN_STAGE120_SPAN_EDGE_PROBE=1` probes the aggregate span entry-to-exit edge with `boundary_kind_id=6`, `VLGPUGEN_STAGE120_AGGREGATE_EDGE_PROBE=1` probes prefix aggregate edges with `boundary_kind_id=7`, and `VLGPUGEN_STAGE120_LOW_PERTURBATION_PROBE=1` removes the before/saved-address observation to distinguish diagnostic perturbation from a stable after-only polluted edge. Stage123 adds `VLGPUGEN_STAGE123_CONCRETE_WRITE_WINDOW_BISECTION_PROBE=1` to scan concrete store/atomic/mem-intrinsic candidates after Stage121 diagnostic suppression. Stage124 adds `VLGPUGEN_STAGE124_RECORD318_TRANSITION_PROBE=1` to scan post-suppression record318 transitions after source1324 exclusion. Runtime printing exposes the Stage122 lifecycle probe, Stage123 concrete write-window probe, and Stage124 transition probe; the progress fallback is now 192 counters, with Stage122 slots at `168..175`, Stage123 slots at `176..183`, and Stage124 slots at `184..191`.
 
-| Target / slice | Measurement state | GPU usefulness decision | Quantitative basis | Next action |
-|---|---|---|---|---|
-| `NVDLA.nvdla_cmac_a2cacc` hot SS | Measured, repeat-median plan complete | GPU-favorable for the measured coverage-output-equivalent hot-SS shapes | Four repeat-median plan items all pass coverage-output equivalence and are GPU-favorable; best repeat-median row is `2048x64` with CPU `4244.47 ms`, hybrid wall `1.662 ms`, wall speedup `2553.8327316486166x`; prior broad-shape index best wall row is `1024x64` at `11764.742765273311x` | Extend only reviewed hot-SS measurements before any broader RTLMeter claim |
-| `NVDLA.nvdla_cmac_core_mac` full/core slice | Deferred after compile-cost refresh | Not a current GPU path despite NVDLA hot-SS success | `32x1` refresh reached GPU artifact generation but `ptxas` ran for more than ten minutes and about 36 GiB RSS before being stopped | Keep deferred unless compile-cost mitigation is explicitly reopened |
-| `Vortex:mini:hello` | Measured correctness and timing | Negative for this tiny first gate; fail closed for speedup | CPU reference passes (`0.22s`, `40897` clocks, `TEST PASSED`); canonical real-CUDA materialized runtime exports `memory_post_condition` authority, relocates `65` root-storage pointers, reaches `after_cuCtxSynchronize`, and `reports/rtlmeter_vortex_timing.json` records hybrid wall median `0.4504947270033881s` over `3` repeats, `hybrid_vs_cpu_ratio=2.047703304560855`, `cpu_vs_hybrid_speedup=0.48835199795434103` | Use as measured negative Vortex first gate; continue EH1/EH2 unblock work |
-| `VeeR-EL2:default:hello` | Correctness and timing measured | Useful as negative/portability baseline, not speedup evidence | Best sidecar row `0.641226s` with `sidecar_vs_cpu_parallel_ratio=3.460382`; serial CPU remains faster | Do not optimize this path as the main speedup story; use it to validate portability constraints |
-| `VeeR-EH1/EH2:default:hello` | Not measured | Unproven; blocked before timing | EH1 entry-pruned eval-only cubin faults at first `vl_eval_batch_gpu`; 2MiB padded storage, region-counter global init, and stack-limit overrides do not clear it; the required host-I/O stub pass erases `47` EH1 host-I/O call sites and leaves zero matching calls in the probe IR; the rebuilt host-I/O-stubbed single-entry CUBIN is `6735488` bytes and `ptxas -O0` passes in `15.29s`, but the eval-only bridge still exits with `CUDA error 700` at the first GPU eval launch; the host-I/O-stubbed kernel reports `255` registers and `1776` local bytes, and a padded 2MiB init-state still does not clear the fault; compute-sanitizer is blocked before the first instrumented CUDA API in this environment; EH2 now uses a syms-state image (`storage_size=623168`, `root_offset_in_state=192`) and clears prelaunch rejection; post-`VlWide` probes show nonzero trigger store can pass if `_eval` returns immediately, NBA `trigger_anySet` passes before `eval_nba`, and CUDA 700 appears after crossing `eval_nba` | For EH1, isolate remaining scheduler/container/ABI device fault after host-I/O residue removal; for EH2, localize post-`VlWide` `eval_phase__nba` / `eval_nba` CUDA 700, then bridge timing |
+Stage121 diagnostic suppression now has two separate opt-in surfaces: `VLGPUGEN_STAGE121_DIAGNOSTIC_ATOMIC_SOURCE_IDS` for known diagnostic atomics and `VLGPUGEN_STAGE121_DIAGNOSTIC_MARKER_READ_SOURCE_IDS` for targeted `materialized_store_order_marker.read` loads. The marker-read path is gated by Stage120 aggregate-edge plus low-perturbation mode and explicit source ids; it is a perturbation-control diagnostic, not runtime skip authority or final pair-offset write-source authority. The suppression is applied before the Stage120 after-read is inserted, which avoids classifying an after-read that was positioned by an instruction later erased by the diagnostic suppression.
 
-`reports/rtlmeter_vortex_source_closure.json` now validates the descriptor-owned
-source closure: all `126` Verilog sources, `8` include files, and `1` CPP DPI
-source exist locally, but this does not grant runtime launch authority. The
-Vortex is no longer blocked on the first CPU-vs-hybrid timing report; the measured `mini:hello` hybrid path is slower than the CPU reference, and EH1/EH2 remain the unmeasured blockers for the active goal.
-The bridge review
-`reports/rtlmeter_vortex_dpi_memory_bridge_review.json` now captures the boundary:
-CPU authority uses `mem_load(init.bin)`, DCR writes from `dcrs.bin`, 64-byte
-block memory access with byte enables, MMIO stdout at `IO_COUT_ADDR=0x40`, and
-`mem_check(post.bin)` before stdout `TEST PASSED`.
-`src/hybrid/vortex_memory_model_device.h` now provides a host-compilable helper
-for 64-byte block initialization, byte-enable writes, IO_COUT capture, and post
-compare semantics; remaining blockers are lowered-TB/runtime integration, device
-generated lowered-TB invocation, reporting the exported observable authority,
-and final GPU observable.
-`src/hybrid/vortex_runtime_upload.h`
-now provides a fake-driver-tested upload helper for `cuMemAlloc`, `cuMemcpyHtoD`,
-`cuMemsetD8`, cleanup, and the `37224` H2D / `88` D2H byte accounting.
-`src/hybrid/vortex_observable_export.h` now provides a fake-driver-tested export
-helper for `cuMemcpyDtoH` of `post_compare_result`, memory post-condition
-PASS/FAIL, optional raw stdout bytes, `TEST PASSED` detection, and host-side
-authority-source selection.
-`src/hybrid/vortex_runtime_sequence.h` now provides a fake-driver-tested
-host/runtime sequence helper that invokes buffer upload, ordered DCR application
-while reset is asserted, a kernel-launch callback, observable export, and buffer
-release. The real CUDA runtime-sequence preflight now reports
-`preflight_authority_source=memory_post_condition`, but this remains preflight
-authority because the generated Vsim path still contains probe/marker call
-boundaries instead of a real lowered-TB runtime call.
-It is still not called by the Vortex lowered TB or launch template.
-`reports/rtlmeter_vortex_runtime_invocation_plan.json` now validates that the
-fail-closed launch template names `vortex_run_runtime_sequence`, the expected
-upload/DCR/launch/export/release order, and the runtime-sequence header. This is
-still a template plan, not lowered Vortex runtime invocation.
-`src/hybrid/vortex_lowered_tb_runtime_sequence.h` now provides a fake-driver
-tested lowered-TB-side call boundary around `vortex_run_runtime_sequence`, and
-`reports/rtlmeter_vortex_lowered_tb_invocation_smoke.json` records
-`lowered_tb_invocation_smoke_ready_not_integrated`. This is still not generated
-lowered TB integration; the remaining blocker has narrowed to generated lowered
-TB calling `vortex_lowered_tb_invoke_runtime_sequence`.
-`reports/rtlmeter_vortex_binary_input_summary.json` now parses the actual
-`Vortex:mini:hello` inputs: `init.bin` has `9` segments and `36864` payload bytes
-over `0x10000..0x80008000`, `post.bin` has `1` segment and `48` payload bytes,
-and `dcrs.bin` has `9` DCR writes.
-`reports/rtlmeter_vortex_gpu_memory_model_plan.json` now turns that into an ABI
-plan with `7` planned device buffers, `576` init 64-byte blocks, and `37224`
-bytes of minimum static input tables/payloads before stdout and post-compare
-result export. `reports/rtlmeter_vortex_device_buffer_materialize.json` now
-materializes those host-side buffers into
-`artifacts/rtlmeter_vortex_mini_hello_device_buffers`: `37224` host-to-device
-bytes and `88` initial device-to-host bytes across `7` buffers. This is buffer
-preparation only, not device upload or GPU execution.
-`reports/rtlmeter_vortex_dcr_schedule.json` now materializes the ordered `9`
-DCR writes into a `72` byte little-endian runtime table and records the `tb.sv`
-protocol: reset is asserted during all writes, each write holds `dcr_wr_valid`
-high for `#10`, between-write valid-low time is only a delta cycle, and reset is
-deasserted after a final `#10` valid-low interval. This is schedule
-materialization plus a fake-driver sequence contract only; runtime execution
-still has to invoke that sequence from the Vortex lowered path.
-`reports/rtlmeter_vortex_memory_model_reference.json` now reaches
-`reference_validated`: the loaded initial memory does not match `post.bin`
-(`48` mismatches over `48` checked bytes), byte-enabled post replay reproduces
-`post.bin`, and IO_COUT writes are captured without mutating RAM. This narrows
-Vortex from "DPI semantics unknown" to "helpers exist but GPU execution
-integration, generated lowered-TB invocation, and final observable authority are
-missing"; it is not GPU execution, timing, or a speedup
-claim. A
-2026-06-17 local
-repeat-median refresh attempt for `NVDLA.nvdla_cmac_core_mac` `32x1` passed
-Verilator build, host-probe build, CPU init-state capture, and CPU reference
-capture, but full-core GPU artifact generation spent more than ten minutes in
-`ptxas` and reached about 36 GiB RSS before being stopped. This keeps NVDLA as
-the best non-VeeR usefulness target, but argues for smaller hot SS boundaries
-rather than broad full-core GPU lowering.
+Stage118 ptxas-surface follow-up: `rtlmeter_vortex_ptx_entry_slice.py` now avoids treating semicolon-terminated `.func` declarations as function bodies, with a focused contract test. A dry-run regeneration report, `reports/gategpt_tb_core_entry_sliced_cubin_chain_stage118_reduced_probe.json`, still produces large Stage118 slices (`762827`, `762985`, and `766310` lines), so this parser fix is correct but not sufficient; the next work remains shrinking retained prefix/global/reachable PTX surface or slice freshness before retrying `ptxas`.
 
-External testbench candidate: `gateGPT` (`https://github.com/fguzman82/gateGPT`
-at `f1a604e998022b528a962e0af8af3d89e5f369b5`) remains an external checkout
-under `artifacts/external_gateGPT`; it is not vendored because no license file
-is present in the checkout. The reproducible local gate keeps
-`sim/tb_mathops.v` as the raw-checkout Verilator lint-only smoke, then uses an
-evaluation-only copy under `artifacts/gategpt_local_eval/gateGPT` to normalize
-upstream absolute `/home/hermes/microgpt_fpga` include/readmem paths and adjust
-the `tb_exp` generated-data depth. `tb_mathops`, `tb_exp`, `tb_matvec`,
-`tb_norm`, `tb_attn`, and `tb_core` pass as local CPU Verilator binary
-testcases in `reports/gategpt_testbench_probe.json` with
-`status=gategpt_gpu_smoke_and_tb_mathops_sequence_compare_passed_without_pass_fail_export`.
-The same normalized obj_dirs now also build PTX and pass a one-launch
-zero-initialized GPU kernel smoke for all six testbenches. That proves the
-current LLVM pass/runtime path can emit and launch gateGPT kernels. The report
-also consumes a generated `tb_mathops` field-offset manifest in a full DUT-output
-sequence compare, but it does not execute the gateGPT testbench authority on GPU:
-initial blocks, `$readmemh` setup, `$display` PASS/FAIL checks, and `$finish` are
-still missing as GPU execution authority. This is testbench-candidate, GPU
-kernel-launch-smoke, and limited `tb_mathops` DUT-output equivalence evidence,
-not full gateGPT PASS/FAIL equivalence, speedup, usefulness, or arbitrary RTL
-support evidence.
-The first semantic-equivalence candidate is `tb_mathops`. Static inspection of
-the normalized generated output shows the CPU PASS authority is `errors == 0`,
-but the generated C++ uses coroutine/timing scheduler code with `VL_WRITEF_NX`
-PASS/FAIL output and `VL_FINISH_MT`. The current LLVM pass path emits PTX and
-keeps candidate root fields (`errors`, `d_quo`, `s_root`) in the root state.
-The report now gives offsets/sizes for the required `tb_mathops` drive and
-observe fields (`clk`, `resetn`, `d_start`, `d_num`, `d_den`, `d_done`, `d_quo`,
-`s_start`, `s_rad`, `s_done`, `s_root`, `errors`) and consumes that manifest in a
-full six-divider plus seven-sqrt `tb_mathops` clocked patch sequence. All 13
-cases reach `done` and match the CPU reference values. For this selected
-testcase only, the accepted PASS policy is the manifest-consuming DUT-output
-compare plus final `errors == 0`; stdout PASS/FAIL export and `$finish` export
-are explicitly not claimed. The probe now also extracts a CPU Verilator
-stdout/finish authority manifest for all six normalized benches: all six have a
-PASS line plus `$finish`, `tb_core` has four structured stdout lines before its
-PASS line, and the data-backed benches require readmem init-state contracts.
-`tb_exp`, `tb_matvec`, `tb_norm`, and `tb_attn` now have those contracts. The
-generated GPU-output mapping plan is
-`covered_by_bench_specific_gpu_output_manifests_without_stdout_finish_export`: `tb_mathops` is covered by
-the selected DUT-output policy without stdout/finish export, `tb_exp` is covered
-by a bench-specific vector-sequence DUT-output compare, and
-`tb_matvec`/`tb_norm`/`tb_attn` are covered by bench-specific vmem output
-sequence compares. `tb_core` is covered by a bench-specific structured
-root-state sequence compare for token and cycle lines. Remaining work is general
-stdout/finish export or measuring whether state-batched gateGPT scenarios are
-useful.
-The first batching probe is intentionally narrower than that target:
-`tb_exp_replicated_state_batching_probe` runs the same 103-case `tb_exp` vector
-scenario across `nstates=1,32,256`. It passes and shows per-state GPU kernel time
-of `16.966656 ms`, `0.56204803125 ms`, and `0.084064 ms` respectively, with
-`201.83022459078796x` per-state kernel improvement at `nstates=256` versus
-`nstates=1`. This only proves replicated same-scenario launch amortization. It
-does not claim mixed-scenario batching, semantic equivalence, speedup, or
-usefulness. The distinct-state follow-up now has a minimal runtime ABI:
-`@state:local_offset:byte` patch tokens are expanded into state-strided global
-offsets. The first `tb_exp` distinct-state probe passes with 103 different `z`
-inputs across 103 GPU states in one 2-step clock sequence: 103/103 outputs
-match, `semantic_equivalence_claimed=true`, `mixed_scenario_claimed=true`,
-nonresident `gpu_kernel_total_ms=3.639296`, and nonresident
-`wall_time_ms=13.266`. The resident variant now runs the same state-indexed
-patch script with `--resident-steps`, uploads `412` patch records once as a
-device-resident schedule and matches 103/103 outputs. The resident repeat-median
-gate now passes 7/7 samples with `gpu_kernel_total_ms_median=0.887808` and
-`wall_time_ms_median=0.93`. A matching CPU Verilator process-wall baseline now
-passes 7/7 samples with `median=28.96515399334021 ms`; the resident
-repeat-median observed GPU wall ratio is `31.145326874559363x`. Speedup/usefulness
-remain unclaimed because this is still a narrow two-step `tb_exp` gate, not broad
-gateGPT stdout/finish authority or a tb_core-like resident workload.
-The broader resident coverage gate has now reached a full `tb_core` persistent
-resident feedback correctness smoke. The resident multi-step token-transaction
-probe preserves the 14 token transactions and 47,656 logical steps, reducing the
-measured structured sequence from `gpu_kernel_total_ms=4367.203339`,
-`wall_time_ms=4373.235` to resident `gpu_kernel_total_ms=816.12083`,
-`wall_time_ms=816.915`. The newer full feedback smoke runs the greedy and
-sampled token sequence without host state-dump handoff and records
-`resident_multitoken_claimed=true` for that reviewed token/cycle contract only.
-The remaining gap is now measurement/optimization plus broader stdout/PASS/finish
-authority, not full token/cycle correctness. That gap is machine-readable as
-`tb_core_persistent_resident_multitoken_abi_gap`, with required feedback actions
-`next_token -> token_in`, four `rng_out -> rng_in` byte lanes, and `pos_in += 1`.
-The LLVM path now emits and annotates `vl_apply_feedback_edges_gpu`,
-`vl_apply_feedback_increments_gpu`, `vl_apply_feedback_sets_gpu`, and
-`vl_apply_feedback_combined_gpu`; the runtime
-smoke-tests feedback table upload/launch with `5` copy edges, `1` increment,
-`8` phase-set records, one combined edge+increment launch, zero separate
-edge/increment launches, and two phase-set launches
-(`gpu_kernel_total_ms=0.982016`, `wall_time_ms=1.020`). The smoke now includes
-`@0:phase:offset:value` state-indexed phase-set records, so the one-state
-runtime path covers parser, C upload, and GPU set-kernel ABI. Phase-set writes
-remain separate to preserve per-phase ordering. The full resident
-feedback smoke observes `[1, 12, 1, 25, 1, 0, 18, 15, 19, 16, 8, 15, 4, 0]`,
-uses `13` combined feedback launches plus `14` phase-set launches over `68`
-phase-set records, and now has a 7/7 repeat median:
-`gpu_kernel_total_ms_median=767.118103`, `wall_time_ms_median=767.173`.
-Observed GPU-vs-GPU ratios are `5.700454786599632x` wall versus nonresident
-structured GPU and `1.064838048262908x` wall versus resident multi-step. A new
-CPU Verilator process-wall baseline for full `tb_core` passes 7/7 with median
-`22.265211009653285 ms`; the full feedback GPU wall ratio versus CPU is
-`0.029022412167338116x`, a negative result for the current single-scenario
-shape. The slowdown breakdown records `47,642` logical GPU launches and `95,311`
-actual timed launches; the `27` feedback helper launches are only
-`0.000283283146751162` of actual launches. The pair-cycle-loop follow-up keeps
-correctness, launches `14` loop kernels for `23,814` low/high cycles, and reduces
-actual timed launches to `69`; its 7/7 repeat median is
-`432.562866 ms` kernel / `432.609 ms` wall, but remains
-`19.429818105583568x` slower than CPU. The
-replicated-state follow-up over `nstates=1,8,32` now preserves pair-cycle-loop
-eligibility by replicating the state0 resident patch schedule across state
-strides: all three runs keep actual timed launches at `69`, and `nstates=32`
-reaches `18.3382225 ms/state` kernel time, a `23.557655274386597x`
-per-state improvement versus `nstates=1`. The probe now checks every replicated
-state phase dump, with `8/8` states passing for `nstates=8` and `32/32` states
-passing for `nstates=32`, both with zero token/cycle mismatches. This is still
-same-scenario replicated correctness, not mixed-scenario batching, speedup, or
-usefulness. A distinct-state `tb_core` full-sequence phase-set probe now passes
-two scenarios in one GPU batch: state0 greedy observes `[1, 12, 1, 25, 1, 0]`,
-and state1 sampled seed `2` observes `[18, 15, 19, 16, 8, 15, 4, 0]`, with 2/2
-states passing and zero mismatches. It uses `8` state-indexed phase-set
-launches, `7` combined feedback launches, `76` phase-set records, `27,224`
-logical launches, and `54,463` actual launches
-(`gpu_kernel_total_ms=471.468170`, `wall_time_ms=471.533`) without loop
-collapse. The state-indexed pair-cycle-loop path now has a 7/7 repeat median:
-`286.213837 ms` kernel / `286.254 ms` wall, with `47.0` actual launches,
-`27,224.0` logical launches, `8.0` loop kernels, `13,600.0` looped low/high
-cycles, and `8.0` phase-boundary fallbacks. Compared with the CPU Verilator
-process-wall median `23.23766698827967 ms`, the observed GPU wall ratio is only
-`0.08117848829459036x`, about `12.31853439264696x` slower than CPU. The
-many-independent seed matrix now has CPU token oracles for all `16` target
-states with zero validation mismatches: `greedy` and `sampled_seed2` keep
-reviewed golden provenance, and `sampled_seed3` through `sampled_seed16` are
-generated by the CPU Verilator oracle bench. The 16-state GPU batch now passes
-7/7 repeat-median samples with `trim_final_low=true`: 16/16 token streams match,
-median GPU time is `393.967987 ms` kernel / `393.999 ms` wall, with `35.0`
-actual launches over `30,618.0` logical launches. Compared with the CPU oracle
-executable wall `84.66219899128191 ms`, GPU wall speedup is only
-`0.2148792230215861x`, so GPU remains `4.653777065731213x` slower.
-Launch-structure analysis accounts for all `35` actual launches (`9` phase-set,
-`8` combined-feedback, `9` pair-cycle-fusion, and `9` pair-cycle-loop kernels),
-leaving `0` residual launches and `0.0` residual launches per fallback. This
-proves many-independent token-sequence batching for the seed matrix and removes
-the final-low residual launch gap, but cycle summary authority, stdout/PASS/$finish,
-speedup, and usefulness all remain unclaimed. A hold-start diagnostic drops
-actual launches to `26` by eliminating the `9` pair-cycle-fusion launches, but
-all `16` token streams mismatch, so holding `start` high is rejected. The
-padded-start diagnostic is the positive variant: it keeps one-cycle start
-semantics, passes `7/7` repeats with `16/16` token streams matched, and reduces
-the launch structure to `26` actual launches (`9` phase-set, `8`
-combined-feedback, `0` pair-cycle-fusion, `9` pair-cycle-loop kernels, and `0`
-loop fallbacks). Its median GPU time is `366.163605 ms` kernel /
-`366.21 ms` wall, a `1.0758826902596872x` wall improvement over the standard
-35-launch path, but still `4.325543210113294x` slower than the CPU oracle wall.
-The padded-start rule is now an importable helper in
-`src/tools/gategpt_schedule_planner.py`, including the runtime-facing env,
-required entrypoints, eligibility notes, and expected lower-launch shape. The
-generated plan artifact is
-`artifacts/gategpt_local_eval/gateGPT/obj_tb_core/tb_core_many_independent_padded_start_lowering_plan.json`.
-`run_vl_hybrid.py --schedule-lowering-plan` now validates and consumes that
-artifact as the runtime env source for the padded-start probe, and the planner
-now generates the schedule-lowered `run_vl_hybrid` argv. The generated
-`vl_batch_gpu.meta.json` now exposes
-`schedule_lowering_capabilities.padded_start_pair_cycle_loop` as `available`
-with no missing runtime entrypoints; this is a build-artifact capability
-boundary, not execution authority. The 7-repeat CPU comparison now claims only
-the lower-launch gate. The generated
-`tb_core_padded_start_cpu_negative_gap_decision` report is
-`mapping_structure_change_recommended`, so the next unsupported work is a
-materially different runtime/mapping structure rather than another narrow LLVM
-helper-kernel tweak. The generated
-`tb_core_runtime_mapping_structure_candidate_plan` is
-`ready_for_runtime_mapping_design` and ranks
-`ordering_aware_phase_resident_token_loop` first; GitHub #69 tracks that
-prototype. Its prototype contract now validates as planning evidence and targets
-`phase_set=0`, `combined_feedback=0`, `pair_cycle_loop=0`, and one
-`ordering_aware_token_loop` launch before any speedup/usefulness claim. Current
-build metadata now reports `vl_tb_core_ordering_aware_phase_resident_token_loop_gpu`
-as available, and the generated kernel body now consumes `current_phase`,
-phase-control records, feedback copy/increment records, and terminal-mask
-records around the
-pair-cycle loop. The latest ordering-aware run now consumes the #69 lowering
-plan through the schedule-owned token-loop path with `runtime_supported=true`.
-It passes the source CPU-token-oracle comparison for `16/16` states, uses `9`
-actual ordering-aware launches over `30,618` logical launches, and suppresses
-the separate helper launch classes: `feedback_phase_sets=0`,
-`feedback_combined=0`, `pair_cycle_loop_fusion=0`, and
-`resident_pair_cycle=0`. Runtime summary now reports `entrypoint_available=true`,
-`phase_control_records=672`, `feedback_copy_records=5`,
-`feedback_increment_records=1`, `pair_cycle_loop_records=1701`,
-`terminal_mask_records=16`, `terminal_mask_device_records=16`, and
-`terminal_mask_parse_errors=0`, with `launch_probe_count=9`,
-`device_table_launches=9`, blocking at
-`ordering_aware_token_loop_schedule_integrated_cpu_comparison_pending`. The
-ordering-aware lowering plan artifact now records the ABI-probe env and
-per-state terminal mask at
-`artifacts/gategpt_local_eval/gateGPT/obj_tb_core/tb_core_ordering_aware_token_loop_lowering_plan.json`.
-The wrapper now consumes this shape by default; the explicit
-`--allow-ordering-aware-token-loop-probe-plan` flag remains only as a debug
-compatibility path. The C runtime parses, validates, and uploads terminal masks as device-side
-`state:terminal_step` records. The runtime now canonicalizes terminal steps by
-state, and the generated kernel uses a direct state-indexed terminal-mask fast
-path with an order-tolerant fallback before gating active phases and final
-feedback. Latest ordering-aware probe status is
-`passed` with `source_probe_correctness_claimed=true` and
-`runtime_correctness_claimed=true`, but the CPU comparison is still negative:
-GPU wall is `363.628 ms` / GPU kernel is `363.59198 ms` versus CPU oracle wall `81.95496001280844 ms`, so the
-ordering-aware path with the normal eval select-mux transform is
-`4.436924866331091x` slower than CPU. The normal eval reachable closure now has
-`normal_eval_transform_present=true`, `normal_eval_rewritten_select_count=1344`,
-and `transform_rewritten_select_count=2688`, with
-`implementation_stage=normal_select_mux_cluster_transform_measured_cpu_negative`.
-The select-mux transform now runs before eval hot-path partitioning, and the
-post-select-mux partition stage is measured with
-`eval_hot_path_partition_after_select_mux_transform_present=true` and
-`eval_hot_path_partition_count=1580`.
-The guarded bitmap trial now uses a partition-indexed active bitmap
-(`mode=phase_state_partition_bitmap`, `active_bitmap_partition_count=13`,
-`active_bitmap_phase_count=10`, `active_bitmap_device_bytes=2080`) and still
-passes the same CPU token oracle, but records `354.541 ms` GPU wall /
-`354.494232 ms` GPU kernel and is still `4.326046891421703x` slower than CPU.
-The stale-runtime launch failure was fixed by rebuilding
-`artifacts/tool_bins/hybrid/run_vl_hybrid` when `src/hybrid` inputs are newer.
-`speedup_claimed=false` and `usefulness_claimed=false`. At that guarded-bitmap
-stage the next gate was
-`isolate_entry_dispatch_cfg_clone_memory_reads_before_wiring`,
-but cold partition skip safety reports `13` inspected continuations, `0`
-skip-safe candidates, and `13` rejected continuations
-(`successor_phi_depends_on_continuation_edge=11` and
-`terminator_not_unconditional_branch=2`), so simple LLVM guard insertion is
-insufficient.
-The first concrete refactor is
-`outline_partition_region_before_phi_join_or_split_successor_phi_edges`,
-followed by
-`outline_multi_successor_partition_region_or_normalize_continuation_terminator`;
-the LLVM pass now reports this first refactor as `8`
-`select_only_phi_edge_region` cases before `3`
-`effectful_memory_phi_edge_region` cases, with `2`
-`multi_successor_continuation` cases for the second refactor.
-The select-only outline preflight records `8` regions with `832` selects,
-`1344` successor-PHI edges, `832` local live-out values, and `512`
-external-or-constant incoming values; this remains a pre-guard implementation
-shape count, not skip authority or timing evidence.
-The pass now inserts `8` select-only PHI repair blocks, moving `832` selects and
-retargeting `1344` successor-PHI edges; this is CFG repair evidence only, not
-partition-aware skip authority.
-Post-repair static safety classification now records `8` inspected repaired
-select-only continuations, `8` candidates, and `0` rejected; this narrows the
-next guarded-skip prototype but still grants no skip authority.
-after those partition-local regions exist, apply the repaired select-only current
-partition-id context as the guarded-scan partition match instead of remeasuring
-the already measured select-mux-after-partition stage. The generated
-`tb_core_ordering_aware_cpu_negative_gap_decision` now records
-`status=ordering_aware_cpu_negative_gap_measured`: helper launches are already
-suppressed, launches fell by `17` versus padded-start (`0.6538461538461539`),
-but wall improved only `1.0604264497337874x` versus padded-start. The requested `decompose_ordering_aware_kernel_body_cost_and_state_scale` follow-up is now represented by stage timing, the state-scale sweep, and opt-in device-side diagnostic region counters: `before_final_sync=360.61 ms` dominates the measured wall path, so more helper-launch removal is not the next lever. The standard CPU comparison remains bound to the 16-scenario oracle; the 32-state sweep row uses a separately generated 32-scenario CPU oracle. The new 4/8/16/32-state ordering-aware sweep records
-`273.035736 ms`, `324.181793 ms`, `359.070801 ms`, and `402.972504 ms` kernel time respectively,
-or `68.258934`, `40.522724125`, `22.4732570625`, and `12.59289075 ms/state`. State scaling is
-helping by `5.420434065149021x` from 4 to 32 states, but the 16-state wall is
-still `4.30538043208457x` slower than CPU and the 32-state wall is still
-`2.710562354615603x` slower than its 32-scenario CPU oracle. Static IR
-classification of `vl_tb_core_ordering_aware_phase_resident_token_loop_gpu`
-now records `24` basic blocks and `137` LLVM instructions with the expected
-`terminal.mask`, `phase.set`, `cycle`, `low.patch`, `high.patch`, and `feedback`
-regions. Static region breakdown is recorded as a non-timing proxy, and the opt-in timing variant records diagnostic gid0 clock64 counters for the 16-state baseline: cycle_body `4884742382`, high_eval `3629021127`, low_eval `1216414868`, low_patch `21611907`, high_patch `14785139`, phase_set `881773`, terminal_mask `9294`, and feedback `18574`; the 32-state normal row remains CPU-negative at `403.039 ms` wall versus a `148.6920230090618 ms` 32-oracle CPU wall. The direct eval callee has `65` counted LLVM instructions; its largest direct call is `_Z40Vtb_core___024root___nba_sequent__TOP__0P18Vtb_core___024root` at `11593` counted instructions, `1777` basic blocks, `2670` loads, `556` stores, and `1758` branches. Its refined structural decomposition shows two largest LLVM basic blocks at `694` instructions each, a third at `339`, `select=2149`, `switch=17`, no `phase` keyword hits, and only `start=2`; the analyzer now marks this as `start_only_guard_evidence_present` with `weak_for_phase_guard_partition`. The eval direct-call finding classifies that NBA sequential body as `poor_for_narrow_peephole_pass` and recommends `structural_eval_partition_or_larger_state_scale`; the concrete next experiment is now `measure_memory_vs_select_cluster_partition`; static clusters are `load_store_heavy=3182` instructions and `select_mux_heavy=1352` instructions, with partition gate `ready_for_static_partition_probe`, `memory_select_instruction_count=4534`, and `memory_select_fraction_of_function=0.39109807642542915`, with lane priority `memory_heavy_root_state_lane` -> `select_mux_lane` -> `branch_control_lane`; the memory lane contract targets `isolate_or_instrument_load_store_heavy_basic_blocks` with candidates `measure_memory_cluster_clock64_region`, `prototype_hot_root_state_field_grouping`, and `prototype_memory_cluster_outline_or_split`, so it should not be treated as a small LLVM peephole target. The runtime partition measurement contract has advanced to `runtime_cluster_counters_present`: `memory_cluster`, `select_mux_cluster`, optional `branch_control_cluster`, active-path BB discovery, and select-mux scoped hook counters are emitted through the 16-slot region timing ABI. The companion cluster counters still use `all_threads_atomic_clock64_sum`, while the select-mux scoped hook now uses `representative_thread_non_atomic_clock64_sum`. The current 16-state token-loop run observes `memory_cluster=481050879`, `select_mux_cluster=1405771525`, `branch_control_cluster=0`, `active_eval_basic_blocks=79885598`, `active_memory_candidate_blocks=600894`, `active_select_candidate_blocks=387828`, `select_mux_scoped_cycles=73818337`, and `select_mux_scoped_blocks=20412`; the scoped values are intentionally representative-thread values and no longer match the all-thread select-mux cluster sum. Select-mux is `2.922292810112504x` memory-cluster cycles, and memory+select accounts for `0.4054252889390992` of cycle-body cycles. The prior ABI, zero-signal, scoped-atomic, lowering-candidate-metadata, and normal-vs-diagnostic-kernel-isolation blockers are gone. A clone-only identity select rewrite is applied inside select-mux-heavy region-timing eval clones (`transform_present=true`, `transform_rewritten_select_count=1`), and the normal eval reachable closure now has eval hot-path partition markers (`eval_hot_path_partition_present=true`, `eval_hot_path_partition_count=1580`) plus active-block gate markers (`eval_hot_path_active_block_gate_present=true`, `eval_hot_path_active_block_gate_count=53`). The eval hot-path partition prototype marks 1580 split continuation blocks, active-block gate markers are present (`eval_hot_path_active_block_gate_present=true`, `eval_hot_path_active_block_gate_count=53`), cold partition skip safety classification is now present (`eval_hot_path_cold_partition_skip_present=true`, `eval_hot_path_cold_partition_skip_candidate_count=0`, `eval_hot_path_cold_partition_skip_rejected_count=13`), and the dynamic predicate contract is valid. The phase/state/partition predicate table is authoritative via `RUN_VL_HYBRID_EVAL_PARTITION_PREDICATES` and `eval_partition_predicates:` stdout with `active_mask_authority=true`, and direct eval callee/call-site predicate-pointer markers are present via `vlgpu.direct_eval_predicate_pointer_abi` / `vlgpu.eval_predicate_pointer`. This remains lowering-hook/ABI plumbing evidence, not speedup timing, usefulness evidence, or safe skip authority. The current guarded skip has a partition-indexed active bitmap, so `active_bitmap_index_omits_partition_id` is no longer a blocker; the broad partition-aware skip gap is that the kernel guard skips whole eval calls rather than partition continuations; the active compact-cluster implementation gap is runtime outline wiring after the single-entry CFG clone probe. Direct terminal-mask lookup and patch-record invariant division/base hoisting are now implemented with fallback/hoisted IR evidence; remaining LLVM/lowering candidates are phase/state partitioning for phase-control records. Structural candidates are eval-callee hot-path analysis,
-expanding beyond 32 independent states, or a multi-phase resident sequence kernel.
-The authoritative dynamic-mask design contract still validates as `ready_for_authoritative_dynamic_mask_design`; stable partition IDs, authoritative active-mask records, and direct eval predicate-pointer markers are present. The no-skip predicate-read validation still passes on the diagnostic artifact and the CPU token oracle remains matched for 16/16 states there. Post-capture compare validates reached CFG-clone liveout capture points: outline_call_count=3434752, liveout_frame_store_count=82434048, compare_count=150480, mismatch_count=0, actual_store_slots_per_outline_call=24, and compare_slots_per_outline_call=0.043811023328612954. The baseline-isolation entrypoint builds a separate `obj_tb_core_nondiagnostic` artifact with `build_vl_gpu.py --disable-cfg-clone-diagnostics`, and `RUN_VL_HYBRID_DISABLE_CFG_CLONE_DIAGNOSTIC_ABI=1` suppresses the matching runtime allocations/arguments. Same-CPU-oracle baseline timing is measured and still CPU-negative: non-diagnostic GPU wall `404.986 ms` / kernel `404.90036 ms` versus CPU oracle `107.71662899060175 ms` (`3.759735184762744x` slower). The LLVM Pass emits a partition-local eval continuation guard static shape: target/guarded/successor-PHI-defined regions `8/8/8`, successor PHI incoming `1344`, blocked runtime-noop selects `832`, authority `static_control_flow_guard_shape_no_runtime_skip_or_noop_authority`. Successor-PHI continuation user classification is complete for `168` successor PHIs / direct users / direct load users / load-consumed PHIs, with `0` direct non-load users, `168` load-result direct users, `0` unsupported load-result users, and `1` candidate cluster under `classification_only_no_runtime_skip_or_select_elision_authority`. Existing pass evidence has also reached compact cluster outline frame-call ABI stub materialization: `1` outline callee, `63` outline call sites, `175` explicit live-ins, `48` explicit live-outs, `242` lowered live-in frame stores, `48` lowered live-out frame stores, and `0` unsupported live-in/live-out frame values, with `outline_frame_call_abi_stub_materialized_no_semantic_outline_authority`. The analyzer records `partition_local_eval_continuation_guard_cpu_oracle_validation.status=blocked_partition_local_eval_continuation_guard_runtime_execution_summary_missing`, with `runtime_noop_or_skip_authority=false` and `semantic_guard_authority_claimed=false`; existing CPU-token and CFG-clone liveout oracle checks do not prove this guard path. Guarded/liveout oracle validation still uses the normal diagnostic artifact and remains diagnostic/negative: GPU wall `19232.031 ms` / kernel `19231.960938 ms` versus the same CPU oracle (`178.5428227769548x` slower). No broad partition-aware skip, speedup, or usefulness is claimed. The next required evidence is `clone_compact_cluster_body_into_outline_callee_and_rewire_control_flow`.
+Stage118 slice-freshness and split-surface mitigation: `gategpt_entry_sliced_cubin_chain.py` now writes a `*.cubin.slice.json` manifest after a successful `ptxas` run and only reuses an existing CUBIN when the current slice content hash, CUBIN path, GPU target, and ptxas options match that manifest. The entry-sliced specs now keep `vl_eval_batch_gpu` and `vl_patch_eval_pair_cycle_loop_batch_gpu` out of the helper support/feedback CUBINs because those symbols are already available from the token-loop slice. `reports/gategpt_tb_core_entry_sliced_cubin_chain_stage118_default_split_ptxas1_probe.json` shows the helper slices shrink to `418` and `483` lines and both pass `ptxas` within a 1s bound; the remaining blocker is the token-loop slice at `766310` lines, which still times out. This narrows the ptxas blocker from three huge slices to one huge token-loop slice; it does not identify the final adjacent-window write source.
+
+Stage118 token-loop stub-surface diagnosis: `rtlmeter_vortex_ptx_entry_slice.py --stub-func` can now replace selected reachable `.func` bodies with ret-only diagnostic stubs for ptxas-surface experiments only. `reports/gategpt_tb_core_stage118_token_loop_stub_slice_probe.json` stubs `_Z40Vtb_core___024root___nba_sequent__TOP__0P18Vtb_core___024root` and `__vlgpu_compact_cluster_outline_frame_stub`, reducing the token-loop slice from `766310` to `5066` lines; `ptxas` then produces `artifacts/gategpt_tb_core_ptx_entry_slice_stage118_stub_probe/vl_tb_core_ordering_aware_phase_resident_token_loop_gpu.cubin`. This confirms the remaining ptxas blocker is the reachable high-eval callee/compact-outline body surface, not the token-loop entry body itself. The stub CUBIN is not runtime evidence and must not be used to classify Stage118 instruction range `1281`.
+
+Stage112 source-summary guardrail: `src/tools/gategpt_stage112_store_source_summary.py` joins Stage112 runtime events with the LLVM metadata map without promoting static rows to runtime authority. `reports/gategpt_tb_core_stage112_store_source_static_candidate_summary.json` records static source candidates `1415` and `1533` as `_Z40Vtb_core___024root___nba_sequent__TOP__0` `expected_liveout` zero-clear stores, but the paired runtime report is `clean_no_nested_body_store` with `source_id=0`, so `runtime_authority=false`. These rows are useful suspects for static review, not final adjacent-window write-source authority.
+
+Stage118 opt-in guard surface probe: the earlier `1281,count=64` 120s ptxas-only blocker is now superseded. The same opt-in guard with a 300s `ptxas` bound reaches runtime for `1281..1344` and `1345..1408`; both raw Stage118 events are `clean_no_instruction_boundary`, but their report-level classifier fields remain stale pre-fix Stage112-incomplete results. Classifier-fixed runtime reports now cover `1409..2021` clean, and the later `2049..2112` request is exhausted by metadata.
+
+Stage118/119/120/121/122/123 runtime update: prior Stage118 reports classify `1..2021` clean/raw-clean and `2049..2112` is metadata-exhausted. Extended Stage119 finds the dirty skipped span at `source_id=2`, mapped to `compact.cfg_clone.entry_phi.producer_selector.counters3969`. Stage120 ranges `1..1536 / 1536` inside that span are clean; the aggregate span-edge probe is dirty. Stage121 demonstrates that the producer-selector frontier is a diagnostic perturbation series: known atomic perturbations are suppressible, source622 marker-read suppression makes the targeted boundary clean, and source625 global suppression records no new dirty source after the diagnostic targets are neutralized before Stage120 observation. Stage122 observes the first non-diagnostic lifecycle edge after that suppressed span; it is dirty as `after_only_polluted`, but its target classification is `write_source_kind=none` and `write_source_found=false`. Stage123 source940 is not reproducible as a single-source event, source1324 is reproducible as an adjacent counter candidate, and source1325..1536 is clean for further concrete write-window candidates. Suppressing source1324 removes that adjacent event but does not fix the CPU oracle or record318 pollution, so the next useful work is a Stage124-style transition/non-concrete write-source diagnostic rather than more producer-selector counter suppression.
+
+gateGPT切り出し条件: gateGPTを深掘りする場合は、全体`tb_core`高速化ではなく、計算ブロック型RTLのGPU適用境界を測る。採用条件は、(1)入出力契約が小さく固定できる、(2)状態間独立またはbatch化できる、(3)算術密度が高い、(4)host/device往復がbatchあたり1回以下、(5)CPU oracleとbit/word単位で比較できる、(6)CIRCT/HLSまたはVerilator loweringのどちら由来かを分けて記録できること。除外条件は、逐次token loop、PHI/liveout/valid authorityが主役、stdout/PASS/finish依存、巨大root-state差分、または1シナリオだけの細粒度制御であること。最初の候補は`exp_unit`、matvec/norm/attention系の固定幅サブブロック、比較対象はRTLMeterで得た制御・CPU型RTL境界とする。
+
+現在の実験ゴール: FC-070 / #71 は `microgpt_inference_slice,inference2_hls_friendly,1024x1` の metadata-gated runtime boundary と gateGPT `exp_unit` 比較レーンまで closure-ready。FC-072 / #72 は scoped complete として、`src/hybrid/scientific_circt_source_variant_verilator_bridge.cpp` の candidate/source_variant/shape/layout/symbol gate を metadata surface 由来の generated header に切り出した。CPUは token loop/sampler/full KV-cache と未知・非対応形状を持ち、GPUは測定済み batched arithmetic だけを持つ。これは full microGPT、whole `tb_core`、自動partitioning、任意RTL bridge generation、multi-row source emitter、またはJSONだけのruntime ABI authorityを主張しない。
+
+FC-070 / #71 progress: `scientific_circt_source_variant_runtime_dispatcher.py` accepts requested `--shape` and `--steps` gates, passes the selected metadata row into `build_runtime_handoff_report`, and the `src-hybrid-verilator` handoff validates candidate/source_variant/shape/entrypoint/runtime-boundary/layout/symbols before compile/run. The C++ bridge also checks compact metadata argv and returns `failed_metadata_gate` before `dlopen` on mismatch. The metadata-gated execute path now measures `inference2_hls_friendly,1024x1`: `reports/scientific_circt_source_variant_verilator_entrypoint.json` records `src_hybrid_verilator_runtime_handoff_measured`, mismatch `0`, output/checksum equality, and `cpu_to_bridge_hybrid_wall_speedup=6.2165001599863245x`; the dispatcher report records `runtime_dispatch_measured` with nested `src_hybrid_verilator_runtime_handoff_measured`, mismatch `0`, output/checksum equality, and `cpu_to_bridge_hybrid_wall_speedup=15.461002763357895x`. The gateGPT `exp_unit` comparison lane is refreshed in `reports/gategpt_testbench_probe.json`: `tb_exp` vector, distinct-state, and resident patch paths all pass `103/103` with mismatch `0`; resident repeat median is `1.422 ms` wall / `1.348608 ms` kernel versus CPU process-wall median `14.788301952648908 ms`. This remains narrow `tb_exp` comparison evidence with `speedup_claimed=false` and `usefulness_claimed=false`, not broad gateGPT or arbitrary RTL usefulness. The next implementation issue is FC-072 / #72: generate or otherwise reuse source-variant bridge code from metadata while preserving the same fail-closed gates.
+
+FC-072 / #72 progress: the scoped src-hybrid bridge gate is now derived from the source-variant metadata helper and materialized as `artifacts/scientific_circt/source_variant_verilator_entrypoint/scientific_circt_source_variant_bridge_gate.h` before compiling the Verilator-callsite bridge. `src/hybrid/scientific_circt_source_variant_verilator_bridge.cpp` consumes generated `SCI_CIRCT_BRIDGE_EXPECTED_*` macros and still returns `failed_metadata_gate` before `dlopen` if argv metadata does not match. The refreshed handoff report records `src_hybrid_verilator_runtime_handoff_measured`, mismatch `0`, output/checksum equality, generated header source `source_variant_metadata_row`, and `cpu_to_bridge_hybrid_wall_speedup=16.76826214888755x`; the dispatcher report records `runtime_dispatch_measured` with nested generated-header handoff and `cpu_to_bridge_hybrid_wall_speedup=15.600012129935479x`. This is still scoped to `inference2_hls_friendly,1024x1`, not arbitrary RTL bridge generation.
+
+FC-072 / #72 closure audit: scoped acceptance is met. A broader reusable bridge source emitter for multiple metadata rows remains a possible follow-up only if the project explicitly needs that wider surface.
+
+FC-074 / #74 completion: the broader emitter now exists and is measured. `src/tools/scientific_circt_bridge_spec.py` derives a fail-closed `BridgeSpec` from one metadata row (port names, exact GPU symbol stems, and the per-variant input-fill and inner_repeat-mix formulas all come from the HLS generator modules' public constants, never from JSON alone), and the generated header drives the single reviewed bridge `src/hybrid/scientific_circt_source_variant_verilator_bridge.cpp`. All 3 promoted rows (`attention_head4_hls_friendly`, `mlp4_hls_friendly`, `inference2_hls_friendly`) pass `scientific_circt_source_variant_bridge_emit.py --run` with `mismatch_count=0` and output/checksum equality; `block2_hls_friendly` and unknown/unsupported rows fail closed before `dlopen`, and the metadata gate is mandatory on every source-variant handoff path with candidate/source_variant/shape/steps==1 bound across selected boundary, metadata row, and HLS summary. Gate record: `records/scaling_gates/scientific_circt_source_variant_bridge_spec_generated_bridge_gate.json`. Correctness acceptance only; no new timing or speedup claim.
+
+Current FC-069 evidence boundary: Stage109 proves record `318` changes after high-eval `callee_index=0`; Stage112/113/114/116 remain clean and Stage117/119/120 narrow the dirty area to compact CFG-clone producer-selector diagnostics. Source622/source624/source625 global-suppression evidence confirms a diagnostic counter/marker perturbation series, Stage122 shows pollution persists after that suppressed span without a concrete writer, and Stage123 source1324 is now excluded as adjacent CFG-clone liveout-counter traffic because its suppression removes the adjacent event but leaves record318 polluted and the CPU oracle failing. No final write-source or semantic authority claim exists.
+
 The first data-backed manifest is now available for `tb_exp`: `test_exp_z.hex`
 and `test_exp_e.hex` each contribute 103 signed 16-bit values, the init-state
 targets are `tb_exp__DOT__zs` and `tb_exp__DOT__es`, and the field-offset
@@ -831,7 +420,7 @@ reports are
 `reports/rtlmeter_veer_el2_cmark_iccm_pair_cycle_loop_no_trace_5000.json`.
 All three reach `mcycle=4999` with `minstret=4821`, `4842`, and `4918`, use
 `pair_cycle_loop_fusion.kernel_launches=5` for `5000` design-CPU cycles, and
-stay at `gpu_kernel_timed_launch_count=11` with fallback `0` and all-state
+stay at `gpu_kernel_timed_launch_count=21` with fallback `0` and all-state
 final-observable validation. This is stronger bounded progress and
 launch-count-collapse evidence for reviewed non-`hello` preloads, but it is not
 full RTLMeter correctness or speedup evidence because the programs do not
@@ -1258,7 +847,7 @@ Current source artifact:
 - `isolate_entry_dispatch_cfg_clone_memory_reads_before_wiring` で、
   #69 / FC-069 の schedule-owned token-loop launch は `16/16` source probe
   と CPU wall 比較まで到達済み。通常 eval の select-mux transform は
-  `normal_eval_rewritten_select_count=1344` / `transform_rewritten_select_count=2688`
+  `normal_eval_rewritten_select_count=2344` / `transform_rewritten_select_count=2688`
   まで測定済みだが、最新の通常 ordering-aware は GPU wall `408.384 ms` /
   GPU kernel `408.310425 ms` / CPU oracle `82.39628802402876 ms` で、
   CPU 比 `4.956339779298132x` slower。guarded bitmap trial は
@@ -1277,7 +866,7 @@ Current source artifact:
 	  target function 側の predicate context は global ABI で到達済み:
 	  `context_slot_count=7`, `concrete_abi_available=true`,
 	  `context_load_count=7`, `context_load_metadata_count=7`。control-flow guard lowering は
-	  `8/8` 済みで、liveout store/load rewrite も `48/48` rewired まで到達済み。最新 probe では compact CFG clone は `65` blocks / `944` cloned instructions / `65` terminators / `48` PHIs / `48` static liveout stores まで materialize し、unsupported terminator は `0` まで減った。post-capture compare 追加後は `outline_call_count=3434752`、`liveout_frame_store_count=82434048`、`compare_count=150480`、`mismatch_count=0` となり、reached capture points の single-entry CFG-clone liveout CPU-oracle validation は authority=true になった。最新 runtime impact では non-diagnostic baseline GPU wall `404.986 ms` / kernel `404.90036 ms`、guarded/liveout diagnostic GPU wall `19232.031 ms` / kernel `19231.960938 ms`、同一 CPU oracle `107.71662899060175 ms`。CFG-clone diagnostic ABI なしの baseline でも CPU 比はまだ `3.759735184762744x` slower。Pass は partition-local eval continuation guard の static shape を `8/8/8` regions / `1344` successor-PHI incoming まで emit した。runtime-noop derivation は `832` inspected selects すべてが successor PHI live-out で blocked、`0` elision-safe、authority は `no_runtime_noop_derivation_authority`。successor-PHI continuation user classification は `168` successor PHIs / direct users / direct load users / load-consumed PHIs、`0` direct non-load users、`168` load-result direct users、`0` unsupported load-result users、`1` candidate cluster まで完了したが、authority は `classification_only_no_runtime_skip_or_select_elision_authority` だけ。outline frame-call ABI stub は `1` outline callee / `63` call sites / `175` live-ins / `48` live-outs まで materialize 済みだが、authority は `outline_frame_call_abi_stub_materialized_no_semantic_outline_authority` のまま。runtime summary と inactive-path noop/skip authority が無いので CPU-oracle validation は未成立。次は `clone_compact_cluster_body_into_outline_callee_and_rewire_control_flow`。
+	  `8/8` 済みで、liveout store/load rewrite も `48/48` rewired まで到達済み。最新 probe では compact CFG clone は `65` blocks / `944` cloned instructions / `65` terminators / `48` PHIs / `48` static liveout stores まで materialize し、unsupported operand/terminator/liveout は `0` まで減った。post-capture compare 追加後は `outline_call_count=3434752`、`liveout_frame_store_count=82434048`、`compare_count=250480`、`mismatch_count=0` となり、reached capture points の single-entry CFG-clone liveout CPU-oracle validation は authority=true になった。最新 runtime impact では non-diagnostic baseline GPU wall `404.986 ms` / kernel `404.90036 ms`、guarded/liveout diagnostic GPU wall `18776.885 ms` / kernel `18796.03125 ms`、同一 CPU oracle `107.71662899060175 ms`。CFG-clone diagnostic ABI なしの baseline でも CPU 比はまだ `3.759735184762744x` slower。Pass は partition-local eval continuation guard の static shape を `8/8/8` regions / `1344` successor-PHI incoming まで emit した。runtime-noop derivation は `832` inspected selects すべてが successor PHI live-out で blocked、`0` elision-safe、authority は `no_runtime_noop_derivation_authority`。successor-PHI continuation user classification は `168` successor PHIs / direct users / direct load users / load-consumed PHIs、`0` direct non-load users、`168` load-result direct users、`0` unsupported load-result users、`1` candidate cluster まで完了したが、authority は `classification_only_no_runtime_skip_or_select_elision_authority` だけ。compact cluster body clone は materialize 済みで、successor-PHI liveout mapping summary も `48/48` mapped、frame-mapping-needed/edge-split-needed/unsupported は `0/0/0` まで分類済みだが、authority は `semantic_cfg_clone_entry_dispatch_wired_no_runtime_noop_authority` だが runtime noop/skip authority はまだ無い。device-observed runtime summary はあるが、832/832 blocked selects が successor PHI live-out に流れ、0 elision-safe のため inactive-path noop/skip authority が無く、CPU-oracle validation は未成立。checked-slot diagnostic は実行でき、`checked_slots=0..23` の `24/48` だけ materialized、各 slot count は `6270`、`mismatch_count=0`。slots `24..47` は未観測なので guarded skip state-equivalence proof complete には進めない。post-lowering component root を増やす root-dispatch-only 修正は試したが、shadow-payload load / select / PHI use の dominance が壊れて `Instruction does not dominate all uses` で `tb_core` IR 検証に失敗したため採用しない。component-local remap 実験は verifier を通したが、static liveout store が `24/48` に落ち、unsupported liveout `24`、unsupported operand `96`、unsupported PHI incoming `240`、runtime checked/actual-valid slots `none` まで後退したため採用しない。entry-frame seed / shadow cross-block undef 実験は verifier と `48/48` static liveout stores / unsupported `0` を保ったが、runtime は `checked_slots=0..23` / `actual_valid_slots=0..23` のままで、static inactive successor-PHI select mapping が `0/832` に後退したため採用しない。PHI-incoming-only edge liveout 実験も verifier/PTX は通したが runtime は同じ `24/48` のままで、static inactive successor-PHI select mapping が `0/832` に後退したため採用しない。external successor-exit edge だけに `storeCfgCloneLiveOut` を入れる実験も verifier/PTX は通したが runtime は同じ `24/48` のままで、static mapping も `0/832` に後退したため採用しない。runtime noop/skip reassessment は `successor_phi_liveout_inactive_value_semantics_unproven` で blocked だった。この古い continuation 次ゲートと後続の refreshed full-phase `stage=0`/`cycle=0` 可視性 gate は supersede 済み。Stage111 で record `318` の変化境界は `_Z40Vtb_core___024root___nba_sequent__TOP__0P18Vtb_core___024root` の nested call まで絞れ、Stage112 split ranges `1..13134` は全 `13,134` nested-body store candidates clean、Stage113 direct deeper-call boundaries も clean、Stage114 ranges `1..256` non-store memory effects も clean だったため、現在の FC-069 次ゲートは `inspect_stage114_remaining_diagnostic_origin_atomics_or_residual_cyclecond_phi_cuda700`。
   stale host-runtime ABI は `src/hybrid` 入力が新しい場合に runtime binary を rebuild することで解消した。
   この negative gap を、stage timing で支配的な
   `before_final_sync=360.61 ms` から kernel body cost と state scale に分解した。
@@ -2158,7 +1747,7 @@ destination load, source load, and before-store variants pass, but the store to
 `__VnbaTriggered` at `root+472408` faults in `eval_phase__act` context.
 Adjacent `__VactTriggered` store, root-base store, and the same
 `__VnbaTriggered` store from entry context pass; padded 2MiB state and
-`ptxas --maxrregcount=128` do not clear it. The follow-up probes refine this:
+`ptxas --maxrregcount=228` do not clear it. The follow-up probes refine this:
 an `eval_phase__act` store to `__VnbaTriggered` passes before triggers, after
 triggers when the root pointer is recomputed directly, and in a minimal
 `eval_phase__act` skeleton; the adjacent `root+472416` store after triggers
@@ -2368,21 +1957,384 @@ single global "GPU on/off" decision:
 | `Vortex:mini:hello` RTLMeter first gate | Measured negative | CPU reference and proxy stdout/cycles pass at `40897` cycles. Canonical real-CUDA materialized runtime reaches `after_cuCtxSynchronize`, exports `memory_post_condition` authority, and the timing report records hybrid median `0.4504947270033881s` versus CPU `0.22s` (`2.047703304560855x` slower). | Keep as a measured negative first gate; do not claim speedup. |
 | VeeR full-program RTLMeter (`EL2/EH1/EH2`) | Unfavorable or blocked | EL2 is correctness-measured but the best `hello` sidecar row has `sidecar_vs_cpu_parallel_ratio=3.460382` and serial CPU is faster. EH1 reaches entry-pruned module load but faults at first eval launch even after host-I/O residue cleanup and regenerated eval-only CUBIN. EH2 clears prelaunch and can pass module load with an entry-pruned CUBIN, but now faults with CUDA error 700 at the first step sync before stdout/cycles comparison. | Use CPU-parallel full-program control as the default. Keep GPU work for bounded probes, portability, and root-cause isolation rather than claiming speedup. |
 | gateGPT `tb_exp` data-backed vector sequence | Narrow GPU-favorable evidence | Resident 103-state probe passes 7/7 with `wall_time_ms_median=0.93`, CPU Verilator median `28.96515399334021 ms`, and observed GPU wall ratio `31.145326874559363x`. | Good GPU candidate when many independent vector states share one small regular datapath. Broaden before making a general gateGPT usefulness claim. |
+| CIRCT `dense_matmul_tile` scientific lane | Scoped GPU-favorable at batch scale | CIRCT-generated SystemVerilog passes Verilator CPU reference. CUDA timing for the same 2x2 tile with `inner_repeat=1000` records `64x1` end-to-end speedup `0.425926x` CPU-favorable, `256x1` `1.29699x` GPU-favorable, and `1024x1` `4.83185x` GPU-favorable. Kernel-only speedups are `2.51925x`, `7.76652x`, and `30.1806x`. | Useful when many independent scientific tiles/states amortize transfer and launch overhead; not evidence for full-design Verilator/RTLMeter speedup. |
+| CIRCT `batched_reduction` scientific lane | Scoped GPU-favorable at batch scale | CIRCT-generated SystemVerilog passes Verilator CPU reference. CUDA timing for the 8-input reduction with `inner_repeat=1000` records `64x1` end-to-end speedup `0.178523x` CPU-favorable, `256x1` `1.22712x` GPU-favorable, and `1024x1` `3.5003x` GPU-favorable. Kernel-only speedups are `4.24892x`, `7.92091x`, and `28.0256x`. | Confirms the current useful region is many independent low-observable scientific states; 64-state batches are still too small end-to-end. |
+| CIRCT `stencil_2d_tile` scientific lane | Scoped GPU-favorable only at larger batch scale | CIRCT-generated SystemVerilog passes Verilator CPU reference. CUDA timing for the 5-point tile with `inner_repeat=1000` records `64x1` end-to-end speedup `0.127491x` CPU-favorable, `256x1` `0.777396x` CPU-favorable, and `1024x1` `1.78392x` GPU-favorable. Kernel-only speedups are `2.27716x`, `7.28139x`, and `29.1859x`. | Neighbor-style/lightweight kernels need a larger batch to amortize transfer and launch overhead; this argues for candidate-specific thresholds, not one global `256x1` rule. |
+| CIRCT `softmax_exp_pipeline` scientific lane | Scoped GPU-favorable at batch scale | CIRCT-generated SystemVerilog passes Verilator CPU reference. CUDA timing for the exp/softmax-style polynomial pipeline with `inner_repeat=1000` records `64x1` end-to-end speedup `0.601074x` CPU-favorable, `256x1` `1.86415x` GPU-favorable, and `1024x1` `5.75945x` GPU-favorable. Kernel-only speedups are `2.60554x`, `6.37916x`, and `26.7024x`. | Supports treating microGPT-style matmul/reduction/softmax arithmetic as GPU candidates when batched; token/control state remains a separate CPU or new-mapping bucket. |
+| CIRCT `microgpt_math_block` scientific lane | Scoped GPU-favorable at batch scale | CIRCT-generated SystemVerilog passes Verilator CPU reference. CUDA timing for the composite dense-dot, softmax/exp-like, and reduction block with `inner_repeat=1000` records `64x1` end-to-end speedup `0.239753x` CPU-favorable, `256x1` `1.2195x` GPU-favorable, and `1024x1` `4.23625x` GPU-favorable. Kernel-only speedups are `2.01551x`, `7.56732x`, and `29.6779x`. | This is the first measured direct microGPT-style composite math block; still not full microGPT execution, but stronger than a partition-only claim. |
+| CIRCT `microgpt_attention_head` scientific lane | Scoped GPU-favorable at batch scale | CIRCT-generated SystemVerilog passes Verilator CPU reference. CUDA timing for the source-derived two-token attention-head slice with `inner_repeat=1000` records `64x1` end-to-end speedup `0.602488x` CPU-favorable, `256x1` `1.8243x` GPU-favorable, and `1024x1` `6.41385x` GPU-favorable. Kernel-only speedups are `2.57215x`, `5.84249x`, and `28.8371x`. | This is the first measured attention-head slice derived from actual `third_party/microgpt.py`; still not full block-size microGPT inference. |
+| CIRCT `attention_head4_hls_friendly` source variant | Scoped direct-callsite improvement | `reports/scientific_circt_hls_attention_head4.json` materializes four explicit independent attention heads, lowers FIRRTL to SystemVerilog, builds Verilator and a separate CUDA shared library, and compares the Verilator CPU output buffer against the GPU output buffer with zero mismatches. The scoped bridge-wall speedup is `13.301119215779238x` versus the direct-callsite baseline `6.126758590128443x`; GPU end-to-end speedup is `14.585880739265654x`. | HLS-style source/IR reshaping is a stronger lever than small late LLVM/Verilator tweaks for this measured arithmetic class. This is not full microGPT, automatic HLS rewrite, PCIe framing, or RTLMeter evidence. |
+| CIRCT `microgpt_mlp_slice` scientific lane | Scoped GPU-favorable only at larger batch scale | CIRCT-generated SystemVerilog passes Verilator CPU reference. CUDA timing for the reduced-width source-derived MLP slice with `inner_repeat=1000` records `64x1` end-to-end speedup `0.339622x` CPU-favorable, `256x1` `0.333924x` CPU-favorable, and `1024x1` `2.28894x` GPU-favorable. Kernel-only speedups are `1.36729x`, `5.59061x`, and `24.0632x`. | The `mlp_fc1 -> ReLU -> mlp_fc2` shape is GPU-useful when enough independent states are batched, but this light slice needs `1024x1`; still not full hidden-width microGPT MLP inference. |
+| CIRCT `mlp4_hls_friendly` source variant | Scoped direct-callsite improvement | `reports/scientific_circt_hls_mlp_block_variants.json` materializes four explicit independent MLP slices per state, lowers FIRRTL to SystemVerilog, builds a Verilator CPU callsite and CUDA shared library, and matches CPU/GPU output plus checksum with zero mismatches. Bridge-wall speedup improves from the baseline MLP slice `2.28894x` to `9.922827450510521x`; GPU end-to-end speedup is `11.464384891502785x`. | Positive evidence that explicit independent-unit reshaping helps light MLP arithmetic once it raises arithmetic density enough. Not full microGPT or automatic HLS rewriting. |
+| CIRCT `microgpt_block_slice` scientific lane | Scoped GPU-favorable at batch scale | CIRCT-generated SystemVerilog passes Verilator CPU reference. CUDA timing for the source-derived one-token/two-key block-level slice with `inner_repeat=1000` records `64x1` end-to-end speedup `0.52329x` CPU-favorable, `256x1` `1.70084x` GPU-favorable, and `1024x1` `5.75973x` GPU-favorable. Kernel-only speedups are `2.6523x`, `7.66483x`, and `32.0863x`. | This combines attention-style aggregation, residual-style addition, and MLP-style arithmetic from the microGPT block structure; still not full `block_size` microGPT inference. |
+| CIRCT `block2_hls_friendly` source variant | Scoped direct-callsite non-improvement | The two-independent-block variant lowers and matches CPU/GPU output plus checksum with zero mismatches, but bridge-wall speedup is `5.56609843788867x` versus the baseline block slice `5.75973x`. GPU end-to-end speedup is `7.076745304097536x`. | The block slice was already GPU-favorable; duplicating two independent blocks did not improve the direct-callsite bridge ratio. Do not promote this reshaping without more batch or arithmetic density. |
+| CIRCT `microgpt_inference_slice` scientific lane | Scoped GPU-favorable at batch scale | CIRCT-generated SystemVerilog passes Verilator CPU reference. CUDA timing for the source-derived two-token inference slice with `inner_repeat=1000` records `64x1` end-to-end speedup `0.249726x` CPU-favorable, `256x1` `1.24281x` GPU-favorable, and `1024x1` `3.62419x` GPU-favorable. Kernel-only speedups are `2.3037x`, `4.15142x`, and `14.944x`. | This adds token/position embedding-style arithmetic, KV-cache-style reuse, token1 attention over token0 and itself, residual/MLP-style arithmetic, and logit-style outputs; still not full `block_size` microGPT execution or training/autograd. |
+| CIRCT `inference2_hls_friendly` source variant | Scoped direct-callsite improvement | The two-independent-inference variant lowers and matches CPU/GPU output plus checksum with zero mismatches. Bridge-wall speedup improves from the baseline inference slice `3.62419x` to `9.799333107174757x`; GPU end-to-end speedup is `12.486420847688292x`. | Positive evidence that source/IR reshaping still helps a fuller two-token inference-style slice, not only isolated attention or MLP arithmetic. Still not full microGPT execution. |
 | gateGPT `tb_core` token sequence | GPU-correct but CPU-negative | Ordering-aware token-loop path validates `16/16` states with `9` launches over `30618` logical launches, but GPU wall is `363.628 ms` versus CPU oracle `81.95496001280844 ms` (`4.436924866331091x` slower). Guarded bitmap remains slower (`354.541 ms`, `4.326046891421703x` slower). | Do not treat more launch fusion as the main lever. Next useful work is structural partitioning or larger state-scale testing, not a small LLVM peephole pass. |
 | Generic Verilator/RTLMeter full design | Not proven useful | `reports/rtlmeter_hybrid_advantage_summary.json` counts `gpu_sidecar_favorable=0`, `gpu_sidecar_unfavorable=4`, `launch_feasibility_blocked=1`, and recommends CPU-parallel control with bounded GPU probes. | Hybrid selection should be compile-time candidate selection plus runtime shape/timing confirmation; unsupported cases fail closed. |
 
-Scientific-compute CIRCT candidate search is now represented as a plan-only
-side lane. `reports/scientific_circt_gpu_candidate_plan.json` records five
-candidate classes: dense matmul tile, 2D stencil tile, batched reduction,
-softmax/exp pipeline, and sparse branch-heavy solver control. The first useful
-candidate is `dense_matmul_tile` because it has regular memory, low observable
-pressure, high arithmetic intensity, and many independent state/tile shapes.
-The intended path is CIRCT input -> generated SystemVerilog -> Verilator build
--> lowered LLVM IR suitability -> repeat-median CPU/hybrid measurement. Current
-local toolchain state is `blocked_circt_toolchain_missing`: Verilator and
-`clang++` are on `PATH`, but no `circt-opt`, `circt-translate`, or `firtool` is
-available. This is plan evidence only, not CIRCT execution, generated RTL,
-Verilator success, GPU execution, timing, speedup, or usefulness evidence.
+Scientific-compute CIRCT candidate search has moved past the initial plan-only
+blocker for the first candidate. The repo-local CIRCT package can be enabled
+with `source artifacts/toolchains/circt-firtool-1.149.0/env.sh`, and
+`reports/scientific_circt_gpu_candidate_plan.json` now records CIRCT tools as
+available in that environment. `dense_matmul_tile` has a reproducible
+materializer at `src/tools/scientific_circt_dense_matmul_tile.py`; it emits
+FIRRTL, lowers it through `firtool` to SystemVerilog, builds with Verilator, and
+passes the CPU reference observable `TEST PASSED dense_matmul_tile_cpu_reference
+cases=4`. The generated artifacts remain under
+`artifacts/scientific_circt/dense_matmul_tile/` and are not source of truth.
+Lowered LLVM IR suitability has been run on the eval datapath entry; the
+entry-scoped report recommends `gpu_state_parallel`, while whole-generated-code
+analysis remains polluted by Verilator support code and is not used as a
+speedup claim. The first CUDA timing gate now measures the same 2x2 tile as a
+batched state-parallel workload. With `inner_repeat=1000`, `64x1` remains
+CPU-favorable end-to-end (`0.425926x`), while `256x1` (`1.29699x`) and `1024x1`
+(`4.83185x`) are GPU-favorable end-to-end. Kernel-only speedups are positive at
+all measured shapes. This is scoped evidence for the dense scientific tile
+only; it is not a general RTL, Verilator, RTLMeter, or automatic partitioning
+claim.
+`reports/scientific_circt_dense_matmul_tile_hybrid_advantage.json` now folds
+those three timing reports into a common scientific hybrid summary:
+`gpu_end_to_end_favorable=2`, `cpu_end_to_end_favorable=1`,
+`gpu_kernel_favorable=3`, and the first end-to-end GPU-favorable shape is
+`256x1`.
+`reports/scientific_circt_testbench_hybrid_advantage.json` now aggregates
+`dense_matmul_tile`, `batched_reduction`, `stencil_2d_tile`,
+`softmax_exp_pipeline`, `microgpt_math_block`, and
+`microgpt_attention_head`, `microgpt_mlp_slice`, `microgpt_block_slice`, and
+`microgpt_inference_slice`: twenty-seven measured reports, sixteen end-to-end
+GPU-favorable rows, eleven CPU-favorable rows, and twenty-seven kernel-favorable
+rows. Dense matmul, reduction, softmax/exp, the composite microGPT-style math
+block, the source-derived microGPT attention-head slice, and the block-level
+slice plus the two-token inference slice first become end-to-end GPU-favorable
+at `256x1`; stencil and the reduced-width microGPT MLP slice first become
+end-to-end GPU-favorable at `1024x1`.
+`reports/scientific_circt_gpu_selection_policy.json` converts this into a
+compile-time policy: measured candidates use GPU state-parallel execution only
+for `steps=1` and at or above their candidate-specific measured boundary; below
+that boundary, CPU remains the end-to-end default. The policy is currently ready
+for `dense_matmul_tile`, `batched_reduction`, `stencil_2d_tile`,
+`softmax_exp_pipeline`, `microgpt_math_block`, and
+`microgpt_attention_head`, `microgpt_mlp_slice`, `microgpt_block_slice`, and
+`microgpt_inference_slice`.
+The next scientific lane should move from these
+source-derived slices toward a fuller microGPT IR lowering: keep matmul,
+attention-head arithmetic, MLP arithmetic, block-level arithmetic, reductions,
+two-token inference arithmetic, and softmax-like arithmetic structurally visible for CIRCT/GPU selection, while keeping
+token/control state in CPU or a separately measured mapping.
+`reports/scientific_circt_microgpt_ir_partition_probe.json` now performs that
+projection without claiming microGPT execution. At `nstates=256,steps=1`, it
+classifies 8 of 10 microGPT-style nodes as GPU state-parallel candidates
+(`attention`, `mlp`, and `normalization`) and leaves token-loop control plus
+KV-cache state update in the CPU/new-mapping bucket. This records the current
+interpretation of the gateGPT question: gateGPT appears to be FPGA-oriented and
+is still valuable as a representative external RTL testbench, but direct
+microGPT IR/CIRCT is the cleaner next surface for preserving regular arithmetic
+before RTL/control lowering hides the GPU-friendly structure.
+`reports/scientific_circt_gategpt_microgpt_compare.json` makes the comparison
+explicit and now scans the actual `third_party/microgpt.py` source. The scan
+finds `linear`, `softmax`, `rmsnorm`, and `gpt`, plus attention, MLP, and
+autograd-training structure with `n_layer=1`, `n_embd=16`, `block_size=16`, and
+`n_head=4`; no local license file is present next to that source. Direct
+microGPT/CIRCT is preferred for GPU partition discovery because the regular
+arithmetic remains visible and `microgpt_math_block` plus
+`microgpt_attention_head` plus `microgpt_mlp_slice` plus
+`microgpt_block_slice` plus `microgpt_inference_slice` have generated
+SystemVerilog, Verilator CPU reference, and GPU-favorable end-to-end timing
+with candidate-specific thresholds. gateGPT remains preferred as the external
+RTL integration lane: it has
+six CPU Verilator testbenches and GPU kernel-launch smoke coverage, `tb_exp` is
+a narrow regular-datapath positive case (`31.145326874559363x` observed wall
+speedup), but `tb_core` remains a stateful token/control negative case
+(`0.08117848829459036x` wall speedup versus CPU in the distinct-state
+pair-cycle-loop comparison) and broad GPU stdout/PASS/finish authority is not
+claimed.
+`reports/scientific_circt_evidence_audit.json` now checks the scientific CIRCT
+lane end-to-end evidence and records `status=evidence_ready`,
+`candidate_count=9`, `ready_candidate_count=9`, and dispatch-matrix measured
+speedup evidence attached to all 27 candidate/shape rows.
+`reports/scientific_circt_hybrid_protocol.json` now converts the measured
+policy into a compile-time CPU/GPU handoff protocol. It records
+`status=protocol_ready`, `ready_candidate_count=9`,
+`source_variant_ready_count=3`, dispatch key
+`candidate,source_variant,nstates,steps`, `required_steps=1`, one GPU launch
+per candidate batch, and CPU fallback when a candidate or source variant is
+unmeasured or below its measured threshold. For the microGPT-style lane, CPU
+keeps token-loop control, sampler/observable authority, and full KV-cache state
+authority; GPU owns only the measured arithmetic batch. For
+`microgpt_inference_slice`, the baseline threshold handoff is `nstates=256`
+with logical payload estimate `1024` input bytes, `6144` output bytes, and
+`7168` roundtrip bytes. For `inference2_hls_friendly`, the promoted
+source-variant threshold is `1024x1` with `8192` input bytes, `49152` output
+bytes, and `57344` roundtrip bytes. These are logical payload bytes only;
+allocator/alignment/PCIe framing, runtime ABI authority, and automatic HLS
+rewriting remain non-claims. The same tool now emits single dispatch
+decisions: `microgpt_inference_slice,nstates=256,steps=1` selects
+`select_gpu_state_parallel`; `microgpt_inference_slice,inference2_hls_friendly,
+nstates=1024,steps=1` selects `promote_to_hls_gpu`; `block2_hls_friendly`
+selects `keep_baseline_gpu_or_cpu`; `64x1`, unknown candidates/variants, and
+step mismatches select CPU with fail-closed reasons.
+`reports/scientific_circt_hybrid_dispatch_matrix.json` expands the same
+protocol into the current measured shape matrix: 27 candidate/shape decisions,
+16 GPU selections, 11 CPU selections, and measured speedup evidence attached to
+all 27 rows. `64x1` is all CPU, `256x1` selects GPU for seven of nine
+candidates, and `1024x1` selects GPU for all nine. This remains compile-time
+dispatch evidence over measured timing reports only; it is not runtime ABI
+authority, PCIe framing evidence, RTLMeter evidence, full microGPT execution,
+or automatic partitioning.
+The matrix also ranks the 16 GPU-selected rows for runtime integration; the
+current top row is `microgpt_attention_head` at `1024x1` with measured
+end-to-end speedup `6.41385x`. The next required evidence is broader hybrid
+runtime entrypoint wiring plus amortized integration timing.
+The same matrix now expands HLS-friendly `source_variants` over the same shape
+points. It records 12 variant decisions: three `promote_to_hls_gpu` rows at
+`1024x1`, three `keep_baseline_gpu_or_cpu` rows for `block2_hls_friendly`, and
+six CPU fallbacks below the promoted variant threshold. The promoted runtime
+handoff candidate queue ranks `attention_head4_hls_friendly`
+(`13.301119215779238x`), `mlp4_hls_friendly` (`9.922827450510521x`), and
+`inference2_hls_friendly` (`9.799333107174757x`). The selected next runtime
+boundary is `inference2_hls_friendly`, because attention already has the scoped
+runtime evidence lane and inference is the fuller token/cache slice despite
+MLP being slightly faster.
+`reports/scientific_circt_source_variant_runtime_handoff.json` now re-runs that
+selected boundary as an executable runtime handoff measurement. It records
+`status=runtime_handoff_boundary_measured` for
+`inference2_hls_friendly,1024x1`, uses the generated direct-callsite binary and
+GPU shared library from the HLS variant report, and keeps token-loop,
+sampler/output, and KV-cache authority on CPU while GPU owns the
+HLS-friendly batched arithmetic source variant. CPU/GPU output equality and
+control-checksum equality hold. The observed per-integration-batch timing is:
+CPU `1.5594159200000002 ms`, GPU end-to-end `0.1436130933333333 ms`, GPU kernel
+`0.04580693379044533 ms`, bridge wall `0.16406808 ms`, CPU-to-bridge-wall
+speedup `9.504688053885925x`, GPU end-to-end speedup
+`10.858452274825085x`, and kernel speedup `34.0432286328947x`. Logical payload
+is `8192` input bytes and `49152` output bytes. This closes the selected
+source-variant runtime-boundary measurement but is still not full microGPT
+execution, PCIe framing evidence, RTLMeter evidence, automatic HLS rewriting,
+or a production runtime boundary. The next runtime step is to factor this
+source-variant boundary into the broader `src/hybrid` or direct Verilator
+callsite path rather than relying only on the generated direct binary.
+`reports/scientific_circt_source_variant_verilator_entrypoint.json` now closes
+that next step for the selected source variant. The checked-in bridge
+`src/hybrid/scientific_circt_source_variant_verilator_bridge.cpp` compiles
+against the generated `inference2_hls_friendly` Verilator `obj_dir`, loads
+`libinference2_hls_friendly_gpu.so`, compares Verilator CPU outputs with GPU
+outputs, and times the GPU-only handoff path. The report records
+`status=src_hybrid_verilator_runtime_handoff_measured`,
+`verilator_callsite_used=true`, CPU/GPU output equality, and control-checksum
+equality. Per integration batch, CPU is `1.51916184 ms`, GPU end-to-end is
+`0.13439465333333334 ms`, GPU kernel is `0.045233493745326994 ms`, bridge wall
+is `0.15218008 ms`, CPU-to-bridge-wall speedup is `9.982658965614949x`, GPU
+end-to-end speedup is `11.3037371824018x`, and kernel speedup is
+`33.58488841373086x`. This replaces the direct-binary-only boundary with a
+checked-in `src/hybrid` Verilator-callsite bridge for the selected
+`inference2_hls_friendly` slice. It is still scoped: no full microGPT
+execution, PCIe framing evidence, RTLMeter evidence, automatic HLS rewriting,
+or production runtime claim.
+`reports/scientific_circt_source_variant_runtime_dispatcher.json` now routes
+that same selected boundary through a reusable runtime dispatcher. The
+dispatcher reads the HLS dispatch matrix, preserves the selected
+candidate/source_variant/shape policy, rejects non-selected source variants,
+and invokes the registered `src_hybrid_verilator_callsite_bridge` for
+`inference2_hls_friendly,1024x1`. The report records
+`status=runtime_dispatch_measured`, nested
+`runtime_handoff_status=src_hybrid_verilator_runtime_handoff_measured`,
+`verilator_callsite_used=true`, CPU/GPU output equality, and control-checksum
+equality. Per integration batch, CPU is `1.5616191466666665 ms`, GPU end-to-end
+is `0.12166281333333333 ms`, GPU kernel is `0.045206187069416044 ms`, bridge
+wall is `0.14075793333333333 ms`, CPU-to-bridge-wall speedup is
+`11.09435972584612x`, GPU end-to-end speedup is `12.83563238331603x`, and
+kernel speedup is `34.54436766075257x`. This generalizes the first
+source-variant bridge into a policy-checked dispatch surface, but still makes
+no full microGPT execution, PCIe framing, RTLMeter, automatic HLS rewrite, or
+production runtime-dispatcher claim.
+`reports/scientific_circt_source_variant_runtime_dispatcher_soak_summary.json`
+now records the selected one-hour dispatcher soak over the same
+`inference2_hls_friendly,1024x1` boundary. It ran for `3600` seconds and
+produced `2574` per-iteration reports under
+`reports/one_hour_runtime_dispatcher/`. All `2574` reports passed
+`status=runtime_dispatch_measured`, nested
+`runtime_handoff_status=src_hybrid_verilator_runtime_handoff_measured`,
+CPU/GPU output equality, and control-checksum equality. CPU-to-bridge-wall
+speedup distribution was min `1.2956713528049701x`, p10
+`8.363504353854227x`, median `10.731542472816859x`, p90
+`11.829942667042333x`, max `12.793946412262754x`, and mean
+`10.28419894271687x`; bridge wall per integration batch had median
+`0.14407087333333335 ms`, p90 `0.18502854666666665 ms`, and max
+`1.2186646533333334 ms`. The soak has `75` reports below `5x` bridge speedup
+and `40` reports above `0.5 ms` bridge wall, so this is correctness/dispatch
+stability evidence, not a new reviewed production speedup claim.
+`reports/scientific_circt_source_variant_metadata.json` now records the
+metadata surface needed before broadening bridge generation. It is
+`source_variant_metadata_ready` with four complete rows for
+`attention_head4_hls_friendly`, `mlp4_hls_friendly`,
+`inference2_hls_friendly`, and `block2_hls_friendly`, including GPU symbols,
+input/output layout, artifact paths, Verilator `obj_dir`, entrypoint kind,
+runtime boundary kind, and fallback policy. The extracted input/output bytes
+per state are `80/128`, `16/64`, `8/48`, and `24/32`.
+`reports/scientific_circt_source_variant_runtime_dispatcher_multi.json` now
+extends dispatch across that metadata-described source-variant set. It records
+`status=multi_source_variant_dispatch_ready`: three promoted variants dispatch
+to measured GPU boundaries, and one non-improving variant falls back to
+CPU/baseline. `attention_head4_hls_friendly` uses the direct-callsite HLS
+source-variant boundary with output/checksum equality and CPU-to-bridge-wall
+speedup `11.31933596913315x`. `mlp4_hls_friendly` uses the same
+direct-callsite boundary class with equality and speedup
+`9.466548203869824x`. `inference2_hls_friendly` keeps the checked-in
+`src_hybrid_verilator_callsite_bridge` with equality and speedup
+`11.420283475548267x` in this run. `block2_hls_friendly` is not dispatched to
+a new GPU boundary; it is recorded as `runtime_dispatch_fallback_baseline`
+because its HLS-friendly speedup `5.56609843788867x` does not improve over the
+baseline `5.75973x`. This is now a metadata-driven four-row source-variant
+selection table with CPU/baseline fail-closed behavior, not broad full-design
+acceleration evidence.
+`reports/heavy_rtl_candidate_matrix.json` now records the PULP/NoC heavy RTL
+candidate matrix generated by `src/tools/heavy_rtl_candidate_matrix.py`. It has
+six rows: two PULP candidates and four NoC/TLUL-style candidates. The common
+schema records source closure, template presence, build/run/compare evidence,
+CPU/hybrid timing evidence, state-parallel shape, single-state repeated-step
+shape, and the promote/fallback/resident-required policy. The current policy
+counts are five `promote_state_parallel_measurement` and one
+`resident_or_shape_sweep_required`. `pulp_paged_attention_kv_score 64x1`,
+`tlul_socket_1n 32x1`, `tlul_socket_m1 32x1`, and BlackParrot
+`bsg_wormhole_router` at `32x1`, `64x1`, `128x1`, and `256x1` have repeat-count-3
+median reports in addition to the prior `pulp_ita_mha` row. All measured
+reports pass coverage-output equivalence in every sample with mismatch count
+`0`; median CPU-to-hybrid wall speedups are `159.01406799531068x`,
+`75.23948126801153x`, `77.24226694915255x`, and BlackParrot
+`32.76216804527645x` at `32x1`, `158.28447339847992x` at `64x1`, and
+`259.4919886899152x` at `128x1`, and `651.817697228145x` at `256x1`. BlackParrot now
+has `config/slice_launch_templates/blackparrot_bsg_wormhole_router.json`, the
+coverage overlay `overlays/rtlmeter/designs/BlackParrot/src/bsg_wormhole_router_gpu_cov_tb.sv`,
+the coverage gate `config/scaling_gates/blackparrot_bsg_wormhole_router_source_gate.json`,
+and repeat-count-3 packet-pattern coverage-output-equivalent timing through
+`256x1`. This is shape-extension repeat-median-backed promote evidence rather
+than a `32x1`-only candidate. The resident/multi-step definition gate now lives
+at `config/scaling_gates/blackparrot_bsg_wormhole_router_resident_multistep_definition.json`.
+It defines a `256x4` resident packet-pattern timing target and records the
+resolved pre-execution blocker
+`template_runner_has_no_resident_schedule_surface` plus the remaining blocker
+`blackparrot_packet_pattern_patch_script_not_materialized`.
+`run_hybrid_template.py` now has a dry-run resident command-plan surface with
+`--resident-steps`, explicit `--patch-script`, resident-specific candidate dump
+paths, and resident-specific compare-report paths. The next stabilizing work is
+materializing the BlackParrot packet-pattern patch script, or recording that
+patch-script source as the named FC-071 blocker. Source-closure statuses are normalized at the
+row top level: complete for `pulp_ita_mha`,
+template-present but not recorded for `pulp_paged_attention_kv_score`,
+source-backed overlay statuses for the two TLUL sockets,
+`broad_structural_spread` for `tlul_fifo_sync`, and
+`source_backed_template_defined` for BlackParrot. `tlul_fifo_sync` has favorable
+frozen execution-profile timing (`3.5951481185001524x`) but needs resident or
+shape-sweep evidence before a broader policy claim. This is scoped
+candidate evidence and triage only, not broad RTL speedup, native Verilator
+option support, arbitrary dependency inference, or automatic optimal GPU
+allocation.
+`reports/scientific_circt_runtime_handoff_abi.json` now converts that top row
+into the first runtime handoff ABI definition. It records
+`status=handoff_abi_ready`, array-of-structs input/output layout, 20 input
+bytes/state, 32 output bytes/state, and 53,248 logical roundtrip bytes for
+1,024 states. CPU retains sequence/KV-cache authority and GPU owns only the
+  measured attention-head arithmetic batch. The adapter and entrypoint evidence
+  below closes the first CPU-vs-GPU equality, warmed fused adapter timing, and
+  broader `src/hybrid` C-bridge runtime boundary timing gates. Direct Verilator
+  generated-callsite wiring remains open. This is not PCIe framing evidence,
+  full microGPT execution, RTLMeter evidence, or automatic partitioning.
+`reports/scientific_circt_runtime_handoff_adapter.json` now runs the first
+ABI-backed adapter correctness gate for the same candidate/shape. It records
+`status=adapter_correctness_passed`, observed input bytes `20480`, observed
+output bytes `32768`, ABI byte-count matches, CPU-vs-GPU output equality, and
+`mismatch_count=0` for the 1,024-state batch. The same adapter report now
+records an adapter-local integration loop with `inner_repeat=1000` and
+`integration_batches=15`: CPU `0.7769709466666667 ms`, GPU end-to-end
+`0.12586719999999998 ms`, GPU kernel `0.027211092884341877 ms`, CPU-to-GPU
+end-to-end speedup `6.17294216973657x`, and CPU-to-GPU kernel speedup
+`28.553463470545143x` per integration batch. It also builds
+`libmicrogpt_attention_head_handoff_adapter.so` for in-process entrypoint
+timing and exports a GPU output-buffer symbol for Verilator callsite comparison.
+This is scoped positive
+runtime-adapter evidence: the warmed fused attention-head handoff preserves the
+measured `microgpt_attention_head` GPU-favorable region after adapter-local
+amortization. It is not a broad runtime speedup claim, PCIe framing, full
+microGPT, RTLMeter, automatic partitioning, or direct Verilator runtime evidence.
+`reports/scientific_circt_runtime_entrypoint.json` now measures the first
+subprocess-free in-process adapter-library entrypoint. It records
+`status=in_process_entrypoint_timing_measured`, `subprocess_used=false`,
+CPU-vs-GPU output equality, matching correctness checksums, and matching timed
+GPU checksum. The correctness warmup is excluded from the timed hybrid path. The
+timed GPU-only library call records wall `8.331281000209856 ms`, or
+`0.11108374666946474 ms` per integration batch, versus CPU baseline
+`0.78472712 ms` per integration batch. The resulting
+`cpu_to_in_process_wall_speedup=7.0642838716540135x` is CPU-favorable; adapter
+GPU end-to-end is `0.09972410666666667 ms` per integration batch and kernel is
+`0.026255359500646593 ms`. This is the first positive subprocess-free runtime
+entrypoint evidence for `microgpt_attention_head,1024x1`. It is not a direct
+Verilator entrypoint, PCIe framing evidence, full microGPT execution, RTLMeter
+evidence, automatic partitioning, or production runtime evidence.
+`reports/scientific_circt_broader_runtime_entrypoint.json` now measures the same
+adapter shared library from a `src/hybrid` C bridge. The bridge is compiled from
+`src/hybrid/scientific_circt_adapter_bridge.c`, loads
+`libmicrogpt_attention_head_handoff_adapter.so` with `dlopen`/`dlsym`, runs the
+CPU+GPU correctness call as warmup, then times the GPU-only adapter symbol inside
+the C process. The report records `status=broader_hybrid_entrypoint_timing_measured`,
+`subprocess_used_for_adapter=false`, CPU-vs-GPU output equality, matching
+correctness checksums, and matching timed GPU checksum. The bridge-internal timed
+hybrid path records wall `8.079087 ms`, or `0.10772116 ms` per integration batch,
+versus CPU baseline `0.7869408533333333 ms` per integration batch. The resulting
+`cpu_to_bridge_hybrid_wall_speedup=7.305350715990556x` is CPU-favorable; adapter
+GPU end-to-end is `0.09732182666666667 ms` per integration batch and kernel is
+`0.026241706187526383 ms`. This closes the broader `src/hybrid`
+runtime-boundary evidence for the scoped adapter.
+`reports/scientific_circt_verilator_callsite_entrypoint.json` now measures the
+same GPU adapter from a direct Verilator-generated CPU callsite. The bridge is
+compiled from `src/hybrid/scientific_circt_verilator_callsite_bridge.cpp` against
+`artifacts/scientific_circt/microgpt_attention_head/obj_dir`, calls `Vsim::eval()`
+for the CPU path, compares the 1,024-state Verilator output buffer with the GPU
+adapter output buffer, and then times the GPU-only adapter symbol. The report
+records `status=direct_verilator_callsite_entrypoint_timing_measured`,
+`verilator_callsite_used=true`, `subprocess_used_for_adapter=false`,
+`mismatch_count=0`, and matching Verilator/GPU control checksums. The timed hybrid
+path records bridge wall `10.028488 ms`, or `0.13371317333333332 ms` per
+integration batch, versus Verilator CPU callsite baseline `0.8192283333333333 ms`
+per integration batch. The resulting
+`cpu_to_bridge_hybrid_wall_speedup=6.126758590128443x` is CPU-favorable; adapter
+GPU end-to-end is `0.10795985333333334 ms` per integration batch and kernel is
+`0.026105172832806906 ms`. This satisfies the scoped direct Verilator callsite
+entrypoint goal for `microgpt_attention_head,1024x1`, but it is still not full
+microGPT execution, PCIe framing evidence, RTLMeter evidence, automatic
+partitioning, or production runtime evidence.
+`reports/scientific_circt_hls_attention_head4.json` now tests the next HLS-style
+source variant for the same direction. It uses four explicit independent
+attention heads per state, lowers through FIRRTL/SystemVerilog, builds the
+Verilator CPU callsite, builds the GPU arithmetic as a separate CUDA shared
+library, and compares the output buffer/checksum before timing. The result is
+`status=hls_variant_improved`, `mismatch_count=0`, CPU/GPU output and checksum
+equality true, Verilator CPU `3.4998690533333336 ms` per integration batch,
+GPU end-to-end `0.2399491066666667 ms`, GPU kernel
+`0.12229589293400446 ms`, and bridge wall
+`0.26312590666666663 ms` per integration batch. The scoped bridge-wall speedup
+is `13.301119215779238x`, improving over the prior direct-callsite baseline
+`6.126758590128443x` by `7.174360625650795x`. The interpretation is that
+source/IR-level arithmetic shaping can materially improve this class; it is
+still not full microGPT execution, automatic HLS rewriting, PCIe framing,
+RTLMeter evidence, or production runtime evidence.
+`reports/scientific_circt_hls_mlp_block_variants.json` extends the same HLS-style
+source-variant measurement to MLP, block, and inference slices. `mlp4_hls_friendly`
+records `status=hls_variant_improved`, output/checksum equality,
+`mismatch_count=0`, baseline speedup `2.28894x`, bridge-wall speedup
+`9.922827450510521x`, and positive delta `7.633887450510521x`.
+`block2_hls_friendly` records output/checksum equality and `mismatch_count=0`,
+but `status=hls_variant_measured_no_speedup_improvement`: its bridge-wall
+speedup `5.56609843788867x` is below the baseline block-slice speedup
+`5.75973x`. `inference2_hls_friendly` records output/checksum equality and
+improves from baseline `3.62419x` to `9.799333107174757x`. The refreshed
+`reports/scientific_circt_gpu_selection_policy.json` now integrates these HLS
+reports as `source_variants`: `attention_head4_hls_friendly`,
+`mlp4_hls_friendly`, and `inference2_hls_friendly` select
+`promote_to_hls_gpu`, while `block2_hls_friendly` selects
+`keep_baseline_gpu_or_cpu`. Together, the rule is now measurable: explicit
+independent-unit source/IR reshaping should be promoted when equality holds and
+direct-callsite speedup improves; otherwise keep the baseline GPU/CPU decision.
 
 Vortex progress update: `reports/rtlmeter_vortex_materialized_runtime_invocation_smoke.json`
 now validates the real `Vortex:mini:hello` materialized runtime inputs. The

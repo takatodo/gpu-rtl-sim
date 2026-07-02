@@ -9,14 +9,22 @@ template JSON by hand. The target workflow keeps RTLMeter's own case selection
 and adds GPU intent through the Verilator command path:
 
 ```bash
-./rtlmeter run --cases <design>:<config>:<test> --compileArgs "--use-gpu"
-PATH=/path/to/gpu-verilator-wrapper:$PATH ./rtlmeter run --cases <design>:<config>:<test>
+python3 -c 'from src.tools.rtlmeter_verilator_wrapper_runtime import write_rtlmeter_verilator_wrapper; write_rtlmeter_verilator_wrapper("artifacts/rtlmeter-wrapper/verilator")'
+PYTHONPATH="$PWD/third_party/rtlmeter:$PYTHONPATH" PATH="$PWD/artifacts/rtlmeter-wrapper:$PATH" third_party/rtlmeter/rtlmeter run --cases <design>:<config>:<test> --compileArgs "--use-gpu"
 ```
 
-These commands are a target workflow until a scoped seed is proven. Compile-only
-success, copied RTLMeter-derived harnesses, and repo-specific launch-template
-selection do not prove RTLMeter acceleration. Unsupported RTLMeter cases should
-fail closed, and any RTLMeter JSON capture remains debug/inspection metadata.
+These commands remain the target workflow for broad RTLMeter support. The scoped
+`Example:kind:hello` seed now has a first-seed stdout/cycles handoff proof, but
+compile-only success, copied RTLMeter-derived harnesses, and repo-specific
+launch-template selection still do not prove RTLMeter acceleration. Unsupported
+RTLMeter cases should fail closed, and any RTLMeter JSON capture remains
+debug/inspection metadata.
+
+## Three Layers
+
+1. Current execution support: use the primary repo entrypoints for scoped template and benchmark targets, with CPU-vs-hybrid comparison based on `coverage_output_equivalence`.
+2. Preview UX: use `--sim-accel sidecar-gpu --sim-accel-states <N> --sim-accel-steps <S>` and the wrapper/shim print modes to inspect the future Verilator-compatible surface; print modes and JSON plans are not execution authority.
+3. Long-term goal: keep the tool surface compatible with a frontend-neutral sidecar fed by Verilator or CIRCT, and use the benchmark pack to identify LLM-serving-like RTL workloads that benefit from hybrid execution.
 
 ## Primary Entrypoints
 
@@ -62,13 +70,29 @@ operator path.
 
 ## Lower-Level Template Path
 
-Use `src/tools/run_hybrid_template.py` only when working directly from a reviewed
-`config/slice_launch_templates/*.json` template. It is a lower-level path below
-target discovery, not the default first command for an external operator.
+`run_hybrid_template.py` defaults to a concise seven-stage terminal summary for
+non-dry runs and writes detailed generated logs under `reports/`. Dry-runs still
+print full commands, and `--verbose` restores command/log streaming for local
+debugging. The generated logs are evidence only, not source of truth.
 
 RTLMeter helpers under `src/tools/rtlmeter_*` are not routine entrypoints yet.
 They exist to capture RTLMeter's Verilator command shape and preserve the future
 RTLMeter user path while the sidecar contract is hardened.
+gateGPT helpers such as `src/tools/gategpt_testbench_probe.py` and
+`src/tools/gategpt_entry_sliced_cubin_chain.py` are FC-069 diagnostic
+entrypoints, not routine benchmark entrypoints. The entry-sliced CUBIN-chain
+helper regenerates generated PTX/CUBIN artifacts under `artifacts/` and writes
+evidence under `reports/`; it does not execute kernels or claim speedup,
+usefulness, or broad gateGPT PASS/FAIL authority.
+`src/tools/gategpt_stage112_store_source_summary.py` is an FC-073 evidence audit
+helper. It joins Stage112 runtime events with the LLVM metadata source map, but
+static metadata rows remain non-authoritative unless a runtime event names the
+same source id.
+`src/tools/rtlmeter_vortex_ptx_entry_slice.py --stub-func` is a ptxas-surface
+diagnostic only: it can replace a selected reachable `.func` body with a
+ret-only stub to prove that a large callee body is driving compile cost. A stub
+slice or CUBIN is not runtime correctness evidence and must not be used for
+semantic classification.
 `src/tools/rtlmeter_cpu_gpu_compare_integration.py` is an opt-in
 RTLMeter reference-vs-sidecar-candidate compare helper. It writes generated
 evidence under `reports/` and fails closed when RTLMeter or the sidecar
@@ -77,29 +101,44 @@ When no `RTLMETER_SIDECAR_VERILATOR_WRAPPER` is supplied, it creates an ignored
 `artifacts/.../wrapper/verilator` shim backed by
 `src/tools/rtlmeter_verilator_wrapper_runtime.py`. That shim is an explicit
 execution boundary: no-GPU argv delegates to the real Verilator after excluding
-itself from PATH lookup, while GPU intent fails closed until a sidecar execution
-path is wired. The older `src/tools/rtlmeter_verilator_path_wrapper.py` remains
+itself from PATH lookup. Broad GPU intent still fails closed; the current
+exception is the scoped first-seed stdout/cycles proxy/marker handoff. The older
+`src/tools/rtlmeter_verilator_path_wrapper.py` remains
 inspect-only metadata and is not promoted to execution authority.
+`RTLMETER_SIDECAR_VERILATOR_WRAPPER` names the wrapper command RTLMeter invokes.
+`RTLMETER_REAL_VERILATOR` names the non-wrapper Verilator binary behind that
+wrapper, or the wrapper resolves one from filtered PATH. If that real binary
+rejects the expanded sidecar argv with `Invalid option: --sim-accel`, the
+compare report names
+`real_verilator_not_sidecar_capable_for_expanded_rtlmeter_argv` rather than
+falling back to CPU or claiming GPU execution.
+The compare report also carries `real_verilator_preflight`: missing means no
+non-wrapper real Verilator was selected after excluding the wrapper itself;
+selected means the binary was found but sidecar capability is still proven only
+by the later RTLMeter Verilate invocation.
 The compare helper defaults the GPU candidate to the expanded native-minimum
 schedule spelling, `--sim-accel sidecar-gpu --sim-accel-states 64
 --sim-accel-steps 1`, rather than `--use-gpu` alone. That keeps the failure at
 the sidecar handoff boundary instead of failing earlier because no schedule was
 selected.
-At that boundary, `src/tools/rtlmeter_sidecar_handoff.py` records metadata only:
-captured schedule, preserved parser inputs, and the missing sidecar-owned
-context such as template/source-closure/host-probe/coverage metadata. It does
-not call `run_hybrid_template.py`; launching an unrelated template would not be
-RTLMeter GPU evidence.
-The handoff can validate an explicitly supplied RTLMeter sidecar context and
-mark it metadata-ready, but `sidecar_context_ready` remains false until a real
-launcher boundary exists. The actual launcher handoff remains a separate
-execution boundary.
+At that boundary, `src/tools/rtlmeter_sidecar_handoff.py` records captured
+schedule, preserved parser inputs, and sidecar-owned context. It does not call
+`run_hybrid_template.py`; launching an unrelated template would not be RTLMeter
+GPU evidence.
+When RTLMeter's Verilator argv omits `-Mdir`, the handoff records Verilator's
+default output directory as `obj_dir` with `parser_payload_mdir_source:
+verilator_default_obj_dir`. The first-seed runner path now uses that metadata,
+the reviewed authority registry, a PATH-selected wrapper, and a marker-backed
+`Vsim__main.cpp` proxy handoff to run the opt-in
+`Example:kind:hello` stdout/cycles compare. The latest real opt-in evidence is
+`status=passed`, `comparison.status=passed`,
+`stdout_cycles_sidecar_runner.execution_authority=true`, and
+`sidecar_execution_invoked=true`.
 For RTLMeter, `RTLMETER_SIDECAR_CONTEXT_JSON` is a wrapper-to-handoff diagnostic
 channel used by the compare helper to pass the current context candidate. It is
-not the stable sidecar ABI and does not authorize execution.
-The RTLMeter launcher materializer can only produce `run_hybrid_template.py`
-argv after metadata-ready handoff plus a reviewed template path; it still does
-not invoke the launcher.
+not the stable sidecar ABI.
+The first-seed proof is not `run_hybrid_template.py` evidence and does not use
+the RTLMeter launcher materializer as execution authority.
 The native-Verilator bridge work has accepted metadata and failure-classification
 evidence for a scoped wrapper-mediated process-to-launcher path. That evidence
 is a technical prerequisite, not the current public task: the active task is the
@@ -107,9 +146,28 @@ external user readiness audit after the scoped `--use-gpu` wrapper completion.
 Launcher start, bridge-path compare, timing, and broad native-option claims
 remain out of scope.
 RTLMeter context candidates distinguish compile source closure from hybrid
-execution source closure; `Example:kind:hello` has known compile inputs, but the
-current host-probe contract is not execution-compatible with its stdout/cycles
-evidence.
+execution source closure. `Example:kind:hello` now has reviewed stdout/cycles
+source-closure authority for this first-seed lane.
+`config/rtlmeter_sidecar_authorities/rtlmeter_example_kind_hello.json` records
+that distinction as metadata-only config. It is not a `run_hybrid_template.py`
+input; launcher argv still requires a separate reviewed runtime launch template.
+The wrapper may load that registry for diagnostics, but the registry is not
+execution authority. Reviewed RTLMeter source closure requires more than
+`status: complete`: it must bind target/mode/case, source/include/filelist
+entries, stdout/cycles observables, runner strategy, reviewed host-probe status,
+`cpu_as_gpu_fallback_allowed: false`, and review evidence. A thin
+`status`/`authority` payload remains blocked, and a metadata-only registry only
+feeds explicit `authority_registry.source_closure.*` missing-context diagnostics.
+Registry and source-closure targets must also match the requested sidecar
+context target. For the first seed only, valid wrapper proxy-marker evidence
+plus current-run stdout/cycles observables can set `execution_authority=true`
+and `sidecar_execution_invoked=true`.
+Public docs should still describe this as a scoped first-seed handoff proof:
+CPU reference output remains owned by RTLMeter, candidate execution remains
+bounded to the reviewed sidecar proxy lane, comparison is limited to
+`normalized_stdout` and `rtlmeter_cycles`, CPU-as-GPU fallback is forbidden,
+`gpu_execution_claimed=false`, `speedup_claimed=false`, and `runtime_abi=false`.
+Generated stdout/cycles reports remain generated evidence, not source of truth.
 
 ## Runtime Building Blocks
 
@@ -208,8 +266,8 @@ These are still public enough to appear in generated command plans, but they are
 | Tool | Role |
 | --- | --- |
 | `src/tools/build_host_probe.py` | Build the generic Verilator host probe used by template plans. |
-| `src/tools/build_vl_gpu.py` | Build GPU artifacts from a Verilator object directory; missing local pass tools are rebuilt on demand after clean. |
-| `src/tools/run_vl_hybrid.py` | Launch the hybrid host/GPU runtime for an existing object directory and state dump; the local runtime binary is rebuilt on demand after clean. |
+| `src/tools/build_vl_gpu.py` | Build GPU artifacts from a Verilator object directory; missing local pass tools are rebuilt under `artifacts/tool_bins/passes/` on demand after clean. |
+| `src/tools/run_vl_hybrid.py` | Launch the hybrid host/GPU runtime for an existing object directory and state dump; the local runtime binary is rebuilt under `artifacts/tool_bins/hybrid/` on demand after clean. |
 | `src/tools/compare_vl_hybrid_modes.py` | Compare CPU and hybrid dumps, normally with `coverage_output_equivalence`. |
 
 ## Helper Modules

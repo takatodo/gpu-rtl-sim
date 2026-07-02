@@ -24,13 +24,22 @@ in a clean minimized tree.
 | Path | Role | Policy |
 | --- | --- | --- |
 | `slice_launch_templates/` | Public hybrid launch templates | Runtime-facing. Keep templates reproducible and referenced by CLI docs/tests. |
+| `rtlmeter_sidecar_authorities/` | RTLMeter sidecar authority registries | Metadata-only. Do not pass these to `run_hybrid_template.py`; RTLMeter stdout/cycles execution must go through a sidecar-capable Verilator wrapper. |
 | `scaling_gates/` | Compatibility link to `../records/scaling_gates` | Evidence ledger lives outside the active config surface. Current gate is selected by `selection.json`. |
 
 ## Current Entry Points
 
 - Current machine-readable state: `config/selection.json`
+- Heavy RTL candidate matrix state: `heavy_rtl_candidate_matrix` in
+  `config/selection.json`; regenerate the report with
+  `python3 src/tools/heavy_rtl_candidate_matrix.py --write-report --report-out reports/heavy_rtl_candidate_matrix.json`.
+  The current summary is six rows: two PULP and four NoC/TLUL-style rows, with
+  policy counts `promote_state_parallel_measurement=5` and
+  `resident_or_shape_sweep_required=1`.
 - Operator shortcuts: `Makefile` at repo root (see README **Operator shortcuts**; calls existing tools only)
 - Current regression/measurement target inventory: `config/targets.json`
+- RTLMeter first-seed authority registry:
+  `config/rtlmeter_sidecar_authorities/rtlmeter_example_kind_hello.json`
 - Current gate pointer: `current_priority_source_artifact` in `config/selection.json`; treat `selection.json` as authoritative if docs drift.
 - Public benchmark pack gate: `config/scaling_gates/public_results_packaging_gate.json`
 - Public benchmark pack audit: `config/scaling_gates/public_benchmark_pack_goal_completion_audit.json`

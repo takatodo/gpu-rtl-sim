@@ -1,9 +1,12 @@
 # FC-056: Honest apples-to-apples CPU-vs-GPU timing for pulp_ita_mha
 
-Status: open
+Status: gated
+GitHub: https://github.com/takatodo/gpu-rtl-sim/issues/56
 Parent umbrella: FC-053 / https://github.com/takatodo/gpu-rtl-sim/issues/46
 Goal framing: FC-039 / https://github.com/takatodo/gpu-rtl-sim/issues/1
-Predecessor: FC-055 / https://github.com/takatodo/gpu-rtl-sim/issues/55
+Predecessors:
+- FC-057 / https://github.com/takatodo/gpu-rtl-sim/issues/57
+- FC-058 / https://github.com/takatodo/gpu-rtl-sim/issues/58
 
 ## Objective
 
@@ -12,6 +15,22 @@ with a scoped, honest, apples-to-apples CPU-vs-GPU wall-time comparison for the
 recognized `pulp_ita_mha 64x1` closure, gated on coverage-output equivalence.
 This is scoped measurement evidence only: not a production-throughput,
 automatic-allocation, or broad-speedup claim.
+
+## Gate correction
+
+Do not start or close FC-056 from FC-055 runner-delegation evidence alone.
+FC-055 proves a temporary reviewed endpoint, not direct `obj_dir/V<top>`
+execution and not RTLMeter direct-native correctness. Timing closure is only
+actionable after:
+
+- FC-057 proves the generated native `obj_dir/V<top>` executable invokes the GPU
+  sidecar runtime directly with the accepted coverage-output gate.
+- FC-058 proves RTLMeter can run that direct native path without the frozen proxy
+  lane and with stdout/cycles correctness recorded.
+
+Any existing FC-056 timing comments before those gates are accepted are
+pre-gate exploratory evidence. They may inform policy, but they do not close the
+timing task and must not be used as a broad acceleration claim.
 
 ## Key finding that blocks using existing numbers
 

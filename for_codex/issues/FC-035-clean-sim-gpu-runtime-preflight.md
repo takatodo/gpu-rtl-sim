@@ -1,7 +1,8 @@
 # FC-035: Clean Sim GPU Runtime Preflight
 
-Status: open
+Status: done
 Owner: Unassigned
+GitHub: https://github.com/takatodo/gpu-rtl-sim/issues/7
 Target file: `src/tools/run_vl_hybrid.py`, `src/tools/run_vl_hybrid_launch.py`, `tests/contract/test_clean_sim_prerequisites.py`, `README.md`
 
 ## Objective
@@ -44,7 +45,7 @@ access blocked by the operating system.
 ## Validation
 
 ```sh
-git clean -fdX -e .codex -e .agents
+git clean -fdX -e '!.codex' -e '!.agents'
 python3 src/tools/run_hybrid_template.py config/slice_launch_templates/tlul_fifo_sync.json --shape 1x1
 python3 -m unittest tests.contract.test_clean_sim_prerequisites -q
 git diff --check
@@ -61,3 +62,23 @@ with missing local build tools.
 - No timing or speedup claim.
 - No automatic GPU allocation.
 - No promotion of debug JSON into the runtime ABI.
+
+## Current State
+
+- Direct `run_vl_hybrid.py` execution now captures the hybrid runtime output,
+  re-emits it sanitized, and classifies CUDA/cuInit failures as
+  `classified_failure: gpu_runtime_unavailable` while preserving the nonzero
+  exit code.
+- Template execution surfaces the same classification at the failing hybrid
+  sidecar stage and keeps full details in the generated
+  `reports/*_hybrid_sidecar_run.log`.
+- README troubleshooting documents the blocked-GPU diagnostic, the fail-closed
+  behavior, and the generated log path to inspect.
+- Contract tests cover missing helper rebuilds, direct CUDA error 304/cuInit
+  classification, template classification, no Python traceback, local path
+  sanitization, and relocated helper binaries.
+- Verified a non-GPU `pulp_ita_mha 1x1` template run stops at
+  `classified_failure: gpu_runtime_unavailable` and does not recreate
+  `src/passes/VlGpuPasses.so`, `src/passes/vlgpugen`, or
+  `src/hybrid/run_vl_hybrid`.
+- Full contract validation passed with 530 tests.
