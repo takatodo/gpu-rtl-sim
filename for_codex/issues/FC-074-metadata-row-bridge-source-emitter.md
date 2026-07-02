@@ -1,6 +1,6 @@
 # FC-074: Metadata-row Bridge Source Emitter
 
-Status: in progress
+Status: complete (M1-M5 measured; docs/status.md + roadmap sync rides the pending branch docs commit)
 Owner: unassigned
 GitHub: https://github.com/takatodo/gpu-rtl-sim/issues/74
 Parent: FC-072 / https://github.com/takatodo/gpu-rtl-sim/issues/72
@@ -72,9 +72,23 @@ mismatch==0 (CPU==GPU) at runtime, never the header.
   entrypoint `src-hybrid-verilator` against that row's own Verilator object
   directory, exiting 0 only when both `cpu_vs_gpu_output_equal` and
   `cpu_vs_gpu_control_checksum_equal` are true.
-- M5 (GPU acceptance run across all 3 promoted rows through
-  `--source-variant X --run`, plus `config/selection.json`/`docs/status.md`/
-  `docs/roadmap.md` updates) is pending and out of scope for this pass.
+- M5 measured (2026-07-03): all 3 promoted rows pass `--source-variant X
+  --run` with mismatch 0 and output/checksum equality; `block2_hls_friendly`
+  fails closed with exit 1 before dlopen. The acceptance run exposed and fixed
+  two per-variant divergences the generalized bridge had to absorb: the GPU
+  `.so` self-generates its input batch and inner_repeat mixing, and both
+  formulas differ per variant (attention fill `(i*17+j*11+1)&0x7f` / mix
+  `(r+j)&31` vs the MLP family's per-variant `fill_a..fill_mask` / shared
+  `(r+j*3)&255`). Symbol stems also differ (attention exports
+  `attention_head4_hls_*`). All three now flow from generator-module public
+  constants into generated `SCI_CIRCT_BRIDGE_FILL_VALUE`/`MIX_VALUE` macros
+  and exact-symbol checks. Peer-review hardening: the metadata gate is
+  mandatory on every source-variant handoff path including direct-binary,
+  candidate/source_variant/shape/steps==1 are bound across selected boundary,
+  metadata row, and HLS summary with an argv nstates check, and absent
+  selected steps means not-requested rather than mismatch. Gate record:
+  `records/scaling_gates/scientific_circt_source_variant_bridge_spec_generated_bridge_gate.json`
+  (correctness acceptance only, no timing claim).
 
 ## Tasks
 
@@ -88,17 +102,18 @@ mismatch==0 (CPU==GPU) at runtime, never the header.
 - [x] Runtime metadata gate generalized off the single hardcoded constant.
 - [x] Thin CLI: emit one header, emit all promoted headers, run one row
       end-to-end.
-- [ ] M5: GPU acceptance run for `attention_head4_hls_friendly` and
-      `mlp4_hls_friendly` through `--source-variant X --run` (only
-      `inference2_hls_friendly` has measured `src-hybrid-verilator` runtime
-      evidence so far); refresh `config/selection.json`, `docs/status.md`,
-      `docs/roadmap.md` with the result.
+- [x] M5: GPU acceptance run for all 3 promoted rows through
+      `--source-variant X --run`: mismatch 0 and output/checksum equality
+      for `attention_head4_hls_friendly`, `mlp4_hls_friendly`, and
+      `inference2_hls_friendly`; `block2_hls_friendly` fail-closed exit 1.
+      `docs/status.md`/`docs/roadmap.md`/`config/selection.json` sync rides
+      the pending branch docs commit.
 
 ## Acceptance
 
 - The 3 promoted rows pass with mismatch 0 and output/checksum equality
-  through the generated bridge. (`inference2_hls_friendly` measured; M5
-  covers `attention_head4_hls_friendly`/`mlp4_hls_friendly`.)
+  through the generated bridge. (All three measured 2026-07-03; see the gate
+  record.)
 - `block2_hls_friendly` stays a fail-closed CPU fallback: the emitter and the
   runtime metadata gate both reject it before dlopen, with no header emitted.
 - Unsupported shape/steps/source_variant falls back to CPU before any runtime
