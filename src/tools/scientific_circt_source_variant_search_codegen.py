@@ -14,33 +14,39 @@ class GeneratedSources:
     cuda: str
     bridge: str
 
+CANDIDATE_GOLDEN_VARIANT = {"microgpt_mlp_slice": "mlp4_hls_friendly", "microgpt_inference_slice": "inference2_hls_friendly"}
+
 def descriptor_for_candidate(candidate: str) -> BlockDescriptor:
     if candidate == "microgpt_attention_head":
         return ATTENTION_DESCRIPTOR
-    variant_name = {"microgpt_mlp_slice": "mlp4_hls_friendly", "microgpt_inference_slice": "inference2_hls_friendly"}.get(candidate)
-    if variant_name is None:
+    if candidate not in CANDIDATE_GOLDEN_VARIANT:
         raise ValueError(f"unknown candidate: {candidate}")
-    variant = mlp_blocks.VARIANTS[variant_name]
+    variant = mlp_blocks.VARIANTS[CANDIDATE_GOLDEN_VARIANT[candidate]]
     return BlockDescriptor(
         variant.candidate, f"{variant.kind}_unit", variant.module.rstrip("0123456789"), variant.kind,
         mlp_blocks._eval_unit_cpp(variant).strip(), variant.fill_a, variant.fill_b, variant.fill_c,
         variant.fill_mask, mlp_blocks.MIX_J_MULT, mlp_blocks.MIX_MASK, variant.inputs_per_unit,
         variant.outputs_per_unit,
     )
-
+def _mlp_variant(descriptor: BlockDescriptor, plan: VariantPlan) -> mlp_blocks.Variant:
+    shape = plan_shape(plan)
+    golden = mlp_blocks.VARIANTS[CANDIDATE_GOLDEN_VARIANT.get(descriptor.candidate, "mlp4_hls_friendly")]
+    return mlp_blocks.Variant(
+        variant_name(descriptor, plan), descriptor.candidate, descriptor.kind, module_name(descriptor, plan),
+        shape.units, descriptor.unit_inputs, descriptor.unit_outputs,
+        golden.baseline_report, "source_variant_search",
+        descriptor.fill_a, descriptor.fill_b, descriptor.fill_c, descriptor.fill_mask, (),
+    )
 def variant_name(descriptor: BlockDescriptor, plan: VariantPlan) -> str:
     units = plan_shape(plan).units
     if descriptor.kind == "attention":
         return f"attention_head{units}_hls_friendly"
     return f"{descriptor.kind}{units}_source_variant_search"
-
 def symbol_stem(descriptor: BlockDescriptor, plan: VariantPlan) -> str:
     units = plan_shape(plan).units
     return f"attention_head{units}_hls" if descriptor.kind == "attention" else variant_name(descriptor, plan)
-
 def module_name(descriptor: BlockDescriptor, plan: VariantPlan) -> str:
     return f"{descriptor.module_stem}{plan_shape(plan).units}"
-
 def _attention_nodes(prefix: str) -> list[str]:
     lines = [
         f"    node {prefix}_s0a = add(mul({prefix}_x0, {prefix}_x4), mul({prefix}_x1, {prefix}_x5))",
@@ -58,15 +64,9 @@ def _attention_nodes(prefix: str) -> list[str]:
     return lines
 
 def firrtl(descriptor: BlockDescriptor, plan: VariantPlan) -> str:
-    shape = plan_shape(plan)
     if descriptor.kind != "attention":
-        variant = mlp_blocks.Variant(
-            variant_name(descriptor, plan), descriptor.candidate, descriptor.kind, module_name(descriptor, plan),
-            shape.units, descriptor.unit_inputs, descriptor.unit_outputs,
-            mlp_blocks.VARIANTS["mlp4_hls_friendly"].baseline_report, "source_variant_search",
-            descriptor.fill_a, descriptor.fill_b, descriptor.fill_c, descriptor.fill_mask, (),
-        )
-        return mlp_blocks.firrtl(variant)
+        return mlp_blocks.firrtl(_mlp_variant(descriptor, plan))
+    shape = plan_shape(plan)
     module = module_name(descriptor, plan)
     lines = ["FIRRTL version 4.0.0", f"circuit {module} :", f"  public module {module} :"]
     for unit in range(shape.units):
@@ -82,14 +82,14 @@ def firrtl(descriptor: BlockDescriptor, plan: VariantPlan) -> str:
 
 def _mix_expr(descriptor: BlockDescriptor) -> str:
     return "r + j" if descriptor.mix_j_mult == 1 else f"r + j * {descriptor.mix_j_mult}"
-
 def _mask_literal(descriptor: BlockDescriptor) -> str:
     return f"0x{descriptor.fill_mask:x}" if descriptor.kind == "attention" else str(descriptor.fill_mask)
-
 def _eval_name(descriptor: BlockDescriptor) -> str:
     return "eval_head" if descriptor.kind == "attention" else "eval_unit"
 
 def cuda_lib(descriptor: BlockDescriptor, plan: VariantPlan) -> str:
+    if descriptor.kind != "attention":  # matches bridge_cpp's modulo checksum indexing, not a bitmask
+        return mlp_blocks.cuda_lib(_mlp_variant(descriptor, plan))
     shape = plan_shape(plan)
     in_count, out_count = shape.units * descriptor.unit_inputs, shape.units * descriptor.unit_outputs
     eval_name = _eval_name(descriptor)
@@ -198,6 +198,8 @@ def _read_lines(units: int, per_unit: int) -> str:
     return "\n".join(lines)
 
 def bridge_cpp(descriptor: BlockDescriptor, plan: VariantPlan) -> str:
+    if descriptor.kind != "attention":  # non-attention ports are m{u}_x{i}/i{u}_{name}, not h{unit}_x{idx} below
+        return mlp_blocks.bridge_cpp(_mlp_variant(descriptor, plan))
     shape = plan_shape(plan)
     in_count, out_count, sym = shape.units * descriptor.unit_inputs, shape.units * descriptor.unit_outputs, symbol_stem(descriptor, plan)
     return f'''#include "Vsim.h"

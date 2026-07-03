@@ -12,6 +12,7 @@ import scientific_circt_source_variant_search_codegen as codegen  # noqa: E402
 
 
 GOLDEN_DIR = REPO_ROOT / "artifacts/scientific_circt/hls_attention_head4"
+GOLDEN_MLP4_DIR = REPO_ROOT / "artifacts/scientific_circt/hls_mlp_block_variants/mlp4_hls_friendly"
 
 
 def attention_py(x: list[int]) -> list[int]:
@@ -28,6 +29,17 @@ class ScientificCirctSourceVariantSearchTest(unittest.TestCase):
         sources = codegen.render_sources(search.ATTENTION_DESCRIPTOR, plan)
         self.assertEqual(sources.cuda, (GOLDEN_DIR / "attention_head4_hls_friendly_gpu.cu").read_text(encoding="utf-8"))
         self.assertEqual(sources.bridge, (GOLDEN_DIR / "attention_head4_hls_friendly_bridge.cpp").read_text(encoding="utf-8"))
+
+    def test_mlp_replicate4_firrtl_is_byte_identical_to_golden_hand_tuned_variant(self) -> None:
+        # The mlp descriptor is extracted from mlp_blocks.VARIANTS["mlp4_hls_friendly"], so
+        # Replicate(4) at fixed density should reproduce its FIRRTL exactly (same module name,
+        # same node graph). CUDA/bridge intentionally differ: they embed the search's own
+        # variant/symbol name (mlp4_source_variant_search) rather than the golden's, so those
+        # are not byte-identical even though the descriptor extraction is faithful.
+        descriptor = codegen.descriptor_for_candidate("microgpt_mlp_slice")
+        plan = search.VariantPlan((search.Replicate(4),))
+        sources = codegen.render_sources(descriptor, plan)
+        self.assertEqual(sources.firrtl, (GOLDEN_MLP4_DIR / "mlp4_hls_friendly.fir").read_text(encoding="utf-8"))
 
     def test_codegen_source_has_no_literal_replication_count_branches(self) -> None:
         source = Path(codegen.__file__).read_text(encoding="utf-8")
@@ -70,15 +82,46 @@ class ScientificCirctSourceVariantSearchTest(unittest.TestCase):
         self.assertEqual(search.decide_intermediate_gate(10.0, [below]), (False, "below_intermediate_delta"))
         self.assertEqual(search.decide_falsification_gate(20.0, [below]), (False, "speedup_out_of_band"))
 
-    def test_enumerate_plans_is_deterministic_and_budgeted(self) -> None:
+    def test_gates_fail_closed_with_distinct_reason_on_unmeasured_plan(self) -> None:
+        unmeasured = {
+            "variant": "broken_build",
+            "samples": [{"status": "failed_cxx_direct_callsite_build"}],
+        }
+        self.assertEqual(search.decide_intermediate_gate(10.0, [unmeasured]), (False, "unmeasured_plan_in_search"))
+        self.assertEqual(search.decide_falsification_gate(10.0, [unmeasured]), (False, "unmeasured_plan_in_search"))
+
+    def test_falsification_gate_flags_superior_variant_as_a_finding_not_a_bare_failure(self) -> None:
+        superior = {
+            "variant": "beats_reference",
+            "samples": [
+                {
+                    "status": "runtime_handoff_boundary_measured",
+                    "cpu_vs_gpu_output_equal": True,
+                    "cpu_vs_gpu_control_checksum_equal": True,
+                    "cpu_to_bridge_hybrid_wall_speedup": 50.0,
+                }
+            ],
+        }
+        self.assertEqual(search.decide_falsification_gate(10.0, [superior]), (False, "superior_variant_found"))
+
+    def test_enumerate_plans_is_structural_only_at_fixed_density(self) -> None:
         first = search.enumerate_plans("intermediate")
         second = search.enumerate_plans("intermediate")
         self.assertEqual(first, second)
-        self.assertLessEqual(len(first), 12)
         self.assertEqual(first[0], search.VariantPlan())
+        self.assertEqual(
+            first,
+            [search.VariantPlan()] + [search.VariantPlan((search.Replicate(n),)) for n in (2, 3, 4, 6, 8)],
+        )
         shapes = [search.plan_shape(plan) for plan in first]
-        self.assertIn(search.PlanShape(4, 250, "uint8"), shapes)
-        self.assertIn(search.PlanShape(4, 1000, "uint32"), shapes)
+        self.assertTrue(all(shape.inner_repeat == 1000 and shape.packing == "uint8" for shape in shapes))
+
+    def test_enumerate_density_probes_covers_unroll_density_at_winning_replicate(self) -> None:
+        probes = search.enumerate_density_probes()
+        shapes = [search.plan_shape(plan) for plan in probes]
+        self.assertEqual(shapes, [search.PlanShape(4, m, "uint8") for m in (250, 500, 2000)])
+        self.assertTrue(all(search.PackInputs("uint32") not in plan.transforms for plan in probes))
+        self.assertTrue(all(search.PackInputs("uint32") not in plan.transforms for plan in search.enumerate_plans("falsification")))
 
 
 if __name__ == "__main__":

@@ -47,6 +47,9 @@ class UnrollDensity:
 
 @dataclass(frozen=True)
 class PackInputs:
+    """Emit-only: no packed-ABI codegen yet, so this is excluded from gate/probe enumeration
+    until pack/unpack codegen lands (see build.build_and_measure's unsupported_emit_only_pack_inputs)."""
+
     width: str
 
 
@@ -83,13 +86,26 @@ def plan_name(descriptor: BlockDescriptor, plan: VariantPlan) -> str:
 
 
 def enumerate_plans(gate: str) -> list[VariantPlan]:
+    """Structural plans only, at fixed density (m=1000): baseline + Replicate n in {2,3,4,6,8}.
+
+    Density (UnrollDensity) and packing (PackInputs) transforms change the workload rather than
+    the structure, so ranking them alongside structural transforms would muddy the rediscovery
+    question this gate answers. Density is measured separately by enumerate_density_probes().
+    """
     if gate not in {"intermediate", "falsification"}:
         raise ValueError("gate must be intermediate or falsification")
     plans = [VariantPlan()]
-    plans.extend(VariantPlan((Replicate(n),)) for n in (1, 2, 3, 4, 6, 8))
-    plans.extend(VariantPlan((Replicate(4), UnrollDensity(m))) for m in (250, 500, 2000))
-    plans.append(VariantPlan((Replicate(4), PackInputs("uint32"))))
+    plans.extend(VariantPlan((Replicate(n),)) for n in (2, 3, 4, 6, 8))
     return plans
+
+
+def enumerate_density_probes() -> list[VariantPlan]:
+    """UnrollDensity knob probes at the winning structural shape (Replicate(4)), m in {250,500,2000}.
+
+    Measured by the CLI and reported under density_knob_results, but excluded from gate
+    ranking/decisions (see enumerate_plans).
+    """
+    return [VariantPlan((Replicate(4), UnrollDensity(m))) for m in (250, 500, 2000)]
 
 
 def _speedup(report: dict[str, Any]) -> float | None:
@@ -113,11 +129,21 @@ def _samples(result: dict[str, Any]) -> list[dict[str, Any]]:
     return [result]
 
 
-def _oracle_ok(sample: dict[str, Any]) -> bool:
-    status = sample.get("status")
+MEASURED_SUCCESS_STATUSES = regression.DISPATCHED_STATUSES | {"hls_variant_measured"}
+
+
+def _status_measured(sample: dict[str, Any]) -> bool:
+    return sample.get("status") in MEASURED_SUCCESS_STATUSES
+
+
+def _values_equal(sample: dict[str, Any]) -> bool:
     output_ok = sample.get("cpu_vs_gpu_output_equal", sample.get("output_equal")) is True
     checksum_ok = sample.get("cpu_vs_gpu_control_checksum_equal", sample.get("checksum_equal")) is True
-    return status in regression.DISPATCHED_STATUSES | {"hls_variant_measured"} and output_ok and checksum_ok
+    return output_ok and checksum_ok
+
+
+def _oracle_ok(sample: dict[str, Any]) -> bool:
+    return _status_measured(sample) and _values_equal(sample)
 
 
 def _median_result(result: dict[str, Any]) -> float | None:
@@ -135,11 +161,17 @@ def rank_variants(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return sorted(ranked, key=lambda item: (-item["median_cpu_to_bridge_hybrid_wall_speedup"], str(item.get("variant"))))
 
 
+def _any_unmeasured(results: list[dict[str, Any]]) -> bool:
+    return any(not _status_measured(sample) for result in results for sample in _samples(result))
+
+
 def _any_oracle_mismatch(results: list[dict[str, Any]]) -> bool:
-    return any(not _oracle_ok(sample) for result in results for sample in _samples(result))
+    return any(_status_measured(sample) and not _values_equal(sample) for result in results for sample in _samples(result))
 
 
 def decide_intermediate_gate(baseline_median: float, results: list[dict[str, Any]]) -> tuple[bool, str]:
+    if _any_unmeasured(results):
+        return False, "unmeasured_plan_in_search"
     if _any_oracle_mismatch(results):
         return False, "oracle_mismatch_in_search"
     ranked = rank_variants(results)
@@ -150,6 +182,8 @@ def decide_intermediate_gate(baseline_median: float, results: list[dict[str, Any
 
 
 def decide_falsification_gate(reference_median: float, results: list[dict[str, Any]]) -> tuple[bool, str]:
+    if _any_unmeasured(results):
+        return False, "unmeasured_plan_in_search"
     if _any_oracle_mismatch(results):
         return False, "oracle_mismatch_in_search"
     ranked = rank_variants(results)
@@ -157,7 +191,13 @@ def decide_falsification_gate(reference_median: float, results: list[dict[str, A
         return False, "speedup_out_of_band"
     band = max(FALSIFICATION_ABS_FLOOR, reference_median * FALSIFICATION_RELATIVE_BAND)
     top = ranked[0]["median_cpu_to_bridge_hybrid_wall_speedup"]
-    return (True, "passed") if abs(top - reference_median) <= band else (False, "speedup_out_of_band")
+    delta = top - reference_median
+    if abs(delta) <= band:
+        return True, "passed"
+    if delta > band:
+        # The search beat the hand-tuned reference form: a finding, not a falsification failure.
+        return False, "superior_variant_found"
+    return False, "speedup_out_of_band"
 
 
 def _pack_roundtrip(values: list[int], width: str) -> bool:

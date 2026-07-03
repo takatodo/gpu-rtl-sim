@@ -91,13 +91,23 @@ def _median(results: list[dict[str, Any]]) -> float | None:
     return statistics.median(item["median_cpu_to_bridge_hybrid_wall_speedup"] for item in ranked)
 
 
-def run_search(args: argparse.Namespace, descriptor: search.BlockDescriptor, plans: list[search.VariantPlan]) -> dict[str, Any]:
+STOP_EARLY_REASONS = {"oracle_mismatch_in_search", "unmeasured_plan_in_search"}
+
+
+def run_search(
+    args: argparse.Namespace, descriptor: search.BlockDescriptor, plans: list[search.VariantPlan], *, is_full_enumeration: bool
+) -> dict[str, Any]:
     results = []
     for plan in plans:
         result = measure_plan(descriptor, plan, args.out_dir, args.repeat)
         results.append(result)
-        if search.decide_intermediate_gate(0.0, [result])[1] == "oracle_mismatch_in_search":
+        if search.decide_intermediate_gate(0.0, [result])[1] in STOP_EARLY_REASONS:
             break
+    density_knob_results = (
+        [measure_plan(descriptor, plan, args.out_dir, args.repeat) for plan in search.enumerate_density_probes()]
+        if is_full_enumeration
+        else []
+    )
     baseline = results[0] if results else {}
     baseline_median = search.rank_variants([baseline])[0]["median_cpu_to_bridge_hybrid_wall_speedup"] if search.rank_variants([baseline]) else 0.0
     if args.gate == "intermediate":
@@ -116,9 +126,11 @@ def run_search(args: argparse.Namespace, descriptor: search.BlockDescriptor, pla
         "gate": args.gate,
         "candidate": descriptor.candidate,
         "reason": reason,
+        "finding": reason == "superior_variant_found",
         "baseline_median": baseline_median,
         "reference_median": reference_median,
         "results": results,
+        "density_knob_results": density_knob_results,
     }
 
 
@@ -146,7 +158,7 @@ def main(argv: list[str] | None = None) -> int:
         report = {"status": "source_variant_search_sources_emitted", "candidate": args.candidate, "emitted": emitted}
         print(json.dumps(report, indent=2, sort_keys=True))
         return 0
-    report = run_search(args, descriptor, plans)
+    report = run_search(args, descriptor, plans, is_full_enumeration=plan is None)
     if args.write_report:
         args.report_out.parent.mkdir(parents=True, exist_ok=True)
         args.report_out.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
