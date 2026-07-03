@@ -33,7 +33,7 @@ class ReducedActiveSurfaceContractTest(ResidentRuntimeContractHelpers, unittest.
         )
         self.assertEqual(completed.returncode, 0, msg=completed.stderr)
         self.assertIn(
-            "external_user_readiness_audit_gate",
+            "define_scientific_circt_source_variant_regression_harness_gate",
             completed.stdout,
         )
 
@@ -54,11 +54,11 @@ class ReducedActiveSurfaceContractTest(ResidentRuntimeContractHelpers, unittest.
         self.assertEqual(selection["top_level_goal"], "modern_llm_serving_rtl_hybrid_conditions")
         self.assertEqual(
             selection["current_priority"],
-            "external_user_readiness_audit_gate",
+            "define_scientific_circt_source_variant_regression_harness_gate",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json",
+            "records/scaling_gates/select_scientific_circt_source_variant_regression_harness_after_fc074_gate.json",
         )
         self._assert_selection_evidence_paths(selection)
         self.assertEqual(selection["candidate_targets"], [])

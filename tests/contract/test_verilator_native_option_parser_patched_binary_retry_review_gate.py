@@ -144,18 +144,18 @@ def _load_public_pack_paths() -> tuple[str, ...]:
 
 
 class VerilatorNativeOptionParserPatchedBinaryRetryReviewGateTest(unittest.TestCase):
-    def test_selection_points_at_external_user_readiness_audit(self) -> None:
+    def test_selection_points_at_scientific_circt_regression_harness(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
 
         self.assertEqual(
             selection["current_priority"],
-            "external_user_readiness_audit_gate",
+            "define_scientific_circt_source_variant_regression_harness_gate",
         )
         self.assertEqual(
             selection["current_priority_source_artifact"],
-            "config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json",
+            "records/scaling_gates/select_scientific_circt_source_variant_regression_harness_after_fc074_gate.json",
         )
-        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 966)
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 971)
 
     def test_review_accepts_only_parser_only_patched_binary_success(self) -> None:
         gate = json.loads(REVIEW_GATE.read_text(encoding="utf-8"))

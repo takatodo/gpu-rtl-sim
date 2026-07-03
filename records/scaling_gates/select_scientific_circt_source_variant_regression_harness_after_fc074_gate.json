@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "gate": "select_scientific_circt_source_variant_regression_harness_after_fc074_gate",
+  "status": "accepted_scientific_circt_source_variant_regression_harness_as_current_priority_after_fc074",
+  "github_completed_task_issue": 74,
+  "github_selected_task_issue": 76,
+  "objective": "Select FC-076 (#76 source-variant regression/negative-example harness) as current priority now that FC-074 (#74) is complete.",
+  "current_priority": "define_scientific_circt_source_variant_regression_harness_gate",
+  "current_priority_source_artifact": "records/scaling_gates/select_scientific_circt_source_variant_regression_harness_after_fc074_gate.json",
+  "accepted_evidence": {
+    "fc074_completion_gate": {
+      "path": "records/scaling_gates/scientific_circt_source_variant_bridge_spec_generated_bridge_gate.json",
+      "accepted_result": "Three promoted source-variant rows reached the reviewed generated bridge path with mismatch_count 0, while block2_hls_friendly failed closed before dlopen."
+    },
+    "wrapper_cli_only_operator_surface_decision": {
+      "accepted": true,
+      "summary": "The Verilator-facing operator surface remains the wrapper-CLI-only lane; it is recorded separately from the global current-priority selection."
+    },
+    "decided_followup_order": {
+      "first": "FC-076 source-variant regression/negative-example harness",
+      "second": "FC-075 follow-up",
+      "reason": "The regression/negative-example harness should pin the FC-074 bridge behavior before expanding the next source-variant workstream."
+    }
+  },
+  "required_next_gate": {
+    "name": "define_scientific_circt_source_variant_regression_harness_gate",
+    "must_define": [
+      "the FC-076 regression harness scope for promoted source variants",
+      "negative examples that fail closed before arbitrary bridge or runtime authority",
+      "the accepted FC-074 evidence reused as the baseline",
+      "the non-claims that keep timing, arbitrary RTL generation, and wrapper-lane readiness separate"
+    ]
+  },
+  "acceptance_policy": {
+    "selection_only": true,
+    "fc074_completion_accepted_as_predecessor": true,
+    "fc076_selected_before_fc075": true,
+    "new_execution_performed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_bridge_generation_claim_allowed_by_gate_alone": false,
+    "external_user_readiness_audit_selected_as_global_current_priority": false
+  },
+  "next_task": "define_scientific_circt_source_variant_regression_harness_gate",
+  "non_claims": [
+    "no timing or speedup claim",
+    "no arbitrary RTL bridge generation",
+    "external_user_readiness_audit_gate remains the wrapper lane's next gate but is not the global current priority"
+  ]
+}
