@@ -43,9 +43,9 @@ class ScientificCirctSourceVariantRegressionTest(HybridCliTestCase):
     def test_decide_promote_case_passes_on_in_band_synthetic_samples(self) -> None:
         case = self._attention_head4_case()
         samples = [
-            {"output_equal": True, "checksum_equal": True, "observed_speedup": 13.0, "status": "runtime_handoff_boundary_measured"},
-            {"output_equal": True, "checksum_equal": True, "observed_speedup": 13.5, "status": "runtime_handoff_boundary_measured"},
-            {"output_equal": True, "checksum_equal": True, "observed_speedup": 13.2, "status": "runtime_handoff_boundary_measured"},
+            {"output_equal": True, "checksum_equal": True, "observed_speedup": 18.5, "status": "runtime_handoff_boundary_measured"},
+            {"output_equal": True, "checksum_equal": True, "observed_speedup": 19.0, "status": "runtime_handoff_boundary_measured"},
+            {"output_equal": True, "checksum_equal": True, "observed_speedup": 18.7, "status": "runtime_handoff_boundary_measured"},
         ]
         passed, reason = regression.decide_promote_case(case, samples)
         self.assertTrue(passed)
@@ -87,6 +87,51 @@ class ScientificCirctSourceVariantRegressionTest(HybridCliTestCase):
         self.assertFalse(passed)
         self.assertEqual(reason, "lost_improvement_margin")
 
+    def test_decide_promote_case_fails_speedup_out_of_band_on_nan_speedup(self) -> None:
+        # NaN comparisons are always false, so a naive `> band` check would
+        # silently let a NaN speedup through. It must fail closed instead.
+        case = self._attention_head4_case()
+        samples = [
+            {"output_equal": True, "checksum_equal": True, "observed_speedup": float("nan"), "status": "runtime_handoff_boundary_measured"}
+            for _ in range(3)
+        ]
+        passed, reason = regression.decide_promote_case(case, samples)
+        self.assertFalse(passed)
+        self.assertEqual(reason, "speedup_out_of_band")
+
+    def test_decide_promote_case_fails_speedup_out_of_band_on_none_speedup(self) -> None:
+        case = self._attention_head4_case()
+        samples = [
+            {"output_equal": True, "checksum_equal": True, "observed_speedup": None, "status": "runtime_handoff_boundary_measured"}
+            for _ in range(3)
+        ]
+        passed, reason = regression.decide_promote_case(case, samples)
+        self.assertFalse(passed)
+        self.assertEqual(reason, "speedup_out_of_band")
+
+    def test_decide_promote_case_fails_oracle_mismatch_on_failure_status_with_true_equality_fields(self) -> None:
+        # Equality fields alone are not enough: a sample whose status shows
+        # the run never actually dispatched/measured must still fail closed.
+        case = self._attention_head4_case()
+        samples = [
+            {"output_equal": True, "checksum_equal": True, "observed_speedup": 13.0, "status": "runtime_handoff_boundary_failed"}
+            for _ in range(3)
+        ]
+        passed, reason = regression.decide_promote_case(case, samples)
+        self.assertFalse(passed)
+        self.assertEqual(reason, "oracle_mismatch")
+
+    def test_decide_promote_case_fails_on_partial_sample_failure(self) -> None:
+        case = self._attention_head4_case()
+        samples = [
+            {"output_equal": True, "checksum_equal": True, "observed_speedup": 13.0, "status": "runtime_handoff_boundary_measured"},
+            {"output_equal": True, "checksum_equal": True, "observed_speedup": 13.2, "status": "runtime_handoff_boundary_measured"},
+            {"output_equal": False, "checksum_equal": True, "observed_speedup": 13.1, "status": "runtime_handoff_boundary_measured"},
+        ]
+        passed, reason = regression.decide_promote_case(case, samples)
+        self.assertFalse(passed)
+        self.assertEqual(reason, "oracle_mismatch")
+
     def test_median_speedup_matches_statistics_median(self) -> None:
         samples = [
             {"observed_speedup": 1.0},
@@ -103,6 +148,18 @@ class ScientificCirctSourceVariantRegressionTest(HybridCliTestCase):
         run_report = {
             "status": "src_hybrid_verilator_metadata_gate_rejected",
             "commands": [{"stage": "resolve_verilator_root", "returncode": 0}],
+            "metadata_gate": {"failed_checks": ["policy"]},
+        }
+        passed, reason = regression.decide_fallback_case(case, run_report)
+        self.assertTrue(passed)
+        self.assertEqual(reason, "passed")
+
+    def test_decide_fallback_case_passes_when_gate_rejected_on_entrypoint_kind(self) -> None:
+        case = self._block2_case()
+        run_report = {
+            "status": "src_hybrid_verilator_metadata_gate_rejected",
+            "commands": [],
+            "metadata_gate": {"failed_checks": ["entrypoint_kind"]},
         }
         passed, reason = regression.decide_fallback_case(case, run_report)
         self.assertTrue(passed)
@@ -127,6 +184,48 @@ class ScientificCirctSourceVariantRegressionTest(HybridCliTestCase):
         passed, reason = regression.decide_fallback_case(case, run_report)
         self.assertFalse(passed)
         self.assertEqual(reason, "fallback_variant_was_dispatched")
+
+    def test_decide_fallback_case_fails_when_build_failed_past_gate(self) -> None:
+        # A block2 run that got PAST the metadata gate and only died later, at
+        # build. This must not be conflated with the intended fail-closed
+        # metadata-gate rejection: it is a different failure point.
+        case = self._block2_case()
+        run_report = {
+            "status": "src_hybrid_verilator_bridge_build_failed",
+            "commands": [
+                {"stage": "resolve_verilator_root", "returncode": 0},
+                {"stage": "build_src_hybrid_verilator_bridge", "returncode": 1},
+            ],
+            "metadata_gate": {"checks": {"policy": True}},
+        }
+        passed, reason = regression.decide_fallback_case(case, run_report)
+        self.assertFalse(passed)
+        self.assertEqual(reason, "fallback_rejection_not_metadata_gate")
+
+    def test_decide_fallback_case_fails_when_artifacts_missing_past_gate(self) -> None:
+        case = self._block2_case()
+        run_report = {
+            "status": "runtime_handoff_artifacts_missing",
+            "commands": [],
+            "metadata_gate": {"checks": {"policy": True}},
+        }
+        passed, reason = regression.decide_fallback_case(case, run_report)
+        self.assertFalse(passed)
+        self.assertEqual(reason, "fallback_rejection_not_metadata_gate")
+
+    def test_decide_fallback_case_fails_when_gate_rejected_for_unrelated_check(self) -> None:
+        # Status matches the expected rejection point, but the failed check
+        # is not policy/entrypoint_kind (e.g. a shape mismatch): still the
+        # wrong rejection reason for a fallback-baseline row.
+        case = self._block2_case()
+        run_report = {
+            "status": "src_hybrid_verilator_metadata_gate_rejected",
+            "commands": [],
+            "metadata_gate": {"failed_checks": ["shape"]},
+        }
+        passed, reason = regression.decide_fallback_case(case, run_report)
+        self.assertFalse(passed)
+        self.assertEqual(reason, "fallback_rejection_not_metadata_gate")
 
     def test_run_variant_samples_uses_injected_runner_as_di_seam(self) -> None:
         calls: list[tuple[dict[str, Any], dict[str, Any], dict[str, Any]]] = []

@@ -45,6 +45,17 @@ def _select_cases(cases: list[regression.RegressionCase], wanted: list[str]) -> 
 
 def self_check(cases: list[regression.RegressionCase]) -> dict[str, Any]:
     promote_cases = [case for case in cases if case.expected_policy == "promote_to_hls_gpu"]
+    if not promote_cases:
+        return {
+            "schema_version": 1,
+            "surface": "scientific_circt_source_variant_regression_self_check",
+            "status": "self_check_failed",
+            "reason": "no_promote_rows_in_reference",
+            "oracle_detected": False,
+            "speedup_detected": False,
+            "detections": {},
+            "non_claims": ["synthetic corrupted samples only", "no GPU dispatched"],
+        }
     detections: dict[str, dict[str, Any]] = {}
     all_detected = True
     for kind, expected_reason in (("oracle", "oracle_mismatch"), ("speedup", "speedup_out_of_band")):
@@ -106,6 +117,8 @@ def run_regression(
                 "repeat": repeat,
                 "median_observed_speedup": regression.median_speedup(samples),
                 "recorded_variant_speedup": case.recorded_variant_speedup,
+                "sample_observed_speedups": [sample.get("observed_speedup") for sample in samples],
+                "sample_statuses": [sample.get("status") for sample in samples],
             }
         else:
             run_report = regression.default_real_runner(row, matrix, hls_summary)
@@ -145,21 +158,27 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--report-out", type=Path, default=None)
     args = parser.parse_args(argv)
 
+    if args.repeat < 1:
+        print(json.dumps({"status": "failed_invalid_repeat", "reason": f"--repeat must be >= 1, got {args.repeat}"}))
+        return 2
+
     try:
         cases = regression.load_reference(args.reference)
     except Exception as exc:
         print(json.dumps({"status": "failed_reference_load", "reason": str(exc)}))
         return 2
 
-    selected = _select_cases(cases, args.variant)
-    if selected is None:
-        unknown = sorted(set(args.variant) - {case.source_variant for case in cases})
-        print(json.dumps({"status": "failed_unknown_variant", "unknown": unknown}))
-        return 2
-
     if args.self_check:
-        summary = self_check(selected)
+        # --self-check ignores --variant entirely: it always exercises every
+        # promote row in the reference, so a selection that happens to
+        # contain zero promote rows can never pass without checking anything.
+        summary = self_check(cases)
     else:
+        selected = _select_cases(cases, args.variant)
+        if selected is None:
+            unknown = sorted(set(args.variant) - {case.source_variant for case in cases})
+            print(json.dumps({"status": "failed_unknown_variant", "unknown": unknown}))
+            return 2
         try:
             metadata_report = _load(args.metadata_report)
             matrix = _load(args.matrix)

@@ -8,52 +8,61 @@
     {
       "source_variant": "attention_head4_hls_friendly",
       "expected_policy": "promote_to_hls_gpu",
-      "recorded_variant_speedup": 13.301119215779238,
+      "recorded_variant_speedup": 18.703422483969856,
+      "metric": "average.cpu_to_bridge_hybrid_wall_speedup via scientific_circt_source_variant_regression_cli --run",
       "recorded_baseline_speedup": 6.126758590128443,
+      "recorded_baseline_speedup_note": "legacy comparison.baseline_speedup metric, retained only for the improvement-margin discriminator until baseline forms are measured harness-natively",
       "tolerance": {
         "relative_band": 0.20,
         "absolute_floor": 0.05,
         "min_improvement_margin": 0.0,
-        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here"
+        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here; the margin check stays conservative because harness-native medians run higher than the legacy baseline metric"
       },
       "provenance": {
         "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json",
         "date": "2026-07-03",
-        "note": "measured decision for this environment, not a universal threshold"
+        "note": "harness-native median measured with scientific_circt_source_variant_regression_cli --run --repeat 5",
+        "environment": "measured while the FC-073 autonomous diagnostic loop co-ran on this host"
       }
     },
     {
       "source_variant": "mlp4_hls_friendly",
       "expected_policy": "promote_to_hls_gpu",
-      "recorded_variant_speedup": 9.922827450510521,
+      "recorded_variant_speedup": 13.465470432368704,
+      "metric": "average.cpu_to_bridge_hybrid_wall_speedup via scientific_circt_source_variant_regression_cli --run",
       "recorded_baseline_speedup": 2.28894,
+      "recorded_baseline_speedup_note": "legacy comparison.baseline_speedup metric, retained only for the improvement-margin discriminator until baseline forms are measured harness-natively",
       "tolerance": {
         "relative_band": 0.20,
         "absolute_floor": 0.05,
         "min_improvement_margin": 0.0,
-        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here"
+        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here; the margin check stays conservative because harness-native medians run higher than the legacy baseline metric"
       },
       "provenance": {
         "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json",
         "date": "2026-07-03",
-        "note": "measured decision for this environment, not a universal threshold"
+        "note": "harness-native median measured with scientific_circt_source_variant_regression_cli --run --repeat 5",
+        "environment": "measured while the FC-073 autonomous diagnostic loop co-ran on this host"
       }
     },
     {
       "source_variant": "inference2_hls_friendly",
       "expected_policy": "promote_to_hls_gpu",
-      "recorded_variant_speedup": 9.799333107174757,
+      "recorded_variant_speedup": 14.526278276661243,
+      "metric": "average.cpu_to_bridge_hybrid_wall_speedup via scientific_circt_source_variant_regression_cli --run",
       "recorded_baseline_speedup": 3.62419,
+      "recorded_baseline_speedup_note": "legacy comparison.baseline_speedup metric, retained only for the improvement-margin discriminator until baseline forms are measured harness-natively",
       "tolerance": {
         "relative_band": 0.20,
         "absolute_floor": 0.05,
         "min_improvement_margin": 0.0,
-        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here"
+        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here; the margin check stays conservative because harness-native medians run higher than the legacy baseline metric"
       },
       "provenance": {
         "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json",
         "date": "2026-07-03",
-        "note": "measured decision for this environment, not a universal threshold"
+        "note": "harness-native median measured with scientific_circt_source_variant_regression_cli --run --repeat 5",
+        "environment": "measured while the FC-073 autonomous diagnostic loop co-ran on this host"
       }
     },
     {
@@ -61,11 +70,12 @@
       "expected_policy": "fallback_baseline_no_speedup_improvement",
       "recorded_variant_speedup": 5.56609843788867,
       "recorded_baseline_speedup": 5.75973,
+      "recorded_baseline_speedup_note": "legacy comparison.baseline_speedup metric, retained only for the improvement-margin discriminator until baseline forms are measured harness-natively",
       "tolerance": {
         "relative_band": 0.20,
         "absolute_floor": 0.05,
         "min_improvement_margin": 0.0,
-        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here"
+        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here; unused by decide_fallback_case, which checks fail-closed rejection before dispatch rather than a speedup value"
       },
       "provenance": {
         "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json",
@@ -81,6 +91,7 @@
     "not_rtlmeter_evidence",
     "not_automatic_hls_rewrite",
     "not_production_runtime_dispatcher",
-    "tolerance band is an initial working value for this environment, not a universal or externally validated threshold"
+    "tolerance band is an initial working value for this environment, not a universal or externally validated threshold",
+    "recorded_variant_speedup for the three promote rows is a harness-native metric (average.cpu_to_bridge_hybrid_wall_speedup); recorded_baseline_speedup for all four rows is still the legacy comparison.baseline_speedup metric and has not yet been re-measured harness-natively"
   ]
 }

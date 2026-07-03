@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import math
 from pathlib import Path
 import statistics
 from typing import Any, Callable
@@ -106,13 +107,28 @@ def median_speedup(samples: list[dict[str, Any]]) -> float | None:
 
 
 def decide_promote_case(case: RegressionCase, samples: list[dict[str, Any]]) -> tuple[bool, str]:
-    if not samples or any(not (sample.get("output_equal") is True and sample.get("checksum_equal") is True) for sample in samples):
+    """Every sample must be a valid, dispatched, agreeing oracle before the
+    median is even computed: a non-success status or a failed output/checksum
+    oracle fails closed as `oracle_mismatch`; a missing or non-finite
+    speedup (NaN comparisons are always false, so NaN must not slip through
+    the band check below) fails closed as `speedup_out_of_band`.
+    """
+    if not samples:
         return False, "oracle_mismatch"
+    for sample in samples:
+        oracle_ok = (
+            sample.get("status") in DISPATCHED_STATUSES
+            and sample.get("output_equal") is True
+            and sample.get("checksum_equal") is True
+        )
+        if not oracle_ok:
+            return False, "oracle_mismatch"
+        speedup = sample.get("observed_speedup")
+        if isinstance(speedup, bool) or not isinstance(speedup, int | float) or not math.isfinite(speedup):
+            return False, "speedup_out_of_band"
     median = median_speedup(samples)
-    if median is None:
-        return False, "oracle_mismatch"
     band = max(case.absolute_floor, case.recorded_variant_speedup * case.relative_band)
-    if abs(median - case.recorded_variant_speedup) > band:
+    if median is None or abs(median - case.recorded_variant_speedup) > band:
         return False, "speedup_out_of_band"
     if median <= case.recorded_baseline_speedup + case.min_improvement_margin:
         return False, "lost_improvement_margin"
@@ -120,6 +136,12 @@ def decide_promote_case(case: RegressionCase, samples: list[dict[str, Any]]) -> 
 
 
 def decide_fallback_case(case: RegressionCase, run_report: dict[str, Any]) -> tuple[bool, str]:
+    """Pass only a fallback row that was rejected at exactly the metadata
+    gate for a policy/entrypoint reason before any dispatch. A row that
+    cleared the gate and then died later (build failure, missing artifacts,
+    ...) is a different failure and must not be conflated with the intended
+    fail-closed rejection.
+    """
     status = run_report.get("status")
     commands = run_report.get("commands") if isinstance(run_report.get("commands"), list) else []
     dispatched_command = any(
@@ -127,6 +149,14 @@ def decide_fallback_case(case: RegressionCase, run_report: dict[str, Any]) -> tu
     )
     if status in DISPATCHED_STATUSES or dispatched_command:
         return False, "fallback_variant_was_dispatched"
+    metadata_gate = run_report.get("metadata_gate") if isinstance(run_report.get("metadata_gate"), dict) else {}
+    failed_checks = metadata_gate.get("failed_checks")
+    failed_checks = failed_checks if isinstance(failed_checks, list) else []
+    gate_rejected_on_policy = status == "src_hybrid_verilator_metadata_gate_rejected" and (
+        "policy" in failed_checks or "entrypoint_kind" in failed_checks
+    )
+    if not gate_rejected_on_policy:
+        return False, "fallback_rejection_not_metadata_gate"
     return True, "passed"
 
 
