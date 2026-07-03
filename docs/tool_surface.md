@@ -88,6 +88,7 @@ usefulness, or broad gateGPT PASS/FAIL authority.
 helper. It joins Stage112 runtime events with the LLVM metadata source map, but
 static metadata rows remain non-authoritative unless a runtime event names the
 same source id.
+`src/tools/scientific_circt_source_variant_search_cli.py` is the FC-075 closed-loop CIRCT source-variant rewrite search surface for emitting candidate sources and running the fail-closed intermediate/falsification gates.
 `src/tools/rtlmeter_vortex_ptx_entry_slice.py --stub-func` is a ptxas-surface
 diagnostic only: it can replace a selected reachable `.func` body with a
 ret-only stub to prove that a large callee body is driving compile cost. A stub
