@@ -55,9 +55,12 @@ class ScientificCirctSourceVariantSearchTest(unittest.TestCase):
         self.assertFalse(search.transform_obligation_holds(shared, plan, attention_py))
         self.assertFalse(search.transform_obligation_holds(permuted, plan, attention_py))
 
+    REFERENCE_PLAN = search.VariantPlan((search.Replicate(4),))
+
     def test_gates_fail_closed_on_mismatch_and_below_band(self) -> None:
         mismatch = {
             "variant": "bad",
+            "plan": str(self.REFERENCE_PLAN),
             "samples": [
                 {
                     "status": "runtime_handoff_boundary_measured",
@@ -70,6 +73,7 @@ class ScientificCirctSourceVariantSearchTest(unittest.TestCase):
         self.assertEqual(search.decide_intermediate_gate(10.0, [mismatch]), (False, "oracle_mismatch_in_search"))
         below = {
             "variant": "slow",
+            "plan": str(search.VariantPlan((search.Replicate(6),))),
             "samples": [
                 {
                     "status": "runtime_handoff_boundary_measured",
@@ -80,19 +84,40 @@ class ScientificCirctSourceVariantSearchTest(unittest.TestCase):
             ],
         }
         self.assertEqual(search.decide_intermediate_gate(10.0, [below]), (False, "below_intermediate_delta"))
-        self.assertEqual(search.decide_falsification_gate(20.0, [below]), (False, "speedup_out_of_band"))
+        self.assertEqual(search.decide_falsification_gate(self.REFERENCE_PLAN, 20.0, [below]), (False, "speedup_out_of_band"))
 
     def test_gates_fail_closed_with_distinct_reason_on_unmeasured_plan(self) -> None:
         unmeasured = {
             "variant": "broken_build",
+            "plan": str(self.REFERENCE_PLAN),
             "samples": [{"status": "failed_cxx_direct_callsite_build"}],
         }
         self.assertEqual(search.decide_intermediate_gate(10.0, [unmeasured]), (False, "unmeasured_plan_in_search"))
-        self.assertEqual(search.decide_falsification_gate(10.0, [unmeasured]), (False, "unmeasured_plan_in_search"))
+        self.assertEqual(search.decide_falsification_gate(self.REFERENCE_PLAN, 10.0, [unmeasured]), (False, "unmeasured_plan_in_search"))
 
-    def test_falsification_gate_flags_superior_variant_as_a_finding_not_a_bare_failure(self) -> None:
+    def test_falsification_gate_passes_on_structure_identity_regardless_of_measured_value(self) -> None:
+        # Same structure as the reference, but a wildly different measured value: this must still
+        # pass, because value equality is implied by byte-identical codegen, not re-checked here.
+        same_structure_different_value = {
+            "variant": "attention_head4_hls_friendly",
+            "plan": str(self.REFERENCE_PLAN),
+            "samples": [
+                {
+                    "status": "runtime_handoff_boundary_measured",
+                    "cpu_vs_gpu_output_equal": True,
+                    "cpu_vs_gpu_control_checksum_equal": True,
+                    "cpu_to_bridge_hybrid_wall_speedup": 999.0,
+                }
+            ],
+        }
+        self.assertEqual(
+            search.decide_falsification_gate(self.REFERENCE_PLAN, 6.0, [same_structure_different_value]), (True, "passed")
+        )
+
+    def test_falsification_gate_flags_structure_mismatch_with_higher_value_as_a_finding(self) -> None:
         superior = {
             "variant": "beats_reference",
+            "plan": str(search.VariantPlan((search.Replicate(8),))),
             "samples": [
                 {
                     "status": "runtime_handoff_boundary_measured",
@@ -102,7 +127,7 @@ class ScientificCirctSourceVariantSearchTest(unittest.TestCase):
                 }
             ],
         }
-        self.assertEqual(search.decide_falsification_gate(10.0, [superior]), (False, "superior_variant_found"))
+        self.assertEqual(search.decide_falsification_gate(self.REFERENCE_PLAN, 10.0, [superior]), (False, "superior_variant_found"))
 
     def test_enumerate_plans_is_structural_only_at_fixed_density(self) -> None:
         first = search.enumerate_plans("intermediate")

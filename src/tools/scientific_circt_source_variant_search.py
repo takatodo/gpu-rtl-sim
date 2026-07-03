@@ -181,7 +181,16 @@ def decide_intermediate_gate(baseline_median: float, results: list[dict[str, Any
     return (True, "passed") if top >= baseline_median + INTERMEDIATE_ABS_DELTA else (False, "below_intermediate_delta")
 
 
-def decide_falsification_gate(reference_median: float, results: list[dict[str, Any]]) -> tuple[bool, str]:
+def decide_falsification_gate(reference_plan: VariantPlan, reference_median: float, results: list[dict[str, Any]]) -> tuple[bool, str]:
+    """Structure-identity gate: passed iff the top plan's transform structure equals reference_plan
+    and the search has zero oracle mismatches/unmeasured plans. reference_median is provenance only
+    (see run_search's reference_value_note), not part of the pass/fail decision: reference_plan
+    (attention Replicate(4)) and the search's own head4 entry are the same binary, so the prior
+    +-10% value band compared one measurement of an artifact to another measurement of itself — a
+    real run produced 6.00 vs 8.79 for that pair (FC-073 loop-contention noise), which motivated
+    this change. The band below now only flags a *different* structure whose value clearly beats
+    the reference — a real discovery (e.g. mlp8), not self-comparison noise.
+    """
     if _any_unmeasured(results):
         return False, "unmeasured_plan_in_search"
     if _any_oracle_mismatch(results):
@@ -189,13 +198,12 @@ def decide_falsification_gate(reference_median: float, results: list[dict[str, A
     ranked = rank_variants(results)
     if not ranked:
         return False, "speedup_out_of_band"
-    band = max(FALSIFICATION_ABS_FLOOR, reference_median * FALSIFICATION_RELATIVE_BAND)
-    top = ranked[0]["median_cpu_to_bridge_hybrid_wall_speedup"]
-    delta = top - reference_median
-    if abs(delta) <= band:
+    top = ranked[0]
+    if top.get("plan") == str(reference_plan):
         return True, "passed"
-    if delta > band:
-        # The search beat the hand-tuned reference form: a finding, not a falsification failure.
+    band = max(FALSIFICATION_ABS_FLOOR, reference_median * FALSIFICATION_RELATIVE_BAND)
+    if top["median_cpu_to_bridge_hybrid_wall_speedup"] - reference_median > band:
+        # A structurally different plan beat the reference: a finding, not a falsification failure.
         return False, "superior_variant_found"
     return False, "speedup_out_of_band"
 

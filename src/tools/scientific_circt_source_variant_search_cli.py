@@ -92,6 +92,13 @@ def _median(results: list[dict[str, Any]]) -> float | None:
 
 
 STOP_EARLY_REASONS = {"oracle_mismatch_in_search", "unmeasured_plan_in_search"}
+REFERENCE_VALUE_NOTE = (
+    "reference_median is provenance only, not a gate criterion: a structure-identical top plan "
+    "passes without a value check because its codegen is byte-identical to the reference. A prior "
+    "+-10% value band was retired as noise-dominated: measuring the same attention Replicate(4) "
+    "binary twice under co-load (FC-073 loop contention) produced 6.00 vs 8.79 for what is "
+    "structurally one artifact, so that band only tested measurement noise."
+)
 
 
 def run_search(
@@ -110,14 +117,17 @@ def run_search(
     )
     baseline = results[0] if results else {}
     baseline_median = search.rank_variants([baseline])[0]["median_cpu_to_bridge_hybrid_wall_speedup"] if search.rank_variants([baseline]) else 0.0
+    reference_value_note = None
     if args.gate == "intermediate":
         passed, reason = search.decide_intermediate_gate(baseline_median, results)
         reference_median = None
     else:
-        reference = measure_plan(search.ATTENTION_DESCRIPTOR, search.VariantPlan((search.Replicate(4),)), args.out_dir, args.repeat)
+        reference_plan = search.VariantPlan((search.Replicate(4),))
+        reference = measure_plan(search.ATTENTION_DESCRIPTOR, reference_plan, args.out_dir, args.repeat)
         reference_median = _median([reference])
+        reference_value_note = REFERENCE_VALUE_NOTE
         passed, reason = (
-            search.decide_falsification_gate(reference_median, results)
+            search.decide_falsification_gate(reference_plan, reference_median, results)
             if reference_median is not None
             else (False, "speedup_out_of_band")
         )
@@ -129,6 +139,7 @@ def run_search(
         "finding": reason == "superior_variant_found",
         "baseline_median": baseline_median,
         "reference_median": reference_median,
+        "reference_value_note": reference_value_note,
         "results": results,
         "density_knob_results": density_knob_results,
     }
