@@ -9,12 +9,11 @@ from pathlib import Path
 import statistics
 from typing import Any
 
-import scientific_circt_hls_attention_head_variant as attention_hls
-import scientific_circt_hls_mlp_block_variants as mlp_hls
 import scientific_circt_source_variant_search as search
+import scientific_circt_source_variant_search_build as build
 import scientific_circt_source_variant_search_codegen as codegen
 
-OUT_DIR = Path("artifacts/scientific_circt/source_variant_search")
+OUT_DIR = Path("artifacts/scientific_circt/search")
 REPORT = Path("reports/scientific_circt_source_variant_search.json")
 CANDIDATES = ("microgpt_attention_head", "microgpt_mlp_slice", "microgpt_inference_slice")
 
@@ -42,13 +41,12 @@ def parse_plan(text: str | None) -> search.VariantPlan | None:
 
 
 def _paths(root: Path, descriptor: search.BlockDescriptor, plan: search.VariantPlan) -> dict[str, Path]:
-    name = codegen.variant_name(descriptor, plan)
-    variant_dir = root / name
+    paths = build.paths_for(root, descriptor, plan)
     return {
-        "dir": variant_dir,
-        "firrtl": variant_dir / f"{name}.fir",
-        "cuda": variant_dir / f"{name}_gpu.cu",
-        "bridge": variant_dir / f"{name}_bridge.cpp",
+        "dir": paths.work_dir,
+        "firrtl": paths.firrtl,
+        "cuda": paths.cuda,
+        "bridge": paths.bridge,
     }
 
 
@@ -70,47 +68,15 @@ def _sample(report: dict[str, Any]) -> dict[str, Any]:
         "cpu_vs_gpu_control_checksum_equal": report.get(
             "cpu_vs_gpu_control_checksum_equal", observed.get("cpu_vs_gpu_control_checksum_equal")
         ),
+        "mismatch_count": observed.get("mismatch_count", report.get("mismatch_count")),
         "cpu_to_bridge_hybrid_wall_speedup": observed.get("cpu_to_bridge_hybrid_wall_speedup"),
     }
-
-
-def _measure_existing(
-    descriptor: search.BlockDescriptor,
-    plan: search.VariantPlan,
-    *,
-    out_dir: Path,
-    repeat: int,
-) -> dict[str, Any]:
-    shape = search.plan_shape(plan)
-    if shape.packing != "uint8":
-        return {"status": "unsupported_non_emit_plan", "reason": "packed-input search plans are emit-only until promoted"}
-    if descriptor.candidate == "microgpt_attention_head" and shape.units == 4:
-        return attention_hls.materialize_and_measure(repeat=1, inner_repeat=shape.inner_repeat, out_dir=out_dir)
-    if descriptor.candidate == "microgpt_mlp_slice" and shape.units == 4:
-        return mlp_hls.measure_variant(
-            mlp_hls.VARIANTS["mlp4_hls_friendly"],
-            shape="1024x1",
-            repeat=1,
-            inner_repeat=shape.inner_repeat,
-            integration_batches=15,
-            out_dir=out_dir,
-        )
-    if descriptor.candidate == "microgpt_inference_slice" and shape.units == 2:
-        return mlp_hls.measure_variant(
-            mlp_hls.VARIANTS["inference2_hls_friendly"],
-            shape="1024x1",
-            repeat=1,
-            inner_repeat=shape.inner_repeat,
-            integration_batches=15,
-            out_dir=out_dir,
-        )
-    return {"status": "unsupported_non_emit_plan", "reason": f"no existing build pipeline for n={shape.units}"}
 
 
 def measure_plan(descriptor: search.BlockDescriptor, plan: search.VariantPlan, out_dir: Path, repeats: int) -> dict[str, Any]:
     samples = []
     for _ in range(repeats):
-        report = _measure_existing(descriptor, plan, out_dir=out_dir, repeat=1)
+        report = build.build_and_measure(descriptor, plan, out_root=out_dir, repeat=1)
         sample = _sample(report)
         samples.append(sample)
         if sample.get("cpu_vs_gpu_output_equal") is not True or sample.get("cpu_vs_gpu_control_checksum_equal") is not True:
