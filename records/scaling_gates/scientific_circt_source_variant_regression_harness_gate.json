@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "gate_name": "scientific_circt_source_variant_regression_harness_gate",
+  "github_issue": "https://github.com/takatodo/gpu-rtl-sim/issues/76",
+  "predecessors": [
+    "https://github.com/takatodo/gpu-rtl-sim/issues/74"
+  ],
+  "objective": "Prove a thin regression + negative-example harness over the recorded source-variant rows: oracle equality and speedup banding for promoted rows, metadata-gate-exact rejection for the fallback row, and demonstrated fail-closed detection of injected corruption without GPU.",
+  "measured_acceptance_2026_07_03": {
+    "command": "python3 src/tools/scientific_circt_source_variant_regression_cli.py --run --repeat 5",
+    "overall_passed": true,
+    "attention_head4_hls_friendly": {
+      "median_cpu_to_bridge_hybrid_wall_speedup": 16.04,
+      "sample_observed_speedups": [13.9, 18.9, 12.2, 16.0, 19.1],
+      "oracle": "mismatch 0 and checksum equality on all samples",
+      "calibrated_relative_band": 0.65
+    },
+    "mlp4_hls_friendly": {
+      "median_cpu_to_bridge_hybrid_wall_speedup": 13.88,
+      "sample_observed_speedups": [12.4, 16.8, 13.9, 12.2, 14.5],
+      "oracle": "mismatch 0 and checksum equality on all samples",
+      "calibrated_relative_band": 0.5
+    },
+    "inference2_hls_friendly": {
+      "median_cpu_to_bridge_hybrid_wall_speedup": 14.49,
+      "sample_observed_speedups": [14.5, 14.3, 13.8, 14.8, 15.4],
+      "oracle": "mismatch 0 and checksum equality on all samples",
+      "calibrated_relative_band": 0.2
+    },
+    "block2_hls_friendly": {
+      "outcome": "rejected exactly at the metadata gate (src_hybrid_verilator_metadata_gate_rejected), never dispatched; build-failure-past-gate and wrong-check rejections are distinguished and would fail"
+    },
+    "self_check": "injected oracle corruption and below-band speedup are both detected by the real decision functions without GPU (exit 0 only on detection)"
+  },
+  "environment_note": "Measured while the FC-073 autonomous diagnostic loop co-ran on this host; tolerance bands are environment-scoped measured decisions calibrated as max(0.20, outer-repeat relative spread x 1.5) and should be recalibrated (likely tighter) on a quiet host.",
+  "metric_note": "Recorded references and observations both use average.cpu_to_bridge_hybrid_wall_speedup through the generalized FC-074 bridge; the first acceptance attempt failed because the reference had transcribed the legacy comparison.variant_speedup metric, which the harness itself detected (speedup_out_of_band on all promoted rows).",
+  "implementation_commits": [
+    "262a07d",
+    "ab78b02",
+    "70b4311"
+  ],
+  "implementation_focus": [
+    "src/tools/scientific_circt_source_variant_regression.py",
+    "src/tools/scientific_circt_source_variant_regression_cli.py",
+    "records/scaling_gates/scientific_circt_source_variant_regression_reference.json",
+    "tests/contract/test_scientific_circt_source_variant_regression.py",
+    "tests/contract/test_scientific_circt_source_variant_regression_cli.py"
+  ],
+  "non_claims": [
+    "no universal performance thresholds (bands are environment-scoped measured decisions)",
+    "no new speedup claim beyond regression banding of already-recorded rows",
+    "no arbitrary RTL bridge generation",
+    "no full-microGPT claim",
+    "recorded_baseline_speedup values remain on the legacy metric pending harness-native remeasurement (margin check stays conservative)"
+  ]
+}
