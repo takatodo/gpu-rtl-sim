@@ -98,6 +98,9 @@ VEER_EL2_PYTHON_SIDECAR_EXECUTABLE = Path("src/tools/veer_el2_sidecar_executable
 DIRECT_SHIM_SANITIZED_INIT_STATE_NAME = (
     "filelist_known_template_pulp_ita_mha_cpu_repeat_1x1.sanitized.bin"
 )
+NATIVE_OBJ_DIR_EXECUTABLE_SIDECAR_SHIM_LINK_SMOKE_GATE_REF = (
+    "records/scaling_gates/native_obj_dir_executable_sidecar_shim_link_smoke_gate.json"
+)
 NON_CLAIMS = (
     "recognition and plan construction are compile-side metadata, not GPU execution evidence",
     "the driver never falls back to CPU when the GPU pipeline is unavailable",
