@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "surface": "scientific_circt_source_variant_regression_reference",
+  "objective": "FC-076: pin FC-074 promoted/fallback source-variant boundary behavior as a regression reference for a repeat-sampled harness.",
+  "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json",
+  "row_count": 4,
+  "rows": [
+    {
+      "source_variant": "attention_head4_hls_friendly",
+      "expected_policy": "promote_to_hls_gpu",
+      "recorded_variant_speedup": 13.301119215779238,
+      "recorded_baseline_speedup": 6.126758590128443,
+      "tolerance": {
+        "relative_band": 0.20,
+        "absolute_floor": 0.05,
+        "min_improvement_margin": 0.0,
+        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here"
+      },
+      "provenance": {
+        "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json",
+        "date": "2026-07-03",
+        "note": "measured decision for this environment, not a universal threshold"
+      }
+    },
+    {
+      "source_variant": "mlp4_hls_friendly",
+      "expected_policy": "promote_to_hls_gpu",
+      "recorded_variant_speedup": 9.922827450510521,
+      "recorded_baseline_speedup": 2.28894,
+      "tolerance": {
+        "relative_band": 0.20,
+        "absolute_floor": 0.05,
+        "min_improvement_margin": 0.0,
+        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here"
+      },
+      "provenance": {
+        "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json",
+        "date": "2026-07-03",
+        "note": "measured decision for this environment, not a universal threshold"
+      }
+    },
+    {
+      "source_variant": "inference2_hls_friendly",
+      "expected_policy": "promote_to_hls_gpu",
+      "recorded_variant_speedup": 9.799333107174757,
+      "recorded_baseline_speedup": 3.62419,
+      "tolerance": {
+        "relative_band": 0.20,
+        "absolute_floor": 0.05,
+        "min_improvement_margin": 0.0,
+        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here"
+      },
+      "provenance": {
+        "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json",
+        "date": "2026-07-03",
+        "note": "measured decision for this environment, not a universal threshold"
+      }
+    },
+    {
+      "source_variant": "block2_hls_friendly",
+      "expected_policy": "fallback_baseline_no_speedup_improvement",
+      "recorded_variant_speedup": 5.56609843788867,
+      "recorded_baseline_speedup": 5.75973,
+      "tolerance": {
+        "relative_band": 0.20,
+        "absolute_floor": 0.05,
+        "min_improvement_margin": 0.0,
+        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here"
+      },
+      "provenance": {
+        "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json",
+        "date": "2026-07-03",
+        "note": "measured decision for this environment, not a universal threshold"
+      }
+    }
+  ],
+  "non_claims": [
+    "not_full_microgpt_execution",
+    "not_training_or_autograd",
+    "not_pcie_framing_evidence",
+    "not_rtlmeter_evidence",
+    "not_automatic_hls_rewrite",
+    "not_production_runtime_dispatcher",
+    "tolerance band is an initial working value for this environment, not a universal or externally validated threshold"
+  ]
+}
