@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "gate_name": "scientific_circt_source_variant_search_gate",
+  "github_issue": "https://github.com/takatodo/gpu-rtl-sim/issues/75",
+  "predecessors": [
+    "https://github.com/takatodo/gpu-rtl-sim/issues/74",
+    "https://github.com/takatodo/gpu-rtl-sim/issues/76"
+  ],
+  "objective": "Prove a closed-loop source-variant rewrite search: enumerate structural transform plans from a baseline block descriptor, build every plan from generated sources, gate each on full CPU-oracle equivalence, and rank by measured speedup.",
+  "intermediate_gate_2026_07_03": {
+    "candidate": "microgpt_mlp_slice",
+    "status": "passed",
+    "baseline_median": 1.688,
+    "ranking_by_median_cpu_to_bridge_hybrid_wall_speedup": {
+      "replicate8": 8.11,
+      "replicate6": 6.91,
+      "replicate4": 4.6,
+      "replicate3": 3.62,
+      "replicate2": 3.15,
+      "baseline": 1.69
+    },
+    "finding": "superior variant: the search found replicate8 (8.11x) well above the hand-tuned mlp4 form (4.60x) — a structurally different, better plan discovered by measurement, differences far beyond noise",
+    "oracle": "mismatch_count 0 on every sample of every plan"
+  },
+  "falsification_gate_2026_07_03": {
+    "candidate": "microgpt_attention_head",
+    "strict_gate_outcome": "failed (recorded honestly; not retried to force green)",
+    "three_independent_runs_top_ranking": [
+      "run1: replicate4 8.06 > replicate8 7.33 > replicate3 6.68 > replicate6 6.28",
+      "run2: replicate4 8.79 > replicate6 7.58 > replicate3 7.38 > replicate8 6.91",
+      "run3: replicate8 8.87 > replicate3 8.35 > replicate4 7.35 > replicate6 7.10"
+    ],
+    "reference_median_drift_across_runs": [6.0, 7.79, 9.05],
+    "substantive_finding": "The WIN is rediscovered in every run: from the empty baseline plan (2.6-3.5x) the search reaches the 7-9x replication plateau with zero oracle mismatches across all runs and all plans. However, replication factors n in {3,4,6,8} are statistically indistinguishable at this scale: per-batch compute is ~3.5 ms CPU / ~0.4 ms GPU wall, so the speedup metric is dominated by co-load variance (see the CPU-batch trial decomposition). The hand-tuned choice n=4 is one point on a plateau, not a unique optimum; exact-argmax rediscovery is an ill-posed target under these measurement conditions.",
+    "gate_semantics_history": "v1 value-band vs frozen constant (metric-skew failure, true positive); v2 value-band vs same-run reference (self-comparison noise tautology, 6.00 vs 8.79 for the same binary); v3 structure-identity of the top plan (strict; fails when the plateau reorders under noise). The strict v3 gate is kept in code; this record documents why its failure is a plateau finding rather than a search failure.",
+    "oracle": "mismatch_count 0 on every sample of every plan in all three runs"
+  },
+  "cpu_batch_decomposition_context": "A concurrent CPU-batch trial on the same replicate=4 block (i7-14700F, 28 threads) measured: in-process batch compute scales near-linearly (13.3x at P=16, 83% efficiency), and the idealized zero-overhead 16-way CPU batch (0.270 ms) is ~1.5x FASTER than the GPU wall (0.399 ms) at this problem size — i.e. for this block at N=1024 the measured GPU speedup over serial CPU is explained by batch-parallel structure, not GPU hardware. Practical CPU vehicles (process spawn ~15-19 ms, per-thread Vsim construction ~10 ms) failed to capture it, so the GPU's realized advantage stands. This confirms the two-layer boundary: batch-friendly-but-CPU-sufficient (this block class) vs genuinely GPU-favorable (high arithmetic density x large N, NVDLA hot-SS class).",
+  "implementation_commits": [
+    "60a3d2a",
+    "fe4d58d",
+    "904081b",
+    "6e761c8"
+  ],
+  "non_claims": [
+    "no automatic HLS rewrite claim",
+    "no claim that n=4 is uniquely optimal for attention replication (measured as a plateau point)",
+    "no universal thresholds; all speedups are environment-scoped measured decisions under documented co-load",
+    "fused multi-candidate dispatch remains frozen",
+    "PackInputs transform is emit-only and excluded from measured enumerations"
+  ]
+}
