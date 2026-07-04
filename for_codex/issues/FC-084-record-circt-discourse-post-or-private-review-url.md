@@ -117,6 +117,10 @@ Passes when one of these is recorded in the repo and on GitHub:
   alternate #85 closure path while preserving the non-claims: no arcilator GPU
   backend, no stable runtime ABI, no arbitrary SystemVerilog testbench, and no
   broad speedup claim.
+- Public-posting packet cleanup commit `af11f7c` removed the environment-specific
+  dirty-worktree sentence from the posting package and copy-paste Discourse body,
+  and replaced short evidence hashes with public commit links for `88bea41`,
+  `4495df5`, and `275cd4f`.
 - No new task issue is needed before owner action. The remaining closure step is
   still exactly one owner-controlled record: public Discourse URL, named private
   pre-review path, or fresh owner deferral.
