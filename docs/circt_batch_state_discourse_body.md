@@ -75,9 +75,11 @@ Arcilator B1 structure for the same promoted-block family:
 
 Repro packet status:
 
-- Local repo snapshot used for this posting package: `4527646` with a dirty
-  working tree; the package is not externally reproducible from a clean public
-  commit yet.
+- Local repo evidence snapshot: `88bea41` publishes this package, the copy-paste
+  body, the RFC draft, the `BatchStimulusSpec` helper, and focused contract
+  tests; `4495df5` records the GitHub #86 closure sync. Remaining dirty
+  worktree entries are unrelated to the paste body and are not required for the
+  owner action packet.
 - Local arcilator/arc test material: `arc-tests` snapshot `8dad869`; arcilator
   and `firtool` binaries are not on `PATH` in the current shell.
 - Hardware/toolchain for the recorded CUDA/Verilator rows: NVIDIA GeForce RTX
