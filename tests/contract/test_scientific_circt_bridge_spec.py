@@ -44,6 +44,7 @@ class ScientificCirctBridgeSpecTest(HybridCliTestCase):
                 "input": {"element_type": "uint8_t", "element_count": 80, "bytes_per_state": 80},
                 "output": {"element_type": "uint64_t", "element_count": 16, "bytes_per_state": 128},
             },
+            "dimensions": {"repeat": 5, "inner_repeat": 1000, "integration_batches": 15},
             "metadata_complete": True,
         }
 
@@ -63,6 +64,7 @@ class ScientificCirctBridgeSpecTest(HybridCliTestCase):
                 "input": {"element_type": "uint8_t", "element_count": 16, "bytes_per_state": 16},
                 "output": {"element_type": "uint64_t", "element_count": 8, "bytes_per_state": 64},
             },
+            "dimensions": {"repeat": 5, "inner_repeat": 1000, "integration_batches": 15},
             "metadata_complete": True,
         }
 
@@ -82,6 +84,7 @@ class ScientificCirctBridgeSpecTest(HybridCliTestCase):
                 "input": {"element_type": "uint8_t", "element_count": 8, "bytes_per_state": 8},
                 "output": {"element_type": "uint64_t", "element_count": 6, "bytes_per_state": 48},
             },
+            "dimensions": {"repeat": 5, "inner_repeat": 1000, "integration_batches": 15},
             "metadata_complete": True,
         }
 
@@ -101,6 +104,7 @@ class ScientificCirctBridgeSpecTest(HybridCliTestCase):
                 "input": {"element_type": "uint8_t", "element_count": 24, "bytes_per_state": 24},
                 "output": {"element_type": "uint64_t", "element_count": 4, "bytes_per_state": 32},
             },
+            "dimensions": {"repeat": 5, "inner_repeat": 1000, "integration_batches": 15},
             "metadata_complete": True,
         }
 
@@ -216,6 +220,99 @@ class ScientificCirctBridgeSpecTest(HybridCliTestCase):
         reloaded = json.loads(payload)
         self.assertEqual(reloaded["input_element_count"], 16)
         self.assertEqual(reloaded["output_element_count"], 8)
+
+    def test_batch_stimulus_spec_matches_fc085_promoted_rows(self) -> None:
+        rows = {
+            "attention_head4_hls_friendly": (
+                self._attention_head4_row(),
+                80,
+                16,
+                ("h0_x0", "h3_x19"),
+                ("h0_y0", "h3_y3"),
+                (17, 11, 1, 0x7F),
+                (1, 31),
+            ),
+            "mlp4_hls_friendly": (
+                self._mlp4_row(),
+                16,
+                8,
+                ("m0_x0", "m3_x3"),
+                ("m0_y0", "m3_y1"),
+                (31, 17, 3, 0xFF),
+                (3, 255),
+            ),
+            "inference2_hls_friendly": (
+                self._inference2_row(),
+                8,
+                6,
+                ("i0_tok0", "i1_pos1"),
+                ("i0_y0", "i1_y2"),
+                (17, 23, 7, 0x3F),
+                (3, 255),
+            ),
+        }
+
+        for source_variant, (
+            row,
+            input_count,
+            output_count,
+            input_edges,
+            output_edges,
+            fill_params,
+            mix_params,
+        ) in rows.items():
+            with self.subTest(source_variant=source_variant):
+                spec = bridge_spec.batch_stimulus_spec_from_metadata_row(row)
+                self.assertEqual(spec.source_variant, source_variant)
+                self.assertEqual(spec.steps, 1)
+                self.assertEqual(spec.state_count, 1024)
+                self.assertEqual(spec.slot_stride, "align_up(numStateBytes, 16)")
+                self.assertEqual(spec.inner_repeat, 1000)
+                self.assertEqual(spec.input_element_type, "uint8_t")
+                self.assertEqual(spec.input_element_count, input_count)
+                self.assertEqual(spec.output_element_type, "uint64_t")
+                self.assertEqual(spec.output_element_count, output_count)
+                self.assertEqual((spec.input_ports[0], spec.input_ports[-1]), input_edges)
+                self.assertEqual((spec.output_ports[0], spec.output_ports[-1]), output_edges)
+                self.assertEqual((spec.fill_a, spec.fill_b, spec.fill_c, spec.fill_mask), fill_params)
+                self.assertEqual((spec.mix_j_mult, spec.mix_mask), mix_params)
+                self.assertEqual(spec.stimulus_kind, "affine_index")
+                self.assertEqual(spec.oracle_kind, "same_eval_reference")
+                self.assertEqual(spec.comparison_mode, "exact_selected_outputs")
+                self.assertFalse(spec.checksum_authority)
+                self.assertEqual(spec.fill_value(2, 3), (2 * fill_params[0] + 3 * fill_params[1] + fill_params[2]) & fill_params[3])
+                self.assertEqual(spec.mix_value(4, 5), (4 + 5 * mix_params[0]) & mix_params[1])
+
+    def test_batch_stimulus_spec_sidecar_payload_marks_checksum_diagnostic_only(self) -> None:
+        spec = bridge_spec.batch_stimulus_spec_from_metadata_row(self._inference2_row())
+        payload = spec.as_dict()
+        self.assertEqual(payload["batch"]["state_count"], 1024)
+        self.assertEqual(payload["batch"]["steps"], 1)
+        self.assertTrue(payload["batch"]["one_state_slot_is_one_independent_test_case"])
+        self.assertEqual(payload["comparison"]["mode"], "exact_selected_outputs")
+        self.assertFalse(payload["comparison"]["checksum_authority"])
+        self.assertIn("no_arbitrary_systemverilog_testbench", payload["non_claims"])
+        self.assertIn("no_stable_runtime_abi", payload["non_claims"])
+
+    def test_batch_stimulus_spec_fails_closed_on_verifier_boundary(self) -> None:
+        row = self._inference2_row()
+        del row["dimensions"]["inner_repeat"]
+        with self.assertRaises(bridge_spec.BridgeSpecError):
+            bridge_spec.batch_stimulus_spec_from_metadata_row(row)
+
+        row = self._inference2_row()
+        row["shape"] = "1024"
+        with self.assertRaises(bridge_spec.BridgeSpecError):
+            bridge_spec.batch_stimulus_spec_from_metadata_row(row)
+
+        row = self._inference2_row()
+        row["shape"] = "0x1"
+        with self.assertRaises(bridge_spec.BridgeSpecError):
+            bridge_spec.batch_stimulus_spec_from_metadata_row(row)
+
+        row = self._inference2_row()
+        with self.assertRaises(bridge_spec.BridgeSpecError):
+            bridge_spec.batch_stimulus_spec_from_metadata_row(row, state_count=0)
 
 
 if __name__ == "__main__":

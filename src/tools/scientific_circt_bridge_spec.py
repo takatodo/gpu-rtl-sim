@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
-"""Derive a metadata-driven source-variant bridge spec and gate header.
+"""Derive metadata-driven source-variant bridge specs and gate headers.
 
-This module extracts a `BridgeSpec` from one
-`reports/scientific_circt_source_variant_metadata.json` row and renders the
-bridge gate header C macros from it. Port maps are never read from artifact
-`*_bridge.cpp` files or from JSON; they are derived deterministically from the
-same Variant/head descriptors that generate the FIRRTL port declarations in
-`scientific_circt_hls_mlp_block_variants.py` and
-`scientific_circt_hls_attention_head_variant.py`.
-
-Correctness authority remains mismatch==0 (CPU==GPU) at runtime. This module
-only derives compile-time specialization (struct sizes, port assignments) and
-the argv metadata gate; it is not a runtime ABI or correctness source.
+Correctness authority remains runtime CPU/GPU equality; this module only
+derives compile-time specialization and argv metadata gates.
 """
 
 from __future__ import annotations
@@ -21,6 +12,10 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 import scientific_circt_hls_attention_head_variant as attention_head_variant
+from scientific_circt_batch_stimulus_spec import (
+    BatchStimulusSpec,
+    batch_stimulus_spec_from_bridge,
+)
 import scientific_circt_hls_mlp_block_variants as mlp_block_variants
 
 BYTES_BY_TYPE = {
@@ -66,7 +61,6 @@ class BridgeSpec:
     mix_j_mult: int
     mix_mask: int
 
-
 def _mlp_block_ports(source_variant: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
     variant = mlp_block_variants.VARIANTS[source_variant]
     return mlp_block_variants.input_port_names(variant), mlp_block_variants.output_port_names(variant)
@@ -86,9 +80,6 @@ PORT_NAMING: dict[str, Callable[[], tuple[tuple[str, ...], tuple[str, ...]]]] = 
     "inference2_hls_friendly": lambda: _mlp_block_ports("inference2_hls_friendly"),
 }
 
-# Symbol stems come from the same generator modules that own the port names:
-# the attention generator hardcodes its extern "C" stem, the MLP-family
-# generators use the variant name.
 SYMBOL_STEMS: dict[str, str] = {
     "attention_head4_hls_friendly": attention_head_variant.GPU_SYMBOL_STEM,
     "mlp4_hls_friendly": mlp_block_variants.VARIANTS["mlp4_hls_friendly"].name,
@@ -108,10 +99,6 @@ def _mlp_fill_params(source_variant: str) -> tuple[int, int, int, int]:
     return variant.fill_a, variant.fill_b, variant.fill_c, variant.fill_mask
 
 
-# The GPU .so generates its own deterministic input batch and inner_repeat
-# mixing; the CPU side of the bridge must reproduce the exact same formulas or
-# every output diverges. The parameters come from the same generator modules
-# that own the templates.
 FILL_PARAMS: dict[str, Callable[[], tuple[int, int, int, int]]] = {
     "attention_head4_hls_friendly": lambda: (
         attention_head_variant.FILL_A,
@@ -229,6 +216,26 @@ def bridge_spec_from_metadata_row(row: dict[str, Any], *, selected: dict[str, An
     )
 
 
+def batch_stimulus_spec_from_metadata_row(
+    row: dict[str, Any],
+    *,
+    selected: dict[str, Any] | None = None,
+    state_count: int | None = None,
+    steps: int | None = None,
+    slot_stride: str = "align_up(numStateBytes, 16)",
+) -> BatchStimulusSpec:
+    """Derive the FC-085 independent-state stimulus contract from metadata."""
+    bridge = bridge_spec_from_metadata_row(row, selected=selected)
+    return batch_stimulus_spec_from_bridge(
+        row,
+        bridge,
+        error=BridgeSpecError,
+        state_count=state_count,
+        steps=steps,
+        slot_stride=slot_stride,
+    )
+
+
 def _cxx_string_literal(value: object) -> str:
     return json.dumps(str(value))
 
@@ -258,15 +265,7 @@ def _render_mix_value_macro(spec: BridgeSpec) -> str:
 
 
 def render_bridge_gate_header(spec: BridgeSpec) -> str:
-    """Render the generated bridge gate header for one BridgeSpec.
-
-    The leading comment/pragma plus the 9 SCI_CIRCT_BRIDGE_EXPECTED_* macros
-    are byte-compatible with the pre-FC-074 hand-maintained header. The
-    unquoted SCI_CIRCT_BRIDGE_{INPUT,OUTPUT}_ELEMENT_{TYPE,COUNT} macros and
-    the SCI_CIRCT_BRIDGE_APPLY_INPUTS/READ_OUTPUTS macros are new; they let
-    the bridge C++ size its I/O structs and assign ports without per-variant
-    hand-maintained code.
-    """
+    """Render the generated bridge gate header for one BridgeSpec."""
     lines = [
         "/* Generated from source-variant metadata by scientific_circt_source_variant_runtime_handoff.py. */",
         "#pragma once",
