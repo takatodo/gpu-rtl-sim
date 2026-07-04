@@ -51,8 +51,9 @@ index, and selected outputs are compared against a scalar/formula oracle.
 ## 2026-07-04 Progress
 
 - Added importable `BatchStimulusSpec` support in
-  `src/tools/scientific_circt_bridge_spec.py`, derived from the same
-  fail-closed promoted metadata rows as `BridgeSpec`.
+  `src/tools/scientific_circt_batch_stimulus_spec.py`, with
+  `scientific_circt_bridge_spec.py` keeping the metadata-row wrapper derived
+  from the same fail-closed promoted metadata rows as `BridgeSpec`.
 - The helper fixes the current independent-state vector contract: one state
   slot is one test case, `shape` supplies `state_count x steps`, slot stride is
   recorded as `align_up(numStateBytes, 16)`, input fill and inner-repeat mix
@@ -70,10 +71,10 @@ index, and selected outputs are compared against a scalar/formula oracle.
 
 Acceptance is met in the working tree: the RFC draft, posting package/body, and
 importable helper now define the independent-state input-vector contract, and
-`python3 -m unittest tests.contract.test_scientific_circt_bridge_spec` passes
-17 tests. Do not close GitHub #86 until the relevant local files are committed
-and pushed or otherwise synced to GitHub; otherwise the closure would depend on
-untracked/local-only evidence. Files that must be included in that sync include
+`python3 -m unittest tests.contract.test_scientific_circt_bridge_spec` passed
+17 tests. GitHub #86 is now closed after the relevant local files were committed
+and pushed in commit `88bea41`, so closure no longer depends on
+untracked/local-only evidence. Files included in that sync include
 `docs/circt_batch_state_rfc_draft.md`,
 `docs/circt_batch_state_rfc_posting_package.md`,
 `docs/circt_batch_state_discourse_body.md`, this issue file, the
@@ -81,10 +82,11 @@ untracked/local-only evidence. Files that must be included in that sync include
 
 ## 2026-07-04 Publish Sync
 
-The scoped evidence bundle is ready to publish as a focused commit containing
-the RFC draft, posting package/body, this issue file, the active FC-084 source
-artifact, `BatchStimulusSpec`, and the focused contract tests. Once that commit
-is pushed, GitHub #86 can be closed without relying on local-only evidence.
+The scoped evidence bundle was published in commit `88bea41`, containing the RFC
+draft, posting package/body, this issue file, the active FC-084 source artifact,
+`BatchStimulusSpec`, and the focused contract tests. GitHub #86 was closed after
+that push. FC-084 / #85 remains open for the owner-controlled Discourse,
+private-review, or fresh-deferral path.
 
 ## Non-Claims
 
