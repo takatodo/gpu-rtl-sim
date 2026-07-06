@@ -527,3 +527,4 @@ class TrackedReferenceBoundaryTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+    "gategpt_schedule_lowering_plan",

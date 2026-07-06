@@ -280,3 +280,14 @@ Files with prefixes such as `build_vl_gpu_*`, `compare_vl_hybrid_*`, `hybrid_ben
 ## Output Policy
 
 Generated evidence belongs under `reports/`; generated build and state material belongs under `artifacts/`. Neither directory is a source of truth. CPU/GPU correctness claims should continue to name the compared output words and the selected policy, usually `coverage_output_equivalence`, instead of claiming raw full-state equality.
+The entry-sliced CUBIN-chain and Stage112 source-summary implementations are
+frozen under `src/diagnostics/frozen/gategpt_fc069_073/`; the `src/tools/`
+files are compatibility wrappers so recorded reproduction commands keep working
+without expanding the active tool surface.
+The large historical `gategpt_testbench_probe.py` implementation is frozen
+under `src/diagnostics/frozen/gategpt/`; the `src/tools/` file is a thin
+compatibility facade for recorded CLI/import paths, not a routine operator
+entrypoint or new gateGPT speedup claim.
+The large historical `gategpt_schedule_planner.py` implementation is frozen in
+the same package; active build/run code imports the smaller
+`src/tools/gategpt_schedule_lowering_plan.py` validator surface instead.
