@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from build_vl_gpu_cache_markers import update_build_cache_markers
-from gategpt_schedule_planner import (
+from gategpt_schedule_lowering_plan import (
     ORDERING_AWARE_PHASE_RESIDENT_TOKEN_LOOP,
     REQUIRED_ORDERING_AWARE_TOKEN_LOOP_ENTRYPOINTS,
     REQUIRED_PADDED_START_ENTRYPOINTS,

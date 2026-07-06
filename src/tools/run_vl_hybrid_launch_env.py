@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from gategpt_schedule_planner import (
+from gategpt_schedule_lowering_plan import (
     ORDERING_AWARE_PHASE_RESIDENT_TOKEN_LOOP,
     validate_ordering_aware_phase_resident_token_loop_lowering_plan,
     validate_padded_start_lowering_plan,
