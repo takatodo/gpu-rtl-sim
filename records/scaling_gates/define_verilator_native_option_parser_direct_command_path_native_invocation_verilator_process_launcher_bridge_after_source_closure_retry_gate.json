@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "gate": "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate",
+  "status": "defined_after_source_closure_launcher_retry_boundary",
+  "objective": "Define the scoped clean-worktree bridge-path launcher retry after source-closure materialization, without treating the definition as a launcher run, compare, timing measurement, direct Verilator sidecar execution, broad native option support, or automatic GPU allocation.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_run_gate.json",
+  "source_materialization_run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate",
+  "definition_decision": {
+    "defined": true,
+    "definition_only": true,
+    "selected_boundary": "clean_worktree_submodule_materialization_then_scoped_launcher_retry",
+    "reason": [
+      "the missing-source blocker was removed by materializing the required submodules",
+      "the previous launcher run stopped before compare at build input resolution",
+      "the retry must preserve helper validation, exact structured argv, and source materialization as distinct evidence",
+      "coverage-output equivalence may be claimed only if the retry reaches compare and passes"
+    ],
+    "weakest_point": "The retry may still fail in Verilator build, host probe build, GPU artifact build, sidecar run, or compare. This definition only authorizes a scoped retry; it does not predict success or measure timing."
+  },
+  "required_clean_worktree_sequence": [
+    {
+      "step": "materialize_required_submodules",
+      "argv": [
+        "git",
+        "submodule",
+        "update",
+        "--init",
+        "third_party/ITA",
+        "third_party/common_cells"
+      ],
+      "required_before_launcher_retry": true
+    },
+    {
+      "step": "verify_template_source_closure",
+      "template": "config/slice_launch_templates/pulp_ita_mha.json",
+      "expected_source_file_count": 29,
+      "expected_missing_source_file_count": 0
+    },
+    {
+      "step": "run_scoped_launcher_retry",
+      "argv": [
+        "python3",
+        "src/tools/run_hybrid_template.py",
+        "config/slice_launch_templates/pulp_ita_mha.json",
+        "--shape",
+        "64x1"
+      ],
+      "target": "pulp_ita_mha",
+      "shape": "64x1"
+    }
+  ],
+  "retry_failure_classes": {
+    "source_closure_materialization_failure": "required submodules cannot be checked out or source files remain missing before launcher retry",
+    "launcher_cli_invocation_failure": "the Python launcher command cannot start or complete invocation safely",
+    "sidecar_stage_failure": "launcher starts but Verilator build, host probe build, GPU artifact build, or hybrid sidecar run fails before compare",
+    "compare_failure": "coverage-output compare runs and records a mismatch",
+    "timing_claim_without_measurement": "timing or speedup is claimed without a separate timing gate"
+  },
+  "retry_success_boundary": {
+    "coverage_output_compare_must_be_reached": true,
+    "coverage_output_equivalence_must_pass_for_equivalence_claim": true,
+    "raw_full_state_equality_required": false,
+    "timing_claim_requires_separate_gate": true,
+    "direct_verilator_internal_sidecar_execution_claim_allowed": false,
+    "automatic_gpu_allocation_claim_allowed": false
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate",
+    "must_review": [
+      "whether the retry sequence preserves submodule materialization before launcher retry",
+      "whether exact structured argv remains the launcher authority",
+      "whether retry failure classes are distinguishable",
+      "whether timing and broad support claims remain blocked"
+    ],
+    "must_not_claim": [
+      "launcher retry has run",
+      "Verilator build success",
+      "hybrid sidecar run success",
+      "coverage-output compare reached",
+      "coverage-output equivalence passed",
+      "timing or speedup evidence",
+      "direct Verilator sidecar execution",
+      "automatic GPU allocation"
+    ]
+  },
+  "acceptance_policy": {
+    "definition_only": true,
+    "future_review_gate_allowed": true,
+    "future_launcher_retry_run_allowed_after_review": true,
+    "new_execution_allowed_by_this_gate": false,
+    "new_public_cli_allowed_by_this_gate": false,
+    "coverage_output_equivalence_claim_reached_from_bridge_path": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_this_gate": false,
+    "timing_or_speedup_claim_allowed_by_this_gate": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate"
+}

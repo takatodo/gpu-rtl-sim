@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from build_vl_gpu_veer_flat_mem import patch_veer_el2_flat_program_mem
 from build_vl_gpu_stages import (
     analyze_phase_ir,
     compile_verilator_ir,
@@ -70,6 +71,7 @@ def build_full_gpu_ir_artifacts(
         state_root_offset=request.state_root_offset,
         kernel_split_phases=request.kernel_split_phases,
         kernel_probe_act_sequent_chunk_size=request.kernel_probe_act_sequent_chunk_size,
+        disable_cfg_clone_diagnostics=request.disable_cfg_clone_diagnostics,
     )
     gpu_ptx, gpu_ir_workarounds = optimize_gpu_ir_to_ptx(
         mdir=mdir,
@@ -98,11 +100,13 @@ def run_full_build_path(
     clang_changed: bool,
     request: BuildRequest,
 ) -> BuildArtifacts:
+    source_patch = patch_veer_el2_flat_program_mem(mdir, prefix)
+    source_patch_changed = source_patch.get("changed") is True
     merged_ll = compile_verilator_ir(
         mdir=mdir,
         all_classes=all_classes,
         force=request.force,
-        clang_changed=clang_changed,
+        clang_changed=clang_changed or source_patch_changed,
         clang_opt=request.clang_opt,
         jobs=request.jobs,
     )

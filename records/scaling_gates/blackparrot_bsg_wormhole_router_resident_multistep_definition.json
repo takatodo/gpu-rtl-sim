@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "gate": "blackparrot_bsg_wormhole_router_resident_multistep_definition",
+  "target": "blackparrot_bsg_wormhole_router",
+  "purpose": "Define the smallest safe resident/multi-step packet-pattern measurement after the passing 32x1, 64x1, 128x1, and 256x1 packet-batch repeat-median shape sweep.",
+  "source_gpu_gate": "config/scaling_gates/blackparrot_bsg_wormhole_router_source_gate.json",
+  "template": "config/slice_launch_templates/blackparrot_bsg_wormhole_router.json",
+  "preconditions": [
+    "reports/blackparrot_bsg_wormhole_router_256x1_median.json exists and records coverage_output_equivalence_all_passed=true",
+    "the existing nonresident template command remains the CPU/GPU reference for packet-pattern coverage-output equivalence",
+    "resident execution must use an explicit patch-script or resident schedule rather than ad hoc --patch arguments",
+    "resident output capture must write a distinct candidate dump and report path before comparison"
+  ],
+  "candidate_measurement": {
+    "name": "resident_multistep_packet_pattern_256x4_definition",
+    "shape": "256x4",
+    "state_count": 256,
+    "sequential_steps": 4,
+    "resident_mode": "run_vl_hybrid --resident-steps with explicit packet-pattern patch-script",
+    "cpu_reference": {
+      "mode": "host_probe_repeat_eval_steps",
+      "expected_report": "reports/blackparrot_bsg_wormhole_router_cpu_repeat_256x4.json",
+      "expected_state_dump": "artifacts/blackparrot_bsg_wormhole_router_obj_dir/bsg_wormhole_router_cpu_repeat_256x4.bin"
+    },
+    "gpu_candidate": {
+      "mode": "resident_steps_from_cpu_init_state",
+      "expected_report": "reports/bsg_wormhole_router_resident_multistep_256x4.txt",
+      "expected_state_dump": "artifacts/blackparrot_bsg_wormhole_router_obj_dir/bsg_wormhole_router_gpu_resident_multistep_256x4.bin"
+    },
+    "comparison": {
+      "acceptance_policy": "coverage_output_equivalence",
+      "expected_report": "reports/bsg_wormhole_router_cpu_vs_resident_multistep_256x4_coverage_output_compare.json",
+      "required_mismatch_count": 0
+    },
+    "repeat_median": {
+      "repeat_count": 3,
+      "expected_report": "reports/blackparrot_bsg_wormhole_router_resident_multistep_256x4_median.json",
+      "record": [
+        "coverage_output_equivalence_all_passed",
+        "coverage_output_mismatch_count for each sample",
+        "cpu_elapsed_ms median and sample spread",
+        "hybrid_wall_ms median and sample spread",
+        "gpu_kernel_total_ms median and sample spread",
+        "resident launch count or resident schedule record count when available"
+      ]
+    }
+  },
+  "resident_template_command_surface": {
+    "status": "defined",
+    "dry_run_command": "python3 src/tools/run_hybrid_template.py config/slice_launch_templates/blackparrot_bsg_wormhole_router.json --shape 256x4 --resident-steps --patch-script artifacts/blackparrot_bsg_wormhole_router_packet_pattern_256x4.patch --dry-run",
+    "required_runtime_flags": [
+      "--resident-steps",
+      "--patch-script"
+    ],
+    "generated_candidate_dump": "artifacts/blackparrot_bsg_wormhole_router_obj_dir/bsg_wormhole_router_gpu_resident_multistep_256x4.bin",
+    "generated_compare_report": "reports/bsg_wormhole_router_cpu_vs_resident_multistep_256x4_coverage_output_compare.json",
+    "non_claims": [
+      "dry-run command planning is not resident execution evidence",
+      "the packet-pattern patch script must exist before non-dry-run execution",
+      "the resident command surface does not claim speedup or broader BlackParrot support"
+    ]
+  },
+  "resolved_pre_execution_blockers": [
+    {
+      "name": "template_runner_has_no_resident_schedule_surface",
+      "evidence": "Earlier template command planning mapped shapes only to run_vl_hybrid --steps and did not pass --resident-steps, --patch-script, or resident-specific output paths.",
+      "resolution": "run_hybrid_template.py now accepts --resident-steps with an explicit --patch-script and derives resident-specific dump and compare report paths for dry-run/command-plan review."
+    }
+  ],
+  "known_blockers_before_execution": [
+    {
+      "name": "blackparrot_packet_pattern_patch_script_not_materialized",
+      "evidence": "The source-backed template defines cfg_* host-probe inputs for packet batching, but no resident patch-script file is declared for the router packet-pattern sequence.",
+      "required_resolution": "Materialize a reproducible packet-pattern patch-script generator or prove that existing host-probe cfg inputs are sufficient for resident steps."
+    }
+  ],
+  "correctness_policy": {
+    "required": [
+      "CPU reference and resident candidate are generated from the same cfg_batch_length, cfg_reset_cycles, cfg_drain_cycles, and cfg_seed values",
+      "coverage_output_equivalence passes with mismatch count 0",
+      "raw full-state equality is not required or claimed",
+      "resident schedule application is recorded as GPU-side resident execution, not CPU fallback"
+    ],
+    "fail_closed_if": [
+      "resident mode falls back to nonresident --steps without recording that fallback",
+      "resident patch-script or schedule generation is implicit or local-only",
+      "candidate dump/report paths overwrite the existing 256x1 nonresident evidence",
+      "coverage-output manifest is missing or not the BlackParrot source gate"
+    ]
+  },
+  "performance_policy": {
+    "baseline": "reports/blackparrot_bsg_wormhole_router_256x1_median.json remains the latest nonresident packet-batch baseline until this gate executes.",
+    "record": [
+      "cpu_to_hybrid_wall_speedup",
+      "cpu_to_gpu_kernel_speedup",
+      "sample spread across repeat_count=3",
+      "resident schedule record count",
+      "launch count when available"
+    ],
+    "non_claims": [
+      "not arbitrary BlackParrot or BaseJump STL acceleration",
+      "not native Verilator option support",
+      "not raw full-state equality",
+      "not project-level GPU speedup",
+      "not a replacement for the existing 32x1 through 256x1 packet-batch evidence"
+    ]
+  },
+  "artifacts": {
+    "definition_is_canonical_config": true,
+    "generated_outputs_only": [
+      "reports/blackparrot_bsg_wormhole_router_resident_multistep_256x4.txt",
+      "reports/blackparrot_bsg_wormhole_router_cpu_vs_resident_multistep_256x4_coverage_output_compare.json",
+      "reports/blackparrot_bsg_wormhole_router_resident_multistep_256x4_median.json"
+    ]
+  },
+  "next_action_on_definition_review": "materialize_blackparrot_bsg_wormhole_router_packet_pattern_patch_script_or_record_named_blocker",
+  "next_action_on_execution_pass": "promote_blackparrot_resident_multistep_timing_evidence",
+  "next_action_on_execution_blocked": "record_blackparrot_resident_multistep_named_blocker"
+}

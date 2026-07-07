@@ -1,6 +1,13 @@
 import json
+from pathlib import Path
 
 from tests.contract.hybrid_cli_helpers import HybridCliTestCase
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+FIRST_USE_GPU_PATH_DEFINITION_GATE = (
+    REPO_ROOT / "config" / "scaling_gates" / "define_verilator_use_gpu_first_real_path_gate.json"
+)
 
 
 class HybridVerilatorSidecarShimExamplesCliTest(HybridCliTestCase):
@@ -112,6 +119,34 @@ class HybridVerilatorSidecarShimExamplesCliTest(HybridCliTestCase):
                 self.assertIn("--sim-accel-states 64", result.stdout)
                 self.assertIn("--sim-accel-steps 1", result.stdout)
                 self.assertIn(f"artifacts/{target}_obj_dir", result.stdout)
+
+    def test_first_real_use_gpu_path_definition_is_scoped_and_fail_closed(self) -> None:
+        gate = json.loads(FIRST_USE_GPU_PATH_DEFINITION_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(gate["current_priority"], "review_verilator_use_gpu_first_real_path_gate")
+        selected = gate["selected_first_path"]
+        self.assertEqual(selected["selected_target"], "filelist_known_template_pulp_ita_mha")
+        self.assertEqual(selected["reference_execution_seed"], "pulp_ita_mha")
+        self.assertEqual(selected["reference_shape"], "64x1")
+        self.assertEqual(selected["top_module"], "pulp_ita_mha_gpu_cov_tb")
+        self.assertEqual(selected["known_template"], "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json")
+        self.assertEqual(selected["source_file_count"], 29)
+        semantics = gate["use_gpu_semantics"]
+        self.assertTrue(semantics["use_gpu_is_intent_flag"])
+        self.assertTrue(semantics["explicit_schedule_required_for_first_path"])
+        self.assertFalse(semantics["silent_default_schedule_for_arbitrary_inputs_allowed"])
+        self.assertIn("--use-gpu without explicit state and step counts", semantics["rejected_schedule_sources"])
+        self.assertIn("unknown filelist", gate["fail_closed_cases"])
+        self.assertIn("missing explicit state and step counts when --use-gpu is present", gate["fail_closed_cases"])
+        self.assertIn("attempt to use CPU execution as GPU evidence", gate["fail_closed_cases"])
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["definition_only"])
+        self.assertTrue(policy["future_review_allowed"])
+        self.assertTrue(policy["explicit_schedule_required_for_first_path"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["broad_use_gpu_claim_allowed_by_this_gate"])
+        self.assertFalse(policy["automatic_optimal_gpu_allocation_claim_allowed_by_this_gate"])
+        self.assertEqual(gate["required_next_gate"]["name"], gate["next_task"])
 
     def test_accepts_verilator_style_efficiency_alias(self) -> None:
         result = self.run_python_tool(

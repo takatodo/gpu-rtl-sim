@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "gate": "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate",
+  "status": "source_closure_materialization_preflight_passed",
+  "objective": "Run the scoped clean-worktree source-closure materialization preflight for pulp_ita_mha before any bridge-path launcher retry, without claiming Verilator build success, sidecar execution, coverage-output compare, timing, direct Verilator sidecar execution, or automatic GPU allocation.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_run_gate",
+  "clean_worktree_evidence": {
+    "head": "b31a589",
+    "materialization_command": [
+      "git",
+      "submodule",
+      "update",
+      "--init",
+      "third_party/ITA",
+      "third_party/common_cells"
+    ],
+    "materialization_exit_code": 0,
+    "local_absolute_paths_recorded": false,
+    "generated_outputs_are_noncanonical": true
+  },
+  "materialized_submodules": [
+    {
+      "path": "third_party/ITA",
+      "expected_gitlink_sha": "ba96519becce195d64e85eb9a5302e8a1d5487e7",
+      "observed_checkout_sha": "ba96519becce195d64e85eb9a5302e8a1d5487e7",
+      "matches_expected_gitlink_sha": true
+    },
+    {
+      "path": "third_party/common_cells",
+      "expected_gitlink_sha": "c27bce39ebb2e6bae52f60960814a2afca7bd4cb",
+      "observed_checkout_sha": "c27bce39ebb2e6bae52f60960814a2afca7bd4cb",
+      "matches_expected_gitlink_sha": true
+    }
+  ],
+  "template_source_file_check": {
+    "template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "source_file_count": 29,
+    "missing_source_file_count": 0,
+    "required_file_examples_present": [
+      "third_party/common_cells/src/cf_math_pkg.sv",
+      "third_party/common_cells/src/lzc.sv",
+      "third_party/common_cells/src/fifo_v3.sv",
+      "third_party/ITA/src/ita_package.sv",
+      "third_party/ITA/src/ita.sv",
+      "overlays/ITA/src/pulp_ita_mha_gpu_cov_tb.sv"
+    ]
+  },
+  "run_result": {
+    "source_closure_materialized": true,
+    "clean_worktree_missing_source_blocker_removed": true,
+    "launcher_retry_performed": false,
+    "verilator_build_performed": false,
+    "hybrid_sidecar_run_reached": false,
+    "coverage_output_compare_reached": false,
+    "timing_measured": false,
+    "automatic_gpu_allocation_used": false
+  },
+  "accepted_non_claims": [
+    "not Verilator build success",
+    "not hybrid sidecar run success",
+    "not coverage-output compare reached",
+    "not coverage-output equivalence passed",
+    "not timing or speedup evidence",
+    "not direct Verilator sidecar execution",
+    "not broad native option support",
+    "not arbitrary filelist support",
+    "not automatic GPU allocation",
+    "reports and artifacts are generated evidence, not source of truth"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_run_gate",
+    "must_review": [
+      "whether submodule materialization removed the clean-worktree missing-source blocker",
+      "whether the observed submodule SHAs match tracked gitlinks",
+      "whether all 29 template source files exist after materialization",
+      "whether launcher retry remains separate from this materialization run"
+    ],
+    "must_not_claim": [
+      "Verilator build success",
+      "hybrid sidecar run success",
+      "coverage-output compare reached",
+      "coverage-output equivalence passed",
+      "timing or speedup evidence",
+      "direct Verilator sidecar execution",
+      "automatic GPU allocation"
+    ]
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_run_gate"
+}

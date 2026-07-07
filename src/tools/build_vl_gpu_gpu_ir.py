@@ -21,6 +21,7 @@ def build_vlgpugen_command(
     kernel_split_phases: bool,
     kernel_manifest: Path,
     kernel_probe_act_sequent_chunk_size: int,
+    disable_cfg_clone_diagnostics: bool,
 ) -> list[str]:
     command = [
         str(vlgpugen), str(merged_ll),
@@ -35,6 +36,8 @@ def build_vlgpugen_command(
         command.append(f'--kernel-manifest-out={kernel_manifest}')
     if kernel_probe_act_sequent_chunk_size:
         command.append(f'--kernel-probe-act-sequent-chunk-size={kernel_probe_act_sequent_chunk_size}')
+    if disable_cfg_clone_diagnostics:
+        command.append('--disable-cfg-clone-diagnostics')
     return command
 
 
@@ -77,6 +80,7 @@ def prepare_gpu_patched_ir(
     state_root_offset: int | None,
     kernel_split_phases: bool,
     kernel_probe_act_sequent_chunk_size: int,
+    disable_cfg_clone_diagnostics: bool,
     vlgpugen: Path,
     passes_dir: Path,
     passes_so: Path,
@@ -107,6 +111,7 @@ def prepare_gpu_patched_ir(
             kernel_split_phases=kernel_split_phases,
             kernel_manifest=kernel_manifest,
             kernel_probe_act_sequent_chunk_size=kernel_probe_act_sequent_chunk_size,
+            disable_cfg_clone_diagnostics=disable_cfg_clone_diagnostics,
         )
     )
     launch_sequence = load_launch_sequence_from_manifest(kernel_manifest) if kernel_split_phases else None

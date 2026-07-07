@@ -1,0 +1,53 @@
+{
+  "gate": "sync_verilator_use_gpu_first_path_completion_to_wrapper_task_gate",
+  "status": "accepted_current_pointer_sync_after_first_use_gpu_path_completion",
+  "github_parent_goal_issue": 9,
+  "github_completed_task_issue": 32,
+  "github_sync_task_issue": 34,
+  "github_current_task_issue": 33,
+  "completed_task": {
+    "name": "implement_verilator_use_gpu_first_executable_path_gate",
+    "result": "first scoped executable use-gpu adapter path completed",
+    "implementation_commit": "e326162",
+    "path_hygiene_commit": "138a937",
+    "supported_path": {
+      "target": "filelist_known_template_pulp_ita_mha",
+      "filelist": "config/slice_launch_templates/filelist_known_template_pulp_ita_mha.json",
+      "top": "pulp_ita_mha_gpu_cov_tb",
+      "accelerator": "sidecar-gpu",
+      "states": 64,
+      "steps": 1,
+      "shape": "64x1"
+    },
+    "accepted_policy": "coverage_output_equivalence",
+    "coverage_output_mismatch_count": 0,
+    "raw_state_equality_required": false,
+    "generated_report_is_source_of_truth": false
+  },
+  "current_priority": "package_verilator_use_gpu_first_scoped_wrapper_gate",
+  "current_priority_source_artifact": "config/scaling_gates/sync_verilator_use_gpu_first_path_completion_to_wrapper_task_gate.json",
+  "required_next_task": {
+    "github_issue": 33,
+    "name": "package_verilator_use_gpu_first_scoped_wrapper_gate",
+    "summary": "Package the proven scoped adapter path as a Verilator-facing wrapper without broadening support claims."
+  },
+  "source_of_truth_files_synced_by_this_gate": [
+    "config/selection.json",
+    "README.md",
+    "docs/status.md",
+    "docs/roadmap.md"
+  ],
+  "non_claims": [
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic dependency inference",
+    "not automatic GPU allocation",
+    "not timing or speedup evidence",
+    "not CIRCT execution support",
+    "not raw full-state equality",
+    "not JSON runtime ABI",
+    "not production throughput",
+    "not upstream Verilator native support"
+  ],
+  "next_task": "package_verilator_use_gpu_first_scoped_wrapper_gate"
+}

@@ -42,6 +42,10 @@ src/passes/
 src/tools/
   thin CLI entrypoints and shared helpers
 
+src/diagnostics/frozen/
+  frozen historical diagnostics kept for reproduction behind thin src/tools
+  compatibility facades; do not treat these as active operator entrypoints
+
 third_party/
   upstream submodules only
 

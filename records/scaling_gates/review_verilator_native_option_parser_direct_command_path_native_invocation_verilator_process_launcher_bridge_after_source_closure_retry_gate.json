@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "gate": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate",
+  "status": "accepted_after_source_closure_launcher_retry_boundary",
+  "objective": "Review the post-source-closure retry definition and decide whether a clean-worktree run may materialize required submodules, verify the pulp_ita_mha source closure, and retry the exact scoped launcher command without treating this review as execution, compare, timing, direct Verilator sidecar execution, broad native option support, or automatic GPU allocation.",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate.json",
+  "source_materialization_run_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_run_gate.json",
+  "current_priority": "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate",
+  "review_decision": {
+    "accepted": true,
+    "reason": "The definition preserves the required order: materialize gitlink-backed submodules, verify the 29-file pulp_ita_mha source closure, then run the exact structured launcher argv for shape 64x1. It also keeps retry failure classes and success claims distinct.",
+    "weakest_point": "The retry may still fail after source closure in Verilator build, host-probe build, GPU artifact build, hybrid sidecar run, or coverage-output compare. This review only authorizes a scoped run; it does not prove build success, compare success, timing, direct Verilator sidecar execution, or broad native option support.",
+    "accepted_because": [
+      "source closure materialization was already recorded as clean-worktree evidence",
+      "submodule materialization remains prerequisite evidence, not execution success",
+      "launcher retry is limited to exact structured argv",
+      "coverage-output equivalence may be claimed only if compare is reached and passes",
+      "timing and speedup remain separate future gates"
+    ]
+  },
+  "accepted_clean_worktree_sequence": [
+    {
+      "step": "materialize_required_submodules",
+      "argv": [
+        "git",
+        "submodule",
+        "update",
+        "--init",
+        "third_party/ITA",
+        "third_party/common_cells"
+      ]
+    },
+    {
+      "step": "verify_template_source_closure",
+      "template": "config/slice_launch_templates/pulp_ita_mha.json",
+      "expected_source_file_count": 29,
+      "expected_missing_source_file_count": 0
+    },
+    {
+      "step": "run_scoped_launcher_retry",
+      "argv": [
+        "python3",
+        "src/tools/run_hybrid_template.py",
+        "config/slice_launch_templates/pulp_ita_mha.json",
+        "--shape",
+        "64x1"
+      ]
+    }
+  ],
+  "accepted_failure_classes": {
+    "source_closure_materialization_failure": true,
+    "launcher_cli_invocation_failure": true,
+    "sidecar_stage_failure": true,
+    "compare_failure": true,
+    "timing_claim_without_measurement": true
+  },
+  "success_claim_boundary": {
+    "coverage_output_compare_must_be_reached": true,
+    "coverage_output_equivalence_must_pass_for_equivalence_claim": true,
+    "raw_full_state_equality_required": false,
+    "timing_claim_requires_separate_gate": true,
+    "direct_verilator_internal_sidecar_execution_claim_allowed": false,
+    "automatic_gpu_allocation_claim_allowed": false
+  },
+  "required_next_gate": {
+    "name": "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate",
+    "must_record": [
+      "submodule materialization command exit code",
+      "template source closure file count and missing count",
+      "exact launcher argv and exit code",
+      "which stage is reached after source closure",
+      "whether coverage-output compare is reached",
+      "mismatch count and compared state/word counts only if compare is reached",
+      "the exact failure class if the chain stops"
+    ],
+    "must_not_claim": [
+      "execution by this review gate",
+      "coverage-output compare reached before the retry records it",
+      "coverage-output equivalence passed before compare evidence",
+      "timing or speedup evidence",
+      "direct Verilator sidecar execution",
+      "broad native option support",
+      "arbitrary filelist support",
+      "automatic GPU allocation",
+      "production throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "review_gate": true,
+    "definition_gate_accepted": true,
+    "future_launcher_retry_run_allowed": true,
+    "new_execution_allowed_by_this_review": false,
+    "new_public_cli_allowed_by_this_review": false,
+    "coverage_output_equivalence_claim_reached_from_bridge_path": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_this_review": false,
+    "timing_or_speedup_claim_allowed_by_this_review": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_this_review": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate"
+}

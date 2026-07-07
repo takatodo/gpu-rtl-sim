@@ -40,6 +40,10 @@ def host_probe_compile_command(plan: HostProbeBuildPlan) -> list[str]:
         f"-DROOT_HEADER={_quote_define(root + '.h')}",
         f"-DMODEL_CLASS={model}",
         f"-DROOT_CLASS={root}",
+        # The GPU sidecar kernel vl_eval_batch_gpu wraps this same generated root
+        # ___eval; defining it here lets the CPU eval-only baseline call the
+        # identical function for an apples-to-apples timing comparison.
+        f"-DROOT_EVAL_FN={root}___eval",
         f"-DROOT_CLK_FIELD={plan.clock_field}",
         f"-DROOT_CLK_REPORT_NAME={_quote_define(plan.clock_report_name)}",
         f"-DROOT_RST_FIELD={plan.reset_field}",

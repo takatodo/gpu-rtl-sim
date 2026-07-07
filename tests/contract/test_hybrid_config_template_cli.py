@@ -179,3 +179,69 @@ class HybridConfigTemplateCliTest(HybridCliTestCase):
         self.assertEqual(payload["shape"], "64x1")
         self.assertEqual(payload["speedup_class"], "high")
         self.assertIn("not a broad speedup claim for arbitrary RTL", payload["non_claims"])
+
+    def test_run_hybrid_template_resident_dry_run_requires_explicit_patch_script(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_template.py",
+            "config/slice_launch_templates/blackparrot_bsg_wormhole_router.json",
+            "--shape",
+            "256x4",
+            "--resident-steps",
+            "--dry-run",
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--resident-steps requires --patch-script", result.stderr)
+
+    def test_run_hybrid_template_patch_script_requires_resident_steps(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_template.py",
+            "config/slice_launch_templates/blackparrot_bsg_wormhole_router.json",
+            "--shape",
+            "256x4",
+            "--patch-script",
+            "artifacts/blackparrot_bsg_wormhole_router_packet_pattern_256x4.patch",
+            "--dry-run",
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--patch-script requires --resident-steps", result.stderr)
+
+    def test_run_hybrid_template_resident_dry_run_prints_resident_command_plan(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_template.py",
+            "config/slice_launch_templates/blackparrot_bsg_wormhole_router.json",
+            "--shape",
+            "256x4",
+            "--resident-steps",
+            "--patch-script",
+            "artifacts/blackparrot_bsg_wormhole_router_packet_pattern_256x4.patch",
+            "--dry-run",
+        )
+
+        stdout = result.stdout
+        self.assertIn("--resident-steps", stdout)
+        self.assertIn(
+            "--patch-script artifacts/blackparrot_bsg_wormhole_router_packet_pattern_256x4.patch",
+            stdout,
+        )
+        self.assertIn("bsg_wormhole_router_gpu_resident_multistep_256x4.bin", stdout)
+        self.assertIn("bsg_wormhole_router_cpu_vs_resident_multistep_256x4_coverage_output_compare.json", stdout)
+
+    def test_run_hybrid_template_resident_non_dry_run_requires_existing_patch_script(self) -> None:
+        result = self.run_python_tool(
+            "src/tools/run_hybrid_template.py",
+            "config/slice_launch_templates/blackparrot_bsg_wormhole_router.json",
+            "--shape",
+            "256x4",
+            "--resident-steps",
+            "--patch-script",
+            "artifacts/blackparrot_bsg_wormhole_router_packet_pattern_256x4.patch",
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("resident patch script does not exist", result.stderr)
+        self.assertNotIn("verilator --cc --timing", result.stdout)

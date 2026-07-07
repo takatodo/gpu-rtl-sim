@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "descriptor_name": "rtlmeter_veer_eh_mailbox_observable_public_flat",
+  "descriptor_path": "overlays/rtlmeter/patches/rtlmeter_veer_eh_mailbox_observable_public_flat.json",
+  "patch_path": "overlays/rtlmeter/patches/rtlmeter_veer_eh_mailbox_observable_public_flat.patch",
+  "patch_file": "rtlmeter_veer_eh_mailbox_observable_public_flat.patch",
+  "apply_scope": "repo_root_rtlmeter_submodule_worktree",
+  "allowed_touched_files": [
+    "third_party/rtlmeter/designs/VeeR-EH1/src/tb_top.sv",
+    "third_party/rtlmeter/designs/VeeR-EH2/src/tb_top.sv"
+  ],
+  "objective": "preserve EH1/EH2 mailbox valid/data observables in generated Verilator root layout for sidecar stdout reconstruction",
+  "patch_behavior": {
+    "adds_public_flat_to_mailbox_write": true,
+    "adds_public_flat_to_write_data": true,
+    "changes_testbench_behavior": false,
+    "does_not_change_program_hex": true,
+    "does_not_claim_root_offset_review": true,
+    "does_not_claim_sidecar_execution": true,
+    "does_not_claim_timing_or_speedup": true
+  },
+  "expected_new_root_markers": [
+    "tb_top__DOT__mailbox_write",
+    "tb_top__DOT__WriteData"
+  ],
+  "apply_check_command": "git -C \"$REPO_ROOT\" apply --check \"$REPO_ROOT/overlays/rtlmeter/patches/rtlmeter_veer_eh_mailbox_observable_public_flat.patch\"",
+  "expected_apply_check_exit_code": 0,
+  "descriptor_validation_command": "python3 -m json.tool \"$REPO_ROOT/overlays/rtlmeter/patches/rtlmeter_veer_eh_mailbox_observable_public_flat.json\" >/dev/null",
+  "next_required_boundary": "apply patch, rebuild EH1/EH2 CPU-reference obj_dir, rerun root-offset review, then complete ABI review",
+  "non_claims": [
+    "not a generated root-offset review",
+    "not an executed sidecar bridge",
+    "not CPU-vs-hybrid timing",
+    "not a GPU speedup or usefulness claim"
+  ]
+}

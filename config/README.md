@@ -15,7 +15,7 @@ in a clean minimized tree.
 | `selection.json` | Current project state and current gate pointer | `schema_version` 3+: keep compact; large maps in `selection_extensions.json`; long `verification.commands` in `selection_verification_commands.json`. |
 | `selection_extensions.json` | Historical / bulky selection payloads (`completed_goal_evidence`, MobileViT accuracy block) | Source-of-truth config; referenced by `selection.json` (`selection_extensions`). Load merged view with `src/tools/selection_state.py` (`load_selection`). |
 | `selection_verification_commands.json` | Scripted verification steps for the checked-in `tlul_fifo_async` evidence path | Referenced as `verification.commands_artifact` from `selection.json`. `load_selection` injects `verification.commands`. |
-| `targets.json` | Active target inventory | Canonical list of `active_targets` names and metadata; `load_selection` builds `active_scope.targets` from this file. Keep counts/metadata in `selection.json` aligned when you change inventory. |
+| `targets.json` | Regression/measurement target inventory | Canonical list of `active_targets` names and metadata; `load_selection` builds `active_scope.targets` from this file. This inventory is not the current public support surface and does not imply broad `--use-gpu`, arbitrary filelist inference, or automatic GPU allocation. Keep counts/metadata in `selection.json` aligned when you change inventory. |
 | `archived_targets.json` | Inactive target inventory | Use for removed or parked targets instead of leaving them active. |
 | `resident_patch_script_semantics.json` | Legacy resident patch semantics record | Keep only while referenced by historical gates/tests. |
 
@@ -24,13 +24,22 @@ in a clean minimized tree.
 | Path | Role | Policy |
 | --- | --- | --- |
 | `slice_launch_templates/` | Public hybrid launch templates | Runtime-facing. Keep templates reproducible and referenced by CLI docs/tests. |
+| `rtlmeter_sidecar_authorities/` | RTLMeter sidecar authority registries | Metadata-only. Do not pass these to `run_hybrid_template.py`; RTLMeter stdout/cycles execution must go through a sidecar-capable Verilator wrapper. |
 | `scaling_gates/` | Compatibility link to `../records/scaling_gates` | Evidence ledger lives outside the active config surface. Current gate is selected by `selection.json`. |
 
 ## Current Entry Points
 
 - Current machine-readable state: `config/selection.json`
+- Heavy RTL candidate matrix state: `heavy_rtl_candidate_matrix` in
+  `config/selection.json`; regenerate the report with
+  `python3 src/tools/heavy_rtl_candidate_matrix.py --write-report --report-out reports/heavy_rtl_candidate_matrix.json`.
+  The current summary is six rows: two PULP and four NoC/TLUL-style rows, with
+  policy counts `promote_state_parallel_measurement=5` and
+  `resident_or_shape_sweep_required=1`.
 - Operator shortcuts: `Makefile` at repo root (see README **Operator shortcuts**; calls existing tools only)
-- Current target inventory: `config/targets.json`
+- Current regression/measurement target inventory: `config/targets.json`
+- RTLMeter first-seed authority registry:
+  `config/rtlmeter_sidecar_authorities/rtlmeter_example_kind_hello.json`
 - Current gate pointer: `current_priority_source_artifact` in `config/selection.json`; treat `selection.json` as authoritative if docs drift.
 - Public benchmark pack gate: `config/scaling_gates/public_results_packaging_gate.json`
 - Public benchmark pack audit: `config/scaling_gates/public_benchmark_pack_goal_completion_audit.json`

@@ -22,7 +22,24 @@ from run_vl_hybrid_state_sanitize import (
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent.parent
-HYBRID_BIN = REPO_ROOT / "src" / "hybrid" / "run_vl_hybrid"
+HYBRID_BIN = REPO_ROOT / "artifacts" / "tool_bins" / "hybrid" / "run_vl_hybrid"
+
+
+def _hybrid_src_dir() -> Path:
+    return REPO_ROOT / "src" / "hybrid"
+
+
+def _hybrid_runtime_inputs(src_dir: Path) -> list[Path]:
+    if not src_dir.exists():
+        return []
+    return [path for path in src_dir.rglob("*") if path.is_file()]
+
+
+def _hybrid_runtime_build_required(src_dir: Path) -> bool:
+    if not HYBRID_BIN.is_file():
+        return True
+    bin_mtime = HYBRID_BIN.stat().st_mtime
+    return any(path.stat().st_mtime > bin_mtime for path in _hybrid_runtime_inputs(src_dir))
 
 
 @dataclass(frozen=True)
@@ -50,10 +67,12 @@ def _resolve_meta_cubins(mdir: Path, meta: dict[str, object]) -> list[Path]:
 
 
 def ensure_hybrid_runtime_built() -> None:
-    if HYBRID_BIN.is_file():
+    src_dir = _hybrid_src_dir()
+    if not _hybrid_runtime_build_required(src_dir):
         return
-    command = ["make", "-C", str(HYBRID_BIN.parent), "--no-print-directory"]
-    print(f"info: building missing hybrid runtime: {' '.join(command)}", file=sys.stderr)
+    command = ["make", "-C", str(src_dir), "--no-print-directory"]
+    reason = "stale" if HYBRID_BIN.is_file() else "missing"
+    print(f"info: building {reason} hybrid runtime: {' '.join(command)}", file=sys.stderr)
     try:
         subprocess.run(command, cwd=REPO_ROOT, check=True)
     except FileNotFoundError:
@@ -116,7 +135,7 @@ def require_launch_files(resolution: LaunchResolution) -> None:
     ensure_hybrid_runtime_built()
     if not HYBRID_BIN.is_file():
         print(
-            f"error: {HYBRID_BIN} not found — run: make -C {HYBRID_BIN.parent}",
+            f"error: {HYBRID_BIN} not found — run: make -C {_hybrid_src_dir()}",
             file=sys.stderr,
         )
         sys.exit(1)

@@ -10,6 +10,8 @@ CXX      ?= g++
 CXXFLAGS ?= -O2 -Wall -Wextra
 VERILATOR_ROOT ?= $(shell verilator --getenv VERILATOR_ROOT 2>/dev/null || echo /usr/local/share/verilator)
 TLUL_MDIR ?= artifacts/tlul_fifo_sync_obj_dir
+RUNNER_OUT_DIR ?= ../../artifacts/tool_bins/hybrid
+RUNNER := $(RUNNER_OUT_DIR)/run_vl_hybrid
 
 ifeq ($(strip $(CUDA_INCLUDE_DIR)),)
   ifneq ($(wildcard $(CUDA_HOME)/include/cuda.h),)
@@ -33,13 +35,18 @@ endif
 
 INCLUDES = -I$(CUDA_INCLUDE_DIR)
 LDFLAGS  = -L$(CUDA_LIB_DIR) -Wl,-rpath,$(CUDA_LIB_DIR)
-LDLIBS   = -lcuda
+LDLIBS   = -lcuda -pthread
 
-.PHONY: all clean tlul_slice_host_probe tlul_sink_host_probe xuantie_e902_host_probe veer_el2_host_probe
+.PHONY: all clean run_vl_hybrid tlul_slice_host_probe tlul_sink_host_probe xuantie_e902_host_probe veer_el2_host_probe
 
-all: run_vl_hybrid
+all: $(RUNNER)
 
-run_vl_hybrid: run_vl_hybrid.c
+run_vl_hybrid: $(RUNNER)
+
+$(RUNNER_OUT_DIR):
+	mkdir -p $@
+
+$(RUNNER): run_vl_hybrid.c | $(RUNNER_OUT_DIR)
 	@test -n "$(CUDA_INCLUDE_DIR)" -a -f $(CUDA_INCLUDE_DIR)/cuda.h || \
 		(echo "Set CUDA_HOME or CUDA_INCLUDE_DIR so cuda.h is available"; exit 1)
 	@test -n "$(CUDA_LIB_DIR)" -a -e $(CUDA_LIB_DIR)/libcuda.so || \
@@ -208,4 +215,4 @@ xuantie_e902_host_probe: ../../artifacts/xuantie_e902_obj_dir/xuantie_e902_host_
 veer_el2_host_probe: ../../artifacts/veer_el2_obj_dir/veer_el2_host_probe
 
 clean:
-	rm -f run_vl_hybrid ../../$(TLUL_MDIR)/tlul_slice_host_probe ../../artifacts/tlul_sink_obj_dir/tlul_slice_host_probe ../../artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe ../../artifacts/veer_el2_obj_dir/veer_el2_host_probe
+	rm -f $(RUNNER) run_vl_hybrid ../../$(TLUL_MDIR)/tlul_slice_host_probe ../../artifacts/tlul_sink_obj_dir/tlul_slice_host_probe ../../artifacts/xuantie_e902_obj_dir/xuantie_e902_host_probe ../../artifacts/veer_el2_obj_dir/veer_el2_host_probe

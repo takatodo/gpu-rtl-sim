@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "gate": "close_github_27_after_accepted_post_source_closure_retry_run_gate",
+  "status": "github_27_closed_completed",
+  "objective": "Record closure of GitHub issue #27 after the accepted post-source-closure bridge retry run, then move the canonical pointer to the narrow first real #9 / FC-042 --use-gpu path definition.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_run_gate.json",
+  "current_priority": "define_verilator_use_gpu_first_real_path_gate",
+  "github_issue": {
+    "number": 27,
+    "url": "https://github.com/takatodo/gpu-rtl-sim/issues/27",
+    "title": "T7: Review and run post-source-closure bridge retry",
+    "state": "closed",
+    "state_reason": "completed",
+    "closed_at": "2026-06-02T15:38:05Z",
+    "closure_comment_id": 4604057313
+  },
+  "closed_scope": {
+    "target": "pulp_ita_mha",
+    "shape": "64x1",
+    "source_closure_verified": true,
+    "template_source_file_count": 29,
+    "missing_source_file_count": 0,
+    "structured_launcher_argv_used": true,
+    "launcher_exit_code": 0,
+    "coverage_output_compare_reached": true,
+    "coverage_output_equivalence_passed": true,
+    "coverage_output_mismatch_count": 0,
+    "compared_state_pair_count": 64,
+    "compared_word_count": 1856,
+    "compared_byte_count": 7424
+  },
+  "preserved_non_claims": [
+    "not raw full-state equality",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic dependency inference",
+    "not automatic GPU allocation",
+    "not production throughput",
+    "not direct Verilator-internal sidecar execution"
+  ],
+  "required_next_gate": {
+    "name": "define_verilator_use_gpu_first_real_path_gate",
+    "must_define": [
+      "exactly one known reviewed filelist/top/target pair for the first --use-gpu path",
+      "how --use-gpu expands to the current native-minimum schedule or fails closed when schedule information is insufficient",
+      "how reviewed sidecar metadata reaches the launcher without making JSON the runtime ABI",
+      "unsupported input rejection for unknown filelists, missing top, missing sidecar context, unavailable GPU runtime, and unsupported schedules",
+      "docs and focused tests that present the path as scoped support rather than a general Verilator replacement"
+    ],
+    "must_not_claim": [
+      "general verilator --use-gpu support",
+      "arbitrary RTL or filelist support",
+      "automatic dependency inference",
+      "automatic GPU allocation",
+      "timing or speedup evidence",
+      "production throughput",
+      "CIRCT execution",
+      "mandatory JSON runtime ABI",
+      "raw full-state equality"
+    ]
+  },
+  "acceptance_policy": {
+    "github_27_closed": true,
+    "github_27_completed": true,
+    "future_fc_042_definition_allowed": true,
+    "new_execution_allowed_by_this_gate": false,
+    "timing_or_speedup_claim_allowed_by_this_gate": false,
+    "broad_use_gpu_claim_allowed_by_this_gate": false,
+    "arbitrary_filelist_support_claim_allowed_by_this_gate": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_this_gate": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "define_verilator_use_gpu_first_real_path_gate"
+}

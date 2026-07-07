@@ -42,6 +42,10 @@ def _display_default_root_path(path: Path) -> str:
         return "rtlmeter_root/src"
 
 
+def _display_rtlmeter_path(path: Path, rtlmeter_root: Path) -> str:
+    return f"third_party/rtlmeter/{_rel(path, rtlmeter_root)}"
+
+
 def _apply_descriptor_defaults(desc: dict[str, Any]) -> dict[str, Any]:
     desc["compile"] = desc.get("compile") or {}
     desc["configurations"] = {
@@ -222,7 +226,7 @@ def capture_rtlmeter_verilator_command(
         "config": config,
         "test": test,
         "rtlmeter_root": "third_party/rtlmeter",
-        "descriptor": _rel(descriptor["__file__"], _repo_root()),
+        "descriptor": _display_rtlmeter_path(descriptor["__file__"], root),
         "descriptor_loader": descriptor["descriptor_loader"],
         "sidecar_contract_role": SIDECAR_CONTRACT_ROLE,
         "top_module": top_module,

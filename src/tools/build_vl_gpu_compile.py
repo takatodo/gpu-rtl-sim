@@ -40,6 +40,9 @@ def plan_verilator_ll_files(
     ll_files: list[Path] = []
     any_ll_rebuilt = False
     for cls in all_classes:
+        if cls.endswith("__main"):
+            print(f"  skip (host main): {cls}.cpp")
+            continue
         cpp = mdir / f'{cls}.cpp'
         if not cpp.exists():
             print(f'  skip (missing): {cpp.name}')

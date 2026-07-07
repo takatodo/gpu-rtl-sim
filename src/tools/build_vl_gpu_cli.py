@@ -64,6 +64,14 @@ def add_phase_split_options(parser: argparse.ArgumentParser) -> None:
             'of this size into vl_kernel_manifest.json.'
         ),
     )
+    parser.add_argument(
+        '--disable-cfg-clone-diagnostics',
+        action='store_true',
+        help=(
+            'Pass --disable-cfg-clone-diagnostics to vlgpugen so ordering-aware '
+            'baseline builds omit CFG-clone counter/shadow diagnostic IR.'
+        ),
+    )
 
 
 def add_reuse_and_state_image_options(parser: argparse.ArgumentParser) -> None:

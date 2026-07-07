@@ -165,6 +165,14 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
     def test_completion_gate_closes_index_rewrite_and_selects_parser_boundary(self) -> None:
         completion = self.read_completion_gate()
         selection = json.loads(SELECTION.read_text(encoding="utf-8"))
+        wrapper_lane = json.loads(
+            (
+                REPO_ROOT
+                / "config"
+                / "scaling_gates"
+                / "sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json"
+            ).read_text(encoding="utf-8")
+        )
 
         self.assertEqual(completion["current_priority"], "define_verilator_native_option_parser_boundary_gate")
         self.assertEqual(
@@ -189,14 +197,15 @@ class CommitSplitCleanupGateTest(unittest.TestCase):
         self.assertFalse(completion["acceptance_policy"]["new_measurement_allowed_by_this_gate"])
         self.assertFalse(completion["acceptance_policy"]["new_execution_allowed_by_this_gate"])
         self.assertEqual(
-            selection["current_priority"],
-            "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate",
+            wrapper_lane["current_priority"],
+            "external_user_readiness_audit_gate",
         )
         self.assertEqual(
-            selection["current_priority_source_artifact"],
-            "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate.json",
+            wrapper_lane["current_priority_source_artifact"],
+            "config/scaling_gates/sync_verilator_use_gpu_wrapper_completion_to_external_readiness_audit_gate.json",
         )
-        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 927)
+        self.assertNotEqual(selection["current_priority"], wrapper_lane["current_priority"])
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 971)
 
     def test_native_invocation_execution_boundary_review_selects_scoped_run(self) -> None:
         review = json.loads(

@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "gate": "implement_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_gate",
+  "status": "implemented_non_executing_observable_ordering_helper",
+  "objective": "Implement a narrow importable helper that validates the reviewed Verilator-process-to-launcher bridge metadata path, emits an observable ordering trace, and returns launcher-start-allowed status without starting the launcher, executing sidecar stages, running compare, measuring timing, changing runtime/ABI, adding a public CLI, broadening filelist support, or allocating GPUs automatically.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_implementation_boundary_gate.json",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_implementation_boundary_gate.json",
+  "source_bridge_fixture_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_fixture_implementation_gate.json",
+  "source_process_to_launcher_execution_run_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_run_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_implementation_gate",
+  "implementation_decision": {
+    "implemented": true,
+    "reason": "The bridge fixture module now exposes run_verilator_process_launcher_bridge_with_observable_ordering. The helper requires the reviewed observable-ordering boundary gate, validates the explicit pulp_ita_mha 64x1 sidecar context, reuses define_verilator_process_launcher_bridge_fixture to validate reviewed bridge and process-to-launcher metadata, validates the exact structured run_hybrid_template.py launcher argv, emits a monotonic ordering trace, and returns launcher-start-allowed status with all execution flags false.",
+    "weakest_point": "The helper name includes run and returns launcher-start-allowed status, but this gate still performs no launcher process start, sidecar stage execution, coverage-output compare, timing measurement, runtime/ABI change, automatic allocation, arbitrary filelist inference, direct Verilator sidecar execution, or production-throughput proof."
+  },
+  "implemented_surface": {
+    "module": "src/tools/verilator_native_option_parser_verilator_process_launcher_bridge_fixture.py",
+    "primary_entrypoint_function": "run_verilator_process_launcher_bridge_with_observable_ordering",
+    "reused_bridge_entrypoint": "define_verilator_process_launcher_bridge_fixture",
+    "new_public_cli_added": false,
+    "runtime_or_abi_change_added": false,
+    "launcher_process_execution_added": false,
+    "sidecar_stage_execution_added": false,
+    "coverage_output_compare_execution_added": false,
+    "timing_or_speedup_measurement_added": false,
+    "arbitrary_rtl_or_filelist_support_added": false,
+    "automatic_gpu_allocation_added": false
+  },
+  "accepted_scope": {
+    "target": "pulp_ita_mha",
+    "template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "shape": "64x1",
+    "state_count": 64,
+    "step_count": 1,
+    "launcher_command_argv": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ],
+    "scope_broadening_added": false
+  },
+  "output_contract": {
+    "surface": "native_verilator_parser_direct_command_path_verilator_process_launcher_bridge_observable_ordering_helper",
+    "status": "verilator_process_launcher_bridge_observable_ordering_helper_ready_for_review",
+    "bridge_metadata_validated": true,
+    "process_to_launcher_metadata_validated": true,
+    "explicit_sidecar_context_validated": true,
+    "unreviewed_sidecar_context_source_ref_rejected": true,
+    "structured_launcher_argv_validated": true,
+    "launcher_start_allowed_status_emitted_after_trace": true,
+    "launcher_start_allowed_from_structured_argv_only": true,
+    "launcher_process_started": false,
+    "sidecar_stage_execution_performed": false,
+    "compare_execution_performed": false,
+    "execution_performed": false,
+    "measurement_performed": false,
+    "timing_measured": false,
+    "runtime_or_abi_changed": false,
+    "automatic_gpu_allocation_used": false,
+    "generated_reports_and_artifacts_source_of_truth": false
+  },
+  "observable_ordering_contract": {
+    "must_emit_ordering_trace_before_launcher_start": true,
+    "required_ordering_events": [
+      "verilator_facing_invocation_received",
+      "reviewed_bridge_metadata_validated",
+      "reviewed_process_to_launcher_metadata_validated",
+      "explicit_sidecar_context_validated",
+      "unreviewed_sidecar_context_source_ref_rejected",
+      "bridge_ordering_trace_emitted_before_launcher_start",
+      "launcher_start_allowed_from_structured_argv"
+    ],
+    "launcher_start_from_structured_argv_allowed_after_trace": true,
+    "launcher_start_from_shell_string_allowed": false,
+    "launcher_start_from_generated_command_text_allowed": false,
+    "observable_ordering_trace_is_correctness_evidence": false,
+    "observable_ordering_trace_is_execution_authority": false,
+    "bridge_path_compare_claim_requires_future_run": true,
+    "timing_claim_requires_separate_timing_gate": true
+  },
+  "authority_contract": {
+    "reviewed_bridge_fixture_metadata_required": true,
+    "reviewed_process_to_launcher_metadata_required": true,
+    "explicit_sidecar_context_required_for_launcher": true,
+    "reviewed_bridge_fixture_metadata_is_runtime_authority": false,
+    "reviewed_process_to_launcher_metadata_is_runtime_authority": false,
+    "exact_launcher_argv_is_execution_authority": false,
+    "observable_ordering_trace_is_execution_authority": false,
+    "launcher_start_allowed_status_is_launcher_start_evidence": false,
+    "coverage_output_compare_claim_requires_future_compare_stage": true
+  },
+  "rejection_contract": {
+    "wrong_observable_ordering_review_gate_rejected": true,
+    "wrong_bridge_metadata_review_gate_rejected": true,
+    "mutated_process_to_launcher_metadata_rejected": true,
+    "explicit_sidecar_context_mismatch_rejected": true,
+    "unreviewed_sidecar_context_source_ref_rejected": true,
+    "launcher_argv_mismatch_rejected": true
+  },
+  "preserved_failure_classes": [
+    "verilator_process_parse_failure",
+    "missing_explicit_sidecar_context",
+    "source_or_template_authority_failure",
+    "process_to_launcher_bridge_failure",
+    "launcher_cli_invocation_failure",
+    "sidecar_stage_failure",
+    "compare_failure",
+    "timing_claim_without_measurement"
+  ],
+  "test_evidence": {
+    "focused_contract_test": "tests/contract/test_verilator_process_launcher_bridge_observable_ordering_helper.py",
+    "focused_command": "python3 -m unittest tests.contract.test_verilator_process_launcher_bridge_observable_ordering_helper -q",
+    "expected_result": "4 tests OK",
+    "module_line_count_after_implementation": 279
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_implementation_gate",
+    "must_review": [
+      "the helper validates reviewed bridge and process-to-launcher metadata before emitting ordering trace",
+      "launcher-start-allowed status is emitted only after the trace and only for exact structured argv",
+      "unreviewed sidecar context refs and mutated launcher metadata fail closed",
+      "all execution, compare, timing, runtime/ABI, allocation, and source-of-truth flags remain false"
+    ],
+    "must_not_claim": [
+      "bridge-path launcher start",
+      "bridge-path coverage-output compare",
+      "direct Verilator sidecar execution",
+      "timing or speedup evidence",
+      "broad native option support",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "implementation_gate": true,
+    "new_public_cli_added": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "verilator_process_launcher_bridge_execution_claim_allowed_by_gate_alone": false,
+    "bridge_path_launcher_start_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_reached_from_bridge_path": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_gate_alone": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "broad_native_option_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_implementation_gate",
+  "non_claims": [
+    "not direct Verilator sidecar execution",
+    "not bridge-path launcher start",
+    "not bridge-path coverage-output compare",
+    "not timing or speedup evidence",
+    "not broad native option support",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

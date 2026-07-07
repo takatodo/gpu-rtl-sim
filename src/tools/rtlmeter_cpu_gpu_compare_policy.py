@@ -60,7 +60,7 @@ def rtlmeter_cpu_gpu_compare_policy(
         "compare_policy": {
             "name": "rtlmeter_stdout_and_cycles_equivalence",
             "cpu_reference": "RTLMeter normal execute path",
-            "gpu_candidate": "sidecar execution launched from RTLMeter-preserving Verilator argv",
+            "gpu_candidate": "RTLMeter stdout/cycles candidate launched from Verilator argv that preserves sidecar intent",
             "required_matches": [
                 "normalized stdout transcript",
                 "reported RTLMeter cycle count",
@@ -77,5 +77,6 @@ def rtlmeter_cpu_gpu_compare_policy(
             "policy definition does not create a compare report",
             "report regeneration command is planned documentation, not an executed workflow",
             "policy definition does not claim speedup or timing",
+            "policy definition does not claim GPU runtime execution",
         ],
     }

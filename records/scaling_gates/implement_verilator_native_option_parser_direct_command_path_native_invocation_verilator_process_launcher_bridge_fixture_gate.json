@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "gate": "implement_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_fixture_gate",
+  "status": "implemented_non_executing_verilator_process_launcher_bridge_fixture",
+  "objective": "Implement the scoped fixture that validates the reviewed wrapper-mediated Verilator-process-to-launcher bridge boundary, binds reviewed process-to-launcher CLI metadata to exact launcher argv, and keeps launcher execution, sidecar execution, compare, timing, runtime/ABI change, arbitrary filelist support, and automatic GPU allocation out of scope.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate.json",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate.json",
+  "source_process_to_launcher_boundary_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate.json",
+  "source_process_to_launcher_execution_run_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_run_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_fixture_implementation_gate",
+  "implementation_decision": {
+    "implemented": true,
+    "reason": "A separate importable bridge helper module now exposes define_verilator_process_launcher_bridge_fixture. The helper requires the reviewed Verilator process launcher bridge boundary gate, builds or validates reviewed process-to-launcher CLI metadata, cross-checks pulp_ita_mha 64x1 schedule and exact structured launcher argv, preserves explicit sidecar context as source authority, rejects unreviewed sidecar context authority when prebuilt metadata is supplied, and keeps every execution, compare, timing, runtime/ABI, filelist, allocation, and source-of-truth flag false.",
+    "weakest_point": "The fixture name contains Verilator process launcher bridge, but the implementation is still metadata-only. It does not start a Verilator process, invoke run_hybrid_template.py, execute sidecar stages, reach coverage-output compare from the native path, prove broad native Verilator option support, measure timing, or allocate GPUs automatically."
+  },
+  "implemented_surface": {
+    "module": "src/tools/verilator_native_option_parser_verilator_process_launcher_bridge_fixture.py",
+    "primary_entrypoint_function": "define_verilator_process_launcher_bridge_fixture",
+    "reused_process_to_launcher_entrypoint": "src/tools/verilator_native_option_parser_process_to_launcher_cli_fixture.py::define_process_to_launcher_cli_fixture",
+    "new_public_cli_added": false,
+    "runtime_or_abi_change_added": false,
+    "verilator_process_execution_added": false,
+    "launcher_process_execution_added": false,
+    "sidecar_stage_execution_added": false,
+    "coverage_output_compare_execution_added": false,
+    "timing_or_speedup_measurement_added": false,
+    "arbitrary_rtl_or_filelist_support_added": false,
+    "automatic_gpu_allocation_added": false
+  },
+  "accepted_scope": {
+    "target": "pulp_ita_mha",
+    "template": "config/slice_launch_templates/pulp_ita_mha.json",
+    "shape": "64x1",
+    "state_count": 64,
+    "step_count": 1,
+    "correctness_policy": "coverage_output_equivalence",
+    "expanded_option_spelling": [
+      "--sim-accel",
+      "sidecar-gpu",
+      "--sim-accel-states",
+      "64",
+      "--sim-accel-steps",
+      "1"
+    ],
+    "launcher_command_argv": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ],
+    "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate.json",
+    "scope_broadening_added": false
+  },
+  "output_contract": {
+    "surface": "native_verilator_parser_direct_command_path_verilator_process_launcher_bridge_fixture",
+    "status": "verilator_process_launcher_bridge_metadata_ready_for_review",
+    "verilator_process_launcher_bridge_ready": true,
+    "wrapper_mediated_process_launch_bridge": true,
+    "process_to_launcher_cli_bridge_ready": true,
+    "invocation_ready": true,
+    "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate.json",
+    "source_process_to_launcher_boundary_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate.json",
+    "source_process_to_launcher_execution_run_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_run_gate.json",
+    "parser_schedule": {
+      "accelerator_mode": "sidecar-gpu",
+      "state_count": 64,
+      "step_count": 1,
+      "shape": "64x1",
+      "correctness_policy": "coverage_output_equivalence"
+    },
+    "sidecar_launcher_entrypoint": "src/tools/run_hybrid_template.py",
+    "launcher_command_argv": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ],
+    "launcher_command_role": "materialized_for_later_run_not_invoked_by_fixture",
+    "bridge_materialization_status_state": "verilator_process_metadata_bound_to_process_to_launcher_cli_fixture_for_later_run",
+    "verilator_process_invoked": false,
+    "wrapper_execution_used": false,
+    "launcher_cli_invoked": false,
+    "launcher_process_invoked": false,
+    "sidecar_launcher_invoked_from_native_path": false,
+    "sidecar_launch_reached_from_native_path": false,
+    "sidecar_stage_execution_performed": false,
+    "compare_execution_performed": false,
+    "coverage_output_compare_reached_from_native_path": false,
+    "native_path_compare_reached": false,
+    "direct_verilator_sidecar_execution_proven": false,
+    "coverage_output_equivalence_claim_reached_from_direct_verilator_sidecar_execution": false,
+    "execution_performed": false,
+    "measurement_performed": false,
+    "timing_measured": false,
+    "runtime_or_abi_changed": false,
+    "automatic_gpu_allocation_used": false,
+    "generated_reports_and_artifacts_source_of_truth": false
+  },
+  "authority_contract": {
+    "reviewed_verilator_process_launcher_bridge_boundary_required": true,
+    "reviewed_process_to_launcher_metadata_required": true,
+    "explicit_sidecar_context_required_for_launcher": true,
+    "parser_payload_runtime_authority": false,
+    "reviewed_process_to_launcher_metadata_runtime_authority": false,
+    "exact_launcher_argv_execution_authority": false,
+    "generated_command_text_execution_authority": false,
+    "launcher_start_is_not_verilator_internal_sidecar_execution": true,
+    "coverage_output_compare_claim_requires_future_compare_stage": true,
+    "timing_claim_requires_separate_timing_gate": true
+  },
+  "rejection_contract": {
+    "wrong_bridge_boundary_review_gate_rejected": true,
+    "process_to_launcher_metadata_surface_or_status_mismatch_rejected": true,
+    "process_to_launcher_metadata_source_review_gate_mismatch_rejected": true,
+    "target_template_shape_state_step_mismatch_rejected": true,
+    "exact_launcher_argv_mismatch_rejected": true,
+    "mutated_process_to_launcher_execution_metadata_rejected": true,
+    "explicit_sidecar_context_mismatch_rejected": true,
+    "unreviewed_sidecar_context_source_ref_rejected": true
+  },
+  "preserved_failure_classes": [
+    "verilator_process_parse_failure",
+    "missing_explicit_sidecar_context",
+    "source_or_template_authority_failure",
+    "process_to_launcher_bridge_failure",
+    "launcher_cli_invocation_failure",
+    "sidecar_stage_failure",
+    "compare_failure",
+    "timing_claim_without_measurement"
+  ],
+  "test_evidence": {
+    "focused_contract_test": "tests/contract/test_verilator_native_option_parser_process_to_launcher_cli_fixture.py",
+    "focused_command": "python3 -m unittest tests.contract.test_verilator_native_option_parser_process_to_launcher_cli_fixture -q",
+    "observed_result": "18 tests OK",
+    "module_line_count_after_implementation": 238,
+    "reused_process_to_launcher_module_line_count": 262,
+    "contract_test_line_count_after_implementation": 921
+  },
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_fixture_implementation_gate",
+    "must_review": [
+      "the fixture requires the reviewed Verilator process launcher bridge boundary gate",
+      "the fixture reuses or validates reviewed process-to-launcher CLI metadata instead of treating argv text as execution authority",
+      "target, template, shape, state count, step count, expanded option spelling, and launcher argv remain scoped to pulp_ita_mha 64x1",
+      "verilator process invocation, launcher invocation, sidecar stages, compare, timing, runtime/ABI changes, arbitrary filelists, and automatic allocation remain out of scope",
+      "failure classes remain separate before any future run"
+    ],
+    "must_not_claim": [
+      "direct Verilator sidecar execution",
+      "full native Verilator process-to-launcher runtime execution",
+      "native-path coverage-output compare",
+      "timing or speedup evidence",
+      "arbitrary RTL support",
+      "arbitrary filelist support",
+      "automatic GPU allocation",
+      "runtime or ABI change",
+      "raw full-state equality",
+      "production LLM-serving throughput"
+    ]
+  },
+  "acceptance_policy": {
+    "implementation_gate": true,
+    "new_public_cli_added": false,
+    "new_execution_allowed_by_this_gate": false,
+    "new_measurement_allowed_by_this_gate": false,
+    "direct_verilator_sidecar_execution_claim_allowed_by_gate_alone": false,
+    "full_native_verilator_process_to_launcher_execution_claim_allowed_by_gate_alone": false,
+    "coverage_output_equivalence_claim_reached_from_direct_verilator_sidecar_execution": false,
+    "timing_or_speedup_claim_allowed_by_gate_alone": false,
+    "arbitrary_rtl_support_claim_allowed_by_gate_alone": false,
+    "arbitrary_filelist_support_claim_allowed_by_gate_alone": false,
+    "automatic_optimal_gpu_allocation_claim_allowed_by_gate_alone": false,
+    "runtime_or_abi_change_allowed_by_this_gate": false,
+    "raw_full_state_equality_claim_allowed_by_gate_alone": false,
+    "reports_and_artifacts_are_source_of_truth": false
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_fixture_implementation_gate",
+  "non_claims": [
+    "not direct Verilator sidecar execution",
+    "not full native Verilator process-to-launcher runtime execution",
+    "not native-path coverage-output compare",
+    "not timing or speedup evidence",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic optimal GPU allocation",
+    "not runtime or ABI change",
+    "not raw full-state equality",
+    "not production LLM-serving throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ]
+}

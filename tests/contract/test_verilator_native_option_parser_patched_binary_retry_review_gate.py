@@ -11,6 +11,12 @@ DEFINE_AUTHORITY_GATE = REPO_ROOT / "config" / "scaling_gates" / "define_verilat
 REVIEW_AUTHORITY_GATE = REPO_ROOT / "config" / "scaling_gates" / "review_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate.json"
 REVIEW_FIRST_SCOPED_EXECUTION_BOUNDARY_GATE = REPO_ROOT / "config" / "scaling_gates" / "review_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_boundary_gate.json"
 RUN_FIRST_SCOPED_EXECUTION_GATE = REPO_ROOT / "config" / "scaling_gates" / "run_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_gate.json"
+PROCESS_TO_LAUNCHER_CLI_BOUNDARY_REVIEW_GATE = (
+    REPO_ROOT
+    / "config"
+    / "scaling_gates"
+    / "review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate.json"
+)
 RUN_GATE = "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_patched_binary_retry_gate.json"
 RUN_FIRST_SCOPED_EXECUTION_GATE_NAME = "run_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_gate"
 REVIEW_FIRST_SCOPED_EXECUTION_RUN_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_run_gate"
@@ -42,6 +48,26 @@ DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_RUN_BOUNDARY_GATE_NAME = "defi
 REVIEW_DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_RUN_BOUNDARY_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate"
 RUN_DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_GATE_NAME = "run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate"
 REVIEW_DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_RUN_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate"
+DEFINE_PROCESS_TO_LAUNCHER_CLI_BOUNDARY_GATE_NAME = "define_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate"
+REVIEW_PROCESS_TO_LAUNCHER_CLI_BOUNDARY_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate"
+IMPLEMENT_PROCESS_TO_LAUNCHER_CLI_FIXTURE_GATE_NAME = "implement_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_fixture_gate"
+REVIEW_PROCESS_TO_LAUNCHER_CLI_FIXTURE_IMPLEMENTATION_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_fixture_implementation_gate"
+DEFINE_PROCESS_TO_LAUNCHER_CLI_EXECUTION_BOUNDARY_GATE_NAME = "define_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate"
+REVIEW_PROCESS_TO_LAUNCHER_CLI_EXECUTION_BOUNDARY_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate"
+RUN_PROCESS_TO_LAUNCHER_CLI_EXECUTION_GATE_NAME = "run_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_gate"
+REVIEW_PROCESS_TO_LAUNCHER_CLI_EXECUTION_RUN_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_run_gate"
+DEFINE_VERILATOR_PROCESS_LAUNCHER_BRIDGE_BOUNDARY_GATE_NAME = "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate"
+REVIEW_VERILATOR_PROCESS_LAUNCHER_BRIDGE_BOUNDARY_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate"
+IMPLEMENT_VERILATOR_PROCESS_LAUNCHER_BRIDGE_FIXTURE_GATE_NAME = "implement_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_fixture_gate"
+REVIEW_VERILATOR_PROCESS_LAUNCHER_BRIDGE_FIXTURE_IMPLEMENTATION_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_fixture_implementation_gate"
+DEFINE_VERILATOR_PROCESS_LAUNCHER_BRIDGE_EXECUTION_BOUNDARY_GATE_NAME = "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_execution_boundary_gate"
+REVIEW_VERILATOR_PROCESS_LAUNCHER_BRIDGE_EXECUTION_BOUNDARY_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_execution_boundary_gate"
+RUN_VERILATOR_PROCESS_LAUNCHER_BRIDGE_EXECUTION_GATE_NAME = "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_execution_gate"
+REVIEW_VERILATOR_PROCESS_LAUNCHER_BRIDGE_EXECUTION_RUN_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_execution_run_gate"
+DEFINE_VERILATOR_PROCESS_LAUNCHER_BRIDGE_OBSERVABLE_ORDERING_IMPLEMENTATION_BOUNDARY_GATE_NAME = "define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_implementation_boundary_gate"
+REVIEW_VERILATOR_PROCESS_LAUNCHER_BRIDGE_OBSERVABLE_ORDERING_IMPLEMENTATION_BOUNDARY_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_implementation_boundary_gate"
+IMPLEMENT_VERILATOR_PROCESS_LAUNCHER_BRIDGE_OBSERVABLE_ORDERING_HELPER_GATE_NAME = "implement_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_gate"
+REVIEW_VERILATOR_PROCESS_LAUNCHER_BRIDGE_OBSERVABLE_ORDERING_HELPER_IMPLEMENTATION_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_implementation_gate"
 DEFINE_AUTHORITY_GATE_NAME = "define_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate"
 REVIEW_AUTHORITY_GATE_NAME = "review_verilator_native_option_parser_direct_command_path_native_invocation_sidecar_authority_boundary_gate"
 FIRST_SCOPED_EXECUTION_BOUNDARY_GATE_NAME = "define_verilator_native_option_parser_direct_command_path_native_invocation_first_scoped_sidecar_execution_boundary_gate"
@@ -81,6 +107,26 @@ PUBLIC_PACK_RECORDS = (
     "records/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json",
     "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_boundary_gate.json",
     "records/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_gate.json",
+    "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_direct_launch_handoff_sidecar_launcher_invocation_run_gate.json",
+    "records/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate.json",
+    "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_boundary_gate.json",
+    "records/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_fixture_gate.json",
+    "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_fixture_implementation_gate.json",
+    "records/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate.json",
+    "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_boundary_gate.json",
+    "records/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_gate.json",
+    "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_process_to_launcher_cli_execution_run_gate.json",
+    "records/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate.json",
+    "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_boundary_gate.json",
+    "records/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_fixture_gate.json",
+    "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_fixture_implementation_gate.json",
+    "records/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_execution_boundary_gate.json",
+    "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_execution_boundary_gate.json",
+    "records/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_execution_gate.json",
+    "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_execution_run_gate.json",
+    "records/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_implementation_boundary_gate.json",
+    "records/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_implementation_boundary_gate.json",
+    "records/scaling_gates/implement_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_observable_ordering_helper_gate.json",
 )
 
 
@@ -98,12 +144,18 @@ def _load_public_pack_paths() -> tuple[str, ...]:
 
 
 class VerilatorNativeOptionParserPatchedBinaryRetryReviewGateTest(unittest.TestCase):
-    def test_selection_points_at_first_scoped_execution_boundary_review_after_definition(self) -> None:
+    def test_selection_points_at_scientific_circt_regression_harness(self) -> None:
         selection = json.loads((REPO_ROOT / "config" / "selection.json").read_text(encoding="utf-8"))
 
-        self.assertEqual(selection["current_priority"], REVIEW_DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_RUN_GATE_NAME)
-        self.assertEqual(selection["current_priority_source_artifact"], f"config/scaling_gates/{RUN_DIRECT_LAUNCH_HANDOFF_SIDECAR_LAUNCHER_INVOCATION_GATE_NAME}.json")
-        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 927)
+        self.assertEqual(
+            selection["current_priority"],
+            "define_scientific_circt_source_variant_regression_harness_gate",
+        )
+        self.assertEqual(
+            selection["current_priority_source_artifact"],
+            "records/scaling_gates/select_scientific_circt_source_variant_regression_harness_after_fc074_gate.json",
+        )
+        self.assertEqual(selection["repository_cleanup"]["records_scaling_gate_json_count"], 971)
 
     def test_review_accepts_only_parser_only_patched_binary_success(self) -> None:
         gate = json.loads(REVIEW_GATE.read_text(encoding="utf-8"))
@@ -184,6 +236,31 @@ class VerilatorNativeOptionParserPatchedBinaryRetryReviewGateTest(unittest.TestC
         paths = _load_public_pack_paths()
         for record in PUBLIC_PACK_RECORDS:
             self.assertIn(record, paths)
+
+    def test_process_to_launcher_cli_boundary_review_selects_non_executing_fixture(self) -> None:
+        gate = json.loads(PROCESS_TO_LAUNCHER_CLI_BOUNDARY_REVIEW_GATE.read_text(encoding="utf-8"))
+
+        self.assertEqual(gate["source_definition_gate"], f"config/scaling_gates/{DEFINE_PROCESS_TO_LAUNCHER_CLI_BOUNDARY_GATE_NAME}.json")
+        self.assertEqual(gate["current_priority"], IMPLEMENT_PROCESS_TO_LAUNCHER_CLI_FIXTURE_GATE_NAME)
+        self.assertTrue(gate["review_decision"]["accepted"])
+        self.assertIn("does not implement", gate["review_decision"]["weakest_point"])
+        boundary = gate["accepted_boundary"]
+        self.assertTrue(boundary["future_implementation_allowed_after_review"])
+        self.assertEqual(boundary["future_implementation_kind"], "scoped_process_to_launcher_cli_fixture")
+        self.assertTrue(boundary["must_reject_payload_only_execution_authority"])
+        self.assertTrue(boundary["must_reject_generated_command_text_as_execution_authority"])
+        self.assertFalse(boundary["direct_verilator_sidecar_execution_claim_allowed"])
+        self.assertFalse(boundary["native_path_compare_claim_allowed"])
+        self.assertFalse(boundary["public_cli_change_allowed"])
+        self.assertEqual(gate["required_next_gate"]["name"], IMPLEMENT_PROCESS_TO_LAUNCHER_CLI_FIXTURE_GATE_NAME)
+        self.assertIn("launcher process execution", gate["required_next_gate"]["must_not_implement"])
+        policy = gate["acceptance_policy"]
+        self.assertTrue(policy["review_only"])
+        self.assertTrue(policy["next_fixture_implementation_allowed"])
+        self.assertFalse(policy["new_execution_allowed_by_this_gate"])
+        self.assertFalse(policy["new_public_cli_allowed_by_this_gate"])
+        self.assertFalse(policy["process_to_launcher_cli_execution_claim_allowed_by_gate_alone"])
+        self.assertFalse(policy["reports_and_artifacts_are_source_of_truth"])
 
     def test_sidecar_authority_boundary_definition_is_non_executing(self) -> None:
         gate = json.loads(DEFINE_AUTHORITY_GATE.read_text(encoding="utf-8"))

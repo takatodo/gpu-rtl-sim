@@ -6,7 +6,9 @@ from pathlib import Path
 from results_reproduction import REPO_ROOT, ReproductionCommand, format_command
 
 
-LOCAL_ABSOLUTE_PATH_PATTERN = re.compile(r"(?<!\S)/(?:home|tmp|Users|var|mnt|workspace|root)/\S+")
+LOCAL_ABSOLUTE_PATH_PATTERN = re.compile(
+    r"/(?:home|tmp|Users|var|mnt|workspace|root)/[^\s'\",;)]+"
+)
 
 
 def display_path(path: Path) -> str:

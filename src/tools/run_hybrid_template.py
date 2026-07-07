@@ -33,6 +33,26 @@ def main(argv: list[str] | None = None) -> int:
         help="Print the generated commands without executing them.",
     )
     parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Stream stage commands and tool logs to the terminal instead of the concise stage summary.",
+    )
+    parser.add_argument(
+        "--resident-steps",
+        action="store_true",
+        help="Plan or run the hybrid sidecar stage with run_vl_hybrid.py --resident-steps.",
+    )
+    parser.add_argument(
+        "--patch-script",
+        type=Path,
+        help="Explicit resident patch-script path required with --resident-steps.",
+    )
+    parser.add_argument(
+        "--resident-label",
+        default="resident_multistep",
+        help="Output/report label for --resident-steps runs.",
+    )
+    parser.add_argument(
         "--estimate-efficiency",
         action="store_true",
         help="Print a short human-readable efficiency estimate after the command plan.",
@@ -53,9 +73,21 @@ def main(argv: list[str] | None = None) -> int:
             cfg_drain_cycles=args.cfg_drain_cycles,
             cfg_seed=args.cfg_seed,
         )
+        if args.resident_steps and args.patch_script is None:
+            parser.error("--resident-steps requires --patch-script")
+        if args.patch_script is not None and not args.resident_steps:
+            parser.error("--patch-script requires --resident-steps")
+        if args.resident_steps and not args.dry_run and not args.patch_script.exists():
+            raise ValueError(f"resident patch script does not exist: {args.patch_script}")
         if not args.dry_run:
             validate_source_closure_for_execution(plan)
-        run_plan(plan, dry_run=args.dry_run)
+        run_plan(
+            plan,
+            dry_run=args.dry_run,
+            verbose=args.verbose,
+            resident_patch_script=args.patch_script,
+            resident_label=args.resident_label,
+        )
         if args.estimate_efficiency or args.estimate_efficiency_json:
             report = template_efficiency_report(plan)
             if args.estimate_efficiency_json:

@@ -1,0 +1,44 @@
+diff --git a/third_party/rtlmeter/designs/VeeR-EH1/src/tb_top.sv b/third_party/rtlmeter/designs/VeeR-EH1/src/tb_top.sv
+index 0000000..0000000 100644
+--- a/third_party/rtlmeter/designs/VeeR-EH1/src/tb_top.sv
++++ b/third_party/rtlmeter/designs/VeeR-EH1/src/tb_top.sv
+@@ -80,7 +80,7 @@ module tb_top;
+     logic                       o_cpu_halt_status;
+     logic                       o_cpu_run_ack;
+ 
+-    logic                       mailbox_write;
++    logic                       mailbox_write /* verilator public_flat */;
+     logic        [63:0]         dma_hrdata;
+     logic        [63:0]         dma_hwdata;
+     logic                       dma_hready;
+@@ -308,7 +308,7 @@ module tb_top;
+ 
+ 
+ `endif
+-    wire[63:0]                  WriteData;
++    wire[63:0]                  WriteData /* verilator public_flat */;
+     string                      abi_reg[32]; // ABI register names
+ 
+ `define DEC rvtop.veer.dec
+diff --git a/third_party/rtlmeter/designs/VeeR-EH2/src/tb_top.sv b/third_party/rtlmeter/designs/VeeR-EH2/src/tb_top.sv
+index 0000000..0000000 100644
+--- a/third_party/rtlmeter/designs/VeeR-EH2/src/tb_top.sv
++++ b/third_party/rtlmeter/designs/VeeR-EH2/src/tb_top.sv
+@@ -64,7 +64,7 @@ module tb_top;
+     logic                       o_cpu_halt_status;
+     logic                       o_cpu_run_ack;
+ 
+-    logic                       mailbox_write;
++    logic                       mailbox_write /* verilator public_flat */;
+     logic        [63:0]         dma_hrdata;
+     logic        [63:0]         dma_hwdata;
+     logic                       dma_hready;
+@@ -292,7 +292,7 @@ module tb_top;
+ 
+ 
+     string                      abi_reg[32]; // ABI register names
+-    wire[63:0]                  WriteData;
++    wire[63:0]                  WriteData /* verilator public_flat */;
+     wire                        tck, tms, tdi, tdo, trstn, srstn;
+     wire [31:0]                 minstret[2], mcycle[2];
+ 

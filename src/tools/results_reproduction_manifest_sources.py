@@ -120,6 +120,7 @@ PUBLIC_PACK_SOURCE_PATHS = (
     "src/tools/build_vl_gpu_inputs.py",
     "src/tools/build_vl_gpu_finalize.py",
     "src/tools/build_vl_gpu_full_path.py",
+    "src/tools/build_vl_gpu_veer_flat_mem.py",
     "src/tools/build_vl_gpu_lifetime.py",
     "src/tools/build_vl_gpu_lifetime_analysis.py",
     "src/tools/build_vl_gpu_metadata.py",

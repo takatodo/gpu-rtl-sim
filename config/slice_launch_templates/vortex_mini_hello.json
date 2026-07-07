@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "status": "candidate_fail_closed",
+  "target": "Vortex.mini_hello",
+  "source_gate": null,
+  "top_module": "tb",
+  "runtime_launchable": false,
+  "build": {
+    "mdir": "artifacts/vortex_mini_hello_obj_dir",
+    "work_dir": "work/slice_pilots/vortex_mini_hello",
+    "host_probe_target": "vortex_mini_hello_host_probe",
+    "host_probe_builder": null,
+    "verilator_mode": "descriptor_dpi_bridge_unintegrated"
+  },
+  "source_files": [
+    "third_party/rtlmeter/designs/Vortex/src/tb.sv",
+    "third_party/rtlmeter/designs/Vortex/src/Vortex.sv"
+  ],
+  "source_closure": {
+    "status": "incomplete",
+    "provenance": "rtlmeter_vortex_descriptor_first_gate_marker",
+    "descriptor": "third_party/rtlmeter/designs/Vortex/descriptor.yaml",
+    "descriptor_source_closure_report": "reports/rtlmeter_vortex_source_closure.json",
+    "descriptor_source_closure_status": "complete",
+    "declared_verilog_source_count": 126,
+    "declared_include_file_count": 8,
+    "declared_cpp_source_count": 1,
+    "missing_required_sources": [
+      "dpi_memory_bridge_lowering",
+      "lowered_tb_runtime_sequence_helper_invocation",
+      "observable_authority_reporting"
+    ],
+    "risk": "The Vortex mini hello gate depends on descriptor-owned DPI memory state and stdout/post observable authority; this template is a fail-closed measurement marker until the bridge is integrated."
+  },
+  "verilator_defines": [
+    "SIMULATION=1",
+    "XLEN_32=1",
+    "FPU_FPNEW=1",
+    "NDEBUG=1"
+  ],
+  "verilator_args": [
+    "--autoflush",
+    "-Wno-ASCRANGE",
+    "-Wno-UNSIGNED",
+    "-Wno-WIDTHEXPAND",
+    "-Wno-WIDTHTRUNC",
+    "-Ithird_party/rtlmeter/designs/Vortex/src",
+    "-Ithird_party/rtlmeter/designs/Vortex/src/fpnew"
+  ],
+  "planned_overlay": {
+    "launch_template_path": "config/slice_launch_templates/vortex_mini_hello.json",
+    "sidecar_authority_path": "config/rtlmeter_sidecar_authorities/rtlmeter_vortex_mini_hello.json",
+    "binary_input_summary_report": "reports/rtlmeter_vortex_binary_input_summary.json",
+    "gpu_memory_model_plan_report": "reports/rtlmeter_vortex_gpu_memory_model_plan.json",
+    "memory_model_reference_report": "reports/rtlmeter_vortex_memory_model_reference.json",
+    "device_buffer_materialize_report": "reports/rtlmeter_vortex_device_buffer_materialize.json",
+    "dcr_schedule_report": "reports/rtlmeter_vortex_dcr_schedule.json",
+    "dpi_memory_bridge_review_report": "reports/rtlmeter_vortex_dpi_memory_bridge_review.json",
+    "runtime_sequence_header": "src/hybrid/vortex_runtime_sequence.h",
+    "lowered_tb_runtime_sequence_header": "src/hybrid/vortex_lowered_tb_runtime_sequence.h",
+    "lowered_tb_invocation_smoke_report": "reports/rtlmeter_vortex_lowered_tb_invocation_smoke.json",
+    "runtime_sequence_invocation_plan": {
+      "status": "planned_not_invoked",
+      "entrypoint": "vortex_run_runtime_sequence",
+      "required_order": [
+        "vortex_upload_runtime_buffers",
+        "apply_ordered_dcr_writes_while_reset_asserted",
+        "vortex_kernel_launch_callback",
+        "vortex_export_observables",
+        "vortex_release_runtime_buffers"
+      ],
+      "remaining_source_closure": [
+        "lowered_tb_runtime_sequence_helper_invocation",
+        "observable_authority_reporting"
+      ]
+    },
+    "status": "fail_closed_until_runtime_bridge_integration"
+  },
+  "acceptance": {
+    "candidate_only_until_first_cpu_vs_hybrid_timing": true,
+    "non_dry_run_must_fail_until_source_closure_complete": true,
+    "next_gate_must_integrate_lowered_tb_memory_helper": true,
+    "next_gate_must_invoke_runtime_sequence_helper": true,
+    "next_gate_must_generate_lowered_tb_invocation": true,
+    "next_gate_must_report_memory_post_or_stdout_TEST_PASSED_authority": true,
+    "speedup_claim_allowed_by_template_alone": false
+  },
+  "non_claims": [
+    "not Vortex GPU execution",
+    "not CPU-vs-hybrid timing evidence",
+    "not Vortex speedup claim",
+    "not broad RTLMeter GPU usefulness claim",
+    "not complete descriptor source closure",
+    "not DPI memory bridge execution"
+  ]
+}

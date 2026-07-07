@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "gate": "run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate",
+  "status": "coverage_output_equivalence_passed_after_source_closure_retry",
+  "objective": "Run the scoped clean-worktree bridge-path launcher retry after source-closure materialization and record only the evidence actually reached: submodule materialization, template source closure verification, launcher execution, sidecar stages, and coverage-output compare.",
+  "source_review_gate": "config/scaling_gates/review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate.json",
+  "source_definition_gate": "config/scaling_gates/define_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_gate.json",
+  "source_materialization_run_gate": "config/scaling_gates/run_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_source_closure_materialization_gate.json",
+  "current_priority": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_run_gate",
+  "clean_worktree_evidence": {
+    "head": "4b508fa",
+    "submodule_materialization_command": [
+      "git",
+      "submodule",
+      "update",
+      "--init",
+      "third_party/ITA",
+      "third_party/common_cells"
+    ],
+    "submodule_materialization_exit_code": 0,
+    "transient_network_retry_observed": true,
+    "transient_network_retry_note": "The submodule fetch initially reported a github.com DNS resolution failure, then git retry completed successfully with exit code 0.",
+    "template_source_file_count": 29,
+    "missing_source_file_count": 0,
+    "launcher_command": [
+      "python3",
+      "src/tools/run_hybrid_template.py",
+      "config/slice_launch_templates/pulp_ita_mha.json",
+      "--shape",
+      "64x1"
+    ],
+    "shell_string_used": false,
+    "launcher_exit_code": 0,
+    "generated_outputs_are_noncanonical": true,
+    "local_absolute_paths_recorded": false
+  },
+  "materialized_submodules": [
+    {
+      "path": "third_party/ITA",
+      "expected_gitlink_sha": "ba96519becce195d64e85eb9a5302e8a1d5487e7",
+      "observed_checkout_sha": "ba96519becce195d64e85eb9a5302e8a1d5487e7",
+      "matches_expected_gitlink_sha": true
+    },
+    {
+      "path": "third_party/common_cells",
+      "expected_gitlink_sha": "c27bce39ebb2e6bae52f60960814a2afca7bd4cb",
+      "observed_checkout_sha": "c27bce39ebb2e6bae52f60960814a2afca7bd4cb",
+      "matches_expected_gitlink_sha": true
+    }
+  ],
+  "stage_reachability": {
+    "source_closure_materialized": true,
+    "template_source_closure_verified": true,
+    "launcher_process_invoked": true,
+    "verilator_build_reached": true,
+    "verilator_build_completed": true,
+    "host_probe_build_reached": true,
+    "host_probe_build_completed": true,
+    "cpu_reference_state_dump_reached": true,
+    "gpu_artifact_build_reached": true,
+    "gpu_artifact_build_completed": true,
+    "hybrid_sidecar_run_reached": true,
+    "coverage_output_compare_reached": true
+  },
+  "compare_result": {
+    "acceptance_policy": "coverage_output_equivalence",
+    "coverage_output_equivalence_passed": true,
+    "coverage_output_mismatch_count": 0,
+    "compared_state_pair_count": 64,
+    "strict_output_word_count_per_state": 29,
+    "expected_total_bytes_per_state": 116,
+    "compared_word_count": 1856,
+    "compared_byte_count": 7424,
+    "missing_fields": [],
+    "report": "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json"
+  },
+  "diagnostic_state_result": {
+    "raw_final_state_match": false,
+    "raw_final_state_mismatch_count": 2827,
+    "raw_full_state_equality_required": false,
+    "normalized_final_state_equivalence_passed": true,
+    "first_raw_mismatch_field_name": "__VicoTriggered",
+    "first_raw_mismatch_field_role": "verilator_internal"
+  },
+  "observed_generated_outputs": {
+    "reports": [
+      "reports/pulp_ita_mha_cpu_repeat_1x1.json",
+      "reports/pulp_ita_mha_cpu_repeat_64x1.json",
+      "reports/pulp_ita_mha_cpu_vs_hybrid_64x1_coverage_output_compare.json",
+      "reports/pulp_ita_mha_hybrid_64x1.txt"
+    ],
+    "artifacts_examples": [
+      "artifacts/pulp_ita_mha_obj_dir/vl_batch_gpu.cubin",
+      "artifacts/pulp_ita_mha_obj_dir/vl_batch_gpu.ptx",
+      "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_cpu_repeat_64x1.bin",
+      "artifacts/pulp_ita_mha_obj_dir/pulp_ita_mha_gpu_from_cpu_init_64x1.bin"
+    ],
+    "generated_outputs_are_source_of_truth": false
+  },
+  "failure_classification": {
+    "source_closure_materialization_failure": false,
+    "launcher_cli_invocation_failure": false,
+    "sidecar_stage_failure": false,
+    "compare_failure": false,
+    "timing_claim_without_measurement": false,
+    "selected_failure_class": null
+  },
+  "accepted_claims": [
+    "scoped pulp_ita_mha 64x1 launcher retry reached coverage-output compare after source closure materialization",
+    "coverage-output equivalence passed with mismatch_count 0 across 64 state pairs and 1856 compared words"
+  ],
+  "accepted_non_claims": [
+    "not raw full-state equality",
+    "not timing or speedup evidence",
+    "not direct Verilator internal sidecar execution",
+    "not broad native option support",
+    "not arbitrary RTL support",
+    "not arbitrary filelist support",
+    "not automatic GPU allocation",
+    "not production throughput",
+    "reports and artifacts are generated evidence, not source of truth"
+  ],
+  "required_next_gate": {
+    "name": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_run_gate",
+    "must_review": [
+      "whether the scoped post-source-closure retry evidence supports coverage-output equivalence",
+      "whether raw final-state mismatch remains outside the accepted claim",
+      "whether generated reports and artifacts remain noncanonical",
+      "whether this satisfies the current T7 scoped retry task enough to update GitHub issue #27"
+    ],
+    "must_not_claim": [
+      "raw full-state equality",
+      "timing or speedup evidence",
+      "direct Verilator internal sidecar execution",
+      "broad native option support",
+      "arbitrary RTL or filelist support",
+      "automatic GPU allocation",
+      "production throughput"
+    ]
+  },
+  "next_task": "review_verilator_native_option_parser_direct_command_path_native_invocation_verilator_process_launcher_bridge_after_source_closure_retry_run_gate"
+}

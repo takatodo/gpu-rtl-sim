@@ -1,0 +1,115 @@
+{
+  "non_claims": [
+    "not_full_microgpt_execution",
+    "not_training_or_autograd",
+    "not_pcie_framing_evidence",
+    "not_rtlmeter_evidence",
+    "not_automatic_hls_rewrite",
+    "not_production_runtime_dispatcher",
+    "tolerance band is an initial working value for this environment, not a universal or externally validated threshold",
+    "recorded_variant_speedup for the three promote rows is a harness-native metric (average.cpu_to_bridge_hybrid_wall_speedup); recorded_baseline_speedup for all four rows is still the legacy comparison.baseline_speedup metric and has not yet been re-measured harness-natively"
+  ],
+  "objective": "FC-076: pin FC-074 promoted/fallback source-variant boundary behavior as a regression reference for a repeat-sampled harness.",
+  "row_count": 4,
+  "rows": [
+    {
+      "expected_policy": "promote_to_hls_gpu",
+      "metric": "average.cpu_to_bridge_hybrid_wall_speedup via scientific_circt_source_variant_regression_cli --run",
+      "provenance": {
+        "date": "2026-07-03",
+        "environment": "measured while the FC-073 autonomous diagnostic loop co-ran on this host",
+        "note": "harness-native median measured with scientific_circt_source_variant_regression_cli --run --repeat 5",
+        "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json"
+      },
+      "recorded_baseline_speedup": 6.126758590128443,
+      "recorded_baseline_speedup_note": "legacy comparison.baseline_speedup metric, retained only for the improvement-margin discriminator until baseline forms are measured harness-natively",
+      "recorded_variant_speedup": 18.703422483969856,
+      "source_variant": "attention_head4_hls_friendly",
+      "tolerance": {
+        "absolute_floor": 0.05,
+        "calibration": {
+          "calibrated_on": "2026-07-03",
+          "environment": "FC-073 autonomous diagnostic loop co-running; recalibrate (likely tighter) when the host is quiet",
+          "method": "max(0.20, observed_outer_repeat_relative_spread * 1.5)",
+          "observed_relative_spread": 0.431
+        },
+        "min_improvement_margin": 0.0,
+        "note": "calibrated 2026-07-03 from measured outer-repeat spread; environment-scoped, not a universal threshold",
+        "relative_band": 0.65
+      }
+    },
+    {
+      "expected_policy": "promote_to_hls_gpu",
+      "metric": "average.cpu_to_bridge_hybrid_wall_speedup via scientific_circt_source_variant_regression_cli --run",
+      "provenance": {
+        "date": "2026-07-03",
+        "environment": "measured while the FC-073 autonomous diagnostic loop co-ran on this host",
+        "note": "harness-native median measured with scientific_circt_source_variant_regression_cli --run --repeat 5",
+        "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json"
+      },
+      "recorded_baseline_speedup": 2.28894,
+      "recorded_baseline_speedup_note": "legacy comparison.baseline_speedup metric, retained only for the improvement-margin discriminator until baseline forms are measured harness-natively",
+      "recorded_variant_speedup": 13.465470432368704,
+      "source_variant": "mlp4_hls_friendly",
+      "tolerance": {
+        "absolute_floor": 0.05,
+        "calibration": {
+          "calibrated_on": "2026-07-03",
+          "environment": "FC-073 autonomous diagnostic loop co-running; recalibrate (likely tighter) when the host is quiet",
+          "method": "max(0.20, observed_outer_repeat_relative_spread * 1.5)",
+          "observed_relative_spread": 0.329
+        },
+        "min_improvement_margin": 0.0,
+        "note": "calibrated 2026-07-03 from measured outer-repeat spread; environment-scoped, not a universal threshold",
+        "relative_band": 0.5
+      }
+    },
+    {
+      "expected_policy": "promote_to_hls_gpu",
+      "metric": "average.cpu_to_bridge_hybrid_wall_speedup via scientific_circt_source_variant_regression_cli --run",
+      "provenance": {
+        "date": "2026-07-03",
+        "environment": "measured while the FC-073 autonomous diagnostic loop co-ran on this host",
+        "note": "harness-native median measured with scientific_circt_source_variant_regression_cli --run --repeat 5",
+        "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json"
+      },
+      "recorded_baseline_speedup": 3.62419,
+      "recorded_baseline_speedup_note": "legacy comparison.baseline_speedup metric, retained only for the improvement-margin discriminator until baseline forms are measured harness-natively",
+      "recorded_variant_speedup": 14.526278276661243,
+      "source_variant": "inference2_hls_friendly",
+      "tolerance": {
+        "absolute_floor": 0.05,
+        "calibration": {
+          "calibrated_on": "2026-07-03",
+          "environment": "FC-073 autonomous diagnostic loop co-running; recalibrate (likely tighter) when the host is quiet",
+          "method": "max(0.20, observed_outer_repeat_relative_spread * 1.5)",
+          "observed_relative_spread": 0.11
+        },
+        "min_improvement_margin": 0.0,
+        "note": "calibrated 2026-07-03 from measured outer-repeat spread; environment-scoped, not a universal threshold",
+        "relative_band": 0.2
+      }
+    },
+    {
+      "expected_policy": "fallback_baseline_no_speedup_improvement",
+      "provenance": {
+        "date": "2026-07-03",
+        "note": "measured decision for this environment, not a universal threshold",
+        "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json"
+      },
+      "recorded_baseline_speedup": 5.75973,
+      "recorded_baseline_speedup_note": "legacy comparison.baseline_speedup metric, retained only for the improvement-margin discriminator until baseline forms are measured harness-natively",
+      "recorded_variant_speedup": 5.56609843788867,
+      "source_variant": "block2_hls_friendly",
+      "tolerance": {
+        "absolute_floor": 0.05,
+        "min_improvement_margin": 0.0,
+        "note": "initial band, not yet calibrated against repeated real samples; M3 calibration may adjust and record final values here; unused by decide_fallback_case, which checks fail-closed rejection before dispatch rather than a speedup value",
+        "relative_band": 0.2
+      }
+    }
+  ],
+  "schema_version": 1,
+  "source_metadata_path": "reports/scientific_circt_source_variant_metadata.json",
+  "surface": "scientific_circt_source_variant_regression_reference"
+}
