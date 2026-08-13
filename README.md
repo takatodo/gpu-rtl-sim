@@ -45,6 +45,27 @@ The gate requires an oracle violation in the bad revision and its absence in
 the fixed revision for both immediate-D and D-backpressured actions.  It is a
 correctness gate, not an exploration or speed claim.
 
+To reproduce the bounded exploration comparison after the equivalence gate:
+
+```bash
+python3 src/tools/summarize_tlul10818_campaign.py \
+  --equivalence-report artifacts/tlul10818_gpu_equivalence/tlul10818_gpu_equivalence.json \
+  --bad-checkout /path/to/opentitan-before-10820 \
+  --fixed-checkout /path/to/opentitan-with-10820 \
+  --out artifacts/tlul10818_campaign
+```
+
+The domain is the complete Cartesian product of a valid versus malformed `Get`
+and immediate versus backpressured D acceptance.  The tool exhausts its 24
+permutations for each policy, so its p50/p95/max and tail values are exact for
+that finite domain.  `new_coverage_seeds`, `oracle_violation_seeds`, and
+`known_regression_seeds` are emitted separately.  Coverage is an explicit
+functional action-bin bitmap used to select interesting seeds; only the
+independent response oracle labels a bug candidate.  The report records source
+revision, checkpoint, action-domain, and GPU-manifest identities.  The
+integrity-stratified policy is fixed before feedback, so it is not a bandit,
+online-learning, or PPO claim.
+
 ## Goal
 
 This repository is an experimental GPU sidecar runtime for RTL compiler frontends. Verilator is the current compatibility frontend because its generated C++ build path is the shortest route to a usable sidecar; CIRCT is a planned frontend target through the same sidecar contract idea.

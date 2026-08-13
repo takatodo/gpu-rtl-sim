@@ -10,6 +10,7 @@ sys.path.insert(0, str(REPO_ROOT / "src" / "tools"))
 
 from run_tlul10818_cpu_regression import ACTIONS, RTL_RELATIVE_PATHS, TESTBENCH
 from run_tlul10818_gpu_equivalence import _patch_script
+from summarize_tlul10818_campaign import ACTION_DOMAIN, _campaign, _metrics
 
 
 class Tlul10818CpuRegressionContractTest(unittest.TestCase):
@@ -23,11 +24,23 @@ class Tlul10818CpuRegressionContractTest(unittest.TestCase):
 
     def test_gpu_schedule_keeps_backpressure_state_local(self) -> None:
         offsets = {"clk_i": 0, "rst_ni": 1, "start_i": 2, "d_backpressure_i": 3}
-        immediate = _patch_script(offsets, backpressure=False).splitlines()
-        stalled = _patch_script(offsets, backpressure=True).splitlines()
+        offsets["malformed_i"] = 4
+        immediate = _patch_script(offsets, malformed=True, backpressure=False).splitlines()
+        stalled = _patch_script(offsets, malformed=True, backpressure=True).splitlines()
         self.assertEqual(len(immediate), len(stalled))
         self.assertIn("3:0", immediate[0])
         self.assertIn("3:1", stalled[0])
+
+    def test_bounded_campaign_metrics_distinguish_seed_selection_from_oracle(self) -> None:
+        actions = {
+            name: {"gpu": {"action_coverage": 1 << index, "oracle_violation": int(name.startswith("malformed"))}}
+            for index, name in enumerate(ACTION_DOMAIN)
+        }
+        campaign = _campaign(ACTION_DOMAIN, actions)
+        self.assertEqual(campaign["coverage_bitmap"], 0b1111)
+        self.assertEqual(campaign["time_to_first_violation"], 3)
+        metrics = _metrics([campaign])
+        self.assertEqual(metrics["coverage_progression"][-1]["functional_bins_reached"], 4)
 
 
 if __name__ == "__main__":

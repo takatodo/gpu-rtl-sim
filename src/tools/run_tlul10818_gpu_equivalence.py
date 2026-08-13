@@ -10,6 +10,7 @@ schedule has run on CPU and GPU.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -31,11 +32,20 @@ OBSERVABLE_SUFFIXES = {
     "d_error": "observed_d_error_o",
     "intg_error": "observed_intg_error_o",
     "d_data": "observed_d_data_o",
+    "action_coverage": "action_coverage_o",
 }
+ACTION_DOMAIN = (
+    "valid_d_immediate", "valid_d_backpressured",
+    "malformed_d_immediate", "malformed_d_backpressured",
+)
 
 
 def _run(command: list[str], *, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(command, text=True, capture_output=True, env=env, cwd=REPO_ROOT)
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _rtl_inputs(opentitan: Path) -> list[str]:
@@ -59,7 +69,7 @@ def _layout_offsets(mdir: Path) -> dict[str, int]:
         if len(matches) != 1:
             raise RuntimeError(f"expected exactly one generated field for {semantic}, got {len(matches)}")
         offsets[semantic] = int(matches[0]["offset"])
-    for name in ("clk_i", "rst_ni", "start_i", "d_backpressure_i"):
+    for name in ("clk_i", "rst_ni", "start_i", "malformed_i", "d_backpressure_i"):
         matches = [entry for entry in fields if entry["name"] == name]
         if len(matches) != 1:
             raise RuntimeError(f"expected exactly one top input field {name}")
@@ -67,13 +77,13 @@ def _layout_offsets(mdir: Path) -> dict[str, int]:
     return offsets
 
 
-def _patch_script(offsets: dict[str, int], *, backpressure: bool) -> str:
+def _patch_script(offsets: dict[str, int], *, malformed: bool, backpressure: bool) -> str:
     # Same transition sequence as the CPU reference driver.  Every line is one
     # device-resident eval step; no host patch is applied inside the loop.
     def patch(**values: int) -> str:
         return " ".join(f"{offsets[name]}:{value}" for name, value in values.items())
     return "\n".join((
-        patch(clk_i=0, rst_ni=0, start_i=0, d_backpressure_i=int(backpressure)),
+        patch(clk_i=0, rst_ni=0, start_i=0, malformed_i=int(malformed), d_backpressure_i=int(backpressure)),
         patch(clk_i=1), patch(clk_i=0),
         patch(rst_ni=1, start_i=1), patch(clk_i=1),
         patch(clk_i=0, start_i=0), patch(clk_i=1), patch(clk_i=0),
@@ -81,13 +91,33 @@ def _patch_script(offsets: dict[str, int], *, backpressure: bool) -> str:
     )) + "\n"
 
 
-def _cpu_observables(binary: Path, *, backpressure: bool, state_path: Path) -> dict[str, int]:
+def _batch_patch_script(offsets: dict[str, int]) -> str:
+    """One synchronized resident schedule for all four action states."""
+    specs = ((False, False), (False, True), (True, False), (True, True))
+    individual = [
+        [line.split() for line in _patch_script(offsets, malformed=malformed, backpressure=backpressure).splitlines()]
+        for malformed, backpressure in specs
+    ]
+    lines: list[str] = []
+    for step_index in range(len(individual[0])):
+        tokens: list[str] = []
+        for state_index, steps in enumerate(individual):
+            for token in steps[step_index]:
+                local_offset, value = token.split(":", 1)
+                tokens.append(f"@{state_index}:{local_offset}:{value}")
+        lines.append(" ".join(tokens))
+    return "\n".join(lines) + "\n"
+
+
+def _cpu_observables(binary: Path, *, malformed: bool, backpressure: bool, state_path: Path) -> dict[str, int]:
     command = [str(binary), "--dump-state", str(state_path)]
     if backpressure:
         command.append("--backpressure")
+    if malformed:
+        command.append("--malformed")
     completed = subprocess.run(command, text=True, capture_output=True)
     match = re.search(
-        r"RESULT done=(\d+) oracle_violation=(\d+) d_data=([0-9a-fA-F]+) d_error=(\d+) intg_error=(\d+)",
+        r"RESULT done=(\d+) oracle_violation=(\d+) d_data=([0-9a-fA-F]+) d_error=(\d+) intg_error=(\d+) coverage=([0-9a-fA-F]+)",
         completed.stdout,
     )
     if completed.returncode or not match:
@@ -95,17 +125,30 @@ def _cpu_observables(binary: Path, *, backpressure: bool, state_path: Path) -> d
     return {
         "done": int(match.group(1)), "oracle_violation": int(match.group(2)),
         "d_data": int(match.group(3), 16), "d_error": int(match.group(4)),
-        "intg_error": int(match.group(5)),
+        "intg_error": int(match.group(5)), "action_coverage": int(match.group(6), 16),
     }
 
 
 def _gpu_observables(state_path: Path, offsets: dict[str, int]) -> dict[str, int]:
     image = state_path.read_bytes()
     values: dict[str, int] = {}
-    for name in ("done", "oracle_violation", "d_error", "intg_error"):
+    for name in ("done", "oracle_violation", "d_error", "intg_error", "action_coverage"):
         values[name] = image[offsets[name]]
     values["d_data"] = int.from_bytes(image[offsets["d_data"] : offsets["d_data"] + 4], "little")
     return values
+
+
+def _gpu_batch_observables(state_path: Path, offsets: dict[str, int], storage_size: int) -> list[dict[str, int]]:
+    image = state_path.read_bytes()
+    if len(image) != storage_size * len(ACTION_DOMAIN):
+        raise RuntimeError(f"unexpected batch dump bytes={len(image)} storage={storage_size}")
+    output: list[dict[str, int]] = []
+    for state_index in range(len(ACTION_DOMAIN)):
+        base = state_index * storage_size
+        values = {name: image[base + offsets[name]] for name in ("done", "oracle_violation", "d_error", "intg_error", "action_coverage")}
+        values["d_data"] = int.from_bytes(image[base + offsets["d_data"] : base + offsets["d_data"] + 4], "little")
+        output.append(values)
+    return output
 
 
 def _revision(
@@ -132,14 +175,15 @@ def _revision(
         return {"label": label, "status": "fail", "layout_error": str(exc)}
     binary = cpu_mdir / f"V{TOP}"
     action_results: list[dict[str, object]] = []
-    for backpressure in (False, True):
-        action = "d_backpressured" if backpressure else "d_immediate"
+    for malformed in (False, True):
+      for backpressure in (False, True):
+        action = f"{'malformed' if malformed else 'valid'}_{'d_backpressured' if backpressure else 'd_immediate'}"
         script = revision_out / f"{action}.patch"
-        script.write_text(_patch_script(offsets, backpressure=backpressure), encoding="utf-8")
+        script.write_text(_patch_script(offsets, malformed=malformed, backpressure=backpressure), encoding="utf-8")
         cpu_state = revision_out / f"{action}.cpu.bin"
         gpu_state = revision_out / f"{action}.gpu.bin"
         try:
-            cpu = _cpu_observables(binary, backpressure=backpressure, state_path=cpu_state)
+            cpu = _cpu_observables(binary, malformed=malformed, backpressure=backpressure, state_path=cpu_state)
         except RuntimeError as exc:
             action_results.append({"action": action, "status": "fail", "cpu_error": str(exc)})
             continue
@@ -149,15 +193,36 @@ def _revision(
         ], env=env)
         observed = _gpu_observables(gpu_state, offsets) if gpu.returncode == 0 and gpu_state.is_file() else None
         matches = observed == cpu
+        expected_action_violation = expected_violation and malformed
         action_results.append({
             "action": action, "status": "pass" if matches else "fail", "cpu": cpu,
+            "expected_oracle_violation": expected_action_violation,
             "gpu": observed, "gpu_returncode": gpu.returncode,
             "gpu_stderr_tail": gpu.stderr.splitlines()[-10:],
         })
-    valid = all(item["status"] == "pass" and bool(item["cpu"]["oracle_violation"]) == expected_violation for item in action_results)
+    valid = all(item["status"] == "pass" and bool(item["cpu"]["oracle_violation"]) == item["expected_oracle_violation"] for item in action_results)
+    batch_script = revision_out / "all_actions_batch.patch"
+    batch_script.write_text(_batch_patch_script(offsets), encoding="utf-8")
+    batch_state = revision_out / "all_actions_batch.gpu.bin"
+    batch = _run([
+        sys.executable, str(HYBRID_RUNNER), "--mdir", str(gpu_mdir), "--nstates", str(len(ACTION_DOMAIN)),
+        "--resident-steps", "--patch-script", str(batch_script), "--dump-state", str(batch_state),
+    ], env=env)
+    meta_path = gpu_mdir / "vl_batch_gpu.meta.json"
+    storage_size = int(json.loads(meta_path.read_text(encoding="utf-8"))["storage_size"])
+    batch_observed = _gpu_batch_observables(batch_state, offsets, storage_size) if batch.returncode == 0 and batch_state.is_file() else []
+    expected_by_action = {str(item["action"]): item.get("cpu") for item in action_results}
+    batch_matches = len(batch_observed) == len(ACTION_DOMAIN) and all(
+        batch_observed[index] == expected_by_action[action]
+        for index, action in enumerate(ACTION_DOMAIN)
+    )
+    valid = valid and batch_matches
     return {
         "label": label, "opentitan": str(opentitan), "expected_oracle_violation": expected_violation,
-        "offsets": offsets, "actions": action_results, "status": "pass" if valid else "fail",
+        "offsets": offsets, "actions": action_results,
+        "gpu_manifest_sha256": _sha256(meta_path),
+        "gpu_resident_batch": {"state_count": len(ACTION_DOMAIN), "status": "pass" if batch_matches else "fail", "observables": batch_observed, "returncode": batch.returncode, "storage_size": storage_size},
+        "status": "pass" if valid else "fail",
     }
 
 
