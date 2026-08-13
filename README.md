@@ -2,6 +2,30 @@
 
 Minimal extraction of the GPU-toggle coverage hybrid-runtime project.
 
+## OpenTitan TL-UL regression tracer
+
+`examples/tlul10818/tlul_adapter_sram_10818_tb.sv` is a standalone reproducer
+for [OpenTitan issue #10818](https://github.com/lowRISC/opentitan/issues/10818):
+an integrity-failed `Get` must return `DataWhenError`, including when the D
+channel is backpressured.  OpenTitan and Verilator are external dependencies;
+neither is vendored or mutated by this repository.
+
+Run it against a checkout before the fix and one including
+[PR #10820](https://github.com/lowRISC/opentitan/pull/10820):
+
+```bash
+python3 src/tools/run_tlul10818_cpu_regression.py \
+  --verilator /path/to/verilator \
+  --bad /path/to/opentitan-before-10820 \
+  --fixed /path/to/opentitan-with-10820 \
+  --out artifacts/tlul10818_cpu
+```
+
+The report separates action observations from the independent oracle: the bad
+revision must violate it and the fixed revision must satisfy it.  GPU batching,
+coverage-guided seed selection, and performance claims are intentionally not
+made by this CPU contract.
+
 ## Goal
 
 This repository is an experimental GPU sidecar runtime for RTL compiler frontends. Verilator is the current compatibility frontend because its generated C++ build path is the shortest route to a usable sidecar; CIRCT is a planned frontend target through the same sidecar contract idea.
