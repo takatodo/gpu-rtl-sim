@@ -9,6 +9,7 @@ import tempfile
 from pathlib import Path
 
 from build_vl_gpu import CLANG, CXX_STANDARD, find_prefix, verilator_include_dir
+from build_vl_gpu_inputs import verilator_vltstd_include_dir
 
 
 FIELD_MACRO_RE = re.compile(r"^\s*VL_(?:IN|OUT)\d*\(\s*([A-Za-z_]\w*)\s*,")
@@ -44,7 +45,7 @@ def extract_root_member_declarations(root_h: Path) -> list[dict[str, str]]:
         if section_match:
             section = section_match.group(1)
             continue
-        if not line or line.startswith("//") or line.startswith("#"):
+        if not line or line.startswith("//") or line.startswith("#") or line.startswith("static "):
             continue
         if line in {"public:", "private:", "protected:", "};"}:
             continue
@@ -131,6 +132,7 @@ def probe_root_layout(mdir: Path) -> list[dict[str, int | str]]:
             "-Wno-invalid-offsetof",
             f"-I{mdir}",
             f"-I{verilator_include_dir()}",
+            f"-I{verilator_vltstd_include_dir()}",
             str(src),
             "-o",
             str(exe),
