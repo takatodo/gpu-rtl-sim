@@ -66,6 +66,11 @@ revision, checkpoint, action-domain, and GPU-manifest identities.  The
 integrity-stratified policy is fixed before feedback, so it is not a bandit,
 online-learning, or PPO claim.
 
+The source currently lives on branch `feature/tlul10818-regression`; the
+working copy used during development is `/tmp/gpu-tlul10818-regression`, rather
+than the home directory.  It must be pushed or checked out there before a
+home-directory `find .` can discover it.
+
 ## Goal
 
 This repository is an experimental GPU sidecar runtime for RTL compiler frontends. Verilator is the current compatibility frontend because its generated C++ build path is the shortest route to a usable sidecar; CIRCT is a planned frontend target through the same sidecar contract idea.

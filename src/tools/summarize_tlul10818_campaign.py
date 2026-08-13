@@ -116,6 +116,7 @@ def main() -> int:
         "action_domain_sha256": hashlib.sha256(json.dumps(ACTION_DOMAIN).encode()).hexdigest(),
         "equivalence_report_sha256": _sha256(args.equivalence_report),
         "bad_gpu_manifest_sha256": bad["gpu_manifest_sha256"],
+        "oracle_identity": "tlul_adapter_sram.error_response_data_when_error.v1",
     }
     args.out.mkdir(parents=True, exist_ok=True)
     coverage_seeds = [{"action": action, "coverage_bitmap": actions[action]["gpu"]["action_coverage"], "source": "GPU semantic action-bin"} for action in ACTION_DOMAIN]
