@@ -26,6 +26,25 @@ revision must violate it and the fixed revision must satisfy it.  GPU batching,
 coverage-guided seed selection, and performance claims are intentionally not
 made by this CPU contract.
 
+The device-clean synchronous wrapper has a stricter GPU gate.  It builds the
+same wrapper for CPU and GPU, applies identical resident patch schedules, and
+compares only `done`, the oracle bit, response error/integrity bits, and
+response data.  It excludes raw generated state because that contains host
+pointers and runtime bookkeeping.
+
+```bash
+python3 src/tools/run_tlul10818_gpu_equivalence.py \
+  --verilator /path/to/verilator \
+  --verilator-root /path/to/verilator-source-or-install-root \
+  --bad /path/to/opentitan-before-10820 \
+  --fixed /path/to/opentitan-with-10820 \
+  --out artifacts/tlul10818_gpu_equivalence
+```
+
+The gate requires an oracle violation in the bad revision and its absence in
+the fixed revision for both immediate-D and D-backpressured actions.  It is a
+correctness gate, not an exploration or speed claim.
+
 ## Goal
 
 This repository is an experimental GPU sidecar runtime for RTL compiler frontends. Verilator is the current compatibility frontend because its generated C++ build path is the shortest route to a usable sidecar; CIRCT is a planned frontend target through the same sidecar contract idea.
