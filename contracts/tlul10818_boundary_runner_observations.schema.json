@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/gpu-rtl-sim/tlul10818_boundary_runner_observations.schema.json",
+  "title": "TL-UL #10818 external boundary runner observations",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "runner",
+    "point_results",
+    "timing"
+  ],
+  "properties": {
+    "runner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "identity",
+        "completed_at"
+      ],
+      "properties": {
+        "status": {
+          "const": "pass"
+        },
+        "identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "completed_at": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "point_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/point_result"
+      }
+    },
+    "timing": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/timing_row"
+      }
+    }
+  },
+  "$defs": {
+    "point_id": {
+      "type": "string",
+      "pattern": "^point:v1:[0-9a-f]{64}$"
+    },
+    "semantic_projection": {
+      "type": "object",
+      "minProperties": 2
+    },
+    "revision_projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cpu",
+        "gpu"
+      ],
+      "properties": {
+        "cpu": {
+          "$ref": "#/$defs/semantic_projection"
+        },
+        "gpu": {
+          "$ref": "#/$defs/semantic_projection"
+        }
+      }
+    },
+    "point_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "point_id",
+        "coverage_feature_ids",
+        "revisions"
+      ],
+      "properties": {
+        "point_id": {
+          "$ref": "#/$defs/point_id"
+        },
+        "coverage_feature_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "revisions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "bad",
+            "fixed"
+          ],
+          "properties": {
+            "bad": {
+              "$ref": "#/$defs/revision_projection"
+            },
+            "fixed": {
+              "$ref": "#/$defs/revision_projection"
+            }
+          }
+        }
+      }
+    },
+    "timing_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trial_id",
+        "launch_index",
+        "cycle_evals",
+        "start_offset_ns",
+        "end_offset_ns"
+      ],
+      "properties": {
+        "trial_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "launch_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cycle_evals": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "start_offset_ns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end_offset_ns": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

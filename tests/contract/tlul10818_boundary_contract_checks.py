@@ -17,6 +17,7 @@ from tests.contract.tlul10818_boundary_fixtures import (
     GPU_TB,
     HEX40,
     REPO_ROOT,
+    RUNNER_OBSERVATIONS_SCHEMA,
     SCRIPT,
     experiment_run_spec,
     golden_sweep_enumerator,
@@ -204,6 +205,14 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             run_result_surface["source_module_sha256"],
             hashlib.sha256(run_result_source.read_bytes()).hexdigest(),
+        )
+        self.assertEqual(
+            REPO_ROOT / run_result_surface["runner_observations_schema"],
+            RUNNER_OBSERVATIONS_SCHEMA,
+        )
+        self.assertEqual(
+            run_result_surface["runner_observations_schema_sha256"],
+            hashlib.sha256(RUNNER_OBSERVATIONS_SCHEMA.read_bytes()).hexdigest(),
         )
 
     def test_semantic_identity_rejects_aliasing(self) -> None:
@@ -748,6 +757,74 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                     trial["policy_trial"]["surface"] == "rtl_boundary_policy_trial"
                     for trial in run_result["trials"]
                 )
+            )
+
+    def test_boundary_runner_observations_schema_matches_builder_input_surface(self) -> None:
+        sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
+        if not sidecar_src.is_dir():
+            self.skipTest("verilator-model-sidecar source checkout is unavailable")
+        sys.path.insert(0, sidecar_src.as_posix())
+        from verilator_model_sidecar.sweep_boundary import select_boundary_points
+
+        contract_bundle = build_boundary_experiment_contract(
+            load_contract(), experiment_run_spec(), golden_sweep_enumerator
+        )
+        contract = contract_bundle["experiment_contract"]
+        fixture_result = raw_run_result(contract, selector=select_boundary_points)
+        observations = {
+            "runner": fixture_result["runner"],
+            "point_results": fixture_result["point_results"],
+            "timing": [
+                {
+                    "trial_id": trial["trial_id"],
+                    "launch_index": index,
+                    "cycle_evals": launch["resident_width"],
+                    "start_offset_ns": launch["start_offset_ns"],
+                    "end_offset_ns": launch["end_offset_ns"],
+                }
+                for trial in fixture_result["trials"]
+                for index, launch in enumerate(trial["launches"])
+            ],
+        }
+        schema = json.loads(RUNNER_OBSERVATIONS_SCHEMA.read_text(encoding="utf-8"))
+        self.assertEqual(schema["additionalProperties"], False)
+        self.assertEqual(schema["required"], ["runner", "point_results", "timing"])
+        self.assertEqual(
+            schema["properties"]["runner"]["properties"]["status"]["const"], "pass"
+        )
+        self.assertEqual(
+            schema["properties"]["point_results"]["items"]["$ref"],
+            "#/$defs/point_result",
+        )
+        self.assertEqual(
+            schema["properties"]["timing"]["items"]["$ref"], "#/$defs/timing_row"
+        )
+        timing_row = schema["$defs"]["timing_row"]
+        self.assertEqual(
+            timing_row["required"],
+            [
+                "trial_id",
+                "launch_index",
+                "cycle_evals",
+                "start_offset_ns",
+                "end_offset_ns",
+            ],
+        )
+        self.assertEqual(timing_row["additionalProperties"], False)
+
+        build_run_result(
+            experiment_contract=contract,
+            runner_observations=observations,
+            selector=select_boundary_points,
+        )
+
+        invalid = json.loads(json.dumps(observations))
+        invalid["timing"][0]["launch_index"] = True
+        with self.assertRaises(ValueError):
+            build_run_result(
+                experiment_contract=contract,
+                runner_observations=invalid,
+                selector=select_boundary_points,
             )
 
     def test_boundary_run_result_builder_rejects_timing_mismatch(self) -> None:

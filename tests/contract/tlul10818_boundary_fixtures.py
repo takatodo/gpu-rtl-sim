@@ -18,6 +18,9 @@ CONTRACT = REPO_ROOT / "config" / "tlul10818_boundary_benchmark.json"
 DOC = REPO_ROOT / "docs" / "tlul10818_boundary_benchmark.md"
 SCRIPT = REPO_ROOT / "scripts" / "adjudicate_tlul10818_boundary_benchmark.sh"
 GPU_TB = REPO_ROOT / "examples" / "tlul10818" / "tlul_adapter_sram_10818_gpu_tb.sv"
+RUNNER_OBSERVATIONS_SCHEMA = (
+    REPO_ROOT / "contracts" / "tlul10818_boundary_runner_observations.schema.json"
+)
 HEX40 = re.compile(r"\A[0-9a-f]{40}\Z")
 GOLDEN_SWEEP_SHA256 = "a7672362bf1290d427e04c3e0491c866de422977ecc48058e7de6520d7caf717"
 GOLDEN_POINT_DIGESTS = (

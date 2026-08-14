@@ -152,7 +152,9 @@
     "surface": "tlul10818_boundary_run_result_builder",
     "source_module": "src/tools/build_tlul10818_boundary_run_result.py",
     "source_module_sha256": "83785eba5070b2be595623ab8976583c3565675fabe6133757ed606dee99709f",
-    "interface": "build_run_result"
+    "interface": "build_run_result",
+    "runner_observations_schema": "contracts/tlul10818_boundary_runner_observations.schema.json",
+    "runner_observations_schema_sha256": "da8fcc8f002b55fd03df31a2706a765d725693a7c3ecd92424d688fc74f363cb"
   },
   "evidence_builder_surface": {
     "surface": "tlul10818_boundary_evidence_builder",

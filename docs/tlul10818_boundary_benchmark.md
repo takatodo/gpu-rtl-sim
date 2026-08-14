@@ -88,6 +88,10 @@ executions, launches, and fixed-confirmation rows. It does not compile RTL, run
 the DUT, search for the known failure, replay bad/fixed sequences, or fabricate
 timing. The timing rows are consumed in deterministic launch order and rejected
 if any row is missing, extra, or attached to the wrong trial/launch index.
+The machine-readable input shape for that external runner JSON is
+`contracts/tlul10818_boundary_runner_observations.schema.json`; semantic
+projection key equality and target-specific oracle binding are checked later by
+the builder against the Experiment Contract.
 
 `src/tools/tlul10818_boundary_evidence.py` is the evidence-admission producer
 Module. `build_boundary_evidence_bundle(contract_bundle, run_result)` accepts
