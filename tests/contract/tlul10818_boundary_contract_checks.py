@@ -298,6 +298,28 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 any(name.endswith(".md") for name in result["copied_artifacts"])
             )
 
+    def test_profile_validator_rejects_runtime_authority_drift(self) -> None:
+        profile = load_contract()["admitted_benchmark_profiles"][0]
+        artifact_dir = REPO_ROOT / profile["artifact_dir"]
+        if not artifact_dir.is_dir():
+            return
+        with tempfile.TemporaryDirectory() as temporary:
+            config_path = Path(temporary) / "target.json"
+            config = json.loads(json.dumps(load_contract()))
+            config["admitted_benchmark_profiles"][0]["runtime_authority"][
+                "runner_identity"
+            ] = "external-ci:unexpected"
+            config_path.write_text(
+                json.dumps(config, indent=2, sort_keys=True),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "runner identity"):
+                validate_profile(
+                    config_path=config_path,
+                    profile_id=profile["profile_id"],
+                    artifact_dir=artifact_dir,
+                )
+
     def test_profile_entrypoint_materializes_and_validates_admitted_artifacts(self) -> None:
         profile = load_contract()["admitted_benchmark_profiles"][0]
         source = REPO_ROOT / "artifacts/tlul10818_boundary_admitted_codex_20260814_222737"
