@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "surface": "ibex2188_boundary_benchmark_target",
+  "status": "target_identity_pinned_runtime_profile_pending",
+  "target": {
+    "target_id": "ibex2188",
+    "issue": "https://github.com/lowRISC/ibex/issues/2188",
+    "ip": "ibex_core",
+    "bad_revision": "668233699df9ec2a40413e69e0de0a5b10185980",
+    "fixed_revision": "9e4a950aa6aa0e20eb638aeeb78743d4a9ddaaeb",
+    "fix_commit": "9e4a950aa6aa0e20eb638aeeb78743d4a9ddaaeb",
+    "configuration": {
+      "named_configuration": "opentitan",
+      "SecureIbex": 1,
+      "WritebackStage": 1,
+      "RegFile": "ibex_pkg::RegFileFF",
+      "RegFileECC": "derived_from_SecureIbex"
+    },
+    "checkpoint_identity": "pending_directed_load_branch_hazard_checkpoint",
+    "oracle_identity": "ibex2188.ecc_read_error_requires_major_alert_when_no_wb_forwarding.v1",
+    "semantic_projection": {
+      "observables": [
+        {
+          "name": "rf_read_enable",
+          "semantic_id": "ibex2188_ecc_temporal_tb.rf_read_enable",
+          "width_bits": 1
+        },
+        {
+          "name": "rf_wb_match",
+          "semantic_id": "ibex2188_ecc_temporal_tb.rf_wb_match",
+          "width_bits": 1
+        },
+        {
+          "name": "rf_write_wb",
+          "semantic_id": "ibex2188_ecc_temporal_tb.rf_write_wb",
+          "width_bits": 1
+        },
+        {
+          "name": "rf_ecc_error_id",
+          "semantic_id": "ibex2188_ecc_temporal_tb.rf_ecc_error_id",
+          "width_bits": 1
+        },
+        {
+          "name": "instruction_valid_id",
+          "semantic_id": "ibex2188_ecc_temporal_tb.instruction_valid_id",
+          "width_bits": 1
+        },
+        {
+          "name": "alert_major_internal",
+          "semantic_id": "ibex2188_ecc_temporal_tb.alert_major_internal",
+          "width_bits": 1
+        }
+      ],
+      "oracle": {
+        "name": "oracle_violation",
+        "semantic_id": "ibex2188_ecc_temporal_tb.oracle_violation",
+        "width_bits": 1
+      }
+    }
+  },
+  "source_evidence": {
+    "issue_condition": "ECC read error is masked when a dependent operand matches the writeback address but rf_write_wb is low.",
+    "bad_expression": "|rf_ecc_err_a & rf_ren_a & ~rf_rd_a_wb_match",
+    "fixed_expression": "|rf_ecc_err_a & rf_ren_a & ~(rf_rd_a_wb_match & rf_write_wb)",
+    "existing_dv_test": "dv/uvm/core_ibex/tests/core_ibex_test_lib.sv:core_ibex_rf_intg_test",
+    "existing_dv_condition": "rf_ren == 1'b1 && (rf_rd_wb_match == 1'b0 || rf_write_wb == 1'b0)",
+    "existing_dv_observable": "alert_major_internal_o"
+  },
+  "sweep_axis_candidates": [
+    {
+      "name": "read_port",
+      "kind": "categorical",
+      "source_support": "The upstream fix changes both A and B register-file read ports.",
+      "finite_values_status": "pending_external_experiment_contract"
+    },
+    {
+      "name": "fault_injection_offset_cycles",
+      "kind": "ordered",
+      "source_support": "The issue is a one-cycle load-hazard / writeback-forwarding coincidence.",
+      "finite_values_status": "pending_external_experiment_contract"
+    },
+    {
+      "name": "load_response_delay_cycles",
+      "kind": "ordered",
+      "source_support": "The issue requires an outstanding load and dependent instruction stall.",
+      "finite_values_status": "pending_directed_wrapper_control"
+    },
+    {
+      "name": "dependency_distance",
+      "kind": "ordered",
+      "source_support": "The issue reproducer uses a load immediately followed by a dependent branch.",
+      "finite_values_status": "pending_directed_program_contract"
+    },
+    {
+      "name": "fault_bit_position",
+      "kind": "ordered",
+      "source_support": "The existing DV test flips one register-file ECC read-data bit.",
+      "finite_values_status": "pending_fault_injection_binding"
+    }
+  ],
+  "authority": {
+    "codex_runtime_execution": true,
+    "runtime_owner": "repository_defined_runner",
+    "adjudicator_repo": "https://github.com/takatodo/verilator-model-sidecar.git",
+    "adjudicator_commit": "a4256ae46b782d8b9645551c9c3c11fbce2d3765",
+    "required_adjudicator_surfaces": [
+      "rtl_boundary_sweep_enumeration",
+      "rtl_boundary_selector_response",
+      "rtl_boundary_experiment_contract",
+      "rtl_boundary_evidence_bundle",
+      "rtl_boundary_ground_truth",
+      "rtl_boundary_analysis",
+      "rtl_boundary_policy_trial",
+      "rtl_boundary_policy_analysis",
+      "rtl_boundary_adjudication",
+      "rtl_boundary_plot_payload",
+      "rtl_boundary_report_bundle",
+      "rtl_boundary_report_validation",
+      "rtl_boundary_pipeline_result"
+    ]
+  }
+}
