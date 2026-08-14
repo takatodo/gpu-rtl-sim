@@ -162,6 +162,12 @@
     "source_module_sha256": "36b49dc86bde2bb647e71e71cb5509d66529ab5215e24e1a15411e11d4639b25",
     "interface": "admit_observations"
   },
+  "timing_template_surface": {
+    "surface": "tlul10818_boundary_timing_template_builder",
+    "source_module": "src/tools/build_tlul10818_boundary_timing_template.py",
+    "source_module_sha256": "63c273c35cf6ab0525cde08b1d8275c5949bd837e32a0ffd8e01c8771c36b530",
+    "interface": "build_timing_template"
+  },
   "evidence_builder_surface": {
     "surface": "tlul10818_boundary_evidence_builder",
     "source_module": "src/tools/tlul10818_boundary_evidence.py",

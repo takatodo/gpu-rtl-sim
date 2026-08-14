@@ -105,6 +105,15 @@ If admission fails before final adjudication, the script still replaces
 `pipeline_result.json` with a `status=fail` result so stale passing output is
 not left as evidence.
 
+`src/tools/build_tlul10818_boundary_timing_template.py` is the optional
+post-observation checklist for runner timing. Trial scheduling depends on the
+observed bad-revision oracle bits because only bad failures require fixed
+confirmation launches. Given an Experiment Contract and complete point results,
+the tool emits the exact trial/launch order and execution requests that the
+external runner must time. It deliberately outputs placeholders only; the
+runner must fill `cycle_evals`, `start_offset_ns`, and `end_offset_ns` in
+`runner_observations.json`.
+
 `src/tools/tlul10818_boundary_evidence.py` is the evidence-admission producer
 Module. `build_boundary_evidence_bundle(contract_bundle, run_result)` accepts
 only external runner completion identity, one raw bad/fixed CPU/GPU projection

@@ -51,6 +51,9 @@ from build_tlul10818_boundary_run_result import (  # noqa: E402
     build_run_result,
     main as build_run_result_main,
 )
+from build_tlul10818_boundary_timing_template import (  # noqa: E402
+    main as build_timing_template_main,
+)
 from admit_tlul10818_boundary_observations import (  # noqa: E402
     main as admit_boundary_observations_main,
 )
@@ -223,6 +226,13 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             admission_surface["source_module_sha256"],
             hashlib.sha256(admission_source.read_bytes()).hexdigest(),
+        )
+        timing_surface = config["timing_template_surface"]
+        timing_source = REPO_ROOT / timing_surface["source_module"]
+        self.assertEqual(timing_surface["interface"], "build_timing_template")
+        self.assertEqual(
+            timing_surface["source_module_sha256"],
+            hashlib.sha256(timing_source.read_bytes()).hexdigest(),
         )
 
     def test_semantic_identity_rejects_aliasing(self) -> None:
@@ -836,6 +846,59 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 runner_observations=invalid,
                 selector=select_boundary_points,
             )
+
+    def test_boundary_timing_template_lists_launches_without_fabricating_timing(self) -> None:
+        sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
+        if not sidecar_src.is_dir():
+            self.skipTest("verilator-model-sidecar source checkout is unavailable")
+        sys.path.insert(0, sidecar_src.as_posix())
+        from verilator_model_sidecar.sweep_boundary import select_boundary_points
+
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            contract_path = directory / "experiment_contract.json"
+            point_results_path = directory / "point_results.json"
+            output_path = directory / "timing_template.json"
+            contract_bundle = build_boundary_experiment_contract(
+                load_contract(), experiment_run_spec(), golden_sweep_enumerator
+            )
+            contract = contract_bundle["experiment_contract"]
+            fixture_result = raw_run_result(contract, selector=select_boundary_points)
+            contract_path.write_text(json.dumps(contract), encoding="utf-8")
+            point_results_path.write_text(
+                json.dumps({"point_results": fixture_result["point_results"]}),
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                build_timing_template_main(
+                    [
+                        "--experiment-contract",
+                        contract_path.as_posix(),
+                        "--point-results",
+                        point_results_path.as_posix(),
+                        "--sidecar-src",
+                        sidecar_src.as_posix(),
+                        "--out",
+                        output_path.as_posix(),
+                    ]
+                ),
+                0,
+            )
+            template = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(template["surface"], "tlul10818_boundary_timing_template")
+            self.assertEqual(template["experiment_id"], contract["experiment_id"])
+            self.assertEqual(template["sweep_space_sha256"], contract["sweep_space_sha256"])
+            rows = template["timing_rows"]
+            self.assertGreater(len(rows), 0)
+            self.assertTrue(
+                all(
+                    row["runner_must_fill"]
+                    == ["cycle_evals", "start_offset_ns", "end_offset_ns"]
+                    for row in rows
+                )
+            )
+            self.assertTrue(all("cycle_evals" not in row for row in rows))
+            self.assertTrue(all(row["execution_requests"] for row in rows))
 
     def test_boundary_run_result_builder_rejects_timing_mismatch(self) -> None:
         sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
