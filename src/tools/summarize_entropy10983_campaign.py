@@ -38,6 +38,36 @@ def _metrics(action: str, action_record: dict[str, object]) -> dict[str, object]
     }
 
 
+def _svg(random_metrics: dict[str, object], stratified_metrics: dict[str, object]) -> str:
+    random_values = random_metrics["time_to_first_violation"]
+    stratified_values = stratified_metrics["time_to_first_violation"]
+    rows = [
+        ("mean", random_values["mean"], stratified_values["mean"]),
+        ("p50", random_values["p50"], stratified_values["p50"]),
+        ("p95", random_values["p95"], stratified_values["p95"]),
+        ("max", random_values["max"], stratified_values["max"]),
+    ]
+    maximum = max(float(value) for _, left, right in rows for value in (left, right))
+    pieces = [
+        '<svg xmlns="http://www.w3.org/2000/svg" width="560" height="260" viewBox="0 0 560 260">',
+        '<style>text{font:14px sans-serif}.r{fill:#777}.s{fill:#2374ab}</style>',
+        '<text x="20" y="24">entropy_src #10983: time to first oracle violation</text>',
+    ]
+    for index, (name, random_value, stratified_value) in enumerate(rows):
+        y = 55 + 46 * index
+        pieces.append(f'<text x="20" y="{y + 15}">{name}</text>')
+        for x, value, cls in ((110, float(random_value), "r"), (330, float(stratified_value), "s")):
+            width = 180 * value / maximum
+            pieces.append(f'<rect class="{cls}" x="{x}" y="{y}" width="{width:.1f}" height="16"/>')
+            pieces.append(f'<text x="{x + width + 5:.1f}" y="{y + 14}">{value:g}</text>')
+    pieces.extend([
+        '<text x="110" y="248">random permutation</text>',
+        '<text x="330" y="248">risk-stratified</text>',
+        '</svg>',
+    ])
+    return "".join(pieces) + "\n"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--equivalence-report", type=Path, required=True)
@@ -101,6 +131,10 @@ def main() -> int:
     }
     summary_path = args.out / "entropy10983_campaign_summary.json"
     summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (args.out / "entropy10983_time_to_violation.svg").write_text(
+        _svg(policy_metrics, policy_metrics),
+        encoding="utf-8",
+    )
     print(json.dumps({"status": "pass", "summary": str(summary_path)}, sort_keys=True))
     return 0
 
