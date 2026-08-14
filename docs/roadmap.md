@@ -17,14 +17,15 @@ Future shorthand such as `verilator --use-gpu -f filelist.f --top-module top` an
 ## Weakest Point
 
 Current weak point for the active OpenTitan regression-discovery gate is
-promoting entropy_src #10983 from CPU oracle evidence to the same GPU/corpus
+promoting entropy_src #10983 from GPU semantic equivalence to the same corpus
 contract already proven for TL-UL #10818 and EDN #23526. TL-UL and EDN prove
 fixed revisions, checkpoints, action domains, independent oracles,
 semantic-manifest identity, bad-revision oracle violations, fixed-revision
 non-reproduction, CPU/GPU semantic equivalence, separated corpora, and
 random-vs-stratified long-tail metrics. entropy_src #10983 now has bad/fixed
-CPU oracle evidence only. No PPO, semantic-state packing, full OpenTitan scale,
-or extra batch-size claim is currently required to prove the active Contract.
+CPU/GPU semantic equivalence for the minimal action. No PPO, semantic-state
+packing, full OpenTitan scale, or extra batch-size claim is currently required
+to prove the active Contract.
 
 Historical RTLMeter context: #2 / FC-037 has a refreshed VeeR-EL2 `hello` timing result,
 and that GPU sidecar path is still much slower than serial CPU, while the
@@ -88,11 +89,11 @@ Current priority:
 
 Next concrete action:
 
-`add_entropy10983_gpu_equivalence_and_corpus_gate`
+`add_entropy10983_corpus_and_action_domain_summary`
 
 Current source artifact:
 
-`artifacts/entropy10983_cpu/entropy10983_cpu_regression.json`
+`artifacts/entropy10983_gpu_equivalence/entropy10983_gpu_equivalence.json`
 
 Historical FC-069 update: Stage118/119/120/121/122/123/124 gateGPT narrowing remains historical evidence for the previous frontier. It is not the active OpenTitan regression-discovery next action.
 

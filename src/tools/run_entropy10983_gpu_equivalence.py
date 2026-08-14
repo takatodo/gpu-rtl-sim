@@ -1,0 +1,204 @@
+#!/usr/bin/env python3
+"""Compare CPU and GPU semantic observables for the OpenTitan #10983 tracer."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+from compare_vl_hybrid_root_layout import probe_root_layout
+from entropy10983_gpu_schedule import ACTION_DOMAIN, patch_script
+from run_entropy10983_cpu_regression import PRIM_ALIAS, REPO_ROOT, RTL_RELATIVE_PATHS
+
+
+TOP = "entropy_src_main_sm_10983_gpu_tb"
+GPU_TB = REPO_ROOT / "examples" / "entropy10983" / f"{TOP}.sv"
+CPU_DRIVER = REPO_ROOT / "examples" / "entropy10983" / "entropy_src_main_sm_10983_gpu_driver.cpp"
+HYBRID_RUNNER = REPO_ROOT / "src" / "tools" / "run_vl_hybrid.py"
+OBSERVABLES = (
+    "done_o",
+    "early_sha3_process_o",
+    "sha3_process_o",
+    "fw_start_o",
+    "main_sm_err_o",
+    "state_o",
+    "action_coverage_o",
+)
+OBSERVABLE_KEYS = ("done", "early_sha3_process", "sha3_process", "fw_start", "main_sm_err", "state", "action_coverage")
+
+
+def _run(command: list[str], *, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(command, text=True, capture_output=True, env=env, cwd=REPO_ROOT)
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _rtl_inputs(opentitan: Path) -> list[str]:
+    return [str(opentitan / path) for path in RTL_RELATIVE_PATHS]
+
+
+def _base_verilator_command(verilator: Path, opentitan: Path, mdir: Path, *, fixed: bool) -> list[str]:
+    return [
+        str(verilator), "--cc", "--timing", "-Wno-fatal", "--public-flat-rw",
+        "--top-module", TOP,
+        f"-I{opentitan / 'hw/ip/prim/rtl'}",
+        *(["-DENTROPY_SRC_10983_FIXED"] if fixed else []),
+        *_rtl_inputs(opentitan), str(PRIM_ALIAS), str(GPU_TB), "--Mdir", str(mdir),
+    ]
+
+
+def _layout_offsets(mdir: Path) -> dict[str, int]:
+    fields = probe_root_layout(mdir)
+    offsets: dict[str, int] = {}
+    for name in ("clk_i", "rst_ni", "start_i", *OBSERVABLES):
+        exact = [entry for entry in fields if entry["name"] == name]
+        matches = exact or [entry for entry in fields if str(entry["name"]).endswith(f"__DOT__{name}")]
+        if len(matches) != 1:
+            raise RuntimeError(f"expected one generated field for {name}, got {len(matches)}")
+        offsets[name] = int(matches[0]["offset"])
+    return offsets
+
+
+def _parse_cpu(stdout: str) -> dict[str, int]:
+    match = re.search(
+        r"RESULT done=(\d+) early_sha3_process=(\d+) sha3_process=(\d+) fw_start=(\d+) main_sm_err=(\d+) state=([0-9a-fA-F]+) coverage=(\d+) drive_cycles=(\d+)",
+        stdout,
+    )
+    if not match:
+        raise RuntimeError(f"missing RESULT line:\n{stdout}")
+    return {
+        "done": int(match.group(1)),
+        "early_sha3_process": int(match.group(2)),
+        "sha3_process": int(match.group(3)),
+        "fw_start": int(match.group(4)),
+        "main_sm_err": int(match.group(5)),
+        "state": int(match.group(6), 16),
+        "action_coverage": int(match.group(7)),
+        "drive_cycles": int(match.group(8)),
+    }
+
+
+def _cpu_observables(binary: Path, state_path: Path) -> dict[str, int]:
+    completed = subprocess.run([str(binary), "--dump-state", str(state_path)], text=True, capture_output=True)
+    if completed.returncode:
+        raise RuntimeError(f"CPU action failed: {completed.stderr}\n{completed.stdout}")
+    return _parse_cpu(completed.stdout)
+
+
+def _gpu_observables(state_path: Path, offsets: dict[str, int]) -> dict[str, int]:
+    image = state_path.read_bytes()
+    return {
+        "done": image[offsets["done_o"]],
+        "early_sha3_process": image[offsets["early_sha3_process_o"]],
+        "sha3_process": image[offsets["sha3_process_o"]],
+        "fw_start": image[offsets["fw_start_o"]],
+        "main_sm_err": image[offsets["main_sm_err_o"]],
+        "state": int.from_bytes(image[offsets["state_o"] : offsets["state_o"] + 2], "little") & 0x1ff,
+        "action_coverage": image[offsets["action_coverage_o"]],
+    }
+
+
+def _git_revision(path: Path) -> str | None:
+    completed = subprocess.run(["git", "-C", str(path), "rev-parse", "HEAD"], text=True, capture_output=True)
+    return completed.stdout.strip() if completed.returncode == 0 else None
+
+
+def _revision(
+    *, label: str, opentitan: Path, fixed: bool, expected_violation: int,
+    verilator: Path, verilator_root: Path, out: Path,
+) -> dict[str, object]:
+    revision_out = out / label
+    revision_out.mkdir(parents=True, exist_ok=True)
+    gpu_mdir = revision_out / "gpu_obj"
+    cpu_mdir = revision_out / "cpu_obj"
+    env = os.environ.copy()
+    env["VERILATOR_ROOT"] = str(verilator_root)
+    env["PYTHONPATH"] = str(REPO_ROOT / "src" / "tools")
+    gpu_compile = _run(_base_verilator_command(verilator, opentitan, gpu_mdir, fixed=fixed), env=env)
+    cpu_compile = _run(_base_verilator_command(verilator, opentitan, cpu_mdir, fixed=fixed) + ["--exe", str(CPU_DRIVER), "--build"], env=env)
+    if gpu_compile.returncode or cpu_compile.returncode:
+        return {"label": label, "status": "fail", "gpu_compile": gpu_compile.stderr.splitlines()[-20:], "cpu_compile": cpu_compile.stderr.splitlines()[-20:]}
+    build = _run([sys.executable, str(REPO_ROOT / "src/tools/build_vl_gpu.py"), str(gpu_mdir), "--force"], env=env)
+    if build.returncode:
+        return {"label": label, "status": "fail", "gpu_build": build.stderr.splitlines()[-20:]}
+    try:
+        offsets = _layout_offsets(gpu_mdir)
+        cpu = _cpu_observables(cpu_mdir / f"V{TOP}", revision_out / "health_tests_before_fw_sha3_start.cpu.bin")
+    except RuntimeError as exc:
+        return {"label": label, "status": "fail", "error": str(exc)}
+    script = revision_out / "health_tests_before_fw_sha3_start.patch"
+    script.write_text(patch_script(offsets, drive_cycles=cpu["drive_cycles"]), encoding="utf-8")
+    gpu_state = revision_out / "health_tests_before_fw_sha3_start.gpu.bin"
+    gpu = _run([
+        sys.executable, str(HYBRID_RUNNER), "--mdir", str(gpu_mdir), "--nstates", "1",
+        "--resident-steps", "--patch-script", str(script), "--dump-state", str(gpu_state),
+    ], env=env)
+    observed = _gpu_observables(gpu_state, offsets) if gpu.returncode == 0 and gpu_state.is_file() else None
+    cpu_semantic = {key: cpu[key] for key in OBSERVABLE_KEYS}
+    matches = observed == cpu_semantic
+    oracle_ok = cpu["early_sha3_process"] == expected_violation and cpu["fw_start"] == 0 and cpu["main_sm_err"] == 0
+    meta_path = gpu_mdir / "vl_batch_gpu.meta.json"
+    return {
+        "label": label,
+        "opentitan_revision": _git_revision(opentitan),
+        "expected": {"early_sha3_process": expected_violation, "fw_start": 0, "main_sm_err": 0},
+        "actions": [{
+            "action": ACTION_DOMAIN[0],
+            "cpu": cpu_semantic,
+            "gpu": observed,
+            "drive_cycles": cpu["drive_cycles"],
+            "gpu_returncode": gpu.returncode,
+            "gpu_stderr_tail": gpu.stderr.splitlines()[-10:],
+            "status": "pass" if matches and oracle_ok else "fail",
+        }],
+        "offsets": offsets,
+        "gpu_manifest_sha256": _sha256(meta_path) if meta_path.is_file() else None,
+        "status": "pass" if matches and oracle_ok else "fail",
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--verilator", type=Path, required=True)
+    parser.add_argument("--verilator-root", type=Path)
+    parser.add_argument("--bad", type=Path, required=True)
+    parser.add_argument("--fixed", type=Path, required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    verilator = args.verilator.resolve()
+    if not verilator.is_file():
+        parser.error(f"missing Verilator executable: {verilator}")
+    root = args.verilator_root.resolve() if args.verilator_root else verilator.parent.parent
+    if not (root / "include").is_dir():
+        parser.error(f"missing Verilator include root: {root / 'include'}")
+    args.out.mkdir(parents=True, exist_ok=True)
+    report = {
+        "schema_version": 1,
+        "issue": "https://github.com/lowRISC/opentitan/issues/10983",
+        "fix_pull_request": "https://github.com/lowRISC/opentitan/pull/11003",
+        "comparison": "semantic observables only; raw generated state is excluded",
+        "action_domain": list(ACTION_DOMAIN),
+        "checkpoint_identity": "reset_entropy_src_main_sm_fw_override_insert_before_fw_sha3_start_v1",
+        "oracle": "sha3_process_o must not assert before firmware starts the FW override insert window",
+        "revisions": [
+            _revision(label="bad", opentitan=args.bad.resolve(), fixed=False, expected_violation=1, verilator=verilator, verilator_root=root, out=args.out),
+            _revision(label="fixed", opentitan=args.fixed.resolve(), fixed=True, expected_violation=0, verilator=verilator, verilator_root=root, out=args.out),
+        ],
+    }
+    report["status"] = "pass" if all(item["status"] == "pass" for item in report["revisions"]) else "fail"
+    path = args.out / "entropy10983_gpu_equivalence.json"
+    path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps({"status": report["status"], "report": str(path)}, sort_keys=True))
+    return 0 if report["status"] == "pass" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -145,8 +145,20 @@ python3 src/tools/run_entropy10983_cpu_regression.py \
 ```
 
 The expected CPU oracle split is `early_sha3_process=1` for the bad revision
-and `early_sha3_process=0` for the fixed revision.  GPU equivalence and corpus
-generation are the next gates for this third known issue.
+and `early_sha3_process=0` for the fixed revision.  The device-clean GPU gate
+uses `examples/entropy10983/entropy_src_main_sm_10983_gpu_tb.sv` and compares
+only the semantic oracle outputs and the main-state-machine state.
+
+```bash
+python3 src/tools/run_entropy10983_gpu_equivalence.py \
+  --verilator /path/to/verilator \
+  --verilator-root /path/to/verilator-source-or-install-root \
+  --bad /path/to/opentitan-before-11003 \
+  --fixed /path/to/opentitan-with-11003 \
+  --out artifacts/entropy10983_gpu_equivalence
+```
+
+Corpus generation is the next gate for this third known issue.
 
 ## Goal
 
@@ -171,8 +183,8 @@ This does not claim arbitrary RTL support, arbitrary filelist inference, broad n
 Current pointer, mirrored from `config/selection.json`:
 
 - `current_priority`: `opentitan_temporal_protocol_gpu_resident_regression_discovery`
-- `current_next_action`: `add_entropy10983_gpu_equivalence_and_corpus_gate`
-- `current_priority_source_artifact`: `artifacts/entropy10983_cpu/entropy10983_cpu_regression.json`
+- `current_next_action`: `add_entropy10983_corpus_and_action_domain_summary`
+- `current_priority_source_artifact`: `artifacts/entropy10983_gpu_equivalence/entropy10983_gpu_equivalence.json`
 
 Latest OpenTitan regression-discovery update: TL-UL #10818 and EDN #23526 now form the two-IP seed set. Both targets have fixed revisions/checkpoints/action domains/oracles/semantic-manifest identities, bad-revision oracle violations, fixed-revision non-reproduction, CPU/GPU semantic equivalence, separated corpora, and reproducible random-vs-stratified summaries.
 
