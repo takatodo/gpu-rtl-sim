@@ -3,6 +3,9 @@
 `config/tlul10818_boundary_benchmark.json` records the static target authority
 for turning OpenTitan TL-UL #10818 into a boundary-discovery benchmark. It does
 not contain runtime evidence and must not be treated as a passing result.
+The required sidecar surfaces are pinned to adjudicator commit
+`6cfe2fdc530e268e6da3043f9c65d48ab114a85f`, which includes the selector-response
+surface and schema.
 
 The currently implemented wrapper exposes the four-action grid already used by
 the TL-UL equivalence tracer:
@@ -15,7 +18,110 @@ identity, oracle identity, and semantic observables. It is not the final
 boundary benchmark by itself. Completion still requires an external operator or
 CI runner to generate a complete `rtl_boundary_experiment_contract` and
 `rtl_boundary_evidence_bundle`, then admit them through the
-`rtl_boundary_pipeline_result` surface from `verilator-model-sidecar`.
+`rtl_boundary_pipeline_result` surface from `verilator-model-sidecar`. The same
+authority also requires the `rtl_boundary_selector_response` surface so runner
+selection and sidecar replay use one Selector ABI.
+
+The runner-facing control surface now also exposes ordered timing controls:
+
+- `backpressure_cycles`: the number of `WaitD` cycles with `d_ready` low before
+  observing the response
+- `response_delay_cycles`: the number of `WaitD` cycles before the SRAM
+  `rvalid` response is made visible for valid requests
+
+The exact finite values for those ordered axes are not declared here. They
+belong in the external `rtl_boundary_experiment_contract`, where the full grid
+identity can be hashed and adjudicated.
+
+`src/tools/tlul10818_gpu_schedule.py` is the runner-facing Module for that
+surface. Its Interface is:
+
+- `boundary_sweep_space(backpressure_cycles=..., response_delay_cycles=...)`
+- `boundary_action_mapping(backpressure_cycles=..., response_delay_cycles=...)`
+- `boundary_contract_projection(..., sweep_enumerator=...)`
+- `boundary_patch_script_for_parameters(offsets, parameters)`
+
+The runner supplies the finite ordered values and generated layout offsets. The
+Module supplies canonical JSON shape, deterministic action names, and patch
+schedule lowering. `config/tlul10818_boundary_benchmark.json` records the
+Module path and SHA-256 so evidence can name the exact schedule semantics it
+used.
+
+`boundary_contract_projection` is the producer Seam. The external harness
+passes the sidecar's canonical sweep enumerator as its Adapter; the Module then
+joins the returned point IDs to runner actions in that exact order and returns
+the four fields admitted by the Experiment Contract: `sweep_space`,
+`sweep_space_sha256`, `action_domain`, and `action_domain_sha256`. Point-ID and
+categorical ordering rules therefore remain owned by the sidecar rather than
+being duplicated in the runner.
+
+`src/tools/tlul10818_boundary_contract.py` provides the independent semantic
+identity Module. `build_boundary_semantic_identity(target_config)` derives the
+Experiment Contract target projection and paired bad/fixed
+`rtl_boundary_semantic_manifest` documents from the tracked wrapper signal
+descriptors. Both manifests have identical semantic IDs and widths; only their
+revision label and revision SHA differ. Functional coverage remains trial
+feedback and is deliberately excluded from semantic observable identity.
+
+`build_boundary_experiment_contract(target_config, run_spec,
+sweep_enumerator)` is the complete producer Interface. The run spec supplies
+only externally chosen finite axis values, backend identities and widths,
+policy trials, logical batch sizes, budgets, and comparison membership. The
+Module supplies the tracked target, manifest hashes, canonical sweep/action
+projection, and shared reconstructor. It rejects a run spec unless all four
+declared policies are compared on one GPU backend and at least one identical
+policy is compared across CPU and GPU backends.
+
+`src/tools/tlul10818_boundary_evidence.py` is the evidence-admission producer
+Module. `build_boundary_evidence_bundle(contract_bundle, run_result)` accepts
+only external runner completion identity, one raw bad/fixed CPU/GPU projection
+per canonical point, and raw trial/execution/launch records. It joins point
+parameters from the Contract, verifies exact CPU/GPU JSON equality, derives
+bad/fixed oracle labels from the CPU projection, and emits ground truth and
+semantic observations. It does not accept producer-computed boundary edges,
+components, metric summaries, or pass/fail labels.
+
+`build_boundary_trial_evidence(contract, point_results, selector, timing)` is
+the runner-side helper for the trial surface. The `selector` argument is the
+public Selector ABI Adapter:
+`select_points(sweep_space, policy_spec, completed_public_batches,
+requested_count)`. The helper feeds back only public bad observations and
+coverage feature IDs, continues until the trial budget is reached or the
+selector exhausts the grid, and materializes bad-search and fixed-confirmation
+execution/launch rows. The `timing` Adapter supplies runner-owned
+`cycle_evals`, `start_offset_ns`, and `end_offset_ns` for each launch group; the
+helper does not fabricate timing for benchmark claims. It does not decide
+boundary topology or metrics.
+External runners may implement that Adapter by importing
+`verilator_model_sidecar.select_boundary_points` or by invoking the sidecar CLI
+`verilator-model-sidecar select-boundary-points` with the same four inputs. The
+CLI output surface is `rtl_boundary_selector_response` and is governed by the
+sidecar schema `contracts/rtl_boundary_selector_response.schema.json`. The
+selector CLI rejects duplicate JSON object keys and non-finite tokens before it
+selects points.
+
+`src/tools/build_tlul10818_boundary_artifacts.py` is the JSON-only artifact
+builder for an external runner. It consumes a target config, an externally
+chosen run spec, a sidecar-generated sweep enumeration, and an already
+generated runner result. It writes `experiment_contract.json` and
+`evidence_bundle.json` under `artifacts/tlul10818_boundary_benchmark/`. It does
+not compile RTL, run the DUT, replay a bad/fixed sequence, or construct runner
+commands. Its JSON inputs are parsed fail-closed: duplicate object keys and
+non-finite tokens such as `NaN` or `Infinity` are rejected before hashing or
+artifact generation.
+
+The runner result must already contain sidecar-ready trial evidence for every
+trial declared by the Experiment Contract. Each trial row is passed through only
+after its public surface is present: `trial_id`, `policy_trial`,
+`fixed_confirmations`, `executions`, `launches`, and `trial_wall_time_ns`. The
+builder derives ground truth and semantic observations from raw point results,
+but the sidecar remains the authority for replaying selector order, budget
+completion, launch accounting, fixed confirmation, and metric recomputation.
+
+The external `rtl_boundary_experiment_contract` must include the full
+projection produced from this Module, including the `action_domain` rows and
+`action_domain_sha256`. The sidecar adjudicator recomputes each row against the
+canonical sweep-space enumeration.
 
 The repository-owned admission workflow is
 `scripts/adjudicate_tlul10818_boundary_benchmark.sh`. It consumes only existing

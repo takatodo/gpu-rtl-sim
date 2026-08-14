@@ -9,6 +9,7 @@ module tlul_adapter_sram_10818_gpu_tb (
   input logic start_i,
   input logic malformed_i,
   input logic d_backpressure_i,
+  input logic response_valid_i,
   output logic done_o,
   output logic oracle_violation_o,
   output logic [31:0] observed_d_data_o,
@@ -54,7 +55,7 @@ module tlul_adapter_sram_10818_gpu_tb (
     .en_ifetch_i(prim_mubi_pkg::MuBi4False),
     .req_o, .req_type_o(), .gnt_i(1'b1), .we_o, .addr_o, .wdata_o, .wmask_o,
     .intg_error_o, .rdata_i(32'h1234_5678),
-    .rvalid_i(!malformed_i && phase_q == WaitD), .rerror_i(2'b00)
+    .rvalid_i(!malformed_i && response_valid_i && phase_q == WaitD), .rerror_i(2'b00)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -75,7 +76,7 @@ module tlul_adapter_sram_10818_gpu_tb (
           phase_q <= Send;
         end
         Send: if (tl_o.a_ready) phase_q <= WaitD;
-        WaitD: if (tl_o.d_valid) begin
+        WaitD: if (tl_o.d_valid && tl_i.d_ready) begin
           observed_d_data_o <= tl_o.d_data;
           observed_d_error_o <= tl_o.d_error;
           observed_intg_error_o <= intg_error_o;

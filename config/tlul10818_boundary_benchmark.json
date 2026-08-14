@@ -9,14 +9,50 @@
     "checkpoint_identity": "zero_initialized_device_clean_tlul10818_gpu_tb_v1",
     "oracle_identity": "tlul_adapter_sram.error_response_data_when_error.v1",
     "bad_revision": "82b618f23564cde97fb21271d7d3cfdcb95826d2",
-    "fixed_revision": "ecc4a1535e320e1b912915ed6fc7ae19a59ece3b"
+    "fixed_revision": "ecc4a1535e320e1b912915ed6fc7ae19a59ece3b",
+    "semantic_projection": {
+      "observables": [
+        {
+          "name": "done",
+          "rtl_signal": "done_o",
+          "semantic_id": "tlul_adapter_sram_10818_gpu_tb.done_o",
+          "width_bits": 1
+        },
+        {
+          "name": "d_data",
+          "rtl_signal": "observed_d_data_o",
+          "semantic_id": "tlul_adapter_sram_10818_gpu_tb.observed_d_data_o",
+          "width_bits": 32
+        },
+        {
+          "name": "d_error",
+          "rtl_signal": "observed_d_error_o",
+          "semantic_id": "tlul_adapter_sram_10818_gpu_tb.observed_d_error_o",
+          "width_bits": 1
+        },
+        {
+          "name": "intg_error",
+          "rtl_signal": "observed_intg_error_o",
+          "semantic_id": "tlul_adapter_sram_10818_gpu_tb.observed_intg_error_o",
+          "width_bits": 1
+        }
+      ],
+      "oracle": {
+        "name": "oracle_violation",
+        "rtl_signal": "oracle_violation_o",
+        "semantic_id": "tlul_adapter_sram_10818_gpu_tb.oracle_violation_o",
+        "width_bits": 1
+      }
+    }
   },
   "authority": {
     "codex_runtime_execution": false,
     "runtime_owner": "external_operator_or_ci",
     "adjudicator_repo": "https://github.com/takatodo/verilator-model-sidecar.git",
-    "adjudicator_commit": "8668e7576b064bbaad9a97eed34a133c9671db16",
+    "adjudicator_commit": "6cfe2fdc530e268e6da3043f9c65d48ab114a85f",
+    "adjudicator_commit_status": "pinned",
     "required_adjudicator_surfaces": [
+      "rtl_boundary_selector_response",
       "rtl_boundary_experiment_contract",
       "rtl_boundary_evidence_bundle",
       "rtl_boundary_adjudication",
@@ -57,6 +93,66 @@
       }
     ]
   },
+  "runner_control_surface": {
+    "surface": "tlul10818_runner_control_surface",
+    "finite_values_owner": "external_experiment_contract",
+    "source_module": "src/tools/tlul10818_gpu_schedule.py",
+    "source_module_sha256": "7d69856389174acf5838c4ad4a659ce9812b8cf9f5faf98981c8535743df970f",
+    "source_dependency_sha256": {
+      "src/tools/tlul10818_boundary_schedule.py": "26f44117f43cdb8e784e33040d7bba9d4346d2661b9e51f0d40175188855d5d7"
+    },
+    "interfaces": {
+      "sweep_space": "boundary_sweep_space",
+      "action_mapping": "boundary_action_mapping",
+      "contract_projection": "boundary_contract_projection",
+      "patch_script": "boundary_patch_script_for_parameters"
+    },
+    "axes": [
+      {
+        "name": "request_integrity",
+        "kind": "categorical",
+        "values": [
+          "valid",
+          "malformed"
+        ],
+        "driven_by": "malformed_i"
+      },
+      {
+        "name": "backpressure_cycles",
+        "kind": "ordered",
+        "value_type": "nonnegative_integer",
+        "values_owner": "external_experiment_contract",
+        "driven_by": "d_backpressure_i"
+      },
+      {
+        "name": "response_delay_cycles",
+        "kind": "ordered",
+        "value_type": "nonnegative_integer",
+        "values_owner": "external_experiment_contract",
+        "driven_by": "response_valid_i"
+      }
+    ]
+  },
+  "semantic_identity_surface": {
+    "surface": "tlul10818_boundary_semantic_identity",
+    "source_module": "src/tools/tlul10818_boundary_contract.py",
+    "source_module_sha256": "d607a6643d5cb40bacf5849aeadc4f946a96f38db8a030e7035167e3c47525d1",
+    "interfaces": {
+      "semantic_identity": "build_boundary_semantic_identity",
+      "experiment_contract": "build_boundary_experiment_contract"
+    }
+  },
+  "evidence_builder_surface": {
+    "surface": "tlul10818_boundary_evidence_builder",
+    "source_module": "src/tools/tlul10818_boundary_evidence.py",
+    "source_module_sha256": "a1726265d9999d1d1446cdb09931f53fe71f5836e6d76889cdbdb5e64d0d1318",
+    "source_dependency_sha256": {
+      "src/tools/tlul10818_boundary_json.py": "8c93abe1bc8b9ea1964af4a604b92a102f5a1e2be3fa89a6d3e4b42bb40e17bd",
+      "src/tools/tlul10818_boundary_points.py": "b5a2de65433ffd8e26feea5fabfd3d43d07e400634b3f55cbde2a7421879b9b2",
+      "src/tools/tlul10818_boundary_trials.py": "f3074a726b85536175bcffd7ea018ed990347066e67671e99eede5bebfba6a8f"
+    },
+    "interface": "build_boundary_evidence_bundle"
+  },
   "current_wrapper_action_mapping": [
     {
       "action": "valid_d_immediate",
@@ -90,6 +186,7 @@
   "completion_requirements": {
     "current_wrapper_is_not_full_boundary_benchmark": true,
     "external_runner_must_generate_complete_ground_truth": true,
+    "external_runner_must_generate_action_domain_from_runner_control_surface": true,
     "external_runner_must_record_cpu_gpu_semantic_equality": true,
     "external_runner_must_record_fixed_revision_disappearance": true,
     "external_runner_must_record_raw_trial_executions_and_launches": true,

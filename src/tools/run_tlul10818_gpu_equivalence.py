@@ -74,7 +74,7 @@ def _layout_offsets(mdir: Path) -> dict[str, int]:
         if len(matches) != 1:
             raise RuntimeError(f"expected exactly one generated field for {semantic}, got {len(matches)}")
         offsets[semantic] = int(matches[0]["offset"])
-    for name in ("clk_i", "rst_ni", "start_i", "malformed_i", "d_backpressure_i"):
+    for name in ("clk_i", "rst_ni", "start_i", "malformed_i", "d_backpressure_i", "response_valid_i"):
         matches = [entry for entry in fields if entry["name"] == name]
         if len(matches) != 1:
             raise RuntimeError(f"expected exactly one top input field {name}")
@@ -238,10 +238,12 @@ def _revision(
     scale_script = revision_out / f"malformed_d_backpressured_{RESIDENT_SCALE_STATES}.patch"
     scale_script.write_text(uniform_scale_patch_script(offsets, RESIDENT_SCALE_STATES), encoding="utf-8")
     scale_state = revision_out / f"malformed_d_backpressured_{RESIDENT_SCALE_STATES}.gpu.bin"
+    scale_env = dict(env)
+    scale_env["RUN_VL_HYBRID_REPLICATE_STATE0_PATCHES"] = "1"
     scale = _run([
         sys.executable, str(HYBRID_RUNNER), "--mdir", str(gpu_mdir), "--nstates", str(RESIDENT_SCALE_STATES),
         "--resident-steps", "--patch-script", str(scale_script), "--dump-state", str(scale_state),
-    ], env=env)
+    ], env=scale_env)
     expected_scale = expected_by_action["malformed_d_backpressured"]
     scale_matches = scale.returncode == 0 and scale_state.is_file() and all_states_match(
         scale_state.read_bytes(),
