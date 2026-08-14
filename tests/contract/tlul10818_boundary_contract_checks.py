@@ -51,6 +51,9 @@ from build_tlul10818_boundary_run_result import (  # noqa: E402
     build_run_result,
     main as build_run_result_main,
 )
+from admit_tlul10818_boundary_observations import (  # noqa: E402
+    main as admit_boundary_observations_main,
+)
 
 
 class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
@@ -213,6 +216,13 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             run_result_surface["runner_observations_schema_sha256"],
             hashlib.sha256(RUNNER_OBSERVATIONS_SCHEMA.read_bytes()).hexdigest(),
+        )
+        admission_surface = config["admission_pipeline_surface"]
+        admission_source = REPO_ROOT / admission_surface["source_module"]
+        self.assertEqual(admission_surface["interface"], "admit_observations")
+        self.assertEqual(
+            admission_surface["source_module_sha256"],
+            hashlib.sha256(admission_source.read_bytes()).hexdigest(),
         )
 
     def test_semantic_identity_rejects_aliasing(self) -> None:
@@ -869,6 +879,89 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 runner_observations=observations,
                 selector=select_boundary_points,
             )
+
+    def test_boundary_admission_pipeline_consumes_runner_observations(self) -> None:
+        sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
+        if not sidecar_src.is_dir():
+            self.skipTest("verilator-model-sidecar source checkout is unavailable")
+        sys.path.insert(0, sidecar_src.as_posix())
+        from verilator_model_sidecar.sweep_boundary import select_boundary_points
+
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            run_spec_path = directory / "run_spec.json"
+            observations_path = directory / "runner_observations.json"
+            output_dir = directory / "admitted"
+            wrapper = directory / "verilator-model-sidecar"
+            wrapper.write_text(
+                "#!/usr/bin/env bash\n"
+                "set -euo pipefail\n"
+                "PYTHONPATH=\"${SIDECAR_SRC}\" "
+                "python3 -m verilator_model_sidecar.cli \"$@\"\n",
+                encoding="utf-8",
+            )
+            wrapper.chmod(0o755)
+
+            contract_bundle = build_boundary_experiment_contract(
+                load_contract(), experiment_run_spec(), golden_sweep_enumerator
+            )
+            contract = contract_bundle["experiment_contract"]
+            fixture_result = raw_run_result(contract, selector=select_boundary_points)
+            runner_observations = {
+                "runner": fixture_result["runner"],
+                "point_results": fixture_result["point_results"],
+                "timing": [
+                    {
+                        "trial_id": trial["trial_id"],
+                        "launch_index": index,
+                        "cycle_evals": launch["resident_width"],
+                        "start_offset_ns": launch["start_offset_ns"],
+                        "end_offset_ns": launch["end_offset_ns"],
+                    }
+                    for trial in fixture_result["trials"]
+                    for index, launch in enumerate(trial["launches"])
+                ],
+            }
+            run_spec_path.write_text(json.dumps(experiment_run_spec()), encoding="utf-8")
+            observations_path.write_text(
+                json.dumps(runner_observations), encoding="utf-8"
+            )
+            previous = os.environ.get("SIDECAR_SRC")
+            os.environ["SIDECAR_SRC"] = sidecar_src.as_posix()
+            try:
+                exit_code = admit_boundary_observations_main(
+                    [
+                        "--target-config",
+                        CONTRACT.as_posix(),
+                        "--run-spec",
+                        run_spec_path.as_posix(),
+                        "--runner-observations",
+                        observations_path.as_posix(),
+                        "--sidecar-src",
+                        sidecar_src.as_posix(),
+                        "--adjudicator-bin",
+                        wrapper.as_posix(),
+                        "--out-dir",
+                        output_dir.as_posix(),
+                    ]
+                )
+            finally:
+                if previous is None:
+                    os.environ.pop("SIDECAR_SRC", None)
+                else:
+                    os.environ["SIDECAR_SRC"] = previous
+            self.assertEqual(exit_code, 0)
+            pipeline = json.loads(
+                (output_dir / "pipeline_result.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(pipeline["status"], "pass")
+            self.assertEqual(pipeline["adjudication"]["status"], "pass")
+            self.assertTrue((output_dir / "sweep_enumeration.json").is_file())
+            self.assertTrue((output_dir / "experiment_contract.json").is_file())
+            self.assertTrue((output_dir / "run_result.json").is_file())
+            self.assertTrue((output_dir / "evidence_bundle.json").is_file())
+            self.assertIsNotNone(pipeline["graph_artifact"])
+            self.assertIsNotNone(pipeline["markdown_artifact"])
 
     def test_boundary_artifacts_pass_real_sidecar_adjudication(self) -> None:
         sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")

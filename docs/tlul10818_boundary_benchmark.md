@@ -93,6 +93,15 @@ The machine-readable input shape for that external runner JSON is
 projection key equality and target-specific oracle binding are checked later by
 the builder against the Experiment Contract.
 
+`src/tools/admit_tlul10818_boundary_observations.py` is the JSON-only admission
+pipeline for that handoff. It consumes the target config, run spec, and external
+runner observations, imports the sidecar sweep enumerator and selector Adapter,
+writes `sweep_enumeration.json`, `experiment_contract.json`, `run_result.json`,
+and `evidence_bundle.json`, then delegates final static adjudication and
+report/graph generation to `verilator-model-sidecar
+adjudicate-boundary-benchmark`. It is the repository entry point after external
+runtime evidence exists; it is not a DUT runner.
+
 `src/tools/tlul10818_boundary_evidence.py` is the evidence-admission producer
 Module. `build_boundary_evidence_bundle(contract_bundle, run_result)` accepts
 only external runner completion identity, one raw bad/fixed CPU/GPU projection

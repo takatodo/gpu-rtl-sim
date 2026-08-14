@@ -156,6 +156,12 @@
     "runner_observations_schema": "contracts/tlul10818_boundary_runner_observations.schema.json",
     "runner_observations_schema_sha256": "da8fcc8f002b55fd03df31a2706a765d725693a7c3ecd92424d688fc74f363cb"
   },
+  "admission_pipeline_surface": {
+    "surface": "tlul10818_boundary_admission_pipeline",
+    "source_module": "src/tools/admit_tlul10818_boundary_observations.py",
+    "source_module_sha256": "9c85f72b0336bfd90260550ccddf961cfc24fb76f8a9192ef21a47e4c2687d4c",
+    "interface": "admit_observations"
+  },
   "evidence_builder_surface": {
     "surface": "tlul10818_boundary_evidence_builder",
     "source_module": "src/tools/tlul10818_boundary_evidence.py",
