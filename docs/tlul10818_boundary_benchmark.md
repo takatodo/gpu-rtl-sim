@@ -4,10 +4,11 @@
 for turning OpenTitan TL-UL #10818 into a boundary-discovery benchmark. It does
 not contain runtime evidence and must not be treated as a passing result.
 The required sidecar surfaces are pinned to adjudicator commit
-`5edbeba96f6d094241872586efebe47c8a39ea28`, which includes the selector-response
+`793b213325a6e5f4fcf4d3678f18bbbfef525b09`, which includes the selector-response
 surface, ground-truth/policy-analysis surfaces, plot/report validation
 surfaces, the typed selector/backend comparison adjudication schema, and the
-ledger entry for the admitted 2x2 timing smoke profile.
+ledger entries for the admitted 2x2 timing smoke profile and external closure
+gate.
 
 The currently implemented wrapper exposes the four-action grid already used by
 the TL-UL equivalence tracer:
