@@ -18,6 +18,7 @@ from tests.contract.tlul10818_boundary_fixtures import (
     GPU_TB,
     HEX40,
     POINT_RESULT_TEMPLATE_SCHEMA,
+    PROFILE_SCRIPT,
     REPO_ROOT,
     RUNNER_OBSERVATIONS_SCHEMA,
     RUN_SPEC_SCHEMA,
@@ -282,6 +283,34 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 any(name.endswith(".md") for name in result["copied_artifacts"])
             )
 
+    def test_profile_entrypoint_materializes_and_validates_admitted_artifacts(self) -> None:
+        profile = load_contract()["admitted_benchmark_profiles"][0]
+        source = REPO_ROOT / "artifacts/tlul10818_boundary_admitted_codex_20260814_222737"
+        if not source.is_dir():
+            return
+        with tempfile.TemporaryDirectory() as temporary:
+            destination = Path(temporary) / "stable"
+            env = os.environ.copy()
+            env.update(
+                {
+                    "TLUL10818_BOUNDARY_PROFILE_ID": profile["profile_id"],
+                    "TLUL10818_BOUNDARY_TARGET_CONFIG": CONTRACT.as_posix(),
+                    "TLUL10818_BOUNDARY_PROFILE_SOURCE_DIR": source.as_posix(),
+                    "TLUL10818_BOUNDARY_PROFILE_ARTIFACT_DIR": destination.as_posix(),
+                }
+            )
+            completed = subprocess.run(
+                [PROFILE_SCRIPT.as_posix()],
+                cwd=REPO_ROOT,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertIn('"status": "pass"', completed.stdout)
+            self.assertTrue((destination / "pipeline_result.json").is_file())
+
     def test_semantic_identity_is_pinned_to_wrapper_outputs(self) -> None:
         config = load_contract()
         surface = config["semantic_identity_surface"]
@@ -452,6 +481,21 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             materializer_surface["source_module_sha256"],
             hashlib.sha256(materializer_source.read_bytes()).hexdigest(),
+        )
+        entrypoint_surface = config["profile_entrypoint_surface"]
+        entrypoint_source = REPO_ROOT / entrypoint_surface["source_module"]
+        self.assertEqual(
+            entrypoint_surface["surface"],
+            "tlul10818_boundary_profile_entrypoint",
+        )
+        self.assertEqual(
+            entrypoint_surface["interface"],
+            "materialize_then_validate_profile",
+        )
+        self.assertEqual(entrypoint_source, PROFILE_SCRIPT)
+        self.assertEqual(
+            entrypoint_surface["source_module_sha256"],
+            hashlib.sha256(entrypoint_source.read_bytes()).hexdigest(),
         )
         timing_surface = config["timing_template_surface"]
         timing_source = REPO_ROOT / timing_surface["source_module"]

@@ -47,6 +47,12 @@ Use `src/tools/materialize_tlul10818_boundary_profile.py` to copy a freshly
 admitted profile from a runner-specific directory into the stable
 `artifacts/tlul10818_boundary_benchmark/` location without overwriting
 mismatched existing files.
+Use `scripts/validate_tlul10818_boundary_profile.sh` as the repository-defined
+entrypoint for CI or an external runner: if
+`TLUL10818_BOUNDARY_PROFILE_SOURCE_DIR` is set it first materializes that
+admitted directory, then validates the pinned profile. The optional
+`TLUL10818_BOUNDARY_PROFILE_ARTIFACT_DIR` environment variable selects the
+destination/validation directory.
 
 `src/tools/tlul10818_gpu_schedule.py` is the runner-facing Module for that
 surface. Its Interface is:
