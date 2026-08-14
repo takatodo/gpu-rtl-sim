@@ -122,6 +122,9 @@ with SHA-256 rows for the preserved inputs, generated JSON, pipeline result,
 graph, and Markdown report. If admission fails before final adjudication, the
 script still replaces `pipeline_result.json` with a `status=fail` result so
 stale passing output is not left as evidence.
+When the sidecar is available only as a source checkout rather than an installed
+`verilator-model-sidecar` executable, pass
+`--sidecar-src <sidecar>/src --adjudicator-bin scripts/verilator_model_sidecar_from_source.sh`.
 
 `src/tools/build_tlul10818_boundary_timing_template.py` is the optional
 post-observation checklist for runner timing. Trial scheduling depends on the
