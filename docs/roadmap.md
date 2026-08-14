@@ -16,22 +16,15 @@ Future shorthand such as `verilator --use-gpu -f filelist.f --top-module top` an
 
 ## Weakest Point
 
-Current weak point for the active gate is FC-073: gateGPT `tb_core` narrowed
-record `318` pollution to the compact CFG-clone producer-selector diagnostic
-region, then Stage121 classified the known atomics/marker-read as diagnostic
-perturbation traffic. Stage122 proved the first post-suppression lifecycle edge
-is still dirty but is not itself a concrete writer. Stage123 scanned the
-remaining concrete write-window surface in that skipped span: source940 is not
-reproducible as a single-source event, source1324 is reproducible as an
-adjacent-window atomic candidate with `target_delta=2576`, and source1325..1536
-has no further concrete writer. IR maps source1324 to
-`@__vlgpu_single_entry_cfg_clone_liveout_counters` / compact CFG-clone
-`entry_phi` producer-selector counter traffic. The source1324-suppressed run
-removes that Stage123 adjacent event but leaves CPU oracle mismatch and
-record318 pollution intact, so source1324 is now excluded as diagnostic counter
-traffic. The weak point is the still-unidentified non-concrete transition or
-write source for record318 itself. There is still no final adjacent-window
-write-source authority, semantic pass, speedup, or usefulness claim.
+Current weak point for the active OpenTitan regression-discovery gate is issue
+selection beyond the proven two-IP seed set. TL-UL #10818 and EDN #23526 now
+prove fixed revisions, checkpoints, action domains, independent oracles,
+semantic-manifest identity, bad-revision oracle violations, fixed-revision
+non-reproduction, CPU/GPU semantic equivalence, separated corpora, and
+random-vs-stratified long-tail metrics. The next useful work is either selecting
+a third known temporal protocol issue or deepening the existing two-IP corpus.
+No PPO, semantic-state packing, full OpenTitan scale, or extra batch-size claim
+is currently required to prove the active Contract.
 
 Historical RTLMeter context: #2 / FC-037 has a refreshed VeeR-EL2 `hello` timing result,
 and that GPU sidecar path is still much slower than serial CPU, while the
@@ -85,21 +78,23 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 ## Current Frontier
 
-`modern_llm_serving_rtl_hybrid_conditions` is complete for the scoped RTL-harness condition-finding objective. The first scoped executable Verilator-facing `--use-gpu` adapter and PATH-selected wrapper path are complete. The current work is the gateGPT `tb_core` ordering-aware token-loop schedule-integration gate after the padded-start path remained CPU-negative.
+The current work is OpenTitan temporal protocol GPU resident
+regression-discovery. TL-UL #10818 is the first seed and EDN #23526 establishes
+the second IP.
 
 Current priority:
 
-`define_scientific_circt_source_variant_regression_harness_gate`
+`opentitan_temporal_protocol_gpu_resident_regression_discovery`
 
 Next concrete action:
 
-`advance_stage124_source1065_after_sources976_1006_1020_diagnostic_atomic_suppression_cuda700`
+`select_third_known_opentitan_temporal_protocol_issue_or_extend_two_ip_corpus`
 
 Current source artifact:
 
-`records/scaling_gates/select_scientific_circt_source_variant_regression_harness_after_fc074_gate.json`
+`artifacts/edn23526_campaign/edn23526_campaign_summary.json`
 
-Latest FC-069 update: Stage118 block-source `1760` is clean/raw-clean through candidate `2021`; Stage119 maps dirty `source_id=2` to `compact.cfg_clone.entry_phi.producer_selector.counters3969`; Stage120 ranges `1..1536 / 1536` are runtime-clean and `1537..1792` is metadata-exhausted. Stage121 classifies source611/source613/source615/source618/source620/source624 as diagnostic atomics and source622 as a diagnostic marker-read perturbation. Stage121 now applies the selected suppression ids across the Stage120 candidate set before inserting the after-read; the source625 global-suppression report is clean after those diagnostic targets are neutralized. Stage122 expanded-progress ABI finds `after_only_polluted` on the first non-diagnostic lifecycle edge after the suppressed span, but records no concrete record318/adjacent writer. Stage123 source1324 is excluded as compact CFG-clone producer-selector counter traffic. Stage124 transition probing is now implemented: full `1..1536` instrumentation is too large for the 300s `ptxas` bound, while `1..256`, `257..512`, `513..768`, and `769..896` reach runtime with `transition_found=false` and CPU oracle mismatch still `2`. Source897,count128, source960,count1, source968,count1, source972,count1, source974,count1, and source975,count1 also reach runtime with no transition. Unsuppressed source976,count1 is incomplete, but source976 diagnostic atomic suppression restores completion and source977,count1 through source1005,count1 also complete with no transition. Unsuppressed source1006,count1 is incomplete, but source1006 diagnostic atomic suppression restores source1006 completion with no transition. Source1007,count1 through source1019,count1 reach runtime under the source976/source1006 suppression frontier with no transition. Unsuppressed source1020,count1 is incomplete; adding source1020 to diagnostic atomic suppression restores source1020 completion with no transition and no semantic authority. This is still diagnostic/lifecycle narrowing evidence rather than final pair-offset write-source authority; source1021,count1 also reaches runtime under the source976/source1006/source1020 suppression frontier with no transition and no semantic authority. source1022,count1 also reaches runtime under the source976/source1006/source1020 suppression frontier with no transition and no semantic authority. source1023,count1 also reaches runtime under the source976/source1006/source1020 suppression frontier with no transition and no semantic authority. source1024,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1025,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1026,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1027,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1028,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1029,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1030,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1031,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1032,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1033,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1034,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1035,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1036,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1037,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1038,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. source1039,count1 also reaches runtime under that suppression frontier with no transition and no semantic authority. Source1040,count1 through source1064,count1 also reach runtime under that suppression frontier with no transition and no semantic authority. Source1058,count1 also reaches runtime under the source976/source1006/source1020 suppression frontier with result=after_only_polluted, transition_complete=true, scan_complete=true, transition_found=false, semantic_authority=false, write_source_authority=none, before/after record318=0/38666621, pair_offsets_base_changed=false, and CPU oracle mismatch_count=2/passed_count=0. The next gate is retrying Stage124 at source1065 with source976/source1006/source1020 suppression carried forward.
+Historical FC-069 update: Stage118/119/120/121/122/123/124 gateGPT narrowing remains historical evidence for the previous frontier. It is not the active OpenTitan regression-discovery next action.
 
 Stage117 update: the previous `1..256` report is not accepted as Stage117 runtime evidence because generated IR lacked Stage117 instrumentation due stale `vlgpugen` pass-tool build order. Pass-tool freshness is now fixed so stale pass tools rebuild before IR generation. With the lightweight saved-address Stage117 probe and a 900s `ptxas` bound, `reports/gategpt_tb_core_ordering_aware_token_loop_full_phase_2state_stage117_light_block_body_boundary_range_1_2048_ptxas900_runtime.json` reaches runtime: all three entry slices pass `ptxas`, preflight passes, and classification is `token_loop_stage117_phase1_callee0_nested_body_block_body_boundary_same_saved_addr_changed`. The first `COUNT=1024` run was clean, but `COUNT=2048` finds a dirty Stage117 block-body boundary at `source_id=1760` with `split_result=same_saved_addr_changed`, `before_direct_param_record318=0`, `after_direct_param_record318=38666621`, `after_saved_addr_record318=38666621`, `saved_after_polluted=true`, and `semantic_authority=false`. Current IR mapping evidence points to `artifacts/gategpt_local_eval/gateGPT/obj_tb_core/vl_batch_gpu.ll:834516` metadata row and reconstructed block `artifacts/gategpt_local_eval/gateGPT/obj_tb_core/vl_batch_gpu.ll:327571` / `%19690` in `_Z40Vtb_core___024root___nba_sequent__TOP__0P18Vtb_core___024root`; the patched control-word store is `artifacts/gategpt_local_eval/gateGPT/obj_tb_core/vl_batch_gpu_patched.ll:333201`, `control_word=72058702139492064`. This is a dirty boundary, not final adjacent-window write-source authority.
 
