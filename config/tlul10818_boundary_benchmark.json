@@ -218,6 +218,12 @@
     "source_module_sha256": "5541bae565688e0f616554ff552fb4b45b8fca7a49ac44f422c8c77c3e55688c",
     "interface": "check_closure"
   },
+  "profile_builder_surface": {
+    "surface": "tlul10818_boundary_profile_builder",
+    "source_module": "src/tools/build_tlul10818_boundary_profile.py",
+    "source_module_sha256": "6e7d7e923b3d3d5d07950bacc0958c672ca987bbba285ff717dab0f1f7dd39d7",
+    "interface": "build_profile"
+  },
   "timing_template_surface": {
     "surface": "tlul10818_boundary_timing_template_builder",
     "source_module": "src/tools/build_tlul10818_boundary_timing_template.py",

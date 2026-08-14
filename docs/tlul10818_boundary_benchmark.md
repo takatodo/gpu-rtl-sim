@@ -63,6 +63,13 @@ Use `src/tools/check_tlul10818_boundary_closure.py` for the final closure gate.
 It validates every admitted profile and returns `status=pass` only when at
 least one valid profile records `runtime_authority.external_closure=true`.
 The current local smoke profile therefore makes this gate fail intentionally.
+Use `src/tools/build_tlul10818_boundary_profile.py` to turn a passing admitted
+artifact directory into the JSON object that belongs in
+`admitted_benchmark_profiles`. The tool computes artifact/report SHA-256 rows,
+ground-truth summary, comparison IDs, finite axis values, and runner authority
+from the admitted files; the caller supplies only the profile ID, target
+artifact directory, description, authority kind, and whether this profile is
+external closure evidence.
 
 `src/tools/tlul10818_gpu_schedule.py` is the runner-facing Module for that
 surface. Its Interface is:

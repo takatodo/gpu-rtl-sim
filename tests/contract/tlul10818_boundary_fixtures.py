@@ -19,6 +19,7 @@ DOC = REPO_ROOT / "docs" / "tlul10818_boundary_benchmark.md"
 SCRIPT = REPO_ROOT / "scripts" / "adjudicate_tlul10818_boundary_benchmark.sh"
 PROFILE_SCRIPT = REPO_ROOT / "scripts" / "validate_tlul10818_boundary_profile.sh"
 CLOSURE_CHECK = REPO_ROOT / "src" / "tools" / "check_tlul10818_boundary_closure.py"
+PROFILE_BUILDER = REPO_ROOT / "src" / "tools" / "build_tlul10818_boundary_profile.py"
 GPU_TB = REPO_ROOT / "examples" / "tlul10818" / "tlul_adapter_sram_10818_gpu_tb.sv"
 RUNNER_OBSERVATIONS_SCHEMA = (
     REPO_ROOT / "contracts" / "tlul10818_boundary_runner_observations.schema.json"

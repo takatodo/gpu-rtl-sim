@@ -19,6 +19,7 @@ from tests.contract.tlul10818_boundary_fixtures import (
     GPU_TB,
     HEX40,
     POINT_RESULT_TEMPLATE_SCHEMA,
+    PROFILE_BUILDER,
     PROFILE_SCRIPT,
     REPO_ROOT,
     RUNNER_OBSERVATIONS_SCHEMA,
@@ -68,6 +69,7 @@ from admit_tlul10818_boundary_observations import (  # noqa: E402
 )
 from validate_tlul10818_boundary_profile import validate_profile  # noqa: E402
 from check_tlul10818_boundary_closure import check_closure  # noqa: E402
+from build_tlul10818_boundary_profile import build_profile  # noqa: E402
 from materialize_tlul10818_boundary_profile import materialize_profile  # noqa: E402
 
 
@@ -322,6 +324,45 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                     artifact_dir=artifact_dir,
                 )
 
+    def test_profile_builder_reconstructs_admitted_profile_entry(self) -> None:
+        profile = load_contract()["admitted_benchmark_profiles"][0]
+        artifact_dir = REPO_ROOT / profile["artifact_dir"]
+        if not artifact_dir.is_dir():
+            return
+        rebuilt = build_profile(
+            source_dir=artifact_dir,
+            profile_id=profile["profile_id"],
+            artifact_dir=profile["artifact_dir"],
+            description=profile["description"],
+            authority_kind=profile["runtime_authority"]["authority_kind"],
+            external_closure=profile["runtime_authority"]["external_closure"],
+        )
+        self.assertEqual(rebuilt, profile)
+        completed = subprocess.run(
+            [
+                sys.executable,
+                PROFILE_BUILDER.as_posix(),
+                "--source-dir",
+                artifact_dir.as_posix(),
+                "--profile-id",
+                profile["profile_id"],
+                "--artifact-dir",
+                profile["artifact_dir"],
+                "--description",
+                profile["description"],
+                "--authority-kind",
+                profile["runtime_authority"]["authority_kind"],
+                "--external-closure",
+                "false",
+            ],
+            cwd=REPO_ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(json.loads(completed.stdout), profile)
+
     def test_boundary_closure_requires_external_authority_profile(self) -> None:
         profile = load_contract()["admitted_benchmark_profiles"][0]
         artifact_dir = REPO_ROOT / profile["artifact_dir"]
@@ -573,6 +614,18 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             closure_surface["source_module_sha256"],
             hashlib.sha256(closure_source.read_bytes()).hexdigest(),
+        )
+        profile_builder_surface = config["profile_builder_surface"]
+        profile_builder_source = REPO_ROOT / profile_builder_surface["source_module"]
+        self.assertEqual(
+            profile_builder_surface["surface"],
+            "tlul10818_boundary_profile_builder",
+        )
+        self.assertEqual(profile_builder_surface["interface"], "build_profile")
+        self.assertEqual(profile_builder_source, PROFILE_BUILDER)
+        self.assertEqual(
+            profile_builder_surface["source_module_sha256"],
+            hashlib.sha256(profile_builder_source.read_bytes()).hexdigest(),
         )
         timing_surface = config["timing_template_surface"]
         timing_source = REPO_ROOT / timing_surface["source_module"]
