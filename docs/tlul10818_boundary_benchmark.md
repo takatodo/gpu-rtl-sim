@@ -106,10 +106,11 @@ the builder against the Experiment Contract.
 `src/tools/admit_tlul10818_boundary_observations.py` is the JSON-only admission
 pipeline for that handoff. It consumes the target config, run spec, and external
 runner observations, imports the sidecar sweep enumerator and selector Adapter,
-writes `sweep_enumeration.json`, `experiment_contract.json`, `run_result.json`,
-and `evidence_bundle.json`, then delegates final static adjudication and
-report/graph generation to `verilator-model-sidecar
-adjudicate-boundary-benchmark`. It is the repository entry point after external
+writes canonical copies of `run_spec.json` and `runner_observations.json`,
+then writes `sweep_enumeration.json`, `semantic_manifests.json`,
+`experiment_contract.json`, `run_result.json`, and `evidence_bundle.json` before
+delegating final static adjudication and report/graph generation to
+`verilator-model-sidecar adjudicate-boundary-benchmark`. It is the repository entry point after external
 runtime evidence exists; it is not a DUT runner.
 If admission fails before final adjudication, the script still replaces
 `pipeline_result.json` with a `status=fail` result so stale passing output is

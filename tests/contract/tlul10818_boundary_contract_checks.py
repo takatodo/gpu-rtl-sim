@@ -603,6 +603,21 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
 
     def test_expected_artifacts_are_generated_outputs_not_source_of_truth(self) -> None:
         artifacts = load_contract()["expected_artifacts"]
+        self.assertEqual(
+            set(artifacts),
+            {
+                "run_spec",
+                "runner_observations",
+                "sweep_enumeration",
+                "semantic_manifests",
+                "experiment_contract",
+                "run_result",
+                "evidence_bundle",
+                "pipeline_result",
+                "graph_svg",
+                "markdown_report",
+            },
+        )
         self.assertEqual(len(artifacts), len(set(artifacts.values())))
         for relative in artifacts.values():
             self.assertFalse(Path(relative).is_absolute())
@@ -1198,9 +1213,24 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
             self.assertEqual(pipeline["status"], "pass")
             self.assertEqual(pipeline["adjudication"]["status"], "pass")
             self.assertTrue((output_dir / "sweep_enumeration.json").is_file())
+            self.assertTrue((output_dir / "semantic_manifests.json").is_file())
             self.assertTrue((output_dir / "experiment_contract.json").is_file())
+            self.assertTrue((output_dir / "run_spec.json").is_file())
+            self.assertTrue((output_dir / "runner_observations.json").is_file())
             self.assertTrue((output_dir / "run_result.json").is_file())
             self.assertTrue((output_dir / "evidence_bundle.json").is_file())
+            self.assertEqual(
+                json.loads((output_dir / "run_spec.json").read_text(encoding="utf-8")),
+                experiment_run_spec(),
+            )
+            self.assertEqual(
+                json.loads(
+                    (output_dir / "runner_observations.json").read_text(
+                        encoding="utf-8"
+                    )
+                ),
+                runner_observations,
+            )
             self.assertIsNotNone(pipeline["graph_artifact"])
             self.assertIsNotNone(pipeline["markdown_artifact"])
 

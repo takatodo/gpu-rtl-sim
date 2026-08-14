@@ -108,13 +108,19 @@ def admit_observations(
 
     out_dir.mkdir(parents=True, exist_ok=True)
     paths = {
+        "run_spec": out_dir / "run_spec.json",
+        "runner_observations": out_dir / "runner_observations.json",
         "sweep_enumeration": out_dir / "sweep_enumeration.json",
+        "semantic_manifests": out_dir / "semantic_manifests.json",
         "experiment_contract": out_dir / "experiment_contract.json",
         "run_result": out_dir / "run_result.json",
         "evidence_bundle": out_dir / "evidence_bundle.json",
         "pipeline_result": out_dir / "pipeline_result.json",
     }
+    _write_json(paths["run_spec"], run_spec)
+    _write_json(paths["runner_observations"], runner_observations)
     _write_json(paths["sweep_enumeration"], sweep_enumeration)
+    _write_json(paths["semantic_manifests"], contract_bundle["semantic_manifests"])
     _write_json(paths["experiment_contract"], experiment_contract)
     _write_json(paths["run_result"], run_result)
     _write_json(paths["evidence_bundle"], evidence_bundle)

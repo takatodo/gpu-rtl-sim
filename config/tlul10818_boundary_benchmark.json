@@ -175,7 +175,7 @@
   "admission_pipeline_surface": {
     "surface": "tlul10818_boundary_admission_pipeline",
     "source_module": "src/tools/admit_tlul10818_boundary_observations.py",
-    "source_module_sha256": "36b49dc86bde2bb647e71e71cb5509d66529ab5215e24e1a15411e11d4639b25",
+    "source_module_sha256": "2cbe056577604af25481c16647104e53bb53d8164d81a5703caa3afa4e00ee79",
     "interface": "admit_observations"
   },
   "timing_template_surface": {
@@ -239,7 +239,12 @@
     "no_gpu_selector_algorithm_superiority_claim": true
   },
   "expected_artifacts": {
+    "run_spec": "artifacts/tlul10818_boundary_benchmark/run_spec.json",
+    "runner_observations": "artifacts/tlul10818_boundary_benchmark/runner_observations.json",
+    "sweep_enumeration": "artifacts/tlul10818_boundary_benchmark/sweep_enumeration.json",
+    "semantic_manifests": "artifacts/tlul10818_boundary_benchmark/semantic_manifests.json",
     "experiment_contract": "artifacts/tlul10818_boundary_benchmark/experiment_contract.json",
+    "run_result": "artifacts/tlul10818_boundary_benchmark/run_result.json",
     "evidence_bundle": "artifacts/tlul10818_boundary_benchmark/evidence_bundle.json",
     "pipeline_result": "artifacts/tlul10818_boundary_benchmark/pipeline_result.json",
     "graph_svg": "artifacts/tlul10818_boundary_benchmark/pipeline_result-<graph-sha256>.svg",
