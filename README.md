@@ -125,6 +125,29 @@ The summary emits `new_coverage_seeds`, `oracle_violation_seeds`, and
 the independent valid/ready oracle marks a bug candidate.  The risk-stratified
 order is fixed before feedback, so it is not an online-learning or PPO claim.
 
+## OpenTitan entropy_src regression tracer
+
+`examples/entropy10983/entropy_src_main_sm_10983_tb.sv` is a standalone CPU
+reproducer for [OpenTitan issue #10983](https://github.com/lowRISC/opentitan/issues/10983):
+in firmware-override entropy-insert mode, SHA3 processing must not start before
+firmware has explicitly started the insert window.  The local oracle checks
+`entropy_src_main_sm` because [PR #11003](https://github.com/lowRISC/opentitan/pull/11003)
+adds the missing main-state-machine handshake.
+
+Run it against the PR base and merge commits:
+
+```bash
+python3 src/tools/run_entropy10983_cpu_regression.py \
+  --verilator /path/to/verilator \
+  --bad /path/to/opentitan-before-11003 \
+  --fixed /path/to/opentitan-with-11003 \
+  --out artifacts/entropy10983_cpu
+```
+
+The expected CPU oracle split is `early_sha3_process=1` for the bad revision
+and `early_sha3_process=0` for the fixed revision.  GPU equivalence and corpus
+generation are the next gates for this third known issue.
+
 ## Goal
 
 This repository is an experimental GPU sidecar runtime for RTL compiler frontends. Verilator is the current compatibility frontend because its generated C++ build path is the shortest route to a usable sidecar; CIRCT is a planned frontend target through the same sidecar contract idea.
@@ -148,8 +171,8 @@ This does not claim arbitrary RTL support, arbitrary filelist inference, broad n
 Current pointer, mirrored from `config/selection.json`:
 
 - `current_priority`: `opentitan_temporal_protocol_gpu_resident_regression_discovery`
-- `current_next_action`: `select_third_known_opentitan_temporal_protocol_issue_or_extend_two_ip_corpus`
-- `current_priority_source_artifact`: `artifacts/edn23526_campaign/edn23526_campaign_summary.json`
+- `current_next_action`: `add_entropy10983_gpu_equivalence_and_corpus_gate`
+- `current_priority_source_artifact`: `artifacts/entropy10983_cpu/entropy10983_cpu_regression.json`
 
 Latest OpenTitan regression-discovery update: TL-UL #10818 and EDN #23526 now form the two-IP seed set. Both targets have fixed revisions/checkpoints/action domains/oracles/semantic-manifest identities, bad-revision oracle violations, fixed-revision non-reproduction, CPU/GPU semantic equivalence, separated corpora, and reproducible random-vs-stratified summaries.
 
