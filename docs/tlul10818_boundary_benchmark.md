@@ -72,6 +72,13 @@ projection, and shared reconstructor. It rejects a run spec unless all four
 declared policies are compared on one GPU backend and at least one identical
 policy is compared across CPU and GPU backends.
 
+`src/tools/build_tlul10818_boundary_run_spec.py` is the JSON producer for that
+run spec. It does not choose the finite grid or benchmark budget. The external
+runner or CI must pass the ordered axis values, logical batch size, bad-query
+budget, selector seed, CPU executor identity, GPU executor identity, and GPU
+resident width explicitly. The tool materializes the four declared selector
+trials on the GPU backend plus the matching random CPU/GPU backend comparison.
+
 `src/tools/tlul10818_boundary_evidence.py` is the evidence-admission producer
 Module. `build_boundary_evidence_bundle(contract_bundle, run_result)` accepts
 only external runner completion identity, one raw bad/fixed CPU/GPU projection

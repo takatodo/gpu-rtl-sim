@@ -11,6 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src" / "tools"))
 
 from tlul10818_boundary_evidence import SelectorAdapter, build_boundary_trial_evidence  # noqa: E402
+from build_tlul10818_boundary_run_spec import build_run_spec  # noqa: E402
 
 
 CONTRACT = REPO_ROOT / "config" / "tlul10818_boundary_benchmark.json"
@@ -59,86 +60,17 @@ def golden_sweep_enumerator(_sweep_space: dict) -> dict:
 
 
 def experiment_run_spec() -> dict:
-    seed = "1" * 64
-    policies = {
-        "random": {
-            "kind": "random",
-            "algorithm_version": 1,
-            "seed_sha256": seed,
-            "configuration": {},
-        },
-        "stratified": {
-            "kind": "stratified",
-            "algorithm_version": 1,
-            "seed_sha256": seed,
-            "configuration": {"strata_axes": ["request_integrity"]},
-        },
-        "refinement": {
-            "kind": "ordered_refinement",
-            "algorithm_version": 1,
-            "seed_sha256": seed,
-            "configuration": {"axis": "backpressure_cycles"},
-        },
-        "novelty": {
-            "kind": "novelty_boundary_guided",
-            "algorithm_version": 1,
-            "seed_sha256": seed,
-            "configuration": {},
-        },
-    }
-    trials = [
-        {
-            "trial_id": f"{name}_gpu",
-            "backend_id": "gpu",
-            "policy": policy,
-            "requested_count": 2,
-            "budget_logical_bad_queries": 8,
-        }
-        for name, policy in policies.items()
-    ]
-    trials.append(
-        {
-            "trial_id": "random_cpu",
-            "backend_id": "cpu",
-            "policy": policies["random"],
-            "requested_count": 2,
-            "budget_logical_bad_queries": 8,
-        }
+    return build_run_spec(
+        experiment_id="opentitan-tlul10818-boundary-fixture-v1",
+        backpressure_cycles=[0, 3],
+        response_delay_cycles=[0, 2],
+        cpu_executor_identity="cpu-reference:fixture",
+        gpu_executor_identity="gpu-resident:fixture",
+        gpu_resident_width=8,
+        requested_count=2,
+        budget_logical_bad_queries=8,
+        seed_sha256="1" * 64,
     )
-    return {
-        "experiment_id": "opentitan-tlul10818-boundary-fixture-v1",
-        "finite_axis_values": {
-            "backpressure_cycles": [0, 3],
-            "response_delay_cycles": [0, 2],
-        },
-        "backends": [
-            {
-                "backend_id": "cpu",
-                "kind": "cpu",
-                "executor_identity": "cpu-reference:fixture",
-                "resident_width": 1,
-            },
-            {
-                "backend_id": "gpu",
-                "kind": "gpu",
-                "executor_identity": "gpu-resident:fixture",
-                "resident_width": 8,
-            },
-        ],
-        "trials": trials,
-        "comparisons": [
-            {
-                "comparison_id": "selectors-on-gpu",
-                "kind": "selector",
-                "trial_ids": [f"{name}_gpu" for name in policies],
-            },
-            {
-                "comparison_id": "random-cpu-gpu",
-                "kind": "backend",
-                "trial_ids": ["random_cpu", "random_gpu"],
-            },
-        ],
-    }
 
 
 def raw_run_result(contract: dict, selector: SelectorAdapter | None = None) -> dict:

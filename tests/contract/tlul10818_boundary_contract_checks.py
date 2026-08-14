@@ -45,6 +45,7 @@ from tlul10818_boundary_evidence import (  # noqa: E402
 )
 from build_tlul10818_boundary_artifacts import main as build_boundary_artifacts_main  # noqa: E402
 from build_tlul10818_boundary_artifacts import _read_object as read_artifact_object  # noqa: E402
+from build_tlul10818_boundary_run_spec import main as build_run_spec_main  # noqa: E402
 
 
 class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
@@ -185,6 +186,13 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             evidence_surface["source_module_sha256"],
             hashlib.sha256(evidence_source.read_bytes()).hexdigest(),
+        )
+        run_spec_surface = config["run_spec_builder_surface"]
+        run_spec_source = REPO_ROOT / run_spec_surface["source_module"]
+        self.assertEqual(run_spec_surface["interface"], "build_run_spec")
+        self.assertEqual(
+            run_spec_surface["source_module_sha256"],
+            hashlib.sha256(run_spec_source.read_bytes()).hexdigest(),
         )
 
     def test_semantic_identity_rejects_aliasing(self) -> None:
@@ -617,6 +625,49 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                         sort_keys=True,
                     ).encode("utf-8")
                 ).hexdigest(),
+            )
+
+    def test_boundary_run_spec_builder_materializes_fair_comparisons(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "run_spec.json"
+            self.assertEqual(
+                build_run_spec_main(
+                    [
+                        "--experiment-id",
+                        "opentitan-tlul10818-boundary-cli-fixture-v1",
+                        "--backpressure-cycles",
+                        "0,3",
+                        "--response-delay-cycles",
+                        "0,2",
+                        "--cpu-executor-identity",
+                        "cpu-reference:fixture",
+                        "--gpu-executor-identity",
+                        "gpu-resident:fixture",
+                        "--gpu-resident-width",
+                        "8",
+                        "--requested-count",
+                        "2",
+                        "--budget-logical-bad-queries",
+                        "8",
+                        "--seed-sha256",
+                        "1" * 64,
+                        "--out",
+                        output.as_posix(),
+                    ]
+                ),
+                0,
+            )
+            run_spec = json.loads(output.read_text(encoding="utf-8"))
+            contract_bundle = build_boundary_experiment_contract(
+                load_contract(), run_spec, golden_sweep_enumerator
+            )
+            self.assertEqual(
+                contract_bundle["experiment_contract"]["experiment_id"],
+                "opentitan-tlul10818-boundary-cli-fixture-v1",
+            )
+            self.assertEqual(
+                {trial["policy"]["kind"] for trial in run_spec["trials"]},
+                {"random", "stratified", "ordered_refinement", "novelty_boundary_guided"},
             )
 
     def test_boundary_artifacts_pass_real_sidecar_adjudication(self) -> None:
