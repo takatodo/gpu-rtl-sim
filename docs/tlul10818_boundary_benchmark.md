@@ -79,6 +79,9 @@ runner or CI must pass the ordered axis values, logical batch size, bad-query
 budget, selector seed, CPU executor identity, GPU executor identity, and GPU
 resident width explicitly. The tool materializes the four declared selector
 trials on the GPU backend plus the matching random CPU/GPU backend comparison.
+Its public JSON shape is `contracts/tlul10818_boundary_run_spec.schema.json`;
+the builder remains the authority for ordered-cycle monotonicity and fair
+comparison semantics.
 
 `src/tools/build_tlul10818_boundary_execution_packet.py` is the pre-runtime
 handoff producer. Given the target config, run spec, and sidecar source, it

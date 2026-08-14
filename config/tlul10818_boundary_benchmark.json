@@ -154,7 +154,9 @@
     "surface": "tlul10818_boundary_run_spec_builder",
     "source_module": "src/tools/build_tlul10818_boundary_run_spec.py",
     "source_module_sha256": "2f852c88601c33dbe47dd3e54b43cc9255656a842dfa0165384fc9105a338d87",
-    "interface": "build_run_spec"
+    "interface": "build_run_spec",
+    "run_spec_schema": "contracts/tlul10818_boundary_run_spec.schema.json",
+    "run_spec_schema_sha256": "dff67d4a41bb2d1129da594393088c967f37f76528a08c39b76741d6ee40d4df"
   },
   "execution_packet_surface": {
     "surface": "tlul10818_boundary_execution_packet_builder",

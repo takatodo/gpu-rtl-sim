@@ -19,6 +19,7 @@ from tests.contract.tlul10818_boundary_fixtures import (
     POINT_RESULT_TEMPLATE_SCHEMA,
     REPO_ROOT,
     RUNNER_OBSERVATIONS_SCHEMA,
+    RUN_SPEC_SCHEMA,
     SCRIPT,
     TIMING_TEMPLATE_SCHEMA,
     experiment_run_spec,
@@ -233,6 +234,14 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             run_spec_surface["source_module_sha256"],
             hashlib.sha256(run_spec_source.read_bytes()).hexdigest(),
+        )
+        self.assertEqual(
+            REPO_ROOT / run_spec_surface["run_spec_schema"],
+            RUN_SPEC_SCHEMA,
+        )
+        self.assertEqual(
+            run_spec_surface["run_spec_schema_sha256"],
+            hashlib.sha256(RUN_SPEC_SCHEMA.read_bytes()).hexdigest(),
         )
         execution_packet_surface = config["execution_packet_surface"]
         execution_packet_source = REPO_ROOT / execution_packet_surface["source_module"]
@@ -765,6 +774,31 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 0,
             )
             run_spec = json.loads(output.read_text(encoding="utf-8"))
+            schema = json.loads(RUN_SPEC_SCHEMA.read_text(encoding="utf-8"))
+            self.assertEqual(schema["additionalProperties"], False)
+            self.assertEqual(
+                schema["required"],
+                [
+                    "experiment_id",
+                    "finite_axis_values",
+                    "backends",
+                    "trials",
+                    "comparisons",
+                ],
+            )
+            self.assertEqual(
+                schema["properties"]["trials"]["items"]["$ref"], "#/$defs/trial"
+            )
+            self.assertEqual(
+                schema["$defs"]["trial"]["properties"]["policy"]["$ref"],
+                "#/$defs/policy",
+            )
+            self.assertEqual(
+                set(
+                    schema["$defs"]["policy"]["properties"]["kind"]["enum"]
+                ),
+                {"random", "stratified", "ordered_refinement", "novelty_boundary_guided"},
+            )
             contract_bundle = build_boundary_experiment_contract(
                 load_contract(), run_spec, golden_sweep_enumerator
             )

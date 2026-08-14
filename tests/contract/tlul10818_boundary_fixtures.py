@@ -21,6 +21,9 @@ GPU_TB = REPO_ROOT / "examples" / "tlul10818" / "tlul_adapter_sram_10818_gpu_tb.
 RUNNER_OBSERVATIONS_SCHEMA = (
     REPO_ROOT / "contracts" / "tlul10818_boundary_runner_observations.schema.json"
 )
+RUN_SPEC_SCHEMA = (
+    REPO_ROOT / "contracts" / "tlul10818_boundary_run_spec.schema.json"
+)
 POINT_RESULT_TEMPLATE_SCHEMA = (
     REPO_ROOT / "contracts" / "tlul10818_boundary_point_result_template.schema.json"
 )
