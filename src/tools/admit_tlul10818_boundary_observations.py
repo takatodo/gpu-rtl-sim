@@ -10,7 +10,6 @@ delegates final adjudication/report generation to ``verilator-model-sidecar``.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import os
 import subprocess
 import sys
@@ -44,13 +43,6 @@ def _load_sidecar_adapters(sidecar_src: Path | None):
     return enumerate_sweep_space, select_boundary_points
 
 
-def _file_sha256(path: Path) -> str | None:
-    try:
-        return hashlib.sha256(path.read_bytes()).hexdigest()
-    except OSError:
-        return None
-
-
 def _fail_pipeline(message: str, *, out_dir: Path, run_spec: Path, runner_observations: Path) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     output = out_dir / "pipeline_result.json"
@@ -68,8 +60,8 @@ def _fail_pipeline(message: str, *, out_dir: Path, run_spec: Path, runner_observ
                 "evidence_bundle": None,
             },
             "input_file_sha256": {
-                "experiment_contract": _file_sha256(run_spec),
-                "evidence_bundle": _file_sha256(runner_observations),
+                "experiment_contract": None,
+                "evidence_bundle": None,
             },
         },
         "report_bundle": None,

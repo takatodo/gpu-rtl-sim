@@ -1290,6 +1290,10 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 pipeline["adjudication"]["issues"][0]["code"],
                 "admission_input_error",
             )
+            self.assertEqual(
+                pipeline["adjudication"]["input_file_sha256"],
+                {"experiment_contract": None, "evidence_bundle": None},
+            )
 
     def test_boundary_artifacts_pass_real_sidecar_adjudication(self) -> None:
         sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
