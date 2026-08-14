@@ -49,7 +49,7 @@
     "codex_runtime_execution": false,
     "runtime_owner": "external_operator_or_ci",
     "adjudicator_repo": "https://github.com/takatodo/verilator-model-sidecar.git",
-    "adjudicator_commit": "5d42365c5aa6de0af0b2395bbbd2e215943d1cb1",
+    "adjudicator_commit": "5edbeba96f6d094241872586efebe47c8a39ea28",
     "adjudicator_commit_status": "pinned",
     "required_adjudicator_surfaces": [
       "rtl_boundary_sweep_enumeration",
