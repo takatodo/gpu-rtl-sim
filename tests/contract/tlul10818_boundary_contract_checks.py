@@ -94,6 +94,9 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 "rtl_boundary_pipeline_result",
             ],
         )
+        doc_text = DOC.read_text(encoding="utf-8")
+        self.assertIn(authority["adjudicator_commit"], doc_text)
+        self.assertIn("typed selector/backend comparison adjudication schema", doc_text)
 
     def test_current_wrapper_grid_matches_existing_action_domain(self) -> None:
         contract = load_contract()
