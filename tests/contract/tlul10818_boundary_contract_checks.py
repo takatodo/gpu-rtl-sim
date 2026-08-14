@@ -87,16 +87,37 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             authority["required_adjudicator_surfaces"],
             [
+                "rtl_boundary_sweep_enumeration",
                 "rtl_boundary_selector_response",
                 "rtl_boundary_experiment_contract",
                 "rtl_boundary_evidence_bundle",
+                "rtl_boundary_ground_truth",
+                "rtl_boundary_analysis",
+                "rtl_boundary_policy_trial",
+                "rtl_boundary_policy_analysis",
                 "rtl_boundary_adjudication",
+                "rtl_boundary_plot_payload",
+                "rtl_boundary_report_bundle",
+                "rtl_boundary_report_validation",
                 "rtl_boundary_pipeline_result",
             ],
         )
         doc_text = DOC.read_text(encoding="utf-8")
         self.assertIn(authority["adjudicator_commit"], doc_text)
+        self.assertIn("ground-truth/policy-analysis surfaces", doc_text)
+        self.assertIn("plot/report validation", doc_text)
         self.assertIn("typed selector/backend comparison adjudication schema", doc_text)
+        sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
+        if sidecar_src.is_dir():
+            sys.path.insert(0, sidecar_src.as_posix())
+            import verilator_model_sidecar
+
+            exported = {
+                value
+                for name, value in vars(verilator_model_sidecar).items()
+                if name.startswith("RTL_BOUNDARY_") and name.endswith("_SURFACE")
+            }
+            self.assertTrue(set(authority["required_adjudicator_surfaces"]) <= exported)
 
     def test_current_wrapper_grid_matches_existing_action_domain(self) -> None:
         contract = load_contract()

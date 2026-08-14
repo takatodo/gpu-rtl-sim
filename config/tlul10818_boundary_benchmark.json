@@ -52,10 +52,18 @@
     "adjudicator_commit": "5d42365c5aa6de0af0b2395bbbd2e215943d1cb1",
     "adjudicator_commit_status": "pinned",
     "required_adjudicator_surfaces": [
+      "rtl_boundary_sweep_enumeration",
       "rtl_boundary_selector_response",
       "rtl_boundary_experiment_contract",
       "rtl_boundary_evidence_bundle",
+      "rtl_boundary_ground_truth",
+      "rtl_boundary_analysis",
+      "rtl_boundary_policy_trial",
+      "rtl_boundary_policy_analysis",
       "rtl_boundary_adjudication",
+      "rtl_boundary_plot_payload",
+      "rtl_boundary_report_bundle",
+      "rtl_boundary_report_validation",
       "rtl_boundary_pipeline_result"
     ]
   },
