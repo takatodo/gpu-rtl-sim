@@ -58,6 +58,10 @@ entrypoint for CI or an external runner: if
 admitted directory, then validates the pinned profile. The optional
 `TLUL10818_BOUNDARY_PROFILE_ARTIFACT_DIR` environment variable selects the
 destination/validation directory.
+Use `src/tools/check_tlul10818_boundary_closure.py` for the final closure gate.
+It validates every admitted profile and returns `status=pass` only when at
+least one valid profile records `runtime_authority.external_closure=true`.
+The current local smoke profile therefore makes this gate fail intentionally.
 
 `src/tools/tlul10818_gpu_schedule.py` is the runner-facing Module for that
 surface. Its Interface is:

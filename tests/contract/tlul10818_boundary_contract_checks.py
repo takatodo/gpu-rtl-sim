@@ -13,6 +13,7 @@ from pathlib import Path
 from tests.contract.tlul10818_boundary_fixtures import (
     ADMISSION_MANIFEST_SCHEMA,
     CONTRACT,
+    CLOSURE_CHECK,
     DOC,
     GOLDEN_SWEEP_SHA256,
     GPU_TB,
@@ -66,6 +67,7 @@ from admit_tlul10818_boundary_observations import (  # noqa: E402
     main as admit_boundary_observations_main,
 )
 from validate_tlul10818_boundary_profile import validate_profile  # noqa: E402
+from check_tlul10818_boundary_closure import check_closure  # noqa: E402
 from materialize_tlul10818_boundary_profile import materialize_profile  # noqa: E402
 
 
@@ -320,6 +322,29 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                     artifact_dir=artifact_dir,
                 )
 
+    def test_boundary_closure_requires_external_authority_profile(self) -> None:
+        profile = load_contract()["admitted_benchmark_profiles"][0]
+        artifact_dir = REPO_ROOT / profile["artifact_dir"]
+        if not artifact_dir.is_dir():
+            return
+        result = check_closure(config_path=CONTRACT)
+        self.assertEqual(result["status"], "fail")
+        self.assertEqual(result["reason"], "no_valid_external_closure_profile")
+        self.assertEqual(result["checked_profiles"][0]["profile_id"], profile["profile_id"])
+        self.assertIs(
+            result["checked_profiles"][0]["runtime_authority"]["external_closure"],
+            False,
+        )
+        completed = subprocess.run(
+            [sys.executable, CLOSURE_CHECK.as_posix()],
+            cwd=REPO_ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(completed.returncode, 1)
+        self.assertIn("no_valid_external_closure_profile", completed.stdout)
+
     def test_profile_entrypoint_materializes_and_validates_admitted_artifacts(self) -> None:
         profile = load_contract()["admitted_benchmark_profiles"][0]
         source = REPO_ROOT / "artifacts/tlul10818_boundary_admitted_codex_20260814_222737"
@@ -533,6 +558,21 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             entrypoint_surface["source_module_sha256"],
             hashlib.sha256(entrypoint_source.read_bytes()).hexdigest(),
+        )
+        closure_surface = config["profile_closure_check_surface"]
+        closure_source = REPO_ROOT / closure_surface["source_module"]
+        self.assertEqual(
+            closure_surface["surface"],
+            "tlul10818_boundary_profile_closure_check",
+        )
+        self.assertEqual(
+            closure_surface["interface"],
+            "check_closure",
+        )
+        self.assertEqual(closure_source, CLOSURE_CHECK)
+        self.assertEqual(
+            closure_surface["source_module_sha256"],
+            hashlib.sha256(closure_source.read_bytes()).hexdigest(),
         )
         timing_surface = config["timing_template_surface"]
         timing_source = REPO_ROOT / timing_surface["source_module"]
