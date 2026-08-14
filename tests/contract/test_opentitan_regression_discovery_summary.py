@@ -26,6 +26,7 @@ class OpenTitanRegressionDiscoverySummaryContractTest(unittest.TestCase):
             self.assertTrue(row["minimal_oracle_violation_seeds"])
             self.assertTrue(row["minimal_cpu_seed_reproduced"])
             self.assertTrue(row["cpu_gpu_semantic_match"])
+            self.assertTrue(row["one_eval_pass"])
             self.assertTrue(row["short_temporal_or_resident_batch_evidence"])
             self.assertTrue(row["corpus_files_exist"])
             self.assertGreater(row["new_coverage_seed_count"], 0)

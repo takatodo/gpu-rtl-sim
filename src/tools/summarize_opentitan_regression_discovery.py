@@ -48,7 +48,7 @@ def _revision(report: dict[str, object], label: str) -> dict[str, object]:
 
 
 def _action_violation(action: dict[str, object]) -> bool:
-    observed = action["gpu"]
+    observed = action.get("gpu", {})
     for key in ("oracle_violation", "protocol_violation", "early_sha3_process"):
         if key in observed:
             return bool(observed[key])
@@ -56,7 +56,20 @@ def _action_violation(action: dict[str, object]) -> bool:
 
 
 def _cpu_gpu_actions_match(revision: dict[str, object]) -> bool:
-    return all(action["status"] == "pass" and action["cpu"] == action["gpu"] for action in revision["actions"])
+    actions = revision.get("actions")
+    if not isinstance(actions, list) or not actions:
+        return False
+    return all(action.get("status") == "pass" and action.get("cpu") == action.get("gpu") for action in actions)
+
+
+def _cpu_gpu_one_eval_pass(revision: dict[str, object]) -> bool:
+    actions = revision.get("actions")
+    if not isinstance(actions, list) or not actions:
+        return False
+    return all(
+        isinstance(action.get("one_eval"), dict) and action["one_eval"].get("status") == "pass"
+        for action in actions
+    )
 
 
 def _corpus_files_exist(corpus_dir: Path) -> bool:
@@ -81,9 +94,12 @@ def _minimal_violation_seeds(violation_corpus: dict[str, object]) -> list[str]:
 
 
 def _temporal_evidence(revision: dict[str, object]) -> dict[str, object]:
+    actions = revision.get("actions")
+    if not isinstance(actions, list):
+        actions = []
     drive_cycles = [
         int(action["drive_cycles"])
-        for action in revision["actions"]
+        for action in actions
         if "drive_cycles" in action
     ]
     resident_batch = revision.get("gpu_resident_batch", {})
@@ -128,8 +144,10 @@ def _target_summary(root: Path, target: dict[str, str]) -> dict[str, object]:
     fixed = _revision(equivalence, "fixed")
     identities = campaign["identities"]
     budget = campaign["exploration_budget"]
-    bad_violations = [action["action"] for action in bad["actions"] if _action_violation(action)]
-    fixed_violations = [action["action"] for action in fixed["actions"] if _action_violation(action)]
+    bad_actions = bad.get("actions", [])
+    fixed_actions = fixed.get("actions", [])
+    bad_violations = [action.get("action") for action in bad_actions if _action_violation(action)]
+    fixed_violations = [action.get("action") for action in fixed_actions if _action_violation(action)]
     minimal_violation_seeds = _minimal_violation_seeds(violation_corpus)
     temporal_evidence = _temporal_evidence(bad)
     graph_path = root / target["graph"]
@@ -151,6 +169,7 @@ def _target_summary(root: Path, target: dict[str, str]) -> dict[str, object]:
         "minimal_oracle_violation_seeds": minimal_violation_seeds,
         "minimal_cpu_seed_reproduced": cpu["status"] == "pass" and bool(minimal_violation_seeds),
         "cpu_gpu_semantic_match": _cpu_gpu_actions_match(bad) and _cpu_gpu_actions_match(fixed),
+        "one_eval_pass": _cpu_gpu_one_eval_pass(bad) and _cpu_gpu_one_eval_pass(fixed),
         "temporal_evidence": temporal_evidence,
         "short_temporal_or_resident_batch_evidence": _has_temporal_evidence(temporal_evidence),
         "corpus_files_exist": _corpus_files_exist(corpus_dir),
@@ -175,6 +194,7 @@ def _target_passed(row: dict[str, object]) -> bool:
         and not row["fixed_oracle_violation_actions"]
         and row["minimal_cpu_seed_reproduced"]
         and row["cpu_gpu_semantic_match"]
+        and row["one_eval_pass"]
         and row["short_temporal_or_resident_batch_evidence"]
         and row["corpus_files_exist"]
         and row["new_coverage_seed_count"] > 0

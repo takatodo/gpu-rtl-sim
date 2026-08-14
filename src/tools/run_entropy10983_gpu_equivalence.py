@@ -15,6 +15,7 @@ from pathlib import Path
 from compare_vl_hybrid_root_layout import probe_root_layout
 from entropy10983_gpu_schedule import ACTION_DOMAIN, patch_script
 from run_entropy10983_cpu_regression import PRIM_ALIAS, REPO_ROOT, RTL_RELATIVE_PATHS
+from run_vl_hybrid_state_sanitize import _prepare_sanitized_init_state
 
 
 TOP = "entropy_src_main_sm_10983_gpu_tb"
@@ -86,8 +87,45 @@ def _parse_cpu(stdout: str) -> dict[str, int]:
     }
 
 
-def _cpu_observables(binary: Path, state_path: Path) -> dict[str, int]:
-    completed = subprocess.run([str(binary), "--dump-state", str(state_path)], text=True, capture_output=True)
+def _last_clk(script: str, offsets: dict[str, int]) -> int:
+    last = script.strip().splitlines()[-1]
+    search_prefix = f"{offsets['clk_i']}:"
+    for token in reversed(last.split()):
+        if token.startswith(search_prefix):
+            return int(token.split(":", 1)[1], 0)
+    raise ValueError("clock token missing from action patch script")
+
+
+def _one_eval_script(offsets: dict[str, int], *, final_clk: int) -> str:
+    return f"{offsets['clk_i']}:{1 - final_clk}\n"
+
+
+def _cpu_observables(
+    binary: Path,
+    state_path: Path,
+    *,
+    cpu_mdir: Path,
+    checkpoint: Path | None = None,
+) -> dict[str, int]:
+    sanitized_checkpoint: Path | None = None
+    if checkpoint is not None:
+        prepared = _prepare_sanitized_init_state(mdir=cpu_mdir, init_state=checkpoint)
+        if prepared is not None:
+            sanitized_checkpoint, _ = prepared
+            checkpoint = sanitized_checkpoint
+        command = [
+            str(binary),
+            "--checkpoint",
+            str(checkpoint),
+            "--one-eval",
+            "--dump-state",
+            str(state_path),
+        ]
+    else:
+        command = [str(binary), "--dump-state", str(state_path)]
+    completed = subprocess.run(command, text=True, capture_output=True)
+    if sanitized_checkpoint is not None:
+        sanitized_checkpoint.unlink(missing_ok=True)
     if completed.returncode:
         raise RuntimeError(f"CPU action failed: {completed.stderr}\n{completed.stdout}")
     return _parse_cpu(completed.stdout)
@@ -131,11 +169,16 @@ def _revision(
         return {"label": label, "status": "fail", "gpu_build": build.stderr.splitlines()[-20:]}
     try:
         offsets = _layout_offsets(gpu_mdir)
-        cpu = _cpu_observables(cpu_mdir / f"V{TOP}", revision_out / "health_tests_before_fw_sha3_start.cpu.bin")
+        cpu = _cpu_observables(
+            cpu_mdir / f"V{TOP}",
+            revision_out / "health_tests_before_fw_sha3_start.cpu.bin",
+            cpu_mdir=cpu_mdir,
+        )
     except RuntimeError as exc:
         return {"label": label, "status": "fail", "error": str(exc)}
+    action_script = patch_script(offsets, drive_cycles=cpu["drive_cycles"])
     script = revision_out / "health_tests_before_fw_sha3_start.patch"
-    script.write_text(patch_script(offsets, drive_cycles=cpu["drive_cycles"]), encoding="utf-8")
+    script.write_text(action_script, encoding="utf-8")
     gpu_state = revision_out / "health_tests_before_fw_sha3_start.gpu.bin"
     gpu = _run([
         sys.executable, str(HYBRID_RUNNER), "--mdir", str(gpu_mdir), "--nstates", "1",
@@ -145,6 +188,29 @@ def _revision(
     cpu_semantic = {key: cpu[key] for key in OBSERVABLE_KEYS}
     matches = observed == cpu_semantic
     oracle_ok = cpu["early_sha3_process"] == expected_violation and cpu["fw_start"] == 0 and cpu["main_sm_err"] == 0
+    one_eval_script = revision_out / "health_tests_before_fw_sha3_start.one_eval.patch"
+    one_eval_script.write_text(
+        _one_eval_script(offsets, final_clk=_last_clk(action_script, offsets)),
+        encoding="utf-8",
+    )
+    one_eval_cpu_state = revision_out / "health_tests_before_fw_sha3_start.one_eval.cpu.bin"
+    one_eval_gpu_state = revision_out / "health_tests_before_fw_sha3_start.one_eval.gpu.bin"
+    checkpoint_state = revision_out / "health_tests_before_fw_sha3_start.cpu.bin"
+    one_eval_cpu = _cpu_observables(
+        cpu_mdir / f"V{TOP}",
+        state_path=one_eval_cpu_state,
+        cpu_mdir=cpu_mdir,
+        checkpoint=checkpoint_state,
+    )
+    one_eval_gpu = _run([
+        sys.executable, str(HYBRID_RUNNER), "--mdir", str(gpu_mdir), "--nstates", "1",
+        "--init-state", str(checkpoint_state), "--sanitize-host-only-internals",
+        "--patch-script", str(one_eval_script),
+        "--dump-state", str(one_eval_gpu_state),
+    ], env=env)
+    one_eval_observed = _gpu_observables(one_eval_gpu_state, offsets) if one_eval_gpu.returncode == 0 and one_eval_gpu_state.is_file() else None
+    one_eval_semantic = {key: one_eval_cpu[key] for key in OBSERVABLE_KEYS}
+    one_eval_matches = one_eval_observed == one_eval_semantic
     meta_path = gpu_mdir / "vl_batch_gpu.meta.json"
     return {
         "label": label,
@@ -154,14 +220,22 @@ def _revision(
             "action": ACTION_DOMAIN[0],
             "cpu": cpu_semantic,
             "gpu": observed,
+            "one_eval": {
+                "status": "pass" if one_eval_matches else "fail",
+                "cpu": one_eval_cpu,
+                "gpu": one_eval_observed,
+                "checkpoint": str(checkpoint_state),
+                "gpu_returncode": one_eval_gpu.returncode,
+                "gpu_stderr_tail": one_eval_gpu.stderr.splitlines()[-10:],
+            },
             "drive_cycles": cpu["drive_cycles"],
             "gpu_returncode": gpu.returncode,
             "gpu_stderr_tail": gpu.stderr.splitlines()[-10:],
-            "status": "pass" if matches and oracle_ok else "fail",
+            "status": "pass" if matches and oracle_ok and one_eval_matches else "fail",
         }],
         "offsets": offsets,
         "gpu_manifest_sha256": _sha256(meta_path) if meta_path.is_file() else None,
-        "status": "pass" if matches and oracle_ok else "fail",
+        "status": "pass" if matches and oracle_ok and one_eval_matches else "fail",
     }
 
 
