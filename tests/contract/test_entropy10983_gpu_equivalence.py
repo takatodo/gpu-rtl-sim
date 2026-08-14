@@ -10,6 +10,7 @@ sys.path.insert(0, str(REPO_ROOT / "src" / "tools"))
 
 from entropy10983_gpu_schedule import ACTION_DOMAIN, patch_script  # noqa: E402
 from run_entropy10983_gpu_equivalence import GPU_TB, OBSERVABLES, _parse_cpu  # noqa: E402
+from summarize_entropy10983_campaign import _metrics  # noqa: E402
 
 
 class Entropy10983GpuEquivalenceContractTest(unittest.TestCase):
@@ -34,6 +35,14 @@ class Entropy10983GpuEquivalenceContractTest(unittest.TestCase):
         self.assertEqual(result["early_sha3_process"], 1)
         self.assertEqual(result["fw_start"], 0)
         self.assertEqual(result["drive_cycles"], 12)
+
+    def test_campaign_metrics_record_degenerate_one_action_domain(self) -> None:
+        action = ACTION_DOMAIN[0]
+        record = {"gpu": {"early_sha3_process": 1, "action_coverage": 1}}
+        metrics = _metrics(action, record)
+        self.assertEqual(metrics["campaign_count"], 1)
+        self.assertEqual(metrics["time_to_first_violation"]["max"], 1)
+        self.assertEqual(metrics["time_to_first_violation"]["long_tail_rate_after_episode_1"], 0.0)
 
 
 if __name__ == "__main__":

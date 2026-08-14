@@ -80,8 +80,8 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 ## Current Frontier
 
 The current work is OpenTitan temporal protocol GPU resident
-regression-discovery. TL-UL #10818 is the first seed and EDN #23526 establishes
-the second IP.
+regression-discovery. TL-UL #10818, EDN #23526, and entropy_src #10983
+establish the current three-issue seed set.
 
 Current priority:
 
@@ -89,11 +89,11 @@ Current priority:
 
 Next concrete action:
 
-`add_entropy10983_corpus_and_action_domain_summary`
+`review_three_issue_seed_set_and_select_next_expansion`
 
 Current source artifact:
 
-`artifacts/entropy10983_gpu_equivalence/entropy10983_gpu_equivalence.json`
+`artifacts/entropy10983_campaign/entropy10983_campaign_summary.json`
 
 Historical FC-069 update: Stage118/119/120/121/122/123/124 gateGPT narrowing remains historical evidence for the previous frontier. It is not the active OpenTitan regression-discovery next action.
 

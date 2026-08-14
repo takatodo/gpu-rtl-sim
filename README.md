@@ -158,7 +158,20 @@ python3 src/tools/run_entropy10983_gpu_equivalence.py \
   --out artifacts/entropy10983_gpu_equivalence
 ```
 
-Corpus generation is the next gate for this third known issue.
+Summarize the one-action minimal trigger corpus:
+
+```bash
+python3 src/tools/summarize_entropy10983_campaign.py \
+  --equivalence-report artifacts/entropy10983_gpu_equivalence/entropy10983_gpu_equivalence.json \
+  --bad-checkout /path/to/opentitan-before-11003 \
+  --fixed-checkout /path/to/opentitan-with-11003 \
+  --out artifacts/entropy10983_campaign
+```
+
+The summary emits `new_coverage_seeds`, `oracle_violation_seeds`, and
+`known_regression_seeds` separately.  The entropy_src #10983 domain is a
+one-action minimal trigger, so random and stratified policies are identical
+for this target; it is corpus evidence, not policy, bandit, or PPO evidence.
 
 ## Goal
 
@@ -183,10 +196,10 @@ This does not claim arbitrary RTL support, arbitrary filelist inference, broad n
 Current pointer, mirrored from `config/selection.json`:
 
 - `current_priority`: `opentitan_temporal_protocol_gpu_resident_regression_discovery`
-- `current_next_action`: `add_entropy10983_corpus_and_action_domain_summary`
-- `current_priority_source_artifact`: `artifacts/entropy10983_gpu_equivalence/entropy10983_gpu_equivalence.json`
+- `current_next_action`: `review_three_issue_seed_set_and_select_next_expansion`
+- `current_priority_source_artifact`: `artifacts/entropy10983_campaign/entropy10983_campaign_summary.json`
 
-Latest OpenTitan regression-discovery update: TL-UL #10818 and EDN #23526 now form the two-IP seed set. Both targets have fixed revisions/checkpoints/action domains/oracles/semantic-manifest identities, bad-revision oracle violations, fixed-revision non-reproduction, CPU/GPU semantic equivalence, separated corpora, and reproducible random-vs-stratified summaries.
+Latest OpenTitan regression-discovery update: TL-UL #10818, EDN #23526, and entropy_src #10983 now form the three-issue seed set. The targets have fixed revisions/checkpoints/action domains/oracles/semantic-manifest identities, bad-revision oracle violations, fixed-revision non-reproduction, CPU/GPU semantic equivalence, separated corpora, and reproducible random-vs-stratified summaries. entropy_src #10983 is a one-action minimal trigger, so its random-vs-stratified result is intentionally identical.
 
 Historical FC-069 update: Stage118 block-source `1760` is clean/raw-clean through candidate `2021`. Extended Stage119 maps dirty `block_source_id=1760`, `source_id=2` to `compact.cfg_clone.entry_phi.producer_selector.counters3969` with `skipped_count=1536`. This remains historical context for the old gateGPT frontier, not the current OpenTitan regression-discovery pointer.
 
