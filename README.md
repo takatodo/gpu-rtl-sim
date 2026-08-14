@@ -71,6 +71,46 @@ working copy used during development is `/tmp/gpu-tlul10818-regression`, rather
 than the home directory.  It must be pushed or checked out there before a
 home-directory `find .` can discover it.
 
+## OpenTitan EDN regression tracer
+
+`examples/edn23526/edn_csrng_23526_tb.sv` is a standalone CPU reproducer for
+[OpenTitan issue #23526](https://github.com/lowRISC/opentitan/issues/23526):
+when EDN has asserted `csrng_req_valid`, an error ACK while
+`csrng_req_ready` is low must not drop valid before the ready handshake.  The
+direct Verilator build uses `examples/edn23526/prim_generic_aliases.sv` to map
+OpenTitan abstract primitive names to the generic primitive implementations
+that FuseSoC/primgen normally select.
+
+Run it against a checkout before the fix and one including
+[PR #23607](https://github.com/lowRISC/opentitan/pull/23607):
+
+```bash
+python3 src/tools/run_edn23526_cpu_regression.py \
+  --verilator /path/to/verilator \
+  --bad /path/to/opentitan-before-23607 \
+  --fixed /path/to/opentitan-with-23607 \
+  --out artifacts/edn23526_cpu
+```
+
+The expected CPU oracle split is `protocol_violation=1` for the bad revision
+and `protocol_violation=0` with `valid_after_error=1` for the fixed revision.
+The device-clean GPU gate uses `examples/edn23526/edn_csrng_23526_gpu_tb.sv`.
+It drives the same temporal action with a resident patch schedule and compares
+only `done`, `protocol_violation`, `valid_after_error`, valid-observed, and the
+action coverage bit.
+
+```bash
+python3 src/tools/run_edn23526_gpu_equivalence.py \
+  --verilator /path/to/verilator \
+  --verilator-root /path/to/verilator-source-or-install-root \
+  --bad /path/to/opentitan-before-23607 \
+  --fixed /path/to/opentitan-with-23607 \
+  --out artifacts/edn23526_gpu_equivalence
+```
+
+This is the second-IP regression entry point.  Exploration corpus generation
+remains a later gate.
+
 ## Goal
 
 This repository is an experimental GPU sidecar runtime for RTL compiler frontends. Verilator is the current compatibility frontend because its generated C++ build path is the shortest route to a usable sidecar; CIRCT is a planned frontend target through the same sidecar contract idea.
