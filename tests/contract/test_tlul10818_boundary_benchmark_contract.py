@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import itertools
 import json
+import os
 import re
+import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -16,6 +19,7 @@ from tlul10818_gpu_schedule import ACTION_DOMAIN  # noqa: E402
 
 CONTRACT = REPO_ROOT / "config" / "tlul10818_boundary_benchmark.json"
 DOC = REPO_ROOT / "docs" / "tlul10818_boundary_benchmark.md"
+SCRIPT = REPO_ROOT / "scripts" / "adjudicate_tlul10818_boundary_benchmark.sh"
 HEX40 = re.compile(r"\A[0-9a-f]{40}\Z")
 
 
@@ -81,6 +85,49 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         doc_text = DOC.read_text(encoding="utf-8")
         self.assertIn("not contain runtime evidence", doc_text)
         self.assertIn("Codex must not", doc_text)
+        self.assertIn(SCRIPT.relative_to(REPO_ROOT).as_posix(), doc_text)
+
+    def test_adjudication_script_is_static_json_only(self) -> None:
+        self.assertTrue(SCRIPT.is_file())
+        self.assertTrue(os.access(SCRIPT, os.X_OK))
+        text = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn("adjudicate-boundary-benchmark", text)
+        self.assertNotIn("run_tlul10818", text)
+        self.assertNotIn("--bad", text)
+        self.assertNotIn("--fixed", text)
+        self.assertNotIn("opentitan-", text)
+
+    def test_adjudication_script_delegates_to_configurable_adjudicator(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            capture = directory / "argv.txt"
+            fake = directory / "fake-sidecar"
+            fake.write_text(
+                "#!/usr/bin/env bash\nprintf '%s\\n' \"$@\" > \"${CAPTURE}\"\n",
+                encoding="utf-8",
+            )
+            fake.chmod(0o755)
+            env = os.environ.copy()
+            env.update(
+                {
+                    "BOUNDARY_ADJUDICATOR_BIN": fake.as_posix(),
+                    "CAPTURE": capture.as_posix(),
+                }
+            )
+            completed = subprocess.run(
+                [SCRIPT.as_posix()],
+                cwd=REPO_ROOT,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            argv = capture.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(argv[0], "adjudicate-boundary-benchmark")
+        self.assertIn("--experiment-contract", argv)
+        self.assertIn("--evidence", argv)
+        self.assertIn("--output", argv)
 
 
 if __name__ == "__main__":

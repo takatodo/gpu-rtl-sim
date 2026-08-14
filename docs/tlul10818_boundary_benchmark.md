@@ -17,6 +17,11 @@ CI runner to generate a complete `rtl_boundary_experiment_contract` and
 `rtl_boundary_evidence_bundle`, then admit them through the
 `rtl_boundary_pipeline_result` surface from `verilator-model-sidecar`.
 
+The repository-owned admission workflow is
+`scripts/adjudicate_tlul10818_boundary_benchmark.sh`. It consumes only existing
+JSON artifacts under `artifacts/tlul10818_boundary_benchmark/` and delegates the
+static checks to `verilator-model-sidecar adjudicate-boundary-benchmark`.
+
 Codex may review and adjudicate already-generated JSON evidence. Codex must not
 compile or run the DUT, search or replay failure-triggering sequences, or emit
 runner commands for reproducing the known failing condition.
