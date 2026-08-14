@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "surface": "tlul10818_boundary_benchmark_target",
+  "status": "pending_external_full_grid_evidence",
+  "target": {
+    "target_id": "tlul10818",
+    "issue": "https://github.com/lowRISC/opentitan/issues/10818",
+    "ip": "tlul",
+    "checkpoint_identity": "zero_initialized_device_clean_tlul10818_gpu_tb_v1",
+    "oracle_identity": "tlul_adapter_sram.error_response_data_when_error.v1",
+    "bad_revision": "82b618f23564cde97fb21271d7d3cfdcb95826d2",
+    "fixed_revision": "ecc4a1535e320e1b912915ed6fc7ae19a59ece3b"
+  },
+  "authority": {
+    "codex_runtime_execution": false,
+    "runtime_owner": "external_operator_or_ci",
+    "adjudicator_repo": "https://github.com/takatodo/verilator-model-sidecar.git",
+    "adjudicator_commit": "8668e7576b064bbaad9a97eed34a133c9671db16",
+    "required_adjudicator_surfaces": [
+      "rtl_boundary_experiment_contract",
+      "rtl_boundary_evidence_bundle",
+      "rtl_boundary_adjudication",
+      "rtl_boundary_pipeline_result"
+    ]
+  },
+  "current_wrapper_sweep_space": {
+    "schema_version": 1,
+    "surface": "rtl_boundary_sweep_space",
+    "axes": [
+      {
+        "name": "request_integrity",
+        "kind": "categorical",
+        "values": [
+          "valid",
+          "malformed"
+        ],
+        "adjacent_value_pairs": [
+          [
+            "valid",
+            "malformed"
+          ]
+        ]
+      },
+      {
+        "name": "d_response_observation",
+        "kind": "categorical",
+        "values": [
+          "immediate",
+          "backpressured"
+        ],
+        "adjacent_value_pairs": [
+          [
+            "immediate",
+            "backpressured"
+          ]
+        ]
+      }
+    ]
+  },
+  "current_wrapper_action_mapping": [
+    {
+      "action": "valid_d_immediate",
+      "parameters": {
+        "request_integrity": "valid",
+        "d_response_observation": "immediate"
+      }
+    },
+    {
+      "action": "valid_d_backpressured",
+      "parameters": {
+        "request_integrity": "valid",
+        "d_response_observation": "backpressured"
+      }
+    },
+    {
+      "action": "malformed_d_immediate",
+      "parameters": {
+        "request_integrity": "malformed",
+        "d_response_observation": "immediate"
+      }
+    },
+    {
+      "action": "malformed_d_backpressured",
+      "parameters": {
+        "request_integrity": "malformed",
+        "d_response_observation": "backpressured"
+      }
+    }
+  ],
+  "completion_requirements": {
+    "current_wrapper_is_not_full_boundary_benchmark": true,
+    "external_runner_must_generate_complete_ground_truth": true,
+    "external_runner_must_record_cpu_gpu_semantic_equality": true,
+    "external_runner_must_record_fixed_revision_disappearance": true,
+    "external_runner_must_record_raw_trial_executions_and_launches": true,
+    "no_unknown_bug_discovery_claim": true,
+    "no_ppo_or_rl_superiority_claim": true,
+    "no_gpu_selector_algorithm_superiority_claim": true
+  },
+  "expected_artifacts": {
+    "experiment_contract": "artifacts/tlul10818_boundary_benchmark/experiment_contract.json",
+    "evidence_bundle": "artifacts/tlul10818_boundary_benchmark/evidence_bundle.json",
+    "pipeline_result": "artifacts/tlul10818_boundary_benchmark/pipeline_result.json",
+    "graph_svg": "artifacts/tlul10818_boundary_benchmark/pipeline_result-<graph-sha256>.svg",
+    "markdown_report": "artifacts/tlul10818_boundary_benchmark/pipeline_result-<markdown-sha256>.md"
+  }
+}
