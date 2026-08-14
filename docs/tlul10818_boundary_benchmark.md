@@ -40,6 +40,10 @@ points, four pass points, four boundary edges, one failure component, one
 minimal failing point, and fixed has zero failing points. Larger scaling
 profiles must be admitted as additional profiles instead of changing this
 profile's identity.
+The profile records `runtime_authority.external_closure=false` and pins runner
+identity `local-tlul10818-boundary-runner:codex-v3`; the profile validator
+checks that value against `runner_observations.json`. It is therefore admitted
+as a local smoke profile, not as final external CI/operator closure evidence.
 Use `src/tools/validate_tlul10818_boundary_profile.py --profile-id
 tlul10818_2x2_ordered_timing_full_enumeration_v1` to re-check the pinned
 artifact hashes, admission manifest, pipeline status, comparison IDs, and

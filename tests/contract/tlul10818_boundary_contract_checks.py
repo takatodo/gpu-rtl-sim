@@ -187,6 +187,14 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         )
         self.assertEqual(profile["status"], "admitted_pass")
         self.assertEqual(
+            profile["runtime_authority"],
+            {
+                "authority_kind": "codex_local_smoke",
+                "external_closure": False,
+                "runner_identity": "local-tlul10818-boundary-runner:codex-v3",
+            },
+        )
+        self.assertEqual(
             profile["finite_axis_values"],
             {
                 "backpressure_cycles": [0, 1],
@@ -226,6 +234,13 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
             pipeline = json.loads(
                 (artifact_dir / "pipeline_result.json").read_text(encoding="utf-8")
             )
+            runner_observations = json.loads(
+                (artifact_dir / "runner_observations.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                runner_observations["runner"]["identity"],
+                profile["runtime_authority"]["runner_identity"],
+            )
             analysis = pipeline["adjudication"]["ground_truth_analysis"]
             bad = analysis["revisions"]["bad"]
             fixed = analysis["revisions"]["fixed"]
@@ -254,8 +269,8 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 validate_profile(
                     config_path=CONTRACT,
                     profile_id=profile["profile_id"],
-                )["status"],
-                "pass",
+                )["runtime_authority"],
+                profile["runtime_authority"],
             )
         self.assertIn(profile["profile_id"], DOC.read_text(encoding="utf-8"))
 

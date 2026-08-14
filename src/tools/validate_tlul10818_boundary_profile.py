@@ -105,6 +105,28 @@ def _validate_run_spec(profile: Mapping[str, Any], artifact_dir: Path) -> None:
         raise ValueError("run spec finite_axis_values do not match profile")
 
 
+def _validate_runner_authority(profile: Mapping[str, Any], artifact_dir: Path) -> Mapping[str, Any]:
+    authority = _require_mapping(profile.get("runtime_authority"), "runtime_authority")
+    runner_identity = authority.get("runner_identity")
+    authority_kind = authority.get("authority_kind")
+    external_closure = authority.get("external_closure")
+    if not isinstance(runner_identity, str) or not runner_identity:
+        raise ValueError("runtime_authority runner_identity must be a nonempty string")
+    if not isinstance(authority_kind, str) or not authority_kind:
+        raise ValueError("runtime_authority authority_kind must be a nonempty string")
+    if not isinstance(external_closure, bool):
+        raise ValueError("runtime_authority external_closure must be a boolean")
+    observations = _read_object(
+        artifact_dir / "runner_observations.json", "runner observations"
+    )
+    runner = _require_mapping(observations.get("runner"), "runner observations runner")
+    if runner.get("identity") != runner_identity:
+        raise ValueError("runner identity does not match profile runtime_authority")
+    if runner.get("status") != "pass":
+        raise ValueError("runner observations status must be pass")
+    return authority
+
+
 def _validate_report_artifacts(profile: Mapping[str, Any], artifact_dir: Path, pipeline: Mapping[str, Any]) -> None:
     report_hashes = _require_mapping(profile.get("report_sha256"), "report_sha256")
     for label, artifact_key in (("graph_svg", "graph_artifact"), ("markdown_report", "markdown_artifact")):
@@ -162,6 +184,7 @@ def validate_profile(*, config_path: Path, profile_id: str, artifact_dir: Path |
     _validate_artifact_hashes(profile, root)
     _validate_manifest(profile, root)
     _validate_run_spec(profile, root)
+    runtime_authority = _validate_runner_authority(profile, root)
     pipeline = _read_object(root / "pipeline_result.json", "pipeline result")
     _validate_report_artifacts(profile, root, pipeline)
     _validate_ground_truth(profile, pipeline)
@@ -169,6 +192,7 @@ def validate_profile(*, config_path: Path, profile_id: str, artifact_dir: Path |
         "status": "pass",
         "profile_id": profile_id,
         "artifact_dir": root.as_posix(),
+        "runtime_authority": runtime_authority,
         "point_count": profile["point_count"],
         "ground_truth_summary": profile["ground_truth_summary"],
     }

@@ -197,7 +197,7 @@
   "profile_validator_surface": {
     "surface": "tlul10818_boundary_profile_validator",
     "source_module": "src/tools/validate_tlul10818_boundary_profile.py",
-    "source_module_sha256": "260cb086ba1013ce0a86c6be2f09c5ff42e248de652a98512cc920680d257cc9",
+    "source_module_sha256": "14db571a8c44d9026561ee1021f8994d370c3bf59f9934a0e86a380656823057",
     "interface": "validate_profile"
   },
   "profile_materializer_surface": {
@@ -291,6 +291,11 @@
       "status": "admitted_pass",
       "description": "Minimum admitted full-enumeration profile over the ordered timing axes; useful as the CI/smoke boundary benchmark, not a scaling claim.",
       "experiment_id": "tlul10818-boundary-authorized-codex-v3",
+      "runtime_authority": {
+        "authority_kind": "codex_local_smoke",
+        "external_closure": false,
+        "runner_identity": "local-tlul10818-boundary-runner:codex-v3"
+      },
       "finite_axis_values": {
         "backpressure_cycles": [
           0,
