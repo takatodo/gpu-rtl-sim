@@ -274,6 +274,39 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
             run_result_surface["runner_observations_schema_sha256"],
             hashlib.sha256(RUNNER_OBSERVATIONS_SCHEMA.read_bytes()).hexdigest(),
         )
+        runtime_runner_surface = config["runtime_runner_surface"]
+        runtime_runner_source = REPO_ROOT / runtime_runner_surface["source_module"]
+        self.assertEqual(
+            runtime_runner_surface["surface"],
+            "tlul10818_boundary_runtime_runner",
+        )
+        self.assertEqual(
+            runtime_runner_surface["interface"],
+            "build_runner_observations",
+        )
+        self.assertEqual(
+            runtime_runner_surface["source_module_sha256"],
+            hashlib.sha256(runtime_runner_source.read_bytes()).hexdigest(),
+        )
+        for dependency, digest in runtime_runner_surface[
+            "source_dependency_sha256"
+        ].items():
+            self.assertEqual(
+                digest,
+                hashlib.sha256((REPO_ROOT / dependency).read_bytes()).hexdigest(),
+            )
+        self.assertEqual(
+            REPO_ROOT / runtime_runner_surface["runner_observations_schema"],
+            RUNNER_OBSERVATIONS_SCHEMA,
+        )
+        self.assertEqual(
+            runtime_runner_surface["runner_observations_schema_sha256"],
+            hashlib.sha256(RUNNER_OBSERVATIONS_SCHEMA.read_bytes()).hexdigest(),
+        )
+        self.assertIn(
+            "runtime_runner_surface",
+            DOC.read_text(encoding="utf-8"),
+        )
         admission_surface = config["admission_pipeline_surface"]
         admission_source = REPO_ROOT / admission_surface["source_module"]
         self.assertEqual(admission_surface["interface"], "admit_observations")

@@ -107,6 +107,15 @@ projection values must be integers at the public input boundary, while exact
 projection key equality and target-specific oracle binding are checked later by
 the builder against the Experiment Contract.
 
+`src/tools/run_tlul10818_boundary_observations.py` is the repository-owned
+runtime runner interface for operator/CI use. Given an already materialized
+Experiment Contract plus externally supplied bad/fixed OpenTitan checkouts and
+Verilator paths, it emits the public
+`tlul10818_boundary_runner_observations` JSON consumed by the admission
+pipeline. The tracked target config records this runner and its helper modules
+as `runtime_runner_surface` so evidence can name the source surface that
+generated `runner_observations.json`.
+
 `src/tools/admit_tlul10818_boundary_observations.py` is the JSON-only admission
 pipeline for that handoff. It consumes the target config, run spec, and external
 runner observations, imports the sidecar sweep enumerator and selector Adapter,

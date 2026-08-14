@@ -174,6 +174,18 @@
     "runner_observations_schema": "contracts/tlul10818_boundary_runner_observations.schema.json",
     "runner_observations_schema_sha256": "59690e0d785bc7b2c4d48ac898929730ef28d318511de81e6aded3d04345fe58"
   },
+  "runtime_runner_surface": {
+    "surface": "tlul10818_boundary_runtime_runner",
+    "source_module": "src/tools/run_tlul10818_boundary_observations.py",
+    "source_module_sha256": "f9ccadccbdbe77a197fe0a306fdb185d3282295c15cc217654efb9da0dde8696",
+    "source_dependency_sha256": {
+      "src/tools/tlul10818_boundary_runner_io.py": "934bb67a45a1b4f987dafb6e3f5a983ef99c860d4b330be35f48c2485e27302f",
+      "src/tools/tlul10818_boundary_runner_launches.py": "4d58da684960c6a4568e96510ff489cb520331c1e5f01be592e1b961be7f9727"
+    },
+    "interface": "build_runner_observations",
+    "runner_observations_schema": "contracts/tlul10818_boundary_runner_observations.schema.json",
+    "runner_observations_schema_sha256": "59690e0d785bc7b2c4d48ac898929730ef28d318511de81e6aded3d04345fe58"
+  },
   "admission_pipeline_surface": {
     "surface": "tlul10818_boundary_admission_pipeline",
     "source_module": "src/tools/admit_tlul10818_boundary_observations.py",
