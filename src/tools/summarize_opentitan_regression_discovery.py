@@ -98,6 +98,24 @@ def _has_temporal_evidence(evidence: dict[str, object]) -> bool:
     return bool(evidence["drive_cycles"]) or evidence["resident_batch_status"] == "pass"
 
 
+def _cpu_oracle_split(cpu_report: dict[str, object]) -> bool:
+    if cpu_report["status"] != "pass":
+        return False
+    bad = _revision(cpu_report, "bad")
+    fixed = _revision(cpu_report, "fixed")
+    if "observed_oracle_pass" in bad and "observed_oracle_pass" in fixed:
+        return bad["observed_oracle_pass"] is False and fixed["observed_oracle_pass"] is True
+    bad_expected = bad.get("expected", {})
+    fixed_expected = fixed.get("expected", {})
+    bad_observed = bad.get("observed", {})
+    fixed_observed = fixed.get("observed", {})
+    if any(bad_observed.get(key) != value for key, value in bad_expected.items()):
+        return False
+    if any(fixed_observed.get(key) != value for key, value in fixed_expected.items()):
+        return False
+    return any(bad_expected.get(key) == 1 and fixed_expected.get(key) == 0 for key in bad_expected)
+
+
 def _target_summary(root: Path, target: dict[str, str]) -> dict[str, object]:
     cpu = _load(root / target["cpu"])
     equivalence = _load(root / target["equivalence"])
@@ -120,6 +138,7 @@ def _target_summary(root: Path, target: dict[str, str]) -> dict[str, object]:
         "ip": target["ip"],
         "issue": equivalence["issue"],
         "cpu_regression_status": cpu["status"],
+        "cpu_bad_fixed_oracle_split": _cpu_oracle_split(cpu),
         "gpu_equivalence_status": equivalence["status"],
         "bad_revision": identities["bad_revision"],
         "fixed_revision": identities["fixed_revision"],
@@ -150,6 +169,7 @@ def _target_summary(root: Path, target: dict[str, str]) -> dict[str, object]:
 def _target_passed(row: dict[str, object]) -> bool:
     return (
         row["cpu_regression_status"] == "pass"
+        and row["cpu_bad_fixed_oracle_split"]
         and row["gpu_equivalence_status"] == "pass"
         and bool(row["bad_oracle_violation_actions"])
         and not row["fixed_oracle_violation_actions"]

@@ -19,6 +19,7 @@ class OpenTitanRegressionDiscoverySummaryContractTest(unittest.TestCase):
         self.assertEqual(summary["target_count"], 3)
         for row in summary["targets"]:
             self.assertEqual(row["cpu_regression_status"], "pass")
+            self.assertTrue(row["cpu_bad_fixed_oracle_split"])
             self.assertEqual(row["gpu_equivalence_status"], "pass")
             self.assertTrue(row["bad_oracle_violation_actions"])
             self.assertFalse(row["fixed_oracle_violation_actions"])
