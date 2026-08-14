@@ -266,5 +266,56 @@
     "graph_svg": "artifacts/tlul10818_boundary_benchmark/pipeline_result-<graph-sha256>.svg",
     "markdown_report": "artifacts/tlul10818_boundary_benchmark/pipeline_result-<markdown-sha256>.md",
     "admission_manifest": "artifacts/tlul10818_boundary_benchmark/admission_manifest.json"
-  }
+  },
+  "admitted_benchmark_profiles": [
+    {
+      "profile_id": "tlul10818_2x2_ordered_timing_full_enumeration_v1",
+      "status": "admitted_pass",
+      "description": "Minimum admitted full-enumeration profile over the ordered timing axes; useful as the CI/smoke boundary benchmark, not a scaling claim.",
+      "experiment_id": "tlul10818-boundary-authorized-codex-v3",
+      "finite_axis_values": {
+        "backpressure_cycles": [
+          0,
+          1
+        ],
+        "response_delay_cycles": [
+          0,
+          1
+        ]
+      },
+      "point_count": 8,
+      "ground_truth_summary": {
+        "bad_fail_point_count": 4,
+        "bad_pass_point_count": 4,
+        "bad_boundary_edge_count": 4,
+        "bad_failure_component_count": 1,
+        "bad_minimal_failing_point_count": 1,
+        "fixed_fail_point_count": 0,
+        "bad_to_fixed_disappeared_failure_count": 4
+      },
+      "comparison_ids": {
+        "selector": [
+          "selectors-on-gpu"
+        ],
+        "backend": [
+          "random-cpu-gpu"
+        ]
+      },
+      "artifact_dir": "artifacts/tlul10818_boundary_admitted_codex_20260814_222737",
+      "artifact_sha256": {
+        "run_spec.json": "3c35c5c8f74922809def7a893e111adb359ef4e1666d6b8e9a500243f6e5df79",
+        "experiment_contract.json": "9751bbadbcb7c9b2d3b5d3c27bd74609d588690f5c759c6d6c72b85e7cc17114",
+        "sweep_enumeration.json": "d1075e8344a071cf2262f006ed12cc5be559d0897de166f36bf945f773645469",
+        "runner_observations.json": "332b9ba06dc54c2273f38f8449f62c57e85600fda22d1a88a40f7c95c7819255",
+        "run_result.json": "d285b4e2f8853232b5b5cb9fb72c92d68316d0095d8bff22b409647a787d319b",
+        "evidence_bundle.json": "ae65939cb9ab91021800f5aa49a98707ba181eb220f1540dd3b083c65452d7d1",
+        "pipeline_result.json": "3ffe8e932806f57db699cb80f85771787e1226d920029685eb0762f51bf54135",
+        "admission_manifest.json": "ba5ee5f036413c16355a5c196a31bd1ee80346bc527f633aa0351d94012ab15b"
+      },
+      "report_sha256": {
+        "graph_svg": "77ea4829f83c4203345aab4c0d1e3be443d43d8852288ba5ae0df9f296677fab",
+        "markdown_report": "9afca15b00cddb676ad54e8e892518889bc0f4b1f32393fc80aed9f7e11a80ec"
+      }
+    }
+  ]
 }

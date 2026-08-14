@@ -30,9 +30,15 @@ The runner-facing control surface now also exposes ordered timing controls:
 - `response_delay_cycles`: the number of `WaitD` cycles before the SRAM
   `rvalid` response is made visible for valid requests
 
-The exact finite values for those ordered axes are not declared here. They
-belong in the external `rtl_boundary_experiment_contract`, where the full grid
-identity can be hashed and adjudicated.
+The target config records admitted benchmark profiles separately from the
+runner-control surface. The first admitted profile,
+`tlul10818_2x2_ordered_timing_full_enumeration_v1`, fixes
+`backpressure_cycles=[0,1]` and `response_delay_cycles=[0,1]`. That profile is
+a complete eight-point full enumeration for CI/smoke use: bad has four failing
+points, four pass points, four boundary edges, one failure component, one
+minimal failing point, and fixed has zero failing points. Larger scaling
+profiles must be admitted as additional profiles instead of changing this
+profile's identity.
 
 `src/tools/tlul10818_gpu_schedule.py` is the runner-facing Module for that
 surface. Its Interface is:

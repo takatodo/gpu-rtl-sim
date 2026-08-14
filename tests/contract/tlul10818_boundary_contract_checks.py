@@ -173,6 +173,78 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
             ("request_integrity", "backpressure_cycles", "response_delay_cycles"),
         )
 
+    def test_admitted_benchmark_profile_pins_full_enumeration_evidence(self) -> None:
+        config = load_contract()
+        profiles = config["admitted_benchmark_profiles"]
+        self.assertEqual(len(profiles), 1)
+        profile = profiles[0]
+        self.assertEqual(
+            profile["profile_id"],
+            "tlul10818_2x2_ordered_timing_full_enumeration_v1",
+        )
+        self.assertEqual(profile["status"], "admitted_pass")
+        self.assertEqual(
+            profile["finite_axis_values"],
+            {
+                "backpressure_cycles": [0, 1],
+                "response_delay_cycles": [0, 1],
+            },
+        )
+        self.assertEqual(profile["point_count"], 8)
+        self.assertEqual(
+            profile["ground_truth_summary"],
+            {
+                "bad_fail_point_count": 4,
+                "bad_pass_point_count": 4,
+                "bad_boundary_edge_count": 4,
+                "bad_failure_component_count": 1,
+                "bad_minimal_failing_point_count": 1,
+                "fixed_fail_point_count": 0,
+                "bad_to_fixed_disappeared_failure_count": 4,
+            },
+        )
+        self.assertEqual(profile["comparison_ids"]["selector"], ["selectors-on-gpu"])
+        self.assertEqual(profile["comparison_ids"]["backend"], ["random-cpu-gpu"])
+        for digest in profile["artifact_sha256"].values():
+            self.assertRegex(digest, r"\A[0-9a-f]{64}\Z")
+        for digest in profile["report_sha256"].values():
+            self.assertRegex(digest, r"\A[0-9a-f]{64}\Z")
+        artifact_dir = REPO_ROOT / profile["artifact_dir"]
+        if artifact_dir.is_dir():
+            for name, digest in profile["artifact_sha256"].items():
+                self.assertEqual(
+                    hashlib.sha256((artifact_dir / name).read_bytes()).hexdigest(),
+                    digest,
+                )
+            pipeline = json.loads(
+                (artifact_dir / "pipeline_result.json").read_text(encoding="utf-8")
+            )
+            analysis = pipeline["adjudication"]["ground_truth_analysis"]
+            bad = analysis["revisions"]["bad"]
+            fixed = analysis["revisions"]["fixed"]
+            self.assertEqual(analysis["point_count"], profile["point_count"])
+            self.assertEqual(
+                bad["fail_point_count"],
+                profile["ground_truth_summary"]["bad_fail_point_count"],
+            )
+            self.assertEqual(
+                bad["boundary_edge_count"],
+                profile["ground_truth_summary"]["bad_boundary_edge_count"],
+            )
+            self.assertEqual(
+                bad["failure_component_count"],
+                profile["ground_truth_summary"]["bad_failure_component_count"],
+            )
+            self.assertEqual(
+                len(bad["minimal_failing_points"]["point_ids"]),
+                profile["ground_truth_summary"]["bad_minimal_failing_point_count"],
+            )
+            self.assertEqual(
+                fixed["fail_point_count"],
+                profile["ground_truth_summary"]["fixed_fail_point_count"],
+            )
+        self.assertIn(profile["profile_id"], DOC.read_text(encoding="utf-8"))
+
     def test_semantic_identity_is_pinned_to_wrapper_outputs(self) -> None:
         config = load_contract()
         surface = config["semantic_identity_surface"]
