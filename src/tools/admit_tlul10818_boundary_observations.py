@@ -10,6 +10,7 @@ delegates final adjudication/report generation to ``verilator-model-sidecar``.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import subprocess
 import sys
@@ -26,6 +27,7 @@ DEFAULT_OUT_DIR = Path("artifacts/tlul10818_boundary_benchmark")
 RTL_BOUNDARY_SCHEMA_VERSION = 1
 RTL_BOUNDARY_ADJUDICATION_SURFACE = "rtl_boundary_adjudication"
 RTL_BOUNDARY_PIPELINE_RESULT_SURFACE = "rtl_boundary_pipeline_result"
+TLUL10818_BOUNDARY_ADMISSION_MANIFEST_SURFACE = "tlul10818_boundary_admission_manifest"
 
 
 def _load_sidecar_adapters(sidecar_src: Path | None):
@@ -70,6 +72,58 @@ def _fail_pipeline(message: str, *, out_dir: Path, run_spec: Path, runner_observ
     }
     _write_json(output, pipeline)
     return output
+
+
+def _file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _artifact_row(*, role: str, path: Path, out_dir: Path) -> dict[str, str]:
+    return {
+        "role": role,
+        "path": path.relative_to(out_dir).as_posix(),
+        "sha256": _file_sha256(path),
+    }
+
+
+def _write_admission_manifest(*, out_dir: Path, paths: dict[str, str]) -> Path:
+    pipeline_path = Path(paths["pipeline_result"])
+    pipeline = _read_object(pipeline_path, "pipeline result")
+    if pipeline.get("status") != "pass":
+        raise ValueError("admission manifest requires a passing pipeline result")
+    adjudication = pipeline.get("adjudication")
+    if not isinstance(adjudication, dict) or adjudication.get("status") != "pass":
+        raise ValueError("admission manifest requires a passing adjudication")
+    graph = pipeline.get("graph_artifact")
+    markdown = pipeline.get("markdown_artifact")
+    if not isinstance(graph, dict) or not isinstance(markdown, dict):
+        raise ValueError("admission manifest requires graph and markdown artifacts")
+    artifact_paths = {
+        "run_spec": Path(paths["run_spec"]),
+        "runner_observations": Path(paths["runner_observations"]),
+        "sweep_enumeration": Path(paths["sweep_enumeration"]),
+        "semantic_manifests": Path(paths["semantic_manifests"]),
+        "experiment_contract": Path(paths["experiment_contract"]),
+        "run_result": Path(paths["run_result"]),
+        "evidence_bundle": Path(paths["evidence_bundle"]),
+        "pipeline_result": pipeline_path,
+        "graph_svg": out_dir / graph["path"],
+        "markdown_report": out_dir / markdown["path"],
+    }
+    manifest = {
+        "schema_version": RTL_BOUNDARY_SCHEMA_VERSION,
+        "surface": TLUL10818_BOUNDARY_ADMISSION_MANIFEST_SURFACE,
+        "status": "pass",
+        "pipeline_status": "pass",
+        "adjudication_status": "pass",
+        "artifacts": [
+            _artifact_row(role=role, path=artifact_paths[role], out_dir=out_dir)
+            for role in artifact_paths
+        ],
+    }
+    manifest_path = out_dir / "admission_manifest.json"
+    _write_json(manifest_path, manifest)
+    return manifest_path
 
 
 def admit_observations(
@@ -187,6 +241,8 @@ def main(argv: list[str] | None = None) -> int:
             evidence_bundle=Path(outputs["evidence_bundle"]),
             pipeline_result=Path(outputs["pipeline_result"]),
         )
+        manifest = _write_admission_manifest(out_dir=args.out_dir, paths=outputs)
+        outputs["admission_manifest"] = manifest.as_posix()
         print(f"wrote {outputs['pipeline_result']}")
         return 0
     except Exception as error:

@@ -24,6 +24,9 @@ RUNNER_OBSERVATIONS_SCHEMA = (
 RUN_SPEC_SCHEMA = (
     REPO_ROOT / "contracts" / "tlul10818_boundary_run_spec.schema.json"
 )
+ADMISSION_MANIFEST_SCHEMA = (
+    REPO_ROOT / "contracts" / "tlul10818_boundary_admission_manifest.schema.json"
+)
 POINT_RESULT_TEMPLATE_SCHEMA = (
     REPO_ROOT / "contracts" / "tlul10818_boundary_point_result_template.schema.json"
 )

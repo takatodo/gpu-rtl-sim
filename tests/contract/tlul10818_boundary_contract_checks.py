@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 
 from tests.contract.tlul10818_boundary_fixtures import (
+    ADMISSION_MANIFEST_SCHEMA,
     CONTRACT,
     DOC,
     GOLDEN_SWEEP_SHA256,
@@ -279,6 +280,14 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             admission_surface["source_module_sha256"],
             hashlib.sha256(admission_source.read_bytes()).hexdigest(),
+        )
+        self.assertEqual(
+            REPO_ROOT / admission_surface["admission_manifest_schema"],
+            ADMISSION_MANIFEST_SCHEMA,
+        )
+        self.assertEqual(
+            admission_surface["admission_manifest_schema_sha256"],
+            hashlib.sha256(ADMISSION_MANIFEST_SCHEMA.read_bytes()).hexdigest(),
         )
         timing_surface = config["timing_template_surface"]
         timing_source = REPO_ROOT / timing_surface["source_module"]
@@ -625,6 +634,7 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 "pipeline_result",
                 "graph_svg",
                 "markdown_report",
+                "admission_manifest",
             },
         )
         self.assertEqual(len(artifacts), len(set(artifacts.values())))
@@ -1271,6 +1281,27 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
             )
             self.assertIsNotNone(pipeline["graph_artifact"])
             self.assertIsNotNone(pipeline["markdown_artifact"])
+            manifest_path = output_dir / "admission_manifest.json"
+            self.assertTrue(manifest_path.is_file())
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            schema = json.loads(ADMISSION_MANIFEST_SCHEMA.read_text(encoding="utf-8"))
+            self.assertEqual(schema["additionalProperties"], False)
+            self.assertEqual(
+                set(schema["$defs"]["role"]["enum"]),
+                set(load_contract()["expected_artifacts"]) - {"admission_manifest"},
+            )
+            self.assertEqual(manifest["surface"], "tlul10818_boundary_admission_manifest")
+            self.assertEqual(manifest["status"], "pass")
+            rows = {row["role"]: row for row in manifest["artifacts"]}
+            self.assertEqual(set(rows), set(schema["$defs"]["role"]["enum"]))
+            for role, row in rows.items():
+                artifact = output_dir / row["path"]
+                self.assertTrue(artifact.is_file(), role)
+                self.assertEqual(
+                    row["sha256"],
+                    hashlib.sha256(artifact.read_bytes()).hexdigest(),
+                    role,
+                )
 
     def test_boundary_admission_pipeline_replaces_stale_pass_on_input_error(self) -> None:
         sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")

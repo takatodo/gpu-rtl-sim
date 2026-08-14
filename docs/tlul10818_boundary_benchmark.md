@@ -116,9 +116,12 @@ then writes `sweep_enumeration.json`, `semantic_manifests.json`,
 delegating final static adjudication and report/graph generation to
 `verilator-model-sidecar adjudicate-boundary-benchmark`. It is the repository entry point after external
 runtime evidence exists; it is not a DUT runner.
-If admission fails before final adjudication, the script still replaces
-`pipeline_result.json` with a `status=fail` result so stale passing output is
-not left as evidence.
+On a passing admission, it also writes `admission_manifest.json`, whose
+public shape is `contracts/tlul10818_boundary_admission_manifest.schema.json`,
+with SHA-256 rows for the preserved inputs, generated JSON, pipeline result,
+graph, and Markdown report. If admission fails before final adjudication, the
+script still replaces `pipeline_result.json` with a `status=fail` result so
+stale passing output is not left as evidence.
 
 `src/tools/build_tlul10818_boundary_timing_template.py` is the optional
 post-observation checklist for runner timing. Trial scheduling depends on the

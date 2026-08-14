@@ -177,8 +177,10 @@
   "admission_pipeline_surface": {
     "surface": "tlul10818_boundary_admission_pipeline",
     "source_module": "src/tools/admit_tlul10818_boundary_observations.py",
-    "source_module_sha256": "d61893dd9b1331034ba6a7a515a92895535a86f6a1fdce64c3840bf2bfa0c2c9",
-    "interface": "admit_observations"
+    "source_module_sha256": "2f791fc80717f660aae6b40d31d84a2dc72d88352cedf5036024e6d11d22bae8",
+    "interface": "admit_observations",
+    "admission_manifest_schema": "contracts/tlul10818_boundary_admission_manifest.schema.json",
+    "admission_manifest_schema_sha256": "4ca9710d21d1c9e2e44468bb7df603f5e044f1adade8d0514ad12a3a8fcf59b3"
   },
   "timing_template_surface": {
     "surface": "tlul10818_boundary_timing_template_builder",
@@ -250,6 +252,7 @@
     "evidence_bundle": "artifacts/tlul10818_boundary_benchmark/evidence_bundle.json",
     "pipeline_result": "artifacts/tlul10818_boundary_benchmark/pipeline_result.json",
     "graph_svg": "artifacts/tlul10818_boundary_benchmark/pipeline_result-<graph-sha256>.svg",
-    "markdown_report": "artifacts/tlul10818_boundary_benchmark/pipeline_result-<markdown-sha256>.md"
+    "markdown_report": "artifacts/tlul10818_boundary_benchmark/pipeline_result-<markdown-sha256>.md",
+    "admission_manifest": "artifacts/tlul10818_boundary_benchmark/admission_manifest.json"
   }
 }

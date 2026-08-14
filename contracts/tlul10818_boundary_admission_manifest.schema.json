@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/gpu-rtl-sim/tlul10818_boundary_admission_manifest.schema.json",
+  "title": "TL-UL #10818 boundary admission artifact manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "surface",
+    "status",
+    "pipeline_status",
+    "adjudication_status",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "surface": {"type": "string", "const": "tlul10818_boundary_admission_manifest"},
+    "status": {"type": "string", "const": "pass"},
+    "pipeline_status": {"type": "string", "const": "pass"},
+    "adjudication_status": {"type": "string", "const": "pass"},
+    "artifacts": {
+      "type": "array",
+      "minItems": 10,
+      "items": {"$ref": "#/$defs/artifact"}
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "role": {
+      "enum": [
+        "run_spec",
+        "runner_observations",
+        "sweep_enumeration",
+        "semantic_manifests",
+        "experiment_contract",
+        "run_result",
+        "evidence_bundle",
+        "pipeline_result",
+        "graph_svg",
+        "markdown_report"
+      ]
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "path", "sha256"],
+      "properties": {
+        "role": {"$ref": "#/$defs/role"},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}
