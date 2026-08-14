@@ -10,7 +10,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src" / "tools"))
 
-from tlul10818_boundary_evidence import build_boundary_trial_evidence  # noqa: E402
+from tlul10818_boundary_evidence import SelectorAdapter, build_boundary_trial_evidence  # noqa: E402
 
 
 CONTRACT = REPO_ROOT / "config" / "tlul10818_boundary_benchmark.json"
@@ -141,7 +141,7 @@ def experiment_run_spec() -> dict:
     }
 
 
-def raw_run_result(contract: dict) -> dict:
+def raw_run_result(contract: dict, selector: SelectorAdapter | None = None) -> dict:
     point_results = []
     for action in contract["action_domain"]:
         malformed = action["parameters"]["request_integrity"] == "malformed"
@@ -170,7 +170,7 @@ def raw_run_result(contract: dict) -> dict:
             }
         )
 
-    def selector(_sweep_space, _policy, completed_batches, requested_count):
+    def default_selector(_sweep_space, _policy, completed_batches, requested_count):
         completed = {
             point_id
             for batch in completed_batches
@@ -197,6 +197,6 @@ def raw_run_result(contract: dict) -> dict:
         },
         "point_results": point_results,
         "trials": build_boundary_trial_evidence(
-            contract, point_results, selector, timing
+            contract, point_results, selector or default_selector, timing
         ),
     }

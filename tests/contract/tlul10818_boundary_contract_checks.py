@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -617,6 +618,95 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                     ).encode("utf-8")
                 ).hexdigest(),
             )
+
+    def test_boundary_artifacts_pass_real_sidecar_adjudication(self) -> None:
+        sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
+        if not sidecar_src.is_dir():
+            self.skipTest("verilator-model-sidecar source checkout is unavailable")
+        sys.path.insert(0, sidecar_src.as_posix())
+        from verilator_model_sidecar.sweep_boundary import select_boundary_points
+
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            run_spec_path = directory / "run_spec.json"
+            enumeration_path = directory / "sweep_enumeration.json"
+            run_result_path = directory / "run_result.json"
+            output_dir = directory / "out"
+            pipeline_path = output_dir / "pipeline_result.json"
+            wrapper = directory / "verilator-model-sidecar"
+            wrapper.write_text(
+                "#!/usr/bin/env bash\n"
+                "set -euo pipefail\n"
+                "PYTHONPATH=\"${SIDECAR_SRC}\" "
+                "python3 -m verilator_model_sidecar.cli \"$@\"\n",
+                encoding="utf-8",
+            )
+            wrapper.chmod(0o755)
+
+            run_spec = experiment_run_spec()
+            contract_bundle = build_boundary_experiment_contract(
+                load_contract(), run_spec, golden_sweep_enumerator
+            )
+            run_spec_path.write_text(json.dumps(run_spec), encoding="utf-8")
+            enumeration_path.write_text(
+                json.dumps(
+                    golden_sweep_enumerator(
+                        contract_bundle["experiment_contract"]["sweep_space"]
+                    )
+                ),
+                encoding="utf-8",
+            )
+            run_result_path.write_text(
+                json.dumps(
+                    raw_run_result(
+                        contract_bundle["experiment_contract"],
+                        selector=select_boundary_points,
+                    )
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                build_boundary_artifacts_main(
+                    [
+                        "--target-config",
+                        CONTRACT.as_posix(),
+                        "--run-spec",
+                        run_spec_path.as_posix(),
+                        "--sweep-enumeration",
+                        enumeration_path.as_posix(),
+                        "--run-result",
+                        run_result_path.as_posix(),
+                        "--out-dir",
+                        output_dir.as_posix(),
+                    ]
+                ),
+                0,
+            )
+            env = os.environ.copy()
+            env.update(
+                {
+                    "BOUNDARY_ADJUDICATOR_BIN": wrapper.as_posix(),
+                    "SIDECAR_SRC": sidecar_src.as_posix(),
+                    "CONTRACT": (output_dir / "experiment_contract.json").as_posix(),
+                    "EVIDENCE": (output_dir / "evidence_bundle.json").as_posix(),
+                    "OUTPUT": pipeline_path.as_posix(),
+                }
+            )
+            completed = subprocess.run(
+                [SCRIPT.as_posix()],
+                cwd=REPO_ROOT,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            pipeline = json.loads(pipeline_path.read_text(encoding="utf-8"))
+            self.assertEqual(pipeline["status"], "pass")
+            self.assertEqual(pipeline["adjudication"]["status"], "pass")
+            self.assertIsNotNone(pipeline["report_bundle"])
+            self.assertIsNotNone(pipeline["graph_artifact"])
+            self.assertIsNotNone(pipeline["markdown_artifact"])
 
     def test_boundary_artifact_builder_rejects_non_strict_json_inputs(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
