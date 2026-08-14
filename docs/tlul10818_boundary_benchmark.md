@@ -103,6 +103,7 @@ timing. The timing rows are consumed in deterministic launch order and rejected
 if any row is missing, extra, or attached to the wrong trial/launch index.
 The machine-readable input shape for that external runner JSON is
 `contracts/tlul10818_boundary_runner_observations.schema.json`; semantic
+projection values must be integers at the public input boundary, while exact
 projection key equality and target-specific oracle binding are checked later by
 the builder against the Experiment Contract.
 

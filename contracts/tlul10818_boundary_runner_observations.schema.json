@@ -54,7 +54,8 @@
     },
     "semantic_projection": {
       "type": "object",
-      "minProperties": 2
+      "minProperties": 1,
+      "additionalProperties": {"type": "integer"}
     },
     "revision_projection": {
       "type": "object",

@@ -172,7 +172,7 @@
     "source_module_sha256": "83785eba5070b2be595623ab8976583c3565675fabe6133757ed606dee99709f",
     "interface": "build_run_result",
     "runner_observations_schema": "contracts/tlul10818_boundary_runner_observations.schema.json",
-    "runner_observations_schema_sha256": "da8fcc8f002b55fd03df31a2706a765d725693a7c3ecd92424d688fc74f363cb"
+    "runner_observations_schema_sha256": "59690e0d785bc7b2c4d48ac898929730ef28d318511de81e6aded3d04345fe58"
   },
   "admission_pipeline_surface": {
     "surface": "tlul10818_boundary_admission_pipeline",

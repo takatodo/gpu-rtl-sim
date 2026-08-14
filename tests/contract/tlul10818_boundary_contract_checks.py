@@ -988,6 +988,10 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         )
         timing_row = schema["$defs"]["timing_row"]
         self.assertEqual(
+            schema["$defs"]["semantic_projection"]["additionalProperties"],
+            {"type": "integer"},
+        )
+        self.assertEqual(
             timing_row["required"],
             [
                 "trial_id",
