@@ -113,6 +113,29 @@ fixed_result=$(run_revision fixed "$fixed_checkout" "$fixed_revision")
   echo "fixed revision did not clear the expected #2188 oracle violation" >&2; exit 1;
 }
 
+field() {
+  local line=$1 key=$2
+  local pair
+  for pair in $line; do
+    [[ $pair == "$key="* ]] && { printf '%s' "${pair#*=}"; return 0; }
+  done
+  echo "missing $key in runner result" >&2
+  return 1
+}
+
+bad_rf_read_enable=$(field "$bad_result" rf_read_enable)
+bad_rf_wb_match=$(field "$bad_result" rf_wb_match)
+bad_rf_write_wb=$(field "$bad_result" rf_write_wb)
+bad_rf_ecc_error_id=$(field "$bad_result" rf_ecc_error_id)
+bad_instruction_valid_id=$(field "$bad_result" instruction_valid_id)
+bad_alert_major_internal=$(field "$bad_result" alert_major_internal)
+fixed_rf_read_enable=$(field "$fixed_result" rf_read_enable)
+fixed_rf_wb_match=$(field "$fixed_result" rf_wb_match)
+fixed_rf_write_wb=$(field "$fixed_result" rf_write_wb)
+fixed_rf_ecc_error_id=$(field "$fixed_result" rf_ecc_error_id)
+fixed_instruction_valid_id=$(field "$fixed_result" instruction_valid_id)
+fixed_alert_major_internal=$(field "$fixed_result" alert_major_internal)
+
 printf '%s\n' '{' \
   '  "schema_version": 1,' \
   '  "surface": "ibex2188_cpu_regression_observations",' \
@@ -124,8 +147,16 @@ printf '%s\n' '{' \
   '  "oracle_identity": "ibex2188.ecc_read_error_requires_major_alert_when_no_wb_forwarding.v1",' \
   '  "fault_port": "a",' \
   '  "fault_bit": 0,' \
-  '  "bad_oracle_violation": 1,' \
-  '  "fixed_oracle_violation": 0' \
+  '  "revisions": {' \
+  '    "bad": {' \
+  '      "oracle_violation": 1,' \
+  "      \"semantic\": {\"rf_read_enable\": $bad_rf_read_enable, \"rf_wb_match\": $bad_rf_wb_match, \"rf_write_wb\": $bad_rf_write_wb, \"rf_ecc_error_id\": $bad_rf_ecc_error_id, \"instruction_valid_id\": $bad_instruction_valid_id, \"alert_major_internal\": $bad_alert_major_internal}" \
+  '    },' \
+  '    "fixed": {' \
+  '      "oracle_violation": 0,' \
+  "      \"semantic\": {\"rf_read_enable\": $fixed_rf_read_enable, \"rf_wb_match\": $fixed_rf_wb_match, \"rf_write_wb\": $fixed_rf_write_wb, \"rf_ecc_error_id\": $fixed_rf_ecc_error_id, \"instruction_valid_id\": $fixed_instruction_valid_id, \"alert_major_internal\": $fixed_alert_major_internal}" \
+  '    }' \
+  '  }' \
   '}' >"$out_dir/runner_observations.json"
 
 printf '%s\n' "$bad_result" "$fixed_result"

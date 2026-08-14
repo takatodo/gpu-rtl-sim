@@ -60,6 +60,19 @@ class Ibex2188BoundaryTargetTest(unittest.TestCase):
             )
         )
 
+    def test_current_cpu_evidence_preserves_the_issue_guard_transition(self) -> None:
+        evidence = self.target_document["current_cpu_evidence"]
+        self.assertEqual(evidence["bad_oracle_violation"], 1)
+        self.assertEqual(evidence["fixed_oracle_violation"], 0)
+        bad = evidence["semantic_projection_at_injection"]["bad"]
+        fixed = evidence["semantic_projection_at_injection"]["fixed"]
+        self.assertEqual(
+            {key: bad[key] for key in ("rf_read_enable", "rf_wb_match", "rf_write_wb", "instruction_valid_id")},
+            {key: fixed[key] for key in ("rf_read_enable", "rf_wb_match", "rf_write_wb", "instruction_valid_id")},
+        )
+        self.assertEqual((bad["rf_ecc_error_id"], bad["alert_major_internal"]), (0, 0))
+        self.assertEqual((fixed["rf_ecc_error_id"], fixed["alert_major_internal"]), (1, 1))
+
 
 if __name__ == "__main__":
     unittest.main()

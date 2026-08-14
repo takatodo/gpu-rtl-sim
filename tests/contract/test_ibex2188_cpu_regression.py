@@ -28,6 +28,7 @@ class Ibex2188CpuRegressionTest(unittest.TestCase):
         source = TESTBENCH.read_text(encoding="utf-8")
         self.assertIn("core_i.rf_rd_a_wb_match", source)
         self.assertIn("core_i.rf_write_wb == 1'b0", source)
+        self.assertIn("observed_rf_ecc_error_id_q", source)
         self.assertIn("alert_major_internal_o", source)
         self.assertIn("directed_load_dependent_branch_one_cycle_response_v1", RUNNER.read_text())
 

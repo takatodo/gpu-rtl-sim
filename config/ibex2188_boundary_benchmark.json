@@ -123,8 +123,26 @@
     "status": "pass",
     "runner": "scripts/run_ibex2188_cpu_regression.sh",
     "testbench": "examples/ibex2188/ibex2188_ecc_temporal_tb.sv",
-    "runner_observations_sha256": "f3b4d33c633c62a993209108d47e5e3883f32bae4bb2889b960a26484ad89cec",
+    "runner_observations_sha256": "e75c98259ce333919573718cc34ccdef63830258a33084ce5b1d20e3a7a8e53d",
     "bad_oracle_violation": 1,
-    "fixed_oracle_violation": 0
+    "fixed_oracle_violation": 0,
+    "semantic_projection_at_injection": {
+      "bad": {
+        "rf_read_enable": 1,
+        "rf_wb_match": 1,
+        "rf_write_wb": 0,
+        "rf_ecc_error_id": 0,
+        "instruction_valid_id": 1,
+        "alert_major_internal": 0
+      },
+      "fixed": {
+        "rf_read_enable": 1,
+        "rf_wb_match": 1,
+        "rf_write_wb": 0,
+        "rf_ecc_error_id": 1,
+        "instruction_valid_id": 1,
+        "alert_major_internal": 1
+      }
+    }
   }
 }

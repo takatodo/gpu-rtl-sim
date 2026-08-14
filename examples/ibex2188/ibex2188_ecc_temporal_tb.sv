@@ -88,6 +88,12 @@ module ibex2188_ecc_temporal_tb;
   logic fault_active;
   logic fault_seen_q;
   logic alert_seen_q;
+  logic observed_rf_read_enable_q;
+  logic observed_rf_wb_match_q;
+  logic observed_rf_write_wb_q;
+  logic observed_rf_ecc_error_id_q;
+  logic observed_instruction_valid_id_q;
+  logic observed_alert_major_internal_q;
   logic [38:0] rf_a_clean;
   logic [38:0] rf_b_clean;
 
@@ -204,6 +210,15 @@ module ibex2188_ecc_temporal_tb;
     end
     if (fault_active) fault_seen_q <= 1'b1;
     if (alert_major_internal_o) alert_seen_q <= 1'b1;
+    if (fault_active) begin
+      observed_rf_read_enable_q <= inject_port_b ? core_i.rf_ren_b : core_i.rf_ren_a;
+      observed_rf_wb_match_q <= inject_port_b ? core_i.rf_rd_b_wb_match : core_i.rf_rd_a_wb_match;
+      observed_rf_write_wb_q <= core_i.rf_write_wb;
+      observed_rf_ecc_error_id_q <= inject_port_b ?
+          core_i.gen_regfile_ecc.rf_ecc_err_b_id : core_i.gen_regfile_ecc.rf_ecc_err_a_id;
+      observed_instruction_valid_id_q <= core_i.instr_valid_id;
+      observed_alert_major_internal_q <= alert_major_internal_o;
+    end
   end
 
   initial begin
@@ -215,6 +230,12 @@ module ibex2188_ecc_temporal_tb;
     data_pending_q = 1'b0;
     fault_seen_q = 1'b0;
     alert_seen_q = 1'b0;
+    observed_rf_read_enable_q = 1'b0;
+    observed_rf_wb_match_q = 1'b0;
+    observed_rf_write_wb_q = 1'b0;
+    observed_rf_ecc_error_id_q = 1'b0;
+    observed_instruction_valid_id_q = 1'b0;
+    observed_alert_major_internal_q = 1'b0;
     inject_port_b = $test$plusargs("fault-port-b");
     if (!$value$plusargs("fault-bit=%d", fault_bit)) fault_bit = 0;
     fetch_enable_i = IbexMuBiOn;
@@ -233,9 +254,12 @@ module ibex2188_ecc_temporal_tb;
     rst_ni = 1'b1;
     wait (fault_seen_q);
     @(negedge clk_i);
-    $display("IBEX2188_RESULT fault_port=%0s fault_bit=%0d fault_seen=%0d alert_seen=%0d oracle_violation=%0d",
+    $display("IBEX2188_RESULT fault_port=%0s fault_bit=%0d fault_seen=%0d alert_seen=%0d oracle_violation=%0d rf_read_enable=%0d rf_wb_match=%0d rf_write_wb=%0d rf_ecc_error_id=%0d instruction_valid_id=%0d alert_major_internal=%0d",
              inject_port_b ? "b" : "a", fault_bit, fault_seen_q, alert_seen_q,
-             fault_seen_q && !alert_seen_q);
+             fault_seen_q && !alert_seen_q, observed_rf_read_enable_q,
+             observed_rf_wb_match_q, observed_rf_write_wb_q,
+             observed_rf_ecc_error_id_q, observed_instruction_valid_id_q,
+             observed_alert_major_internal_q);
     $finish;
   end
 
