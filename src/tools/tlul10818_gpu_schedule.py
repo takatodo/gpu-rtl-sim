@@ -2,6 +2,16 @@
 
 from __future__ import annotations
 
+from tlul10818_boundary_schedule import (
+    RUNNER_CONTROL_AXES,
+    boundary_action_mapping,
+    boundary_action_name,
+    boundary_contract_projection,
+    boundary_patch_script,
+    boundary_patch_script_for_parameters,
+    boundary_sweep_space,
+)
+
 
 ACTION_DOMAIN = (
     "valid_d_immediate",
@@ -14,37 +24,44 @@ RESIDENT_SCALE_STATES = 4096
 
 def patch_script(offsets: dict[str, int], *, malformed: bool, backpressure: bool) -> str:
     """Return the CPU driver's transition sequence as resident patch steps."""
-    def patch(**values: int) -> str:
-        return " ".join(f"{offsets[name]}:{value}" for name, value in values.items())
-    return "\n".join((
-        patch(clk_i=0, rst_ni=0, start_i=0, malformed_i=int(malformed), d_backpressure_i=int(backpressure)),
-        patch(clk_i=1), patch(clk_i=0), patch(rst_ni=1, start_i=1), patch(clk_i=1),
-        patch(clk_i=0, start_i=0), patch(clk_i=1), patch(clk_i=0), patch(clk_i=1), patch(clk_i=0), patch(clk_i=1),
-    )) + "\n"
+    return boundary_patch_script(
+        offsets,
+        request_integrity="malformed" if malformed else "valid",
+        backpressure_cycles=1 if backpressure else 0,
+        response_delay_cycles=0,
+    )
 
 
 def batch_patch_script(offsets: dict[str, int]) -> str:
     """Return one synchronized schedule for all four action states."""
     specs = ((False, False), (False, True), (True, False), (True, True))
-    individual = [[line.split() for line in patch_script(offsets, malformed=bad, backpressure=stall).splitlines()] for bad, stall in specs]
+    individual = [
+        [
+            line.split()
+            for line in patch_script(
+                offsets, malformed=malformed, backpressure=backpressure
+            ).splitlines()
+        ]
+        for malformed, backpressure in specs
+    ]
     lines: list[str] = []
-    for step_index in range(len(individual[0])):
+    for step_index in range(max(len(steps) for steps in individual)):
         tokens = []
         for state_index, steps in enumerate(individual):
-            tokens.extend(f"@{state_index}:{offset}:{value}" for offset, value in (token.split(":", 1) for token in steps[step_index]))
+            if step_index >= len(steps):
+                continue
+            tokens.extend(
+                f"@{state_index}:{offset}:{value}"
+                for offset, value in (
+                    token.split(":", 1) for token in steps[step_index]
+                )
+            )
         lines.append(" ".join(tokens))
     return "\n".join(lines) + "\n"
 
 
 def uniform_scale_patch_script(offsets: dict[str, int], state_count: int) -> str:
-    """Broadcast malformed/backpressured action fields to every resident state."""
-    fields = (
-        ("clk_i", 0), ("rst_ni", 0), ("start_i", 0), ("malformed_i", 1),
-        ("d_backpressure_i", 1), ("clk_i", 1), ("clk_i", 0), ("rst_ni", 1),
-        ("start_i", 1), ("clk_i", 1), ("clk_i", 0), ("start_i", 0),
-        ("clk_i", 1), ("clk_i", 0), ("clk_i", 1), ("clk_i", 0), ("clk_i", 1),
-    )
-    return "\n".join(
-        " ".join(f"@{state}:{offsets[name]}:{value}" for state in range(state_count))
-        for name, value in fields
-    ) + "\n"
+    """Return a state-0 patch script to be replicated by the hybrid runtime."""
+    if isinstance(state_count, bool) or not isinstance(state_count, int) or state_count <= 0:
+        raise ValueError("state_count must be a positive integer")
+    return patch_script(offsets, malformed=True, backpressure=True)
