@@ -95,9 +95,11 @@ python3 src/tools/run_edn23526_cpu_regression.py \
 The expected CPU oracle split is `protocol_violation=1` for the bad revision
 and `protocol_violation=0` with `valid_after_error=1` for the fixed revision.
 The device-clean GPU gate uses `examples/edn23526/edn_csrng_23526_gpu_tb.sv`.
-It drives the same temporal action with a resident patch schedule and compares
-only `done`, `protocol_violation`, `valid_after_error`, valid-observed, and the
-action coverage bit.
+It drives the four-action domain `success_ack_ready`,
+`success_ack_backpressured`, `error_ack_ready`, and
+`error_ack_backpressured` with resident patch schedules, then compares only
+`done`, `protocol_violation`, `valid_after_error`, valid-observed, and the
+action coverage bitmap.
 
 ```bash
 python3 src/tools/run_edn23526_gpu_equivalence.py \
@@ -108,8 +110,20 @@ python3 src/tools/run_edn23526_gpu_equivalence.py \
   --out artifacts/edn23526_gpu_equivalence
 ```
 
-This is the second-IP regression entry point.  Exploration corpus generation
-remains a later gate.
+To reproduce the bounded EDN exploration comparison after the equivalence gate:
+
+```bash
+python3 src/tools/summarize_edn23526_campaign.py \
+  --equivalence-report artifacts/edn23526_gpu_equivalence/edn23526_gpu_equivalence.json \
+  --bad-checkout /path/to/opentitan-before-23607 \
+  --fixed-checkout /path/to/opentitan-with-23607 \
+  --out artifacts/edn23526_campaign
+```
+
+The summary emits `new_coverage_seeds`, `oracle_violation_seeds`, and
+`known_regression_seeds` separately.  Coverage is the action-bin bitmap; only
+the independent valid/ready oracle marks a bug candidate.  The risk-stratified
+order is fixed before feedback, so it is not an online-learning or PPO claim.
 
 ## Goal
 

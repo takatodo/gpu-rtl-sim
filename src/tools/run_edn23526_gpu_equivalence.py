@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 from compare_vl_hybrid_root_layout import probe_root_layout
-from edn23526_gpu_schedule import patch_script
+from edn23526_gpu_schedule import ACTION_DOMAIN, action_bits, patch_script
 from run_edn23526_cpu_regression import PRIM_ALIAS, REPO_ROOT, RTL_RELATIVE_PATHS
 
 
@@ -28,6 +28,7 @@ OBSERVABLES = (
     "csrng_req_valid_seen_o",
     "action_coverage_o",
 )
+OBSERVABLE_KEYS = ("done", "protocol_violation", "valid_after_error", "valid_seen", "action_coverage")
 
 
 def _run(command: list[str], *, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
@@ -57,7 +58,7 @@ def _base_verilator_command(verilator: Path, opentitan: Path, mdir: Path) -> lis
 def _layout_offsets(mdir: Path) -> dict[str, int]:
     fields = probe_root_layout(mdir)
     offsets: dict[str, int] = {}
-    for name in ("clk_i", "rst_ni", "start_i", *OBSERVABLES):
+    for name in ("clk_i", "rst_ni", "start_i", "inject_error_i", "csrng_ready_i", *OBSERVABLES):
         exact = [entry for entry in fields if entry["name"] == name]
         matches = exact or [entry for entry in fields if str(entry["name"]).endswith(f"__DOT__{name}")]
         if len(matches) != 1:
@@ -68,7 +69,7 @@ def _layout_offsets(mdir: Path) -> dict[str, int]:
 
 def _parse_cpu(stdout: str) -> dict[str, int]:
     match = re.search(
-        r"RESULT done=(\d+) protocol_violation=(\d+) valid_after_error=(\d+) valid_seen=(\d+) coverage=([0-9a-fA-F]+) drive_cycles=(\d+)",
+        r"RESULT done=(\d+) protocol_violation=(\d+) valid_after_error=(\d+) valid_seen=(\d+) coverage=([0-9a-fA-F]+) drive_cycles=(\d+) error=(\d+) backpressure=(\d+)",
         stdout,
     )
     if not match:
@@ -80,11 +81,19 @@ def _parse_cpu(stdout: str) -> dict[str, int]:
         "valid_seen": int(match.group(4)),
         "action_coverage": int(match.group(5), 16),
         "drive_cycles": int(match.group(6)),
+        "error": int(match.group(7)),
+        "backpressure": int(match.group(8)),
     }
 
 
-def _cpu_observables(binary: Path, state_path: Path) -> dict[str, int]:
-    completed = subprocess.run([str(binary), "--dump-state", str(state_path)], text=True, capture_output=True)
+def _cpu_observables(binary: Path, state_path: Path, action: str) -> dict[str, int]:
+    inject_error, backpressure = action_bits(action)
+    command = [str(binary), "--dump-state", str(state_path)]
+    if inject_error:
+        command.append("--error-ack")
+    if backpressure:
+        command.append("--backpressure")
+    completed = subprocess.run(command, text=True, capture_output=True)
     if completed.returncode:
         raise RuntimeError(f"CPU action failed: {completed.stderr}\n{completed.stdout}")
     return _parse_cpu(completed.stdout)
@@ -107,7 +116,7 @@ def _git_revision(path: Path) -> str | None:
 
 
 def _revision(
-    *, label: str, opentitan: Path, expected_violation: int, expected_valid: int,
+    *, label: str, opentitan: Path, fixed_revision: bool,
     verilator: Path, verilator_root: Path, out: Path,
 ) -> dict[str, object]:
     revision_out = out / label
@@ -126,33 +135,51 @@ def _revision(
         return {"label": label, "status": "fail", "gpu_build": build.stderr.splitlines()[-20:]}
     try:
         offsets = _layout_offsets(gpu_mdir)
-        cpu = _cpu_observables(cpu_mdir / f"V{TOP}", revision_out / "edn23526.cpu.bin")
     except RuntimeError as exc:
         return {"label": label, "status": "fail", "error": str(exc)}
-    script = revision_out / "error_ack_backpressured.patch"
-    script.write_text(patch_script(offsets, drive_cycles=cpu["drive_cycles"]), encoding="utf-8")
-    gpu_state = revision_out / "edn23526.gpu.bin"
-    gpu = _run([
-        sys.executable, str(HYBRID_RUNNER), "--mdir", str(gpu_mdir), "--nstates", "1",
-        "--resident-steps", "--patch-script", str(script), "--dump-state", str(gpu_state),
-    ], env=env)
-    observed = _gpu_observables(gpu_state, offsets) if gpu.returncode == 0 and gpu_state.is_file() else None
-    cpu_semantic = {key: cpu[key] for key in ("done", "protocol_violation", "valid_after_error", "valid_seen", "action_coverage")}
-    matches = observed == cpu_semantic
-    oracle_ok = cpu["protocol_violation"] == expected_violation and cpu["valid_after_error"] == expected_valid
+    actions: list[dict[str, object]] = []
+    binary = cpu_mdir / f"V{TOP}"
+    for action in ACTION_DOMAIN:
+        try:
+            cpu = _cpu_observables(binary, revision_out / f"{action}.cpu.bin", action)
+        except RuntimeError as exc:
+            actions.append({"action": action, "status": "fail", "cpu_error": str(exc)})
+            continue
+        script = revision_out / f"{action}.patch"
+        script.write_text(patch_script(offsets, action=action, drive_cycles=cpu["drive_cycles"]), encoding="utf-8")
+        gpu_state = revision_out / f"{action}.gpu.bin"
+        gpu = _run([
+            sys.executable, str(HYBRID_RUNNER), "--mdir", str(gpu_mdir), "--nstates", "1",
+            "--resident-steps", "--patch-script", str(script), "--dump-state", str(gpu_state),
+        ], env=env)
+        observed = _gpu_observables(gpu_state, offsets) if gpu.returncode == 0 and gpu_state.is_file() else None
+        cpu_semantic = {key: cpu[key] for key in OBSERVABLE_KEYS}
+        expected_violation = int((not fixed_revision) and action == "error_ack_backpressured")
+        expected_valid_after_error = int(fixed_revision and action == "error_ack_backpressured")
+        matches = observed == cpu_semantic
+        oracle_ok = cpu["protocol_violation"] == expected_violation
+        if action == "error_ack_backpressured":
+            oracle_ok = oracle_ok and cpu["valid_after_error"] == expected_valid_after_error
+        actions.append({
+            "action": action,
+            "expected_oracle_violation": expected_violation,
+            "expected_valid_after_error": expected_valid_after_error if action == "error_ack_backpressured" else None,
+            "cpu": cpu_semantic,
+            "gpu": observed,
+            "drive_cycles": cpu["drive_cycles"],
+            "gpu_returncode": gpu.returncode,
+            "gpu_stderr_tail": gpu.stderr.splitlines()[-10:],
+            "status": "pass" if matches and oracle_ok else "fail",
+        })
     meta_path = gpu_mdir / "vl_batch_gpu.meta.json"
     return {
         "label": label,
         "opentitan_revision": _git_revision(opentitan),
-        "expected": {"protocol_violation": expected_violation, "valid_after_error": expected_valid},
-        "cpu": cpu_semantic,
-        "gpu": observed,
-        "drive_cycles": cpu["drive_cycles"],
+        "oracle": "only error_ack_backpressured is the #23526 bug-candidate action",
+        "actions": actions,
         "offsets": offsets,
-        "gpu_returncode": gpu.returncode,
-        "gpu_stderr_tail": gpu.stderr.splitlines()[-10:],
         "gpu_manifest_sha256": _sha256(meta_path) if meta_path.is_file() else None,
-        "status": "pass" if matches and oracle_ok else "fail",
+        "status": "pass" if all(item["status"] == "pass" for item in actions) else "fail",
     }
 
 
@@ -176,10 +203,10 @@ def main() -> int:
         "issue": "https://github.com/lowRISC/opentitan/issues/23526",
         "fix_pull_request": "https://github.com/lowRISC/opentitan/pull/23607",
         "comparison": "semantic observables only; raw generated state is excluded",
-        "action_domain": ["error_ack_backpressured"],
+        "action_domain": list(ACTION_DOMAIN),
         "revisions": [
-            _revision(label="bad", opentitan=args.bad.resolve(), expected_violation=1, expected_valid=0, verilator=verilator, verilator_root=root, out=args.out),
-            _revision(label="fixed", opentitan=args.fixed.resolve(), expected_violation=0, expected_valid=1, verilator=verilator, verilator_root=root, out=args.out),
+            _revision(label="bad", opentitan=args.bad.resolve(), fixed_revision=False, verilator=verilator, verilator_root=root, out=args.out),
+            _revision(label="fixed", opentitan=args.fixed.resolve(), fixed_revision=True, verilator=verilator, verilator_root=root, out=args.out),
         ],
     }
     report["status"] = "pass" if all(item["status"] == "pass" for item in report["revisions"]) else "fail"
