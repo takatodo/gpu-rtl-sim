@@ -10,6 +10,7 @@ delegates final adjudication/report generation to ``verilator-model-sidecar``.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import subprocess
 import sys
@@ -23,6 +24,9 @@ from tlul10818_boundary_evidence import build_boundary_evidence_bundle
 
 DEFAULT_TARGET_CONFIG = Path("config/tlul10818_boundary_benchmark.json")
 DEFAULT_OUT_DIR = Path("artifacts/tlul10818_boundary_benchmark")
+RTL_BOUNDARY_SCHEMA_VERSION = 1
+RTL_BOUNDARY_ADJUDICATION_SURFACE = "rtl_boundary_adjudication"
+RTL_BOUNDARY_PIPELINE_RESULT_SURFACE = "rtl_boundary_pipeline_result"
 
 
 def _load_sidecar_adapters(sidecar_src: Path | None):
@@ -38,6 +42,42 @@ def _load_sidecar_adapters(sidecar_src: Path | None):
             "verilator_model_sidecar sweep-boundary adapters are unavailable"
         ) from error
     return enumerate_sweep_space, select_boundary_points
+
+
+def _file_sha256(path: Path) -> str | None:
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
+def _fail_pipeline(message: str, *, out_dir: Path, run_spec: Path, runner_observations: Path) -> Path:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    output = out_dir / "pipeline_result.json"
+    pipeline = {
+        "schema_version": RTL_BOUNDARY_SCHEMA_VERSION,
+        "surface": RTL_BOUNDARY_PIPELINE_RESULT_SURFACE,
+        "status": "fail",
+        "adjudication": {
+            "schema_version": RTL_BOUNDARY_SCHEMA_VERSION,
+            "surface": RTL_BOUNDARY_ADJUDICATION_SURFACE,
+            "status": "fail",
+            "issues": [{"code": "admission_input_error", "message": message}],
+            "input_canonical_sha256": {
+                "experiment_contract": None,
+                "evidence_bundle": None,
+            },
+            "input_file_sha256": {
+                "experiment_contract": _file_sha256(run_spec),
+                "evidence_bundle": _file_sha256(runner_observations),
+            },
+        },
+        "report_bundle": None,
+        "graph_artifact": None,
+        "markdown_artifact": None,
+    }
+    _write_json(output, pipeline)
+    return output
 
 
 def admit_observations(
@@ -134,22 +174,32 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     args = parser.parse_args(argv)
-    outputs = admit_observations(
-        target_config_path=args.target_config,
-        run_spec_path=args.run_spec,
-        runner_observations_path=args.runner_observations,
-        sidecar_src=args.sidecar_src,
-        out_dir=args.out_dir,
-    )
-    _run_adjudicator(
-        sidecar_src=args.sidecar_src,
-        adjudicator_bin=args.adjudicator_bin,
-        experiment_contract=Path(outputs["experiment_contract"]),
-        evidence_bundle=Path(outputs["evidence_bundle"]),
-        pipeline_result=Path(outputs["pipeline_result"]),
-    )
-    print(f"wrote {outputs['pipeline_result']}")
-    return 0
+    try:
+        outputs = admit_observations(
+            target_config_path=args.target_config,
+            run_spec_path=args.run_spec,
+            runner_observations_path=args.runner_observations,
+            sidecar_src=args.sidecar_src,
+            out_dir=args.out_dir,
+        )
+        _run_adjudicator(
+            sidecar_src=args.sidecar_src,
+            adjudicator_bin=args.adjudicator_bin,
+            experiment_contract=Path(outputs["experiment_contract"]),
+            evidence_bundle=Path(outputs["evidence_bundle"]),
+            pipeline_result=Path(outputs["pipeline_result"]),
+        )
+        print(f"wrote {outputs['pipeline_result']}")
+        return 0
+    except Exception as error:
+        output = _fail_pipeline(
+            str(error),
+            out_dir=args.out_dir,
+            run_spec=args.run_spec,
+            runner_observations=args.runner_observations,
+        )
+        print(f"wrote {output}: status=fail", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":

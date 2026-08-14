@@ -963,6 +963,63 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
             self.assertIsNotNone(pipeline["graph_artifact"])
             self.assertIsNotNone(pipeline["markdown_artifact"])
 
+    def test_boundary_admission_pipeline_replaces_stale_pass_on_input_error(self) -> None:
+        sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
+        if not sidecar_src.is_dir():
+            self.skipTest("verilator-model-sidecar source checkout is unavailable")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            run_spec_path = directory / "run_spec.json"
+            observations_path = directory / "runner_observations.json"
+            output_dir = directory / "admitted"
+            pipeline_path = output_dir / "pipeline_result.json"
+            output_dir.mkdir()
+            pipeline_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "surface": "rtl_boundary_pipeline_result",
+                        "status": "pass",
+                        "adjudication": {"status": "pass"},
+                        "report_bundle": {},
+                        "graph_artifact": {},
+                        "markdown_artifact": {},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            run_spec_path.write_text(json.dumps(experiment_run_spec()), encoding="utf-8")
+            observations_path.write_text('{"runner": {"status": "pass"}}', encoding="utf-8")
+
+            exit_code = admit_boundary_observations_main(
+                [
+                    "--target-config",
+                    CONTRACT.as_posix(),
+                    "--run-spec",
+                    run_spec_path.as_posix(),
+                    "--runner-observations",
+                    observations_path.as_posix(),
+                    "--sidecar-src",
+                    sidecar_src.as_posix(),
+                    "--adjudicator-bin",
+                    "unused-for-invalid-input",
+                    "--out-dir",
+                    output_dir.as_posix(),
+                ]
+            )
+            self.assertEqual(exit_code, 1)
+            pipeline = json.loads(pipeline_path.read_text(encoding="utf-8"))
+            self.assertEqual(pipeline["status"], "fail")
+            self.assertEqual(pipeline["adjudication"]["status"], "fail")
+            self.assertEqual(pipeline["report_bundle"], None)
+            self.assertEqual(pipeline["graph_artifact"], None)
+            self.assertEqual(pipeline["markdown_artifact"], None)
+            self.assertEqual(
+                pipeline["adjudication"]["issues"][0]["code"],
+                "admission_input_error",
+            )
+
     def test_boundary_artifacts_pass_real_sidecar_adjudication(self) -> None:
         sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
         if not sidecar_src.is_dir():

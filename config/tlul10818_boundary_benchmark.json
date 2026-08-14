@@ -159,7 +159,7 @@
   "admission_pipeline_surface": {
     "surface": "tlul10818_boundary_admission_pipeline",
     "source_module": "src/tools/admit_tlul10818_boundary_observations.py",
-    "source_module_sha256": "9c85f72b0336bfd90260550ccddf961cfc24fb76f8a9192ef21a47e4c2687d4c",
+    "source_module_sha256": "36b49dc86bde2bb647e71e71cb5509d66529ab5215e24e1a15411e11d4639b25",
     "interface": "admit_observations"
   },
   "evidence_builder_surface": {

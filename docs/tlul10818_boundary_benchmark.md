@@ -101,6 +101,9 @@ and `evidence_bundle.json`, then delegates final static adjudication and
 report/graph generation to `verilator-model-sidecar
 adjudicate-boundary-benchmark`. It is the repository entry point after external
 runtime evidence exists; it is not a DUT runner.
+If admission fails before final adjudication, the script still replaces
+`pipeline_result.json` with a `status=fail` result so stale passing output is
+not left as evidence.
 
 `src/tools/tlul10818_boundary_evidence.py` is the evidence-admission producer
 Module. `build_boundary_evidence_bundle(contract_bundle, run_result)` accepts
