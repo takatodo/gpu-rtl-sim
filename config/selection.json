@@ -65,7 +65,8 @@
       }
     ],
     "current_next_action": "review_three_issue_seed_set_and_select_next_expansion",
-    "status": "three_issue_regression_discovery_seed_set_established"
+    "consolidated_summary": "artifacts/opentitan_regression_discovery/opentitan_regression_discovery_summary.json",
+    "status": "three_issue_consolidated_evidence_passed"
   },
   "analysis": {
     "current_next_action": "review_three_issue_seed_set_and_select_next_expansion",
@@ -419,7 +420,7 @@
   "current_next_action_issue": "opentitan_regression_discovery",
   "current_next_action_issue_url": null,
   "current_priority": "opentitan_temporal_protocol_gpu_resident_regression_discovery",
-  "current_priority_source_artifact": "artifacts/entropy10983_campaign/entropy10983_campaign_summary.json",
+  "current_priority_source_artifact": "artifacts/opentitan_regression_discovery/opentitan_regression_discovery_summary.json",
   "external_testbench_candidates": {
     "gategpt": {
       "checkout_path": "artifacts/external_gateGPT",

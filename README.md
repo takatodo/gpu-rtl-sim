@@ -173,6 +173,19 @@ The summary emits `new_coverage_seeds`, `oracle_violation_seeds`, and
 one-action minimal trigger, so random and stratified policies are identical
 for this target; it is corpus evidence, not policy, bandit, or PPO evidence.
 
+Build the consolidated three-issue evidence table:
+
+```bash
+python3 src/tools/summarize_opentitan_regression_discovery.py \
+  --repo-root . \
+  --out artifacts/opentitan_regression_discovery
+```
+
+The consolidated table verifies the current seed set against the active
+regression-discovery contract: at least two IPs, bad-revision oracle violation,
+fixed-revision non-reproduction, CPU/GPU semantic equality, separated corpus
+files, identical random/stratified campaign budgets, and graph availability.
+
 ## Goal
 
 This repository is an experimental GPU sidecar runtime for RTL compiler frontends. Verilator is the current compatibility frontend because its generated C++ build path is the shortest route to a usable sidecar; CIRCT is a planned frontend target through the same sidecar contract idea.
@@ -197,9 +210,9 @@ Current pointer, mirrored from `config/selection.json`:
 
 - `current_priority`: `opentitan_temporal_protocol_gpu_resident_regression_discovery`
 - `current_next_action`: `review_three_issue_seed_set_and_select_next_expansion`
-- `current_priority_source_artifact`: `artifacts/entropy10983_campaign/entropy10983_campaign_summary.json`
+- `current_priority_source_artifact`: `artifacts/opentitan_regression_discovery/opentitan_regression_discovery_summary.json`
 
-Latest OpenTitan regression-discovery update: TL-UL #10818, EDN #23526, and entropy_src #10983 now form the three-issue seed set. The targets have fixed revisions/checkpoints/action domains/oracles/semantic-manifest identities, bad-revision oracle violations, fixed-revision non-reproduction, CPU/GPU semantic equivalence, separated corpora, and reproducible random-vs-stratified summaries. entropy_src #10983 is a one-action minimal trigger, so its random-vs-stratified result is intentionally identical.
+Latest OpenTitan regression-discovery update: TL-UL #10818, EDN #23526, and entropy_src #10983 now form the three-issue seed set. `artifacts/opentitan_regression_discovery/opentitan_regression_discovery_summary.json` consolidates the evidence that the targets span three IPs and have fixed revisions/checkpoints/action domains/oracles/semantic-manifest identities, bad-revision oracle violations, fixed-revision non-reproduction, CPU/GPU semantic equivalence, separated corpora, and reproducible random-vs-stratified summaries/graphs. entropy_src #10983 is a one-action minimal trigger, so its random-vs-stratified result is intentionally identical.
 
 Historical FC-069 update: Stage118 block-source `1760` is clean/raw-clean through candidate `2021`. Extended Stage119 maps dirty `block_source_id=1760`, `source_id=2` to `compact.cfg_clone.entry_phi.producer_selector.counters3969` with `skipped_count=1536`. This remains historical context for the old gateGPT frontier, not the current OpenTitan regression-discovery pointer.
 
