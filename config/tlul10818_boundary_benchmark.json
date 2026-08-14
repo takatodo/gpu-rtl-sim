@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "surface": "tlul10818_boundary_benchmark_target",
-  "status": "pending_external_full_grid_evidence",
+  "status": "external_full_grid_evidence_admitted",
   "target": {
     "target_id": "tlul10818",
     "issue": "https://github.com/lowRISC/opentitan/issues/10818",
@@ -350,6 +350,60 @@
       "report_sha256": {
         "graph_svg": "77ea4829f83c4203345aab4c0d1e3be443d43d8852288ba5ae0df9f296677fab",
         "markdown_report": "9afca15b00cddb676ad54e8e892518889bc0f4b1f32393fc80aed9f7e11a80ec"
+      }
+    },
+    {
+      "profile_id": "tlul10818_user_authorized_2x2_ordered_timing_v1",
+      "status": "admitted_pass",
+      "description": "User-authorized local bad/fixed RTL full enumeration with measured CPU/GPU selector trials",
+      "experiment_id": "tlul10818_authorized_rerun",
+      "runtime_authority": {
+        "authority_kind": "user_authorized_local_runner",
+        "external_closure": true,
+        "runner_identity": "user-authorized-local-tlul10818-runner:v1"
+      },
+      "finite_axis_values": {
+        "backpressure_cycles": [
+          0,
+          1
+        ],
+        "response_delay_cycles": [
+          0,
+          1
+        ]
+      },
+      "point_count": 8,
+      "ground_truth_summary": {
+        "bad_fail_point_count": 4,
+        "bad_pass_point_count": 4,
+        "bad_boundary_edge_count": 4,
+        "bad_failure_component_count": 1,
+        "bad_minimal_failing_point_count": 1,
+        "fixed_fail_point_count": 0,
+        "bad_to_fixed_disappeared_failure_count": 4
+      },
+      "comparison_ids": {
+        "selector": [
+          "selectors-on-gpu"
+        ],
+        "backend": [
+          "random-cpu-gpu"
+        ]
+      },
+      "artifact_dir": "artifacts/tlul10818_boundary_authorized_current",
+      "artifact_sha256": {
+        "admission_manifest.json": "87fbe0f2f6bb6937e0b76a5373d4a0f310f7818da8f4fc43d216480ef8947dae",
+        "evidence_bundle.json": "412b62ae7d5cb5e3e399358dee387eee90198f9b5b51da10c7c60799759e043a",
+        "experiment_contract.json": "da9935e7a84e50b3fee8f9a57ea22e8667d15dc20bfb5c32b49b055f540d3970",
+        "pipeline_result.json": "096b1aed058b560b84c34963845a71832c62c43c0ec477103ab81d9f64a917fd",
+        "run_result.json": "6e615104a89da4eb4762035de3740302800f6b9b1b6cc98622a45c066713f5ce",
+        "run_spec.json": "6a6f47f6baf1b3ee21cac39caffa66344f23594ecb62271a5d4bc92743b84a57",
+        "runner_observations.json": "94aacf52c21e1e268f3982159511db22fc87b9efe524c225bb5baa30662036aa",
+        "sweep_enumeration.json": "d1075e8344a071cf2262f006ed12cc5be559d0897de166f36bf945f773645469"
+      },
+      "report_sha256": {
+        "graph_svg": "99b70468332733046f38d6a4734c409b29dee9480ff954e93ca19735fcf81d2f",
+        "markdown_report": "282b6516e5a4f1ad7cac01dd6036a09cc730546758cd61efcbb7972f3ad805c1"
       }
     }
   ]

@@ -78,7 +78,7 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         contract = load_contract()
         self.assertEqual(contract["schema_version"], 1)
         self.assertEqual(contract["surface"], "tlul10818_boundary_benchmark_target")
-        self.assertEqual(contract["status"], "pending_external_full_grid_evidence")
+        self.assertEqual(contract["status"], "external_full_grid_evidence_admitted")
         target = contract["target"]
         self.assertEqual(target["target_id"], "tlul10818")
         self.assertEqual(target["issue"], "https://github.com/lowRISC/opentitan/issues/10818")
@@ -183,8 +183,17 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
     def test_admitted_benchmark_profile_pins_full_enumeration_evidence(self) -> None:
         config = load_contract()
         profiles = config["admitted_benchmark_profiles"]
-        self.assertEqual(len(profiles), 1)
-        profile = profiles[0]
+        self.assertEqual(len(profiles), 2)
+        self.assertEqual(
+            len({profile["profile_id"] for profile in profiles}),
+            len(profiles),
+        )
+        profile = next(
+            profile
+            for profile in profiles
+            if profile["profile_id"]
+            == "tlul10818_2x2_ordered_timing_full_enumeration_v1"
+        )
         self.assertEqual(
             profile["profile_id"],
             "tlul10818_2x2_ordered_timing_full_enumeration_v1",
@@ -278,6 +287,47 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
             )
         self.assertIn(profile["profile_id"], DOC.read_text(encoding="utf-8"))
 
+    def test_user_authorized_profile_pins_external_closure_evidence(self) -> None:
+        profile = next(
+            profile
+            for profile in load_contract()["admitted_benchmark_profiles"]
+            if profile["profile_id"]
+            == "tlul10818_user_authorized_2x2_ordered_timing_v1"
+        )
+        self.assertEqual(profile["status"], "admitted_pass")
+        self.assertEqual(
+            profile["runtime_authority"],
+            {
+                "authority_kind": "user_authorized_local_runner",
+                "external_closure": True,
+                "runner_identity": "user-authorized-local-tlul10818-runner:v1",
+            },
+        )
+        self.assertEqual(profile["point_count"], 8)
+        self.assertEqual(profile["comparison_ids"]["selector"], ["selectors-on-gpu"])
+        self.assertEqual(profile["comparison_ids"]["backend"], ["random-cpu-gpu"])
+        artifact_dir = REPO_ROOT / profile["artifact_dir"]
+        if artifact_dir.is_dir():
+            self.assertEqual(
+                validate_profile(
+                    config_path=CONTRACT,
+                    profile_id=profile["profile_id"],
+                )["runtime_authority"],
+                profile["runtime_authority"],
+            )
+            self.assertEqual(
+                build_profile(
+                    source_dir=artifact_dir,
+                    profile_id=profile["profile_id"],
+                    artifact_dir=profile["artifact_dir"],
+                    description=profile["description"],
+                    authority_kind=profile["runtime_authority"]["authority_kind"],
+                    external_closure=True,
+                ),
+                profile,
+            )
+        self.assertIn(profile["profile_id"], DOC.read_text(encoding="utf-8"))
+
     def test_profile_materializer_copies_admitted_artifacts_to_stable_path(self) -> None:
         profile = load_contract()["admitted_benchmark_profiles"][0]
         source = REPO_ROOT / "artifacts/tlul10818_boundary_admitted_codex_20260814_222737"
@@ -363,19 +413,19 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertEqual(json.loads(completed.stdout), profile)
 
-    def test_boundary_closure_requires_external_authority_profile(self) -> None:
-        profile = load_contract()["admitted_benchmark_profiles"][0]
+    def test_boundary_closure_accepts_user_authorized_external_profile(self) -> None:
+        profile = next(
+            profile
+            for profile in load_contract()["admitted_benchmark_profiles"]
+            if profile["runtime_authority"]["external_closure"] is True
+        )
         artifact_dir = REPO_ROOT / profile["artifact_dir"]
         if not artifact_dir.is_dir():
             return
         result = check_closure(config_path=CONTRACT)
-        self.assertEqual(result["status"], "fail")
-        self.assertEqual(result["reason"], "no_valid_external_closure_profile")
-        self.assertEqual(result["checked_profiles"][0]["profile_id"], profile["profile_id"])
-        self.assertIs(
-            result["checked_profiles"][0]["runtime_authority"]["external_closure"],
-            False,
-        )
+        self.assertEqual(result["status"], "pass")
+        self.assertEqual(result["closure_profile_id"], profile["profile_id"])
+        self.assertIs(result["closure"]["runtime_authority"]["external_closure"], True)
         completed = subprocess.run(
             [sys.executable, CLOSURE_CHECK.as_posix()],
             cwd=REPO_ROOT,
@@ -383,8 +433,8 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
             capture_output=True,
             check=False,
         )
-        self.assertEqual(completed.returncode, 1)
-        self.assertIn("no_valid_external_closure_profile", completed.stdout)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn('"status": "pass"', completed.stdout)
 
     def test_profile_entrypoint_materializes_and_validates_admitted_artifacts(self) -> None:
         profile = load_contract()["admitted_benchmark_profiles"][0]

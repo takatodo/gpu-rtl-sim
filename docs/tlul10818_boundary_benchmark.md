@@ -45,6 +45,16 @@ The profile records `runtime_authority.external_closure=false` and pins runner
 identity `local-tlul10818-boundary-runner:codex-v3`; the profile validator
 checks that value against `runner_observations.json`. It is therefore admitted
 as a local smoke profile, not as final external CI/operator closure evidence.
+The second admitted profile,
+`tlul10818_user_authorized_2x2_ordered_timing_v1`, was produced by the
+repository-owned runtime runner after explicit user authorization. It pins the
+same eight-point finite grid, raw bad/fixed CPU/GPU observations, measured
+trial timing, and the independently generated sidecar report. Its runtime
+authority is `user_authorized_local_runner`, its runner identity is
+`user-authorized-local-tlul10818-runner:v1`, and
+`runtime_authority.external_closure=true`. The profile validates four bad-only
+failure points, four boundary edges, one failure component, one minimal failing
+point, and zero fixed-revision failures.
 Use `src/tools/validate_tlul10818_boundary_profile.py --profile-id
 tlul10818_2x2_ordered_timing_full_enumeration_v1` to re-check the pinned
 artifact hashes, admission manifest, pipeline status, comparison IDs, and
@@ -62,7 +72,8 @@ destination/validation directory.
 Use `src/tools/check_tlul10818_boundary_closure.py` for the final closure gate.
 It validates every admitted profile and returns `status=pass` only when at
 least one valid profile records `runtime_authority.external_closure=true`.
-The current local smoke profile therefore makes this gate fail intentionally.
+The user-authorized profile now satisfies this gate; the earlier Codex-local
+smoke remains separately identified and is not promoted.
 Use `src/tools/build_tlul10818_boundary_profile.py` to turn a passing admitted
 artifact directory into the JSON object that belongs in
 `admitted_benchmark_profiles`. The tool computes artifact/report SHA-256 rows,
@@ -238,6 +249,9 @@ The repository-owned admission workflow is
 JSON artifacts under `artifacts/tlul10818_boundary_benchmark/` and delegates the
 static checks to `verilator-model-sidecar adjudicate-boundary-benchmark`.
 
-Codex may review and adjudicate already-generated JSON evidence. Codex must not
-compile or run the DUT, search or replay failure-triggering sequences, or emit
-runner commands for reproducing the known failing condition.
+The default automation boundary keeps Codex on source/static adjudication and
+leaves DUT execution to an external operator or CI. Codex must not invoke the
+runtime runner without explicit user authorization. When the user delegates a
+bounded local runner invocation, the resulting profile must record that
+authority and runner identity rather than reusing the Codex-local smoke
+identity.
