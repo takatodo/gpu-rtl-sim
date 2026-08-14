@@ -39,6 +39,10 @@ points, four pass points, four boundary edges, one failure component, one
 minimal failing point, and fixed has zero failing points. Larger scaling
 profiles must be admitted as additional profiles instead of changing this
 profile's identity.
+Use `src/tools/validate_tlul10818_boundary_profile.py --profile-id
+tlul10818_2x2_ordered_timing_full_enumeration_v1` to re-check the pinned
+artifact hashes, admission manifest, pipeline status, comparison IDs, and
+ground-truth topology summary for that profile.
 
 `src/tools/tlul10818_gpu_schedule.py` is the runner-facing Module for that
 surface. Its Interface is:

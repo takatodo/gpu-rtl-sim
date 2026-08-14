@@ -194,6 +194,12 @@
     "admission_manifest_schema": "contracts/tlul10818_boundary_admission_manifest.schema.json",
     "admission_manifest_schema_sha256": "4ca9710d21d1c9e2e44468bb7df603f5e044f1adade8d0514ad12a3a8fcf59b3"
   },
+  "profile_validator_surface": {
+    "surface": "tlul10818_boundary_profile_validator",
+    "source_module": "src/tools/validate_tlul10818_boundary_profile.py",
+    "source_module_sha256": "260cb086ba1013ce0a86c6be2f09c5ff42e248de652a98512cc920680d257cc9",
+    "interface": "validate_profile"
+  },
   "timing_template_surface": {
     "surface": "tlul10818_boundary_timing_template_builder",
     "source_module": "src/tools/build_tlul10818_boundary_timing_template.py",

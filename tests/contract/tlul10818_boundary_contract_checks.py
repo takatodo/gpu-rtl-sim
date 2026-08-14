@@ -64,6 +64,7 @@ from build_tlul10818_boundary_timing_template import (  # noqa: E402
 from admit_tlul10818_boundary_observations import (  # noqa: E402
     main as admit_boundary_observations_main,
 )
+from validate_tlul10818_boundary_profile import validate_profile  # noqa: E402
 
 
 class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
@@ -243,6 +244,13 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 fixed["fail_point_count"],
                 profile["ground_truth_summary"]["fixed_fail_point_count"],
             )
+            self.assertEqual(
+                validate_profile(
+                    config_path=CONTRACT,
+                    profile_id=profile["profile_id"],
+                )["status"],
+                "pass",
+            )
         self.assertIn(profile["profile_id"], DOC.read_text(encoding="utf-8"))
 
     def test_semantic_identity_is_pinned_to_wrapper_outputs(self) -> None:
@@ -393,6 +401,17 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             admission_surface["admission_manifest_schema_sha256"],
             hashlib.sha256(ADMISSION_MANIFEST_SCHEMA.read_bytes()).hexdigest(),
+        )
+        profile_validator_surface = config["profile_validator_surface"]
+        profile_validator_source = REPO_ROOT / profile_validator_surface["source_module"]
+        self.assertEqual(
+            profile_validator_surface["surface"],
+            "tlul10818_boundary_profile_validator",
+        )
+        self.assertEqual(profile_validator_surface["interface"], "validate_profile")
+        self.assertEqual(
+            profile_validator_surface["source_module_sha256"],
+            hashlib.sha256(profile_validator_source.read_bytes()).hexdigest(),
         )
         timing_surface = config["timing_template_surface"]
         timing_source = REPO_ROOT / timing_surface["source_module"]
