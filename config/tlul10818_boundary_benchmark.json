@@ -200,6 +200,12 @@
     "source_module_sha256": "260cb086ba1013ce0a86c6be2f09c5ff42e248de652a98512cc920680d257cc9",
     "interface": "validate_profile"
   },
+  "profile_materializer_surface": {
+    "surface": "tlul10818_boundary_profile_materializer",
+    "source_module": "src/tools/materialize_tlul10818_boundary_profile.py",
+    "source_module_sha256": "a45d304dbe94d8dc7450082cd1e0b15a0c7cf04b735322ecb55431d0a1145b0b",
+    "interface": "materialize_profile"
+  },
   "timing_template_surface": {
     "surface": "tlul10818_boundary_timing_template_builder",
     "source_module": "src/tools/build_tlul10818_boundary_timing_template.py",
@@ -307,7 +313,7 @@
           "random-cpu-gpu"
         ]
       },
-      "artifact_dir": "artifacts/tlul10818_boundary_admitted_codex_20260814_222737",
+      "artifact_dir": "artifacts/tlul10818_boundary_benchmark",
       "artifact_sha256": {
         "run_spec.json": "3c35c5c8f74922809def7a893e111adb359ef4e1666d6b8e9a500243f6e5df79",
         "experiment_contract.json": "9751bbadbcb7c9b2d3b5d3c27bd74609d588690f5c759c6d6c72b85e7cc17114",

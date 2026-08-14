@@ -43,6 +43,10 @@ Use `src/tools/validate_tlul10818_boundary_profile.py --profile-id
 tlul10818_2x2_ordered_timing_full_enumeration_v1` to re-check the pinned
 artifact hashes, admission manifest, pipeline status, comparison IDs, and
 ground-truth topology summary for that profile.
+Use `src/tools/materialize_tlul10818_boundary_profile.py` to copy a freshly
+admitted profile from a runner-specific directory into the stable
+`artifacts/tlul10818_boundary_benchmark/` location without overwriting
+mismatched existing files.
 
 `src/tools/tlul10818_gpu_schedule.py` is the runner-facing Module for that
 surface. Its Interface is:

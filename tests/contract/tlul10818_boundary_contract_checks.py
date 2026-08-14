@@ -65,6 +65,7 @@ from admit_tlul10818_boundary_observations import (  # noqa: E402
     main as admit_boundary_observations_main,
 )
 from validate_tlul10818_boundary_profile import validate_profile  # noqa: E402
+from materialize_tlul10818_boundary_profile import materialize_profile  # noqa: E402
 
 
 class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
@@ -206,6 +207,10 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         )
         self.assertEqual(profile["comparison_ids"]["selector"], ["selectors-on-gpu"])
         self.assertEqual(profile["comparison_ids"]["backend"], ["random-cpu-gpu"])
+        self.assertEqual(
+            profile["artifact_dir"],
+            "artifacts/tlul10818_boundary_benchmark",
+        )
         for digest in profile["artifact_sha256"].values():
             self.assertRegex(digest, r"\A[0-9a-f]{64}\Z")
         for digest in profile["report_sha256"].values():
@@ -252,6 +257,30 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 "pass",
             )
         self.assertIn(profile["profile_id"], DOC.read_text(encoding="utf-8"))
+
+    def test_profile_materializer_copies_admitted_artifacts_to_stable_path(self) -> None:
+        profile = load_contract()["admitted_benchmark_profiles"][0]
+        source = REPO_ROOT / "artifacts/tlul10818_boundary_admitted_codex_20260814_222737"
+        if not source.is_dir():
+            return
+        with tempfile.TemporaryDirectory() as temporary:
+            destination = Path(temporary) / "stable"
+            result = materialize_profile(
+                config_path=CONTRACT,
+                profile_id=profile["profile_id"],
+                source_dir=source,
+                destination_dir=destination,
+            )
+            self.assertEqual(result["status"], "pass")
+            self.assertEqual(result["validation"]["status"], "pass")
+            self.assertTrue((destination / "admission_manifest.json").is_file())
+            self.assertTrue((destination / "pipeline_result.json").is_file())
+            self.assertTrue(
+                any(name.endswith(".svg") for name in result["copied_artifacts"])
+            )
+            self.assertTrue(
+                any(name.endswith(".md") for name in result["copied_artifacts"])
+            )
 
     def test_semantic_identity_is_pinned_to_wrapper_outputs(self) -> None:
         config = load_contract()
@@ -412,6 +441,17 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             profile_validator_surface["source_module_sha256"],
             hashlib.sha256(profile_validator_source.read_bytes()).hexdigest(),
+        )
+        materializer_surface = config["profile_materializer_surface"]
+        materializer_source = REPO_ROOT / materializer_surface["source_module"]
+        self.assertEqual(
+            materializer_surface["surface"],
+            "tlul10818_boundary_profile_materializer",
+        )
+        self.assertEqual(materializer_surface["interface"], "materialize_profile")
+        self.assertEqual(
+            materializer_surface["source_module_sha256"],
+            hashlib.sha256(materializer_source.read_bytes()).hexdigest(),
         )
         timing_surface = config["timing_template_surface"]
         timing_source = REPO_ROOT / timing_surface["source_module"]
