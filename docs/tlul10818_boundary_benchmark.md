@@ -79,6 +79,16 @@ budget, selector seed, CPU executor identity, GPU executor identity, and GPU
 resident width explicitly. The tool materializes the four declared selector
 trials on the GPU backend plus the matching random CPU/GPU backend comparison.
 
+`src/tools/build_tlul10818_boundary_run_result.py` is the JSON producer for the
+external runner's completed result. It consumes an already generated
+`rtl_boundary_experiment_contract`, a runner observation JSON containing
+`runner`, complete `point_results`, and runner-owned `timing` rows, then uses
+the public sidecar selector ABI to materialize sidecar-ready policy trials,
+executions, launches, and fixed-confirmation rows. It does not compile RTL, run
+the DUT, search for the known failure, replay bad/fixed sequences, or fabricate
+timing. The timing rows are consumed in deterministic launch order and rejected
+if any row is missing, extra, or attached to the wrong trial/launch index.
+
 `src/tools/tlul10818_boundary_evidence.py` is the evidence-admission producer
 Module. `build_boundary_evidence_bundle(contract_bundle, run_result)` accepts
 only external runner completion identity, one raw bad/fixed CPU/GPU projection

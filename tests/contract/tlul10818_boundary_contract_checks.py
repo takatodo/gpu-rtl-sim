@@ -46,6 +46,10 @@ from tlul10818_boundary_evidence import (  # noqa: E402
 from build_tlul10818_boundary_artifacts import main as build_boundary_artifacts_main  # noqa: E402
 from build_tlul10818_boundary_artifacts import _read_object as read_artifact_object  # noqa: E402
 from build_tlul10818_boundary_run_spec import main as build_run_spec_main  # noqa: E402
+from build_tlul10818_boundary_run_result import (  # noqa: E402
+    build_run_result,
+    main as build_run_result_main,
+)
 
 
 class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
@@ -193,6 +197,13 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             run_spec_surface["source_module_sha256"],
             hashlib.sha256(run_spec_source.read_bytes()).hexdigest(),
+        )
+        run_result_surface = config["run_result_builder_surface"]
+        run_result_source = REPO_ROOT / run_result_surface["source_module"]
+        self.assertEqual(run_result_surface["interface"], "build_run_result")
+        self.assertEqual(
+            run_result_surface["source_module_sha256"],
+            hashlib.sha256(run_result_source.read_bytes()).hexdigest(),
         )
 
     def test_semantic_identity_rejects_aliasing(self) -> None:
@@ -668,6 +679,118 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
             self.assertEqual(
                 {trial["policy"]["kind"] for trial in run_spec["trials"]},
                 {"random", "stratified", "ordered_refinement", "novelty_boundary_guided"},
+            )
+
+    def test_boundary_run_result_builder_materializes_sidecar_trial_surface(self) -> None:
+        sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
+        if not sidecar_src.is_dir():
+            self.skipTest("verilator-model-sidecar source checkout is unavailable")
+        sys.path.insert(0, sidecar_src.as_posix())
+        from verilator_model_sidecar.sweep_boundary import select_boundary_points
+
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            contract_path = directory / "experiment_contract.json"
+            observations_path = directory / "runner_observations.json"
+            output_path = directory / "run_result.json"
+            contract_bundle = build_boundary_experiment_contract(
+                load_contract(), experiment_run_spec(), golden_sweep_enumerator
+            )
+            contract = contract_bundle["experiment_contract"]
+            fixture_result = raw_run_result(contract, selector=select_boundary_points)
+            timing_rows = [
+                {
+                    "trial_id": trial["trial_id"],
+                    "launch_index": index,
+                    "cycle_evals": launch["resident_width"],
+                    "start_offset_ns": launch["start_offset_ns"],
+                    "end_offset_ns": launch["end_offset_ns"],
+                }
+                for trial in fixture_result["trials"]
+                for index, launch in enumerate(trial["launches"])
+            ]
+            contract_path.write_text(json.dumps(contract), encoding="utf-8")
+            observations_path.write_text(
+                json.dumps(
+                    {
+                        "runner": fixture_result["runner"],
+                        "point_results": fixture_result["point_results"],
+                        "timing": timing_rows,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                build_run_result_main(
+                    [
+                        "--experiment-contract",
+                        contract_path.as_posix(),
+                        "--runner-observations",
+                        observations_path.as_posix(),
+                        "--sidecar-src",
+                        sidecar_src.as_posix(),
+                        "--out",
+                        output_path.as_posix(),
+                    ]
+                ),
+                0,
+            )
+            run_result = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(set(run_result), {"runner", "point_results", "trials"})
+            self.assertEqual(run_result["runner"], fixture_result["runner"])
+            self.assertEqual(run_result["point_results"], fixture_result["point_results"])
+            self.assertEqual(
+                [trial["trial_id"] for trial in run_result["trials"]],
+                [trial["trial_id"] for trial in contract["trials"]],
+            )
+            self.assertTrue(
+                all(
+                    trial["policy_trial"]["surface"] == "rtl_boundary_policy_trial"
+                    for trial in run_result["trials"]
+                )
+            )
+
+    def test_boundary_run_result_builder_rejects_timing_mismatch(self) -> None:
+        sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
+        if not sidecar_src.is_dir():
+            self.skipTest("verilator-model-sidecar source checkout is unavailable")
+        sys.path.insert(0, sidecar_src.as_posix())
+        from verilator_model_sidecar.sweep_boundary import select_boundary_points
+
+        contract_bundle = build_boundary_experiment_contract(
+            load_contract(), experiment_run_spec(), golden_sweep_enumerator
+        )
+        contract = contract_bundle["experiment_contract"]
+        fixture_result = raw_run_result(contract, selector=select_boundary_points)
+        timing_rows = [
+            {
+                "trial_id": trial["trial_id"],
+                "launch_index": index,
+                "cycle_evals": launch["resident_width"],
+                "start_offset_ns": launch["start_offset_ns"],
+                "end_offset_ns": launch["end_offset_ns"],
+            }
+            for trial in fixture_result["trials"]
+            for index, launch in enumerate(trial["launches"])
+        ]
+        observations = {
+            "runner": fixture_result["runner"],
+            "point_results": fixture_result["point_results"],
+            "timing": timing_rows[:-1],
+        }
+        with self.assertRaises(ValueError):
+            build_run_result(
+                experiment_contract=contract,
+                runner_observations=observations,
+                selector=select_boundary_points,
+            )
+
+        observations["timing"] = timing_rows + [dict(timing_rows[-1])]
+        with self.assertRaises(ValueError):
+            build_run_result(
+                experiment_contract=contract,
+                runner_observations=observations,
+                selector=select_boundary_points,
             )
 
     def test_boundary_artifacts_pass_real_sidecar_adjudication(self) -> None:
