@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "surface": "ibex2188_boundary_benchmark_target",
-  "status": "target_identity_pinned_runtime_profile_pending",
+  "status": "directed_cpu_reproduction_proven_gpu_profile_pending",
   "target": {
     "target_id": "ibex2188",
     "issue": "https://github.com/lowRISC/ibex/issues/2188",
@@ -16,7 +16,7 @@
       "RegFile": "ibex_pkg::RegFileFF",
       "RegFileECC": "derived_from_SecureIbex"
     },
-    "checkpoint_identity": "pending_directed_load_branch_hazard_checkpoint",
+    "checkpoint_identity": "directed_load_dependent_branch_one_cycle_response_v1",
     "oracle_identity": "ibex2188.ecc_read_error_requires_major_alert_when_no_wb_forwarding.v1",
     "semantic_projection": {
       "observables": [
@@ -118,5 +118,13 @@
       "rtl_boundary_report_validation",
       "rtl_boundary_pipeline_result"
     ]
+  },
+  "current_cpu_evidence": {
+    "status": "pass",
+    "runner": "scripts/run_ibex2188_cpu_regression.sh",
+    "testbench": "examples/ibex2188/ibex2188_ecc_temporal_tb.sv",
+    "runner_observations_sha256": "f3b4d33c633c62a993209108d47e5e3883f32bae4bb2889b960a26484ad89cec",
+    "bad_oracle_violation": 1,
+    "fixed_oracle_violation": 0
   }
 }
