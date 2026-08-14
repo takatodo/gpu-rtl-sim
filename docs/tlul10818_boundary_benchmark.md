@@ -79,6 +79,14 @@ budget, selector seed, CPU executor identity, GPU executor identity, and GPU
 resident width explicitly. The tool materializes the four declared selector
 trials on the GPU backend plus the matching random CPU/GPU backend comparison.
 
+`src/tools/build_tlul10818_boundary_execution_packet.py` is the pre-runtime
+handoff producer. Given the target config, run spec, and sidecar source, it
+writes `sweep_enumeration.json`, `experiment_contract.json`,
+`semantic_manifests.json`, and `point_result_template.json`. The template lists
+every canonical point ID, action name, parameters, required bad/fixed CPU/GPU
+projection keys, and coverage-field obligation. It contains no observed values
+and is not runtime evidence.
+
 `src/tools/build_tlul10818_boundary_run_result.py` is the JSON producer for the
 external runner's completed result. It consumes an already generated
 `rtl_boundary_experiment_contract`, a runner observation JSON containing

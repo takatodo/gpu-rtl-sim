@@ -46,6 +46,9 @@ from tlul10818_boundary_evidence import (  # noqa: E402
 )
 from build_tlul10818_boundary_artifacts import main as build_boundary_artifacts_main  # noqa: E402
 from build_tlul10818_boundary_artifacts import _read_object as read_artifact_object  # noqa: E402
+from build_tlul10818_boundary_execution_packet import (  # noqa: E402
+    main as build_execution_packet_main,
+)
 from build_tlul10818_boundary_run_spec import main as build_run_spec_main  # noqa: E402
 from build_tlul10818_boundary_run_result import (  # noqa: E402
     build_run_result,
@@ -204,6 +207,13 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             run_spec_surface["source_module_sha256"],
             hashlib.sha256(run_spec_source.read_bytes()).hexdigest(),
+        )
+        execution_packet_surface = config["execution_packet_surface"]
+        execution_packet_source = REPO_ROOT / execution_packet_surface["source_module"]
+        self.assertEqual(execution_packet_surface["interface"], "build_execution_packet")
+        self.assertEqual(
+            execution_packet_surface["source_module_sha256"],
+            hashlib.sha256(execution_packet_source.read_bytes()).hexdigest(),
         )
         run_result_surface = config["run_result_builder_surface"]
         run_result_source = REPO_ROOT / run_result_surface["source_module"]
@@ -709,6 +719,55 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 {trial["policy"]["kind"] for trial in run_spec["trials"]},
                 {"random", "stratified", "ordered_refinement", "novelty_boundary_guided"},
             )
+
+    def test_boundary_execution_packet_lists_all_points_without_observations(self) -> None:
+        sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
+        if not sidecar_src.is_dir():
+            self.skipTest("verilator-model-sidecar source checkout is unavailable")
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            run_spec_path = directory / "run_spec.json"
+            out_dir = directory / "packet"
+            run_spec_path.write_text(json.dumps(experiment_run_spec()), encoding="utf-8")
+            self.assertEqual(
+                build_execution_packet_main(
+                    [
+                        "--target-config",
+                        CONTRACT.as_posix(),
+                        "--run-spec",
+                        run_spec_path.as_posix(),
+                        "--sidecar-src",
+                        sidecar_src.as_posix(),
+                        "--out-dir",
+                        out_dir.as_posix(),
+                    ]
+                ),
+                0,
+            )
+            contract = json.loads(
+                (out_dir / "experiment_contract.json").read_text(encoding="utf-8")
+            )
+            template = json.loads(
+                (out_dir / "point_result_template.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                template["surface"], "tlul10818_boundary_point_result_template"
+            )
+            self.assertEqual(template["experiment_id"], contract["experiment_id"])
+            self.assertEqual(
+                template["semantic_projection_keys"],
+                ["done", "d_data", "d_error", "intg_error", "oracle_violation"],
+            )
+            self.assertEqual(len(template["rows"]), len(contract["action_domain"]))
+            self.assertEqual(
+                [row["point_id"] for row in template["rows"]],
+                [row["point_id"] for row in contract["action_domain"]],
+            )
+            self.assertTrue(
+                all("observed" not in json.dumps(row) for row in template["rows"])
+            )
+            self.assertTrue((out_dir / "sweep_enumeration.json").is_file())
+            self.assertTrue((out_dir / "semantic_manifests.json").is_file())
 
     def test_boundary_run_result_builder_materializes_sidecar_trial_surface(self) -> None:
         sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")

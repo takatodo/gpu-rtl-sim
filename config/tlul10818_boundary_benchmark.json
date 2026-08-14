@@ -148,6 +148,12 @@
     "source_module_sha256": "2f852c88601c33dbe47dd3e54b43cc9255656a842dfa0165384fc9105a338d87",
     "interface": "build_run_spec"
   },
+  "execution_packet_surface": {
+    "surface": "tlul10818_boundary_execution_packet_builder",
+    "source_module": "src/tools/build_tlul10818_boundary_execution_packet.py",
+    "source_module_sha256": "1009fe3e4c531dc0b992aeb8ebea6af642f7acd03f64ef172228e31e572b8c9d",
+    "interface": "build_execution_packet"
+  },
   "run_result_builder_surface": {
     "surface": "tlul10818_boundary_run_result_builder",
     "source_module": "src/tools/build_tlul10818_boundary_run_result.py",
