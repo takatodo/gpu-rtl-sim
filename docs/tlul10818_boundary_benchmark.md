@@ -4,7 +4,7 @@
 for turning OpenTitan TL-UL #10818 into a boundary-discovery benchmark. It does
 not contain runtime evidence and must not be treated as a passing result.
 The required sidecar surfaces are pinned to adjudicator commit
-`6cfe2fdc530e268e6da3043f9c65d48ab114a85f`, which includes the selector-response
+`39a63a9251abf91c2fa12184f7df74d2bfa57566`, which includes the selector-response
 surface and schema.
 
 The currently implemented wrapper exposes the four-action grid already used by
