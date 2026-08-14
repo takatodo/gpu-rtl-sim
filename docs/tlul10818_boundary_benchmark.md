@@ -85,7 +85,8 @@ writes `sweep_enumeration.json`, `experiment_contract.json`,
 `semantic_manifests.json`, and `point_result_template.json`. The template lists
 every canonical point ID, action name, parameters, required bad/fixed CPU/GPU
 projection keys, and coverage-field obligation. It contains no observed values
-and is not runtime evidence.
+and is not runtime evidence. Its machine-readable output shape is
+`contracts/tlul10818_boundary_point_result_template.schema.json`.
 
 `src/tools/build_tlul10818_boundary_run_result.py` is the JSON producer for the
 external runner's completed result. It consumes an already generated
@@ -120,7 +121,8 @@ confirmation launches. Given an Experiment Contract and complete point results,
 the tool emits the exact trial/launch order and execution requests that the
 external runner must time. It deliberately outputs placeholders only; the
 runner must fill `cycle_evals`, `start_offset_ns`, and `end_offset_ns` in
-`runner_observations.json`.
+`runner_observations.json`. Its machine-readable output shape is
+`contracts/tlul10818_boundary_timing_template.schema.json`.
 
 `src/tools/tlul10818_boundary_evidence.py` is the evidence-admission producer
 Module. `build_boundary_evidence_bundle(contract_bundle, run_result)` accepts

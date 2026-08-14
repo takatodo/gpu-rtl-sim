@@ -152,7 +152,9 @@
     "surface": "tlul10818_boundary_execution_packet_builder",
     "source_module": "src/tools/build_tlul10818_boundary_execution_packet.py",
     "source_module_sha256": "1009fe3e4c531dc0b992aeb8ebea6af642f7acd03f64ef172228e31e572b8c9d",
-    "interface": "build_execution_packet"
+    "interface": "build_execution_packet",
+    "point_result_template_schema": "contracts/tlul10818_boundary_point_result_template.schema.json",
+    "point_result_template_schema_sha256": "c98b4504b433e0e20b71f99c7f2be3caa8b3021b08c5a14894ac1ddbd1411c2f"
   },
   "run_result_builder_surface": {
     "surface": "tlul10818_boundary_run_result_builder",
@@ -172,7 +174,9 @@
     "surface": "tlul10818_boundary_timing_template_builder",
     "source_module": "src/tools/build_tlul10818_boundary_timing_template.py",
     "source_module_sha256": "63c273c35cf6ab0525cde08b1d8275c5949bd837e32a0ffd8e01c8771c36b530",
-    "interface": "build_timing_template"
+    "interface": "build_timing_template",
+    "timing_template_schema": "contracts/tlul10818_boundary_timing_template.schema.json",
+    "timing_template_schema_sha256": "ad2ad2bbdabdb14d0b344f2040552ee3919b4578a898b3c3c820345414a77540"
   },
   "evidence_builder_surface": {
     "surface": "tlul10818_boundary_evidence_builder",

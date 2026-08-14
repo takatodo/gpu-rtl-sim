@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/gpu-rtl-sim/tlul10818_boundary_point_result_template.schema.json",
+  "title": "TL-UL #10818 boundary point-result template",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "surface",
+    "experiment_id",
+    "sweep_space_sha256",
+    "action_domain_sha256",
+    "semantic_projection_keys",
+    "oracle_field",
+    "rows"
+  ],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "surface": {"type": "string", "const": "tlul10818_boundary_point_result_template"},
+    "experiment_id": {"type": "string", "minLength": 1},
+    "sweep_space_sha256": {"$ref": "#/$defs/sha256"},
+    "action_domain_sha256": {"$ref": "#/$defs/sha256"},
+    "semantic_projection_keys": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "oracle_field": {"type": "string", "minLength": 1},
+    "rows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/row"}
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "point_id": {"type": "string", "pattern": "^point:v1:[0-9a-f]{64}$"},
+    "scalar": {
+      "oneOf": [
+        {"type": "string"},
+        {"type": "integer"},
+        {"type": "boolean"}
+      ]
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/scalar"}
+    },
+    "row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "point_id",
+        "action",
+        "parameters",
+        "required_revisions",
+        "required_adapters",
+        "runner_must_fill"
+      ],
+      "properties": {
+        "point_id": {"$ref": "#/$defs/point_id"},
+        "action": {"type": "string", "minLength": 1},
+        "parameters": {"$ref": "#/$defs/parameters"},
+        "required_revisions": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "bad"},
+            {"const": "fixed"}
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "required_adapters": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "cpu"},
+            {"const": "gpu"}
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "runner_must_fill": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["coverage_feature_ids", "revisions"],
+          "properties": {
+            "coverage_feature_ids": {"type": "string", "minLength": 1},
+            "revisions": {"type": "object"}
+          }
+        }
+      }
+    }
+  }
+}

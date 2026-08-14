@@ -16,9 +16,11 @@ from tests.contract.tlul10818_boundary_fixtures import (
     GOLDEN_SWEEP_SHA256,
     GPU_TB,
     HEX40,
+    POINT_RESULT_TEMPLATE_SCHEMA,
     REPO_ROOT,
     RUNNER_OBSERVATIONS_SCHEMA,
     SCRIPT,
+    TIMING_TEMPLATE_SCHEMA,
     experiment_run_spec,
     golden_sweep_enumerator,
     load_contract,
@@ -215,6 +217,14 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
             execution_packet_surface["source_module_sha256"],
             hashlib.sha256(execution_packet_source.read_bytes()).hexdigest(),
         )
+        self.assertEqual(
+            REPO_ROOT / execution_packet_surface["point_result_template_schema"],
+            POINT_RESULT_TEMPLATE_SCHEMA,
+        )
+        self.assertEqual(
+            execution_packet_surface["point_result_template_schema_sha256"],
+            hashlib.sha256(POINT_RESULT_TEMPLATE_SCHEMA.read_bytes()).hexdigest(),
+        )
         run_result_surface = config["run_result_builder_surface"]
         run_result_source = REPO_ROOT / run_result_surface["source_module"]
         self.assertEqual(run_result_surface["interface"], "build_run_result")
@@ -243,6 +253,14 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
         self.assertEqual(
             timing_surface["source_module_sha256"],
             hashlib.sha256(timing_source.read_bytes()).hexdigest(),
+        )
+        self.assertEqual(
+            REPO_ROOT / timing_surface["timing_template_schema"],
+            TIMING_TEMPLATE_SCHEMA,
+        )
+        self.assertEqual(
+            timing_surface["timing_template_schema_sha256"],
+            hashlib.sha256(TIMING_TEMPLATE_SCHEMA.read_bytes()).hexdigest(),
         )
 
     def test_semantic_identity_rejects_aliasing(self) -> None:
@@ -750,6 +768,23 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
             template = json.loads(
                 (out_dir / "point_result_template.json").read_text(encoding="utf-8")
             )
+            schema = json.loads(POINT_RESULT_TEMPLATE_SCHEMA.read_text(encoding="utf-8"))
+            self.assertEqual(schema["additionalProperties"], False)
+            self.assertEqual(
+                schema["required"],
+                [
+                    "schema_version",
+                    "surface",
+                    "experiment_id",
+                    "sweep_space_sha256",
+                    "action_domain_sha256",
+                    "semantic_projection_keys",
+                    "oracle_field",
+                    "rows",
+                ],
+            )
+            self.assertEqual(schema["properties"]["rows"]["items"]["$ref"], "#/$defs/row")
+            self.assertEqual(schema["$defs"]["row"]["additionalProperties"], False)
             self.assertEqual(
                 template["surface"], "tlul10818_boundary_point_result_template"
             )
@@ -944,6 +979,26 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
                 0,
             )
             template = json.loads(output_path.read_text(encoding="utf-8"))
+            schema = json.loads(TIMING_TEMPLATE_SCHEMA.read_text(encoding="utf-8"))
+            self.assertEqual(schema["additionalProperties"], False)
+            self.assertEqual(
+                schema["required"],
+                [
+                    "schema_version",
+                    "surface",
+                    "experiment_id",
+                    "sweep_space_sha256",
+                    "action_domain_sha256",
+                    "timing_rows",
+                ],
+            )
+            self.assertEqual(
+                schema["properties"]["timing_rows"]["items"]["$ref"],
+                "#/$defs/timing_row",
+            )
+            self.assertEqual(
+                schema["$defs"]["timing_row"]["additionalProperties"], False
+            )
             self.assertEqual(template["surface"], "tlul10818_boundary_timing_template")
             self.assertEqual(template["experiment_id"], contract["experiment_id"])
             self.assertEqual(template["sweep_space_sha256"], contract["sweep_space_sha256"])
