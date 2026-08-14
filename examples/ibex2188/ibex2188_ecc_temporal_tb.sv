@@ -84,10 +84,13 @@ module ibex2188_ecc_temporal_tb;
   ibex_mubi_t core_busy_o;
 
   bit inject_port_b;
+  bit fault_enable;
   int unsigned fault_bit;
+  int unsigned load_response_delay;
   logic fault_active;
   logic fault_seen_q;
   logic alert_seen_q;
+  logic load_writeback_seen_q;
   logic observed_rf_read_enable_q;
   logic observed_rf_wb_match_q;
   logic observed_rf_write_wb_q;
@@ -116,7 +119,7 @@ module ibex2188_ecc_temporal_tb;
   assign instr_rdata_i = instruction_word(instr_addr_q);
   assign instr_err_i = 1'b0;
   assign data_gnt_i = data_req_o;
-  assign data_rvalid_i = data_pending_q;
+  assign data_rvalid_i = load_response_delay == 0 ? data_req_o : data_pending_q;
   assign data_rdata_i = 32'h0000_0001;
   assign data_err_i = 1'b0;
   assign rf_a_clean = register_file[rf_raddr_a_o];
@@ -126,7 +129,7 @@ module ibex2188_ecc_temporal_tb;
     rf_rdata_a_ecc_i = rf_a_clean;
     rf_rdata_b_ecc_i = rf_b_clean;
     fault_active = 1'b0;
-    if (!fault_seen_q && core_i.rf_write_wb == 1'b0) begin
+    if (fault_enable && !fault_seen_q && core_i.rf_write_wb == 1'b0) begin
       if (!inject_port_b && core_i.rf_ren_a && core_i.rf_rd_a_wb_match) begin
         rf_rdata_a_ecc_i = rf_a_clean ^ ({38'b0, 1'b1} << fault_bit);
         fault_active = 1'b1;
@@ -210,6 +213,7 @@ module ibex2188_ecc_temporal_tb;
     end
     if (fault_active) fault_seen_q <= 1'b1;
     if (alert_major_internal_o) alert_seen_q <= 1'b1;
+    if (core_i.rf_write_wb && rf_waddr_wb_o == 5'd14) load_writeback_seen_q <= 1'b1;
     if (fault_active) begin
       observed_rf_read_enable_q <= inject_port_b ? core_i.rf_ren_b : core_i.rf_ren_a;
       observed_rf_wb_match_q <= inject_port_b ? core_i.rf_rd_b_wb_match : core_i.rf_rd_a_wb_match;
@@ -230,6 +234,7 @@ module ibex2188_ecc_temporal_tb;
     data_pending_q = 1'b0;
     fault_seen_q = 1'b0;
     alert_seen_q = 1'b0;
+    load_writeback_seen_q = 1'b0;
     observed_rf_read_enable_q = 1'b0;
     observed_rf_wb_match_q = 1'b0;
     observed_rf_write_wb_q = 1'b0;
@@ -237,7 +242,12 @@ module ibex2188_ecc_temporal_tb;
     observed_instruction_valid_id_q = 1'b0;
     observed_alert_major_internal_q = 1'b0;
     inject_port_b = $test$plusargs("fault-port-b");
+    fault_enable = !$test$plusargs("no-fault");
     if (!$value$plusargs("fault-bit=%d", fault_bit)) fault_bit = 0;
+    if (!$value$plusargs("load-response-delay=%d", load_response_delay)) begin
+      load_response_delay = 1;
+    end
+    if (load_response_delay > 1) $fatal(1, "supported response delays are 0 and 1");
     fetch_enable_i = IbexMuBiOn;
     ic_scr_key_valid_i = 1'b0;
     irq_software_i = 1'b0;
@@ -252,10 +262,11 @@ module ibex2188_ecc_temporal_tb;
     end
     repeat (2) @(posedge clk_i);
     rst_ni = 1'b1;
-    wait (fault_seen_q);
+    wait (fault_enable ? fault_seen_q : load_writeback_seen_q);
     @(negedge clk_i);
-    $display("IBEX2188_RESULT fault_port=%0s fault_bit=%0d fault_seen=%0d alert_seen=%0d oracle_violation=%0d rf_read_enable=%0d rf_wb_match=%0d rf_write_wb=%0d rf_ecc_error_id=%0d instruction_valid_id=%0d alert_major_internal=%0d",
-             inject_port_b ? "b" : "a", fault_bit, fault_seen_q, alert_seen_q,
+    $display("IBEX2188_RESULT fault_port=%0s fault_enable=%0d fault_bit=%0d load_response_delay=%0d fault_seen=%0d alert_seen=%0d oracle_violation=%0d rf_read_enable=%0d rf_wb_match=%0d rf_write_wb=%0d rf_ecc_error_id=%0d instruction_valid_id=%0d alert_major_internal=%0d",
+             inject_port_b ? "b" : "a", fault_enable, fault_bit, load_response_delay,
+             fault_seen_q, alert_seen_q,
              fault_seen_q && !alert_seen_q, observed_rf_read_enable_q,
              observed_rf_wb_match_q, observed_rf_write_wb_q,
              observed_rf_ecc_error_id_q, observed_instruction_valid_id_q,

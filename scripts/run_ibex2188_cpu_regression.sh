@@ -6,6 +6,10 @@ bad_checkout=''
 fixed_checkout=''
 out_dir=''
 verilator_bin='verilator'
+no_fault=false
+load_response_delay=1
+expect_bad_oracle=1
+expect_fixed_oracle=0
 
 while (($#)); do
   case "$1" in
@@ -13,12 +17,25 @@ while (($#)); do
     --fixed-checkout) fixed_checkout=$2; shift 2 ;;
     --out) out_dir=$2; shift 2 ;;
     --verilator) verilator_bin=$2; shift 2 ;;
+    --no-fault) no_fault=true; shift ;;
+    --load-response-delay) load_response_delay=$2; shift 2 ;;
+    --expect-bad-oracle) expect_bad_oracle=$2; shift 2 ;;
+    --expect-fixed-oracle) expect_fixed_oracle=$2; shift 2 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
 
 if [[ -z $bad_checkout || -z $fixed_checkout || -z $out_dir ]]; then
   echo 'required: --bad-checkout --fixed-checkout --out' >&2
+  exit 2
+fi
+if [[ $load_response_delay != 0 && $load_response_delay != 1 ]]; then
+  echo 'load response delay must be 0 or 1' >&2
+  exit 2
+fi
+if [[ $expect_bad_oracle != 0 && $expect_bad_oracle != 1 ]] ||
+   [[ $expect_fixed_oracle != 0 && $expect_fixed_oracle != 1 ]]; then
+  echo 'expected oracle values must be 0 or 1' >&2
   exit 2
 fi
 if [[ -e $out_dir ]]; then
@@ -97,7 +114,9 @@ run_revision() {
     "${primitive_sources[@]}" "${core_rtl[@]}" "$testbench"
   )
   "${command[@]}" >"$out_dir/$label-build.log" 2>&1
-  "$build_dir/Vibex2188_ecc_temporal_tb" +fault-bit=0 \
+  local -a run_args=(+fault-bit=0 "+load-response-delay=$load_response_delay")
+  if [[ $no_fault == true ]]; then run_args+=(+no-fault); fi
+  "$build_dir/Vibex2188_ecc_temporal_tb" "${run_args[@]}" \
     >"$out_dir/$label-run.log" 2>&1
   grep '^IBEX2188_RESULT ' "$out_dir/$label-run.log" | tail -n 1
 }
@@ -106,11 +125,11 @@ mkdir "$out_dir"
 bad_result=$(run_revision bad "$bad_checkout" "$bad_revision")
 fixed_result=$(run_revision fixed "$fixed_checkout" "$fixed_revision")
 
-[[ $bad_result == *'fault_seen=1 alert_seen=0 oracle_violation=1'* ]] || {
-  echo "bad revision did not reproduce the expected #2188 oracle violation" >&2; exit 1;
+[[ $bad_result == *"oracle_violation=$expect_bad_oracle"* ]] || {
+  echo "bad revision oracle does not match its expected value" >&2; exit 1;
 }
-[[ $fixed_result == *'fault_seen=1 alert_seen=1 oracle_violation=0'* ]] || {
-  echo "fixed revision did not clear the expected #2188 oracle violation" >&2; exit 1;
+[[ $fixed_result == *"oracle_violation=$expect_fixed_oracle"* ]] || {
+  echo "fixed revision oracle does not match its expected value" >&2; exit 1;
 }
 
 field() {
@@ -146,14 +165,16 @@ printf '%s\n' '{' \
   '  "checkpoint_identity": "directed_load_dependent_branch_one_cycle_response_v1",' \
   '  "oracle_identity": "ibex2188.ecc_read_error_requires_major_alert_when_no_wb_forwarding.v1",' \
   '  "fault_port": "a",' \
+  "  \"fault_enable\": $([[ $no_fault == true ]] && printf 0 || printf 1)," \
   '  "fault_bit": 0,' \
+  "  \"load_response_delay\": $load_response_delay," \
   '  "revisions": {' \
   '    "bad": {' \
-  '      "oracle_violation": 1,' \
+  "      \"oracle_violation\": $expect_bad_oracle," \
   "      \"semantic\": {\"rf_read_enable\": $bad_rf_read_enable, \"rf_wb_match\": $bad_rf_wb_match, \"rf_write_wb\": $bad_rf_write_wb, \"rf_ecc_error_id\": $bad_rf_ecc_error_id, \"instruction_valid_id\": $bad_instruction_valid_id, \"alert_major_internal\": $bad_alert_major_internal}" \
   '    },' \
   '    "fixed": {' \
-  '      "oracle_violation": 0,' \
+  "      \"oracle_violation\": $expect_fixed_oracle," \
   "      \"semantic\": {\"rf_read_enable\": $fixed_rf_read_enable, \"rf_wb_match\": $fixed_rf_wb_match, \"rf_write_wb\": $fixed_rf_write_wb, \"rf_ecc_error_id\": $fixed_rf_ecc_error_id, \"instruction_valid_id\": $fixed_instruction_valid_id, \"alert_major_internal\": $fixed_alert_major_internal}" \
   '    }' \
   '  }' \

@@ -123,7 +123,9 @@
     "status": "pass",
     "runner": "scripts/run_ibex2188_cpu_regression.sh",
     "testbench": "examples/ibex2188/ibex2188_ecc_temporal_tb.sv",
-    "runner_observations_sha256": "e75c98259ce333919573718cc34ccdef63830258a33084ce5b1d20e3a7a8e53d",
+    "runner_observations_sha256": "5ce107018362183af088d4759e492afa8c7bb965754b1517d6e50a3f4dda06d8",
+    "fault_enable": 1,
+    "load_response_delay": 1,
     "bad_oracle_violation": 1,
     "fixed_oracle_violation": 0,
     "semantic_projection_at_injection": {
