@@ -959,6 +959,46 @@ class Tlul10818BoundaryBenchmarkContractTest(unittest.TestCase):
             self.assertTrue(all("cycle_evals" not in row for row in rows))
             self.assertTrue(all(row["execution_requests"] for row in rows))
 
+    def test_boundary_timing_template_rejects_point_results_from_other_contract(self) -> None:
+        sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
+        if not sidecar_src.is_dir():
+            self.skipTest("verilator-model-sidecar source checkout is unavailable")
+        sys.path.insert(0, sidecar_src.as_posix())
+        from verilator_model_sidecar.sweep_boundary import select_boundary_points
+
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            contract_path = directory / "experiment_contract.json"
+            point_results_path = directory / "point_results.json"
+            output_path = directory / "timing_template.json"
+            contract_bundle = build_boundary_experiment_contract(
+                load_contract(), experiment_run_spec(), golden_sweep_enumerator
+            )
+            contract = contract_bundle["experiment_contract"]
+            fixture_result = raw_run_result(contract, selector=select_boundary_points)
+            bad_point_results = json.loads(json.dumps(fixture_result["point_results"]))
+            bad_point_results[0]["point_id"] = (
+                "point:v1:" + "0" * 64
+            )
+            contract_path.write_text(json.dumps(contract), encoding="utf-8")
+            point_results_path.write_text(
+                json.dumps({"point_results": bad_point_results}),
+                encoding="utf-8",
+            )
+            with self.assertRaises(ValueError):
+                build_timing_template_main(
+                    [
+                        "--experiment-contract",
+                        contract_path.as_posix(),
+                        "--point-results",
+                        point_results_path.as_posix(),
+                        "--sidecar-src",
+                        sidecar_src.as_posix(),
+                        "--out",
+                        output_path.as_posix(),
+                    ]
+                )
+
     def test_boundary_run_result_builder_rejects_timing_mismatch(self) -> None:
         sidecar_src = Path("/home/takatodo/circt_manage/coverage/src")
         if not sidecar_src.is_dir():
