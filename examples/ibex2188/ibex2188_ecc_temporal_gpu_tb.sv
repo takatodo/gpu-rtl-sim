@@ -1,12 +1,12 @@
-// Directed, local RTL-simulation harness for Ibex issue #2188.
+// Device-clean, clock-driven form of the Ibex #2188 reproducer.
 //
-// This harness deliberately instantiates ibex_core rather than a full SoC.  It
-// drives a load followed by a dependent branch, models a one-cycle data
-// response, and corrupts one ECC-protected register-file read word only in the
-// issue condition: a read matches the WB address while WB is not writing.
-
+// Deliberately no initial blocks, delays, DPI calls, or pass/fail system
+// tasks.  A host or GPU patch schedule owns clk_i/rst_ni.  The oracle and
+// semantic observables are state, not stdout authority.  The instruction
+// memory is a combinational ROM and the register file is reset to the ECC
+// encoding of zero so the bad/fixed register-file alert predicates run.
 // FuseSoC normally generates this implementation-selection wrapper.  Keeping
-// the generic mapping local makes the direct Verilator runner independent of a
+// the generic mapping local makes the direct GPU runner independent of a
 // FuseSoC installation without changing the pinned Ibex checkout.
 module prim_buf #(
   parameter int Width = 1
@@ -17,12 +17,25 @@ module prim_buf #(
   prim_generic_buf #(.Width(Width)) impl (.in_i, .out_o);
 endmodule
 
-module ibex2188_ecc_temporal_tb;
+module ibex2188_ecc_temporal_gpu_tb (
+  input logic clk_i,
+  input logic rst_ni,
+  input logic fault_enable_i,
+  input logic [4:0] fault_bit_i,
+  input logic [1:0] load_response_delay_i,
+  input logic inject_port_b_i,
+  output logic done_o,
+  output logic oracle_violation_o,
+  output logic fault_seen_o,
+  output logic alert_seen_o,
+  output logic rf_read_enable_o,
+  output logic rf_wb_match_o,
+  output logic rf_write_wb_o,
+  output logic rf_ecc_error_id_o,
+  output logic instruction_valid_id_o,
+  output logic alert_major_internal_o
+);
   import ibex_pkg::*;
-
-  logic clk_i = 1'b0;
-  logic rst_ni = 1'b0;
-  always #5 clk_i = ~clk_i;
 
   logic instr_req_o;
   logic instr_gnt_i;
@@ -53,7 +66,7 @@ module ibex2188_ecc_temporal_tb;
   logic [38:0] rf_wdata_wb_ecc_o;
   logic [38:0] rf_rdata_a_ecc_i;
   logic [38:0] rf_rdata_b_ecc_i;
-  logic [38:0] register_file [0:31];
+  logic [31:0][38:0] register_file;
 
   logic [IC_NUM_WAYS-1:0] ic_tag_req_o;
   logic ic_tag_write_o;
@@ -79,14 +92,10 @@ module ibex2188_ecc_temporal_tb;
   logic double_fault_seen_o;
   ibex_mubi_t fetch_enable_i;
   logic alert_minor_o;
-  logic alert_major_internal_o;
+  logic alert_major_internal_int;
   logic alert_major_bus_o;
   ibex_mubi_t core_busy_o;
 
-  bit inject_port_b;
-  bit fault_enable;
-  int unsigned fault_bit;
-  int unsigned load_response_delay;
   logic fault_active;
   logic fault_seen_q;
   logic alert_seen_q;
@@ -119,7 +128,7 @@ module ibex2188_ecc_temporal_tb;
   assign instr_rdata_i = instruction_word(instr_addr_q);
   assign instr_err_i = 1'b0;
   assign data_gnt_i = data_req_o;
-  assign data_rvalid_i = load_response_delay == 0 ? data_req_o : data_pending_q;
+  assign data_rvalid_i = load_response_delay_i == 0 ? data_req_o : data_pending_q;
   assign data_rdata_i = 32'h0000_0001;
   assign data_err_i = 1'b0;
   assign rf_a_clean = register_file[rf_raddr_a_o];
@@ -129,17 +138,27 @@ module ibex2188_ecc_temporal_tb;
     rf_rdata_a_ecc_i = rf_a_clean;
     rf_rdata_b_ecc_i = rf_b_clean;
     fault_active = 1'b0;
-    if (fault_enable && !fault_seen_q && core_i.rf_write_wb == 1'b0) begin
-      if (!inject_port_b && core_i.rf_ren_a && core_i.rf_rd_a_wb_match) begin
-        rf_rdata_a_ecc_i = rf_a_clean ^ ({38'b0, 1'b1} << fault_bit);
+    if (fault_enable_i && !fault_seen_q && core_i.rf_write_wb == 1'b0) begin
+      if (!inject_port_b_i && core_i.rf_ren_a && core_i.rf_rd_a_wb_match) begin
+        rf_rdata_a_ecc_i = rf_a_clean ^ ({38'b0, 1'b1} << fault_bit_i);
         fault_active = 1'b1;
       end
-      if (inject_port_b && core_i.rf_ren_b && core_i.rf_rd_b_wb_match) begin
-        rf_rdata_b_ecc_i = rf_b_clean ^ ({38'b0, 1'b1} << fault_bit);
+      if (inject_port_b_i && core_i.rf_ren_b && core_i.rf_rd_b_wb_match) begin
+        rf_rdata_b_ecc_i = rf_b_clean ^ ({38'b0, 1'b1} << fault_bit_i);
         fault_active = 1'b1;
       end
     end
   end
+
+  // Fixed control inputs that the CPU wrapper drove in its initial block.
+  assign fetch_enable_i = IbexMuBiOn;
+  assign ic_scr_key_valid_i = 1'b0;
+  assign irq_software_i = 1'b0;
+  assign irq_timer_i = 1'b0;
+  assign irq_external_i = 1'b0;
+  assign irq_fast_i = '0;
+  assign irq_nm_i = 1'b0;
+  assign debug_req_i = 1'b0;
 
   ibex_core #(
     .BranchTargetALU (1'b1),
@@ -199,79 +218,65 @@ module ibex2188_ecc_temporal_tb;
     .double_fault_seen_o,
     .fetch_enable_i,
     .alert_minor_o,
-    .alert_major_internal_o,
+    .alert_major_internal_o(alert_major_internal_int),
     .alert_major_bus_o,
     .core_busy_o
   );
 
-  always @(posedge clk_i) begin
-    instr_pending_q <= instr_req_o;
-    if (instr_req_o) instr_addr_q <= instr_addr_o;
-    data_pending_q <= data_req_o;
-    if (rf_we_wb_o && (rf_waddr_wb_o != 5'b0)) begin
-      register_file[rf_waddr_wb_o] <= rf_wdata_wb_ecc_o;
-    end
-    if (fault_active) fault_seen_q <= 1'b1;
-    if (alert_major_internal_o) alert_seen_q <= 1'b1;
-    if (core_i.rf_write_wb && rf_waddr_wb_o == 5'd14) load_writeback_seen_q <= 1'b1;
-    if (fault_active) begin
-      observed_rf_read_enable_q <= inject_port_b ? core_i.rf_ren_b : core_i.rf_ren_a;
-      observed_rf_wb_match_q <= inject_port_b ? core_i.rf_rd_b_wb_match : core_i.rf_rd_a_wb_match;
-      observed_rf_write_wb_q <= core_i.rf_write_wb;
-      observed_rf_ecc_error_id_q <= inject_port_b ?
-          core_i.gen_regfile_ecc.rf_ecc_err_b_id : core_i.gen_regfile_ecc.rf_ecc_err_a_id;
-      observed_instruction_valid_id_q <= core_i.instr_valid_id;
-      observed_alert_major_internal_q <= alert_major_internal_o;
+  always_ff @(posedge clk_i) begin
+    if (!rst_ni) begin
+      instr_pending_q <= 1'b0;
+      instr_addr_q <= 32'b0;
+      data_pending_q <= 1'b0;
+      fault_seen_q <= 1'b0;
+      alert_seen_q <= 1'b0;
+      load_writeback_seen_q <= 1'b0;
+      observed_rf_read_enable_q <= 1'b0;
+      observed_rf_wb_match_q <= 1'b0;
+      observed_rf_write_wb_q <= 1'b0;
+      observed_rf_ecc_error_id_q <= 1'b0;
+      observed_instruction_valid_id_q <= 1'b0;
+      observed_alert_major_internal_q <= 1'b0;
+      for (int unsigned index = 0; index < 32; index++) begin
+        register_file[index] <= prim_secded_pkg::prim_secded_inv_39_32_enc(32'b0);
+      end
+    end else begin
+      instr_pending_q <= instr_req_o;
+      if (instr_req_o) instr_addr_q <= instr_addr_o;
+      data_pending_q <= data_req_o;
+      if (rf_we_wb_o && (rf_waddr_wb_o != 5'b0)) begin
+        register_file[rf_waddr_wb_o] <= rf_wdata_wb_ecc_o;
+      end
+      if (fault_active) fault_seen_q <= 1'b1;
+      if (alert_major_internal_int) alert_seen_q <= 1'b1;
+      if (core_i.rf_write_wb && rf_waddr_wb_o == 5'd14) load_writeback_seen_q <= 1'b1;
+      if (fault_active) begin
+        observed_rf_read_enable_q <= inject_port_b_i ? core_i.rf_ren_b : core_i.rf_ren_a;
+        observed_rf_wb_match_q <= inject_port_b_i ? core_i.rf_rd_b_wb_match : core_i.rf_rd_a_wb_match;
+        observed_rf_write_wb_q <= core_i.rf_write_wb;
+        observed_rf_ecc_error_id_q <= inject_port_b_i ?
+            core_i.gen_regfile_ecc.rf_ecc_err_b_id : core_i.gen_regfile_ecc.rf_ecc_err_a_id;
+        observed_instruction_valid_id_q <= core_i.instr_valid_id;
+        observed_alert_major_internal_q <= alert_major_internal_int;
+      end
     end
   end
 
-  initial begin
-    for (int unsigned index = 0; index < 32; index++) begin
-      register_file[index] = prim_secded_pkg::prim_secded_inv_39_32_enc(32'b0);
-    end
-    instr_pending_q = 1'b0;
-    instr_addr_q = 32'b0;
-    data_pending_q = 1'b0;
-    fault_seen_q = 1'b0;
-    alert_seen_q = 1'b0;
-    load_writeback_seen_q = 1'b0;
-    observed_rf_read_enable_q = 1'b0;
-    observed_rf_wb_match_q = 1'b0;
-    observed_rf_write_wb_q = 1'b0;
-    observed_rf_ecc_error_id_q = 1'b0;
-    observed_instruction_valid_id_q = 1'b0;
-    observed_alert_major_internal_q = 1'b0;
-    inject_port_b = $test$plusargs("fault-port-b");
-    fault_enable = !$test$plusargs("no-fault");
-    if (!$value$plusargs("fault-bit=%d", fault_bit)) fault_bit = 0;
-    if (!$value$plusargs("load-response-delay=%d", load_response_delay)) begin
-      load_response_delay = 1;
-    end
-    if (load_response_delay > 1) $fatal(1, "supported response delays are 0 and 1");
-    fetch_enable_i = IbexMuBiOn;
-    ic_scr_key_valid_i = 1'b0;
-    irq_software_i = 1'b0;
-    irq_timer_i = 1'b0;
-    irq_external_i = 1'b0;
-    irq_fast_i = '0;
-    irq_nm_i = 1'b0;
-    debug_req_i = 1'b0;
-    for (int unsigned index = 0; index < IC_NUM_WAYS; index++) begin
-      ic_tag_rdata_i[index] = '0;
-      ic_data_rdata_i[index] = '0;
-    end
-    repeat (2) @(posedge clk_i);
-    rst_ni = 1'b1;
-    wait (fault_enable ? (fault_seen_q || (load_writeback_seen_q && core_i.rf_write_wb)) : load_writeback_seen_q);
-    @(negedge clk_i);
-    $display("IBEX2188_RESULT fault_port=%0s fault_enable=%0d fault_bit=%0d load_response_delay=%0d fault_seen=%0d alert_seen=%0d oracle_violation=%0d rf_read_enable=%0d rf_wb_match=%0d rf_write_wb=%0d rf_ecc_error_id=%0d instruction_valid_id=%0d alert_major_internal=%0d",
-             inject_port_b ? "b" : "a", fault_enable, fault_bit, load_response_delay,
-             fault_seen_q, alert_seen_q,
-             fault_seen_q && !alert_seen_q, observed_rf_read_enable_q,
-             observed_rf_wb_match_q, observed_rf_write_wb_q,
-             observed_rf_ecc_error_id_q, observed_instruction_valid_id_q,
-             observed_alert_major_internal_q);
-    $finish;
-  end
+  // done_o is a bounded schedule end: the fault was injected (or the load
+  // writeback completed) and the oracle/observables are latched.  The host
+  // keeps clocking until done_o; there is no $finish.
+  assign done_o = fault_enable_i ?
+      (fault_seen_q || (load_writeback_seen_q && core_i.rf_write_wb)) :
+      load_writeback_seen_q;
+
+  assign oracle_violation_o = fault_seen_q && !alert_seen_q;
+  assign fault_seen_o = fault_seen_q;
+  assign alert_seen_o = alert_seen_q;
+  assign rf_read_enable_o = observed_rf_read_enable_q;
+  assign rf_wb_match_o = observed_rf_wb_match_q;
+  assign rf_write_wb_o = observed_rf_write_wb_q;
+  assign rf_ecc_error_id_o = observed_rf_ecc_error_id_q;
+  assign instruction_valid_id_o = observed_instruction_valid_id_q;
+  assign alert_major_internal_o = observed_alert_major_internal_q;
 
 endmodule

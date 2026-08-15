@@ -4,20 +4,40 @@
       "bad_oracle": 0,
       "fixed_oracle": 0,
       "parameters": {
-        "fault_enable": "disabled"
+        "fault_enable": "disabled",
+        "load_response_delay_cycles": 0
       },
-      "point_id": "point:v1:58e651e0ffc69b07d16d71b2358682daa4c9b5c0abdeb027dfaf1892b7d0fad4"
+      "point_id": "point:v1:fb32334d09626bbb885fa6ad8cfa7ef8356c7121e071bc13f43f2fe482a40d4b"
+    },
+    {
+      "bad_oracle": 0,
+      "fixed_oracle": 0,
+      "parameters": {
+        "fault_enable": "disabled",
+        "load_response_delay_cycles": 1
+      },
+      "point_id": "point:v1:2869316dcbeea128848a1e7cd8ecafa29c621e4b6bc878cd476ca8ce4aa637b9"
+    },
+    {
+      "bad_oracle": 0,
+      "fixed_oracle": 0,
+      "parameters": {
+        "fault_enable": "guarded_bit0",
+        "load_response_delay_cycles": 0
+      },
+      "point_id": "point:v1:39641e789b43093f764900a215a6061004c827afe48fe5249774d89889b29727"
     },
     {
       "bad_oracle": 1,
       "fixed_oracle": 0,
       "parameters": {
-        "fault_enable": "guarded_bit0"
+        "fault_enable": "guarded_bit0",
+        "load_response_delay_cycles": 1
       },
-      "point_id": "point:v1:124ef2f103ecf35239bebdc3ac7135f2cbd500c4b6eb86882379da3b8dee6fdc"
+      "point_id": "point:v1:95a1749bf79e8479e0cbac2c20ff2ecf3f6c5058b9b2cbe48087a034c1310e0c"
     }
   ],
   "schema_version": 1,
   "surface": "rtl_boundary_ground_truth",
-  "sweep_space_sha256": "02933b99491bfbe4a66fedb92fec519d93a01cad9f5479fea285b37dcc60cfba"
+  "sweep_space_sha256": "781a94cd68240a327a75139341938a0cb56c19e66c3e9ea6729fe484a5f89b22"
 }

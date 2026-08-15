@@ -68,6 +68,10 @@ class Ibex2188BoundaryTargetTest(unittest.TestCase):
         )
         statuses = {candidate["name"]: candidate["finite_values_status"] for candidate in candidates}
         self.assertEqual(statuses.pop("fault_enable"), "admitted_cpu_sweep")
+        self.assertEqual(
+            statuses.pop("load_response_delay_cycles"),
+            "verified_ordered_control",
+        )
         self.assertTrue(all(status.startswith("pending_") for status in statuses.values()))
 
     def test_current_cpu_evidence_preserves_the_issue_guard_transition(self) -> None:
@@ -86,10 +90,10 @@ class Ibex2188BoundaryTargetTest(unittest.TestCase):
     def test_admitted_cpu_sweep_evidence_is_hash_pinned(self) -> None:
         evidence = self.target_document["current_cpu_sweep_evidence"]
         self.assertEqual(evidence["status"], "admitted_cpu_ground_truth")
-        self.assertEqual(evidence["point_count"], 2)
+        self.assertEqual(evidence["point_count"], 4)
         self.assertEqual(evidence["bad_failure_count"], 1)
         self.assertEqual(evidence["fixed_failure_count"], 0)
-        self.assertEqual(evidence["bad_boundary_edge_count"], 1)
+        self.assertEqual(evidence["bad_boundary_edge_count"], 2)
         self.assertEqual(evidence["disappeared_failure_count"], 1)
         for artifact in evidence["artifacts"].values():
             path = REPO_ROOT / artifact["path"]
@@ -103,17 +107,25 @@ class Ibex2188BoundaryTargetTest(unittest.TestCase):
             (REPO_ROOT / artifacts["analysis"]["path"]).read_text(encoding="utf-8")
         )
         self.assertEqual(analysis["surface"], "rtl_boundary_analysis")
-        self.assertEqual(analysis["point_count"], 2)
+        self.assertEqual(analysis["point_count"], 4)
         self.assertEqual(
-            [row["parameters"]["fault_enable"] for row in analysis["observations"]],
-            ["disabled", "guarded_bit0"],
+            [
+                (row["parameters"]["fault_enable"], row["parameters"]["load_response_delay_cycles"])
+                for row in analysis["observations"]
+            ],
+            [
+                ("disabled", 0),
+                ("disabled", 1),
+                ("guarded_bit0", 0),
+                ("guarded_bit0", 1),
+            ],
         )
         self.assertEqual(
             [(row["bad_oracle"], row["fixed_oracle"]) for row in analysis["observations"]],
-            [(0, 0), (1, 0)],
+            [(0, 0), (0, 0), (0, 0), (1, 0)],
         )
         self.assertEqual(analysis["revisions"]["bad"]["fail_point_count"], 1)
-        self.assertEqual(analysis["revisions"]["bad"]["boundary_edge_count"], 1)
+        self.assertEqual(analysis["revisions"]["bad"]["boundary_edge_count"], 2)
         self.assertEqual(analysis["revisions"]["bad"]["failure_component_count"], 1)
         self.assertEqual(analysis["revisions"]["fixed"]["fail_point_count"], 0)
         self.assertEqual(
@@ -121,10 +133,10 @@ class Ibex2188BoundaryTargetTest(unittest.TestCase):
             1,
         )
 
-    def test_boundary_profile_inputs_are_hash_pinned_and_gpu_pending(self) -> None:
+    def test_boundary_profile_inputs_are_hash_pinned_and_gpu_ready(self) -> None:
         profile = self.target_document["current_boundary_profile_inputs"]
         self.assertEqual(
-            profile["status"], "experiment_contract_ready_gpu_evidence_pending"
+            profile["status"], "experiment_contract_and_gpu_evidence_ready"
         )
         for artifact in profile["artifacts"].values():
             path = REPO_ROOT / artifact["path"]
@@ -146,15 +158,35 @@ class Ibex2188BoundaryTargetTest(unittest.TestCase):
         )
         self.assertEqual(
             [row["action"] for row in contract["action_domain"]],
-            ["fault_enable:disabled", "fault_enable:guarded_bit0"],
+            [
+                "fault_enable:disabled__load_response_delay_cycles:0",
+                "fault_enable:disabled__load_response_delay_cycles:1",
+                "fault_enable:guarded_bit0__load_response_delay_cycles:0",
+                "fault_enable:guarded_bit0__load_response_delay_cycles:1",
+            ],
         )
         self.assertEqual(
             {trial["trial_id"] for trial in contract["trials"]},
-            {"random_gpu", "stratified_gpu", "novelty_gpu", "random_cpu"},
+            {
+                "random_gpu",
+                "stratified_gpu",
+                "ordered_refinement_gpu",
+                "novelty_gpu",
+                "random_cpu",
+            },
         )
-        self.assertNotIn(
+        self.assertIn(
             "ordered_refinement_gpu",
             {trial["trial_id"] for trial in contract["trials"]},
+        )
+        ordered = next(
+            trial for trial in contract["trials"] if trial["trial_id"] == "ordered_refinement_gpu"
+        )
+        self.assertEqual(
+            ordered["policy"]["kind"], "ordered_refinement"
+        )
+        self.assertEqual(
+            ordered["policy"]["configuration"]["axis"], "load_response_delay_cycles"
         )
 
 

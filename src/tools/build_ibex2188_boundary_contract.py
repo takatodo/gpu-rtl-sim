@@ -91,7 +91,10 @@ def build(
     action_domain = [
         {
             "point_id": point["point_id"],
-            "action": f"fault_enable:{point['parameters']['fault_enable']}",
+            "action": (
+                f"fault_enable:{point['parameters']['fault_enable']}"
+                f"__load_response_delay_cycles:{point['parameters']['load_response_delay_cycles']}"
+            ),
             "parameters": point["parameters"],
         }
         for point in enumeration["points"]
@@ -106,15 +109,21 @@ def build(
         "stratified": _policy(
             "stratified", "ibex2188-stratified-v1", {"strata_axes": ["fault_enable"]}
         ),
+        "ordered_refinement": _policy(
+            "ordered_refinement",
+            "ibex2188-ordered-v1",
+            {"axis": "load_response_delay_cycles"},
+        ),
         "novelty": _policy("novelty_boundary_guided", "ibex2188-novelty-v1", {}),
     }
+    requested = 2
     gpu_trials = [
         {
             "trial_id": f"{name}_gpu",
             "backend_id": "gpu",
             "policy": policy,
-            "requested_count": point_count,
-            "budget_logical_bad_queries": point_count,
+            "requested_count": requested,
+            "budget_logical_bad_queries": requested,
         }
         for name, policy in policies.items()
     ]
@@ -122,8 +131,8 @@ def build(
         "trial_id": "random_cpu",
         "backend_id": "cpu",
         "policy": policies["random"],
-        "requested_count": point_count,
-        "budget_logical_bad_queries": point_count,
+        "requested_count": requested,
+        "budget_logical_bad_queries": requested,
     }
     contract = {
         "schema_version": SCHEMA_VERSION,
@@ -163,8 +172,8 @@ def build(
             {
                 "backend_id": "gpu",
                 "kind": "gpu",
-                "executor_identity": "ibex2188-gpu-profile:pending-v1",
-                "resident_width": point_count,
+                "executor_identity": "ibex2188-gpu-runner:v1",
+                "resident_width": 2,
             },
         ],
         "trials": [*gpu_trials, cpu_trial],
