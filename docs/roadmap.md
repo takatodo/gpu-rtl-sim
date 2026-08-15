@@ -88,7 +88,10 @@ Current priority:
 
 Next concrete action:
 
-`build_ibex2188_gpu_profile_from_admitted_cpu_ground_truth`
+`none_ibex2188_boundary_benchmark_fixed_point_reached`
+
+Status: `COMPLETED`. The four-point CPU/GPU profile, selector replay, report,
+and pinned evidence have reached the BFV Fixed Point.
 
 Current source artifact:
 

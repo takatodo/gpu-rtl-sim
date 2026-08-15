@@ -12,20 +12,22 @@ Goal: `ibex2188_temporal_boundary_discovery_benchmark`
 
 Current priority: `ibex2188_temporal_boundary_discovery_benchmark`
 
-Current next action: `build_ibex2188_gpu_profile_from_admitted_cpu_ground_truth`
+Current next action: `none_ibex2188_boundary_benchmark_fixed_point_reached`
+
+Current status: `COMPLETED` (BFV Fixed Point reached)
 
 Current source artifact: `config/ibex2188_boundary_benchmark.json`
 
 Latest boundary-discovery update: TL-UL #10818 remains the first admitted GPU
-boundary benchmark. Ibex #2188 is now the second known-bug benchmark candidate:
+boundary benchmark. Ibex #2188 is now the second completed known-bug benchmark.
 `config/ibex2188_boundary_benchmark.json` pins the public issue, bad/fixed
 revisions, ECC-capable OpenTitan Ibex configuration, checkpoint, independent
-oracle, semantic projection, and a two-point CPU ground truth over
-`fault_enable={disabled,guarded_bit0}`. The admitted CPU evidence records one
-bad-revision failure, one bad boundary edge, one failure component, one
-disappeared failure, and zero fixed failures. The next work is building the
-GPU profile from that admitted CPU ground truth; no selector, speedup, PPO/RL,
-unknown-bug, or exploit claim is made.
+oracle, semantic projection, and the four-point
+`fault_enable x load_response_delay_cycles` CPU/GPU grid. The pinned profile
+records one bad-revision failure, two bad boundary edges, one failure component,
+one disappeared failure, zero fixed failures, four selector policies on the GPU
+backend, and the same random selector trace on CPU/GPU. The Contract is at its
+Fixed Point; no selector speedup, PPO/RL, unknown-bug, or exploit claim is made.
 
 Historical FC-069 update: Stage118 block-source `1760` is clean/raw-clean through candidate `2021`, and extended Stage119 maps dirty `source_id=2` to `compact.cfg_clone.entry_phi.producer_selector.counters3969` with `skipped_count=1536`. Stage121 now suppresses selected diagnostic atomics/marker reads before Stage120 after-observation and applies the selected suppression ids across the candidate set, not only the selected probe source. The source625 global-suppression run is clean after suppressing source611/source613/source615/source618/source620/source624 atomics plus source622 marker-read, classifying that producer-selector frontier as diagnostic perturbation traffic. Stage122 expanded-progress ABI then proved the first post-suppression lifecycle edge is still dirty but has no concrete record318/adjacent write target. Stage123 source1324 is excluded as adjacent diagnostic-counter traffic because suppressing it removes the Stage123 concrete write-window event while the CPU oracle still fails and record318 remains polluted. Stage124 transition evidence remains historical; use the OpenTitan paragraph above for the current priority.
 

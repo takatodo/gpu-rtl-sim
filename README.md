@@ -272,19 +272,16 @@ This does not claim arbitrary RTL support, arbitrary filelist inference, broad n
 Current pointer, mirrored from `config/selection.json`:
 
 - `current_priority`: `ibex2188_temporal_boundary_discovery_benchmark`
-- `current_next_action`: `build_ibex2188_gpu_profile_from_admitted_cpu_ground_truth`
+- `current_next_action`: `none_ibex2188_boundary_benchmark_fixed_point_reached`
 - `current_priority_source_artifact`: `config/ibex2188_boundary_benchmark.json`
 
 Latest boundary-discovery update: TL-UL #10818 remains the first admitted GPU
-boundary benchmark. Ibex #2188 is now the second known-bug benchmark candidate:
-`config/ibex2188_boundary_benchmark.json` pins the public issue, bad/fixed
-revisions, ECC-capable OpenTitan Ibex configuration, checkpoint, independent
-oracle, semantic projection, and a two-point CPU ground truth over
-`fault_enable={disabled,guarded_bit0}`. The admitted CPU evidence records one
-bad-revision failure, one bad boundary edge, one failure component, one
-disappeared failure, and zero fixed failures. The next work is building the
-GPU profile from that admitted CPU ground truth; no selector, speedup, PPO/RL,
-unknown-bug, or exploit claim is made.
+boundary benchmark. Ibex #2188 is the second completed known-bug benchmark.
+Its pinned four-point CPU/GPU profile covers
+`fault_enable x load_response_delay_cycles`, records one bad-revision failure
+and its disappearance on the fixed revision, and replays four selector policies
+through the shared Contract. This benchmark is at its BFV Fixed Point; no
+selector speedup, PPO/RL, unknown-bug, or exploit claim is made.
 
 Historical FC-069 update: Stage118 block-source `1760` is clean/raw-clean through candidate `2021`. Extended Stage119 maps dirty `block_source_id=1760`, `source_id=2` to `compact.cfg_clone.entry_phi.producer_selector.counters3969` with `skipped_count=1536`. This remains historical context for the old gateGPT frontier, not the current OpenTitan regression-discovery pointer.
 
