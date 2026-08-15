@@ -227,11 +227,26 @@ python3 src/tools/build_ibex2188_cpu_ground_truth.py \
   --out-dir evidence/ibex2188_cpu_ground_truth_v1
 ```
 
+Build the formal sidecar boundary Contract inputs from the admitted CPU
+ground truth:
+
+```bash
+python3 src/tools/build_ibex2188_boundary_contract.py \
+  --target-config config/ibex2188_boundary_benchmark.json \
+  --ground-truth evidence/ibex2188_cpu_ground_truth_v1/ground_truth.json \
+  --cpu-observation-bundle evidence/ibex2188_cpu_ground_truth_v1/cpu_observation_bundle.json \
+  --sidecar-root /path/to/verilator-model-sidecar \
+  --out-dir evidence/ibex2188_boundary_profile_inputs_v1
+```
+
 The admitted CPU sweep has exactly two `fault_enable` values:
 `disabled` and `guarded_bit0`. The sidecar analysis must recompute one bad
 failure, one bad boundary edge, one failure component, one disappeared failure,
 and zero fixed failures. This is a CPU ground-truth boundary profile and a
-future GPU-profile input; it is not a GPU equivalence, selector, speedup,
+future GPU-profile input. The formal Contract currently includes random,
+stratified, and novelty/boundary-guided trials plus a CPU/GPU backend
+comparison hook. It intentionally omits ordered-refinement until an ordered
+axis is admitted. It is not a GPU equivalence, selector result, speedup,
 unknown-bug-discovery, or exploit claim.
 
 ## Goal

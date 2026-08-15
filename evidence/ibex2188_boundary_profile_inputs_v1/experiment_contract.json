@@ -1,0 +1,158 @@
+{
+  "action_domain": [
+    {
+      "action": "fault_enable:disabled",
+      "parameters": {
+        "fault_enable": "disabled"
+      },
+      "point_id": "point:v1:58e651e0ffc69b07d16d71b2358682daa4c9b5c0abdeb027dfaf1892b7d0fad4"
+    },
+    {
+      "action": "fault_enable:guarded_bit0",
+      "parameters": {
+        "fault_enable": "guarded_bit0"
+      },
+      "point_id": "point:v1:124ef2f103ecf35239bebdc3ac7135f2cbd500c4b6eb86882379da3b8dee6fdc"
+    }
+  ],
+  "action_domain_sha256": "1854242b46fd9c5c8eedb8bde3a27dbb1e5a6455544a40e2f39521d6cc1a7ffc",
+  "backends": [
+    {
+      "backend_id": "cpu",
+      "executor_identity": "ibex2188-cpu-runner:v1",
+      "kind": "cpu",
+      "resident_width": 1
+    },
+    {
+      "backend_id": "gpu",
+      "executor_identity": "ibex2188-gpu-profile:pending-v1",
+      "kind": "gpu",
+      "resident_width": 2
+    }
+  ],
+  "comparisons": [
+    {
+      "comparison_id": "selector-on-gpu",
+      "kind": "selector",
+      "trial_ids": [
+        "random_gpu",
+        "stratified_gpu",
+        "novelty_gpu"
+      ]
+    },
+    {
+      "comparison_id": "random-backend",
+      "kind": "backend",
+      "trial_ids": [
+        "random_cpu",
+        "random_gpu"
+      ]
+    }
+  ],
+  "experiment_id": "ibex2188-boundary-v1",
+  "reconstructor": {
+    "algorithm_version": 1,
+    "kind": "nearest_observed_graph"
+  },
+  "schema_version": 1,
+  "surface": "rtl_boundary_experiment_contract",
+  "sweep_space": {
+    "axes": [
+      {
+        "adjacent_value_pairs": [
+          [
+            "disabled",
+            "guarded_bit0"
+          ]
+        ],
+        "kind": "categorical",
+        "name": "fault_enable",
+        "values": [
+          "disabled",
+          "guarded_bit0"
+        ]
+      }
+    ],
+    "schema_version": 1,
+    "surface": "rtl_boundary_sweep_space"
+  },
+  "sweep_space_sha256": "02933b99491bfbe4a66fedb92fec519d93a01cad9f5479fea285b37dcc60cfba",
+  "target": {
+    "checkpoint_identity": "directed_load_dependent_branch_one_cycle_response_v1",
+    "ip": "ibex_core",
+    "issue": "https://github.com/lowRISC/ibex/issues/2188",
+    "oracle_field": "oracle_violation",
+    "oracle_identity": "ibex2188.ecc_read_error_requires_major_alert_when_no_wb_forwarding.v1",
+    "revisions": {
+      "bad": "668233699df9ec2a40413e69e0de0a5b10185980",
+      "fixed": "9e4a950aa6aa0e20eb638aeeb78743d4a9ddaaeb"
+    },
+    "semantic_manifest_sha256": {
+      "bad": "d7ea635c0e1c71c8df445a1f641420a057d17e88acd29b35190c70965d90a38e",
+      "fixed": "4bcee9756dcfb4b5a159114235227dcdfb00ada25298c376115bdce6b54b8bee"
+    },
+    "semantic_observables": [
+      "rf_read_enable",
+      "rf_wb_match",
+      "rf_write_wb",
+      "rf_ecc_error_id",
+      "instruction_valid_id",
+      "alert_major_internal"
+    ],
+    "target_id": "ibex2188"
+  },
+  "trials": [
+    {
+      "backend_id": "gpu",
+      "budget_logical_bad_queries": 2,
+      "policy": {
+        "algorithm_version": 1,
+        "configuration": {},
+        "kind": "random",
+        "seed_sha256": "e474b9a14b2bc686bedf33243cdcfb7c2b80e236a12d5423cf18372ba956e9d2"
+      },
+      "requested_count": 2,
+      "trial_id": "random_gpu"
+    },
+    {
+      "backend_id": "gpu",
+      "budget_logical_bad_queries": 2,
+      "policy": {
+        "algorithm_version": 1,
+        "configuration": {
+          "strata_axes": [
+            "fault_enable"
+          ]
+        },
+        "kind": "stratified",
+        "seed_sha256": "df3ee25aeda706ed9d9fa633d5071c2331bfe1594c535758c2a50e1cd5e4874b"
+      },
+      "requested_count": 2,
+      "trial_id": "stratified_gpu"
+    },
+    {
+      "backend_id": "gpu",
+      "budget_logical_bad_queries": 2,
+      "policy": {
+        "algorithm_version": 1,
+        "configuration": {},
+        "kind": "novelty_boundary_guided",
+        "seed_sha256": "4f13f45e2e98e1419cf73adbec1e4e7fbea61955fcbdc3d04714afa2dd4c17f9"
+      },
+      "requested_count": 2,
+      "trial_id": "novelty_gpu"
+    },
+    {
+      "backend_id": "cpu",
+      "budget_logical_bad_queries": 2,
+      "policy": {
+        "algorithm_version": 1,
+        "configuration": {},
+        "kind": "random",
+        "seed_sha256": "e474b9a14b2bc686bedf33243cdcfb7c2b80e236a12d5423cf18372ba956e9d2"
+      },
+      "requested_count": 2,
+      "trial_id": "random_cpu"
+    }
+  ]
+}

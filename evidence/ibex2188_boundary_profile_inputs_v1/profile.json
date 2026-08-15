@@ -1,0 +1,17 @@
+{
+  "cpu_observation_bundle_sha256": "4467ec642941c5caaa38e20ecae4286e614153e0b6c0f4389019902db65881ee",
+  "experiment_contract_sha256": "30f503d957134fca935651d878900c6f06083f61b2aab02c19d8e1f3d5a26efa",
+  "ground_truth_sha256": "f8edbb5d3bedb3ed544d8e6181e0cb7c5721ae6b3c8c5447f2cacbce0e234b61",
+  "schema_version": 1,
+  "semantic_manifest_sha256": {
+    "bad": "d7ea635c0e1c71c8df445a1f641420a057d17e88acd29b35190c70965d90a38e",
+    "fixed": "4bcee9756dcfb4b5a159114235227dcdfb00ada25298c376115bdce6b54b8bee"
+  },
+  "source_file_sha256": {
+    "experiment_contract.json": "7a95de3442cd9c8655878ba41692cfb5dabafb5cc3b81d41c769390a1749003f",
+    "semantic_manifest_bad.json": "06cfc6891fc6e30edd5c8c079936ebed283889906e238586c41c4022b21853b3",
+    "semantic_manifest_fixed.json": "0edbf3d49236c17251a34746e247fd704c7f60f893722a1f4c4d1c6db3b43158"
+  },
+  "status": "experiment_contract_ready_gpu_evidence_pending",
+  "surface": "ibex2188_boundary_profile_inputs"
+}

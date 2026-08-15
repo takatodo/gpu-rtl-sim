@@ -14,6 +14,18 @@ BAD_REVISION = "668233699df9ec2a40413e69e0de0a5b10185980"
 FIXED_REVISION = "9e4a950aa6aa0e20eb638aeeb78743d4a9ddaaeb"
 
 
+def canonical_sha256(value: object) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            value,
+            allow_nan=False,
+            ensure_ascii=True,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()
+
+
 class Ibex2188BoundaryTargetTest(unittest.TestCase):
     def setUp(self) -> None:
         self.target_document = json.loads(TARGET_PATH.read_text(encoding="utf-8"))
@@ -107,6 +119,42 @@ class Ibex2188BoundaryTargetTest(unittest.TestCase):
         self.assertEqual(
             len(analysis["bad_to_fixed"]["disappeared_failure_point_ids"]),
             1,
+        )
+
+    def test_boundary_profile_inputs_are_hash_pinned_and_gpu_pending(self) -> None:
+        profile = self.target_document["current_boundary_profile_inputs"]
+        self.assertEqual(
+            profile["status"], "experiment_contract_ready_gpu_evidence_pending"
+        )
+        for artifact in profile["artifacts"].values():
+            path = REPO_ROOT / artifact["path"]
+            self.assertEqual(
+                hashlib.sha256(path.read_bytes()).hexdigest(), artifact["sha256"]
+            )
+        contract = json.loads(
+            (REPO_ROOT / profile["artifacts"]["experiment_contract"]["path"]).read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(contract["surface"], "rtl_boundary_experiment_contract")
+        self.assertEqual(contract["experiment_id"], "ibex2188-boundary-v1")
+        self.assertEqual(contract["target"]["target_id"], "ibex2188")
+        self.assertEqual(canonical_sha256(contract), profile["experiment_contract_sha256"])
+        self.assertEqual(
+            contract["sweep_space_sha256"],
+            self.target_document["current_cpu_sweep_evidence"]["sweep_space_sha256"],
+        )
+        self.assertEqual(
+            [row["action"] for row in contract["action_domain"]],
+            ["fault_enable:disabled", "fault_enable:guarded_bit0"],
+        )
+        self.assertEqual(
+            {trial["trial_id"] for trial in contract["trials"]},
+            {"random_gpu", "stratified_gpu", "novelty_gpu", "random_cpu"},
+        )
+        self.assertNotIn(
+            "ordered_refinement_gpu",
+            {trial["trial_id"] for trial in contract["trials"]},
         )
 
 
