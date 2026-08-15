@@ -16,16 +16,16 @@ Future shorthand such as `verilator --use-gpu -f filelist.f --top-module top` an
 
 ## Weakest Point
 
-Current weak point for the active OpenTitan regression-discovery gate is
-choosing the next expansion after the three-issue seed set. TL-UL #10818, EDN
-#23526, and entropy_src #10983 now have fixed revisions, checkpoints, action
-domains, independent oracles, semantic-manifest identity, bad-revision oracle
-violations, fixed-revision non-reproduction, CPU/GPU semantic equivalence,
-separated corpora, and random-vs-stratified long-tail metrics/graphs. The
-consolidated audit artifact is
-`artifacts/opentitan_regression_discovery/opentitan_regression_discovery_summary.json`.
-No PPO, semantic-state packing, full OpenTitan scale, or extra batch-size claim
-is currently required to prove the active Contract.
+Current weak point for the active boundary-discovery gate is converting the
+admitted Ibex #2188 CPU ground truth into a GPU profile using the same
+machine-readable boundary surfaces as TL-UL #10818. The current authority is
+`config/ibex2188_boundary_benchmark.json`: it pins the public issue, bad/fixed
+revisions, ECC-capable OpenTitan Ibex configuration, checkpoint, independent
+oracle, semantic projection, and a two-point CPU sweep over
+`fault_enable={disabled,guarded_bit0}`. That CPU ground truth has one bad
+failure, one bad boundary edge, one failure component, one disappeared failure,
+and zero fixed failures. No selector, speedup, PPO/RL, unknown-bug, exploit, or
+large-grid claim is currently proven.
 
 Historical RTLMeter context: #2 / FC-037 has a refreshed VeeR-EL2 `hello` timing result,
 and that GPU sidecar path is still much slower than serial CPU, while the
@@ -79,23 +79,24 @@ Hybrid execution is close to a normal Verilator-style flow for generated templat
 
 ## Current Frontier
 
-The current work is OpenTitan temporal protocol GPU resident
-regression-discovery. TL-UL #10818, EDN #23526, and entropy_src #10983
-establish the current three-issue seed set.
+The current work is Ibex #2188 temporal boundary discovery as the second
+known-bug benchmark after TL-UL #10818.
 
 Current priority:
 
-`opentitan_temporal_protocol_gpu_resident_regression_discovery`
+`ibex2188_temporal_boundary_discovery_benchmark`
 
 Next concrete action:
 
-`review_three_issue_seed_set_and_select_next_expansion`
+`build_ibex2188_gpu_profile_from_admitted_cpu_ground_truth`
 
 Current source artifact:
 
-`artifacts/opentitan_regression_discovery/opentitan_regression_discovery_summary.json`
+`config/ibex2188_boundary_benchmark.json`
 
-Historical FC-069 update: Stage118/119/120/121/122/123/124 gateGPT narrowing remains historical evidence for the previous frontier. It is not the active OpenTitan regression-discovery next action.
+The OpenTitan three-issue regression-discovery seed set remains historical
+evidence for target selection and corpus separation. It is not the active Ibex
+#2188 GPU-profile next action.
 
 Stage117 update: the previous `1..256` report is not accepted as Stage117 runtime evidence because generated IR lacked Stage117 instrumentation due stale `vlgpugen` pass-tool build order. Pass-tool freshness is now fixed so stale pass tools rebuild before IR generation. With the lightweight saved-address Stage117 probe and a 900s `ptxas` bound, `reports/gategpt_tb_core_ordering_aware_token_loop_full_phase_2state_stage117_light_block_body_boundary_range_1_2048_ptxas900_runtime.json` reaches runtime: all three entry slices pass `ptxas`, preflight passes, and classification is `token_loop_stage117_phase1_callee0_nested_body_block_body_boundary_same_saved_addr_changed`. The first `COUNT=1024` run was clean, but `COUNT=2048` finds a dirty Stage117 block-body boundary at `source_id=1760` with `split_result=same_saved_addr_changed`, `before_direct_param_record318=0`, `after_direct_param_record318=38666621`, `after_saved_addr_record318=38666621`, `saved_after_polluted=true`, and `semantic_authority=false`. Current IR mapping evidence points to `artifacts/gategpt_local_eval/gateGPT/obj_tb_core/vl_batch_gpu.ll:834516` metadata row and reconstructed block `artifacts/gategpt_local_eval/gateGPT/obj_tb_core/vl_batch_gpu.ll:327571` / `%19690` in `_Z40Vtb_core___024root___nba_sequent__TOP__0P18Vtb_core___024root`; the patched control-word store is `artifacts/gategpt_local_eval/gateGPT/obj_tb_core/vl_batch_gpu_patched.ll:333201`, `control_word=72058702139492064`. This is a dirty boundary, not final adjacent-window write-source authority.
 

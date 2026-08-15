@@ -1,0 +1,52 @@
+{
+  "checkpoint_identity": "directed_load_dependent_branch_one_cycle_response_v1",
+  "oracle_identity": "ibex2188.ecc_read_error_requires_major_alert_when_no_wb_forwarding.v1",
+  "schema_version": 1,
+  "source_observations": {
+    "disabled": {
+      "semantic": {
+        "bad": {
+          "alert_major_internal": 0,
+          "instruction_valid_id": 0,
+          "rf_ecc_error_id": 0,
+          "rf_read_enable": 0,
+          "rf_wb_match": 0,
+          "rf_write_wb": 0
+        },
+        "fixed": {
+          "alert_major_internal": 0,
+          "instruction_valid_id": 0,
+          "rf_ecc_error_id": 0,
+          "rf_read_enable": 0,
+          "rf_wb_match": 0,
+          "rf_write_wb": 0
+        }
+      },
+      "sha256": "0712aca715d6542cc2a5655785d263a116b74753f3e4aa46b18708b354ab071c"
+    },
+    "guarded_bit0": {
+      "semantic": {
+        "bad": {
+          "alert_major_internal": 0,
+          "instruction_valid_id": 1,
+          "rf_ecc_error_id": 0,
+          "rf_read_enable": 1,
+          "rf_wb_match": 1,
+          "rf_write_wb": 0
+        },
+        "fixed": {
+          "alert_major_internal": 1,
+          "instruction_valid_id": 1,
+          "rf_ecc_error_id": 1,
+          "rf_read_enable": 1,
+          "rf_wb_match": 1,
+          "rf_write_wb": 0
+        }
+      },
+      "sha256": "5ce107018362183af088d4759e492afa8c7bb965754b1517d6e50a3f4dda06d8"
+    }
+  },
+  "surface": "ibex2188_cpu_sweep_observations",
+  "sweep_space_sha256": "02933b99491bfbe4a66fedb92fec519d93a01cad9f5479fea285b37dcc60cfba",
+  "target_id": "ibex2188"
+}

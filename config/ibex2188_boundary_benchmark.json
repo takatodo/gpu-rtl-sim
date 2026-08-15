@@ -68,6 +68,12 @@
   },
   "sweep_axis_candidates": [
     {
+      "name": "fault_enable",
+      "kind": "categorical",
+      "source_support": "The directed wrapper exposes an ECC read-data fault control and its no-fault control.",
+      "finite_values_status": "admitted_cpu_sweep"
+    },
+    {
       "name": "read_port",
       "kind": "categorical",
       "source_support": "The upstream fix changes both A and B register-file read ports.",
@@ -98,6 +104,37 @@
       "finite_values_status": "pending_fault_injection_binding"
     }
   ],
+  "admitted_cpu_sweep": {
+    "sweep_space": {
+      "schema_version": 1,
+      "surface": "rtl_boundary_sweep_space",
+      "axes": [
+        {
+          "name": "fault_enable",
+          "kind": "categorical",
+          "values": [
+            "disabled",
+            "guarded_bit0"
+          ],
+          "adjacent_value_pairs": [
+            [
+              "disabled",
+              "guarded_bit0"
+            ]
+          ]
+        }
+      ]
+    },
+    "fixed_parameters": {
+      "fault_port": "a",
+      "fault_bit": 0,
+      "load_response_delay": 1
+    },
+    "action_mapping": {
+      "disabled": "--no-fault --expect-bad-oracle 0 --expect-fixed-oracle 0",
+      "guarded_bit0": "--expect-bad-oracle 1 --expect-fixed-oracle 0"
+    }
+  },
   "authority": {
     "codex_runtime_execution": true,
     "runtime_owner": "repository_defined_runner",
@@ -146,5 +183,28 @@
         "alert_major_internal": 1
       }
     }
+  },
+  "current_cpu_sweep_evidence": {
+    "status": "admitted_cpu_ground_truth",
+    "sweep_space_sha256": "02933b99491bfbe4a66fedb92fec519d93a01cad9f5479fea285b37dcc60cfba",
+    "point_count": 2,
+    "artifacts": {
+      "ground_truth": {
+        "path": "evidence/ibex2188_cpu_ground_truth_v1/ground_truth.json",
+        "sha256": "fcb3eb3ed56a79a9733ae0a2ed8dfac31a2b3d3b25931b6ea4df58e3f1f7b013"
+      },
+      "analysis": {
+        "path": "evidence/ibex2188_cpu_ground_truth_v1/ground_truth_analysis.json",
+        "sha256": "49bb0c7a95560ee9d9eaad7787d743b262c433e560d9aea6f9d566b8839213ed"
+      },
+      "cpu_observation_bundle": {
+        "path": "evidence/ibex2188_cpu_ground_truth_v1/cpu_observation_bundle.json",
+        "sha256": "9a72ada72eb4342c79328ed1e880d992c503924922fce3bc8cb22476a13cb914"
+      }
+    },
+    "bad_failure_count": 1,
+    "fixed_failure_count": 0,
+    "bad_boundary_edge_count": 1,
+    "disappeared_failure_count": 1
   }
 }

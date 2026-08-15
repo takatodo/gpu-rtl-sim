@@ -1,0 +1,98 @@
+{
+  "axes": [
+    {
+      "adjacent_value_pairs": [
+        [
+          "disabled",
+          "guarded_bit0"
+        ]
+      ],
+      "kind": "categorical",
+      "name": "fault_enable",
+      "values": [
+        "disabled",
+        "guarded_bit0"
+      ]
+    }
+  ],
+  "bad_to_fixed": {
+    "disappeared_failure_point_ids": [
+      "point:v1:124ef2f103ecf35239bebdc3ac7135f2cbd500c4b6eb86882379da3b8dee6fdc"
+    ],
+    "introduced_failure_point_ids": [],
+    "persistent_failure_point_ids": []
+  },
+  "observations": [
+    {
+      "bad_oracle": 0,
+      "fixed_oracle": 0,
+      "parameters": {
+        "fault_enable": "disabled"
+      },
+      "point_id": "point:v1:58e651e0ffc69b07d16d71b2358682daa4c9b5c0abdeb027dfaf1892b7d0fad4"
+    },
+    {
+      "bad_oracle": 1,
+      "fixed_oracle": 0,
+      "parameters": {
+        "fault_enable": "guarded_bit0"
+      },
+      "point_id": "point:v1:124ef2f103ecf35239bebdc3ac7135f2cbd500c4b6eb86882379da3b8dee6fdc"
+    }
+  ],
+  "point_count": 2,
+  "revisions": {
+    "bad": {
+      "boundary_edge_count": 1,
+      "boundary_edges": [
+        {
+          "axis": "fault_enable",
+          "axis_kind": "categorical",
+          "fail_point_id": "point:v1:124ef2f103ecf35239bebdc3ac7135f2cbd500c4b6eb86882379da3b8dee6fdc",
+          "pass_point_id": "point:v1:58e651e0ffc69b07d16d71b2358682daa4c9b5c0abdeb027dfaf1892b7d0fad4"
+        }
+      ],
+      "fail_point_count": 1,
+      "fail_point_ids": [
+        "point:v1:124ef2f103ecf35239bebdc3ac7135f2cbd500c4b6eb86882379da3b8dee6fdc"
+      ],
+      "failure_component_count": 1,
+      "failure_components": [
+        {
+          "component_id": "failure-component:v1:9feab92acbd9049e1f0d28669abc76bdbe909699883d024cbfd4da40d4986f50",
+          "point_ids": [
+            "point:v1:124ef2f103ecf35239bebdc3ac7135f2cbd500c4b6eb86882379da3b8dee6fdc"
+          ]
+        }
+      ],
+      "minimal_failing_points": {
+        "point_ids": [],
+        "status": "not_applicable"
+      },
+      "pass_point_count": 1,
+      "pass_point_ids": [
+        "point:v1:58e651e0ffc69b07d16d71b2358682daa4c9b5c0abdeb027dfaf1892b7d0fad4"
+      ]
+    },
+    "fixed": {
+      "boundary_edge_count": 0,
+      "boundary_edges": [],
+      "fail_point_count": 0,
+      "fail_point_ids": [],
+      "failure_component_count": 0,
+      "failure_components": [],
+      "minimal_failing_points": {
+        "point_ids": [],
+        "status": "not_applicable"
+      },
+      "pass_point_count": 2,
+      "pass_point_ids": [
+        "point:v1:124ef2f103ecf35239bebdc3ac7135f2cbd500c4b6eb86882379da3b8dee6fdc",
+        "point:v1:58e651e0ffc69b07d16d71b2358682daa4c9b5c0abdeb027dfaf1892b7d0fad4"
+      ]
+    }
+  },
+  "schema_version": 1,
+  "surface": "rtl_boundary_analysis",
+  "sweep_space_sha256": "02933b99491bfbe4a66fedb92fec519d93a01cad9f5479fea285b37dcc60cfba"
+}

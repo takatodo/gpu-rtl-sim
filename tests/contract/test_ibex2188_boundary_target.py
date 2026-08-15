@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import unittest
 from pathlib import Path
 
@@ -53,12 +54,9 @@ class Ibex2188BoundaryTargetTest(unittest.TestCase):
             all("values" not in candidate for candidate in candidates),
             "finite axis values require the external directed-wrapper Contract",
         )
-        self.assertTrue(
-            all(
-                candidate["finite_values_status"].startswith("pending_")
-                for candidate in candidates
-            )
-        )
+        statuses = {candidate["name"]: candidate["finite_values_status"] for candidate in candidates}
+        self.assertEqual(statuses.pop("fault_enable"), "admitted_cpu_sweep")
+        self.assertTrue(all(status.startswith("pending_") for status in statuses.values()))
 
     def test_current_cpu_evidence_preserves_the_issue_guard_transition(self) -> None:
         evidence = self.target_document["current_cpu_evidence"]
@@ -72,6 +70,44 @@ class Ibex2188BoundaryTargetTest(unittest.TestCase):
         )
         self.assertEqual((bad["rf_ecc_error_id"], bad["alert_major_internal"]), (0, 0))
         self.assertEqual((fixed["rf_ecc_error_id"], fixed["alert_major_internal"]), (1, 1))
+
+    def test_admitted_cpu_sweep_evidence_is_hash_pinned(self) -> None:
+        evidence = self.target_document["current_cpu_sweep_evidence"]
+        self.assertEqual(evidence["status"], "admitted_cpu_ground_truth")
+        self.assertEqual(evidence["point_count"], 2)
+        self.assertEqual(evidence["bad_failure_count"], 1)
+        self.assertEqual(evidence["fixed_failure_count"], 0)
+        self.assertEqual(evidence["bad_boundary_edge_count"], 1)
+        self.assertEqual(evidence["disappeared_failure_count"], 1)
+        for artifact in evidence["artifacts"].values():
+            path = REPO_ROOT / artifact["path"]
+            self.assertEqual(
+                hashlib.sha256(path.read_bytes()).hexdigest(), artifact["sha256"]
+            )
+
+    def test_admitted_cpu_sweep_analysis_matches_the_boundary_contract(self) -> None:
+        artifacts = self.target_document["current_cpu_sweep_evidence"]["artifacts"]
+        analysis = json.loads(
+            (REPO_ROOT / artifacts["analysis"]["path"]).read_text(encoding="utf-8")
+        )
+        self.assertEqual(analysis["surface"], "rtl_boundary_analysis")
+        self.assertEqual(analysis["point_count"], 2)
+        self.assertEqual(
+            [row["parameters"]["fault_enable"] for row in analysis["observations"]],
+            ["disabled", "guarded_bit0"],
+        )
+        self.assertEqual(
+            [(row["bad_oracle"], row["fixed_oracle"]) for row in analysis["observations"]],
+            [(0, 0), (1, 0)],
+        )
+        self.assertEqual(analysis["revisions"]["bad"]["fail_point_count"], 1)
+        self.assertEqual(analysis["revisions"]["bad"]["boundary_edge_count"], 1)
+        self.assertEqual(analysis["revisions"]["bad"]["failure_component_count"], 1)
+        self.assertEqual(analysis["revisions"]["fixed"]["fail_point_count"], 0)
+        self.assertEqual(
+            len(analysis["bad_to_fixed"]["disappeared_failure_point_ids"]),
+            1,
+        )
 
 
 if __name__ == "__main__":

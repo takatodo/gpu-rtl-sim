@@ -1,0 +1,23 @@
+{
+  "observations": [
+    {
+      "bad_oracle": 0,
+      "fixed_oracle": 0,
+      "parameters": {
+        "fault_enable": "disabled"
+      },
+      "point_id": "point:v1:58e651e0ffc69b07d16d71b2358682daa4c9b5c0abdeb027dfaf1892b7d0fad4"
+    },
+    {
+      "bad_oracle": 1,
+      "fixed_oracle": 0,
+      "parameters": {
+        "fault_enable": "guarded_bit0"
+      },
+      "point_id": "point:v1:124ef2f103ecf35239bebdc3ac7135f2cbd500c4b6eb86882379da3b8dee6fdc"
+    }
+  ],
+  "schema_version": 1,
+  "surface": "rtl_boundary_ground_truth",
+  "sweep_space_sha256": "02933b99491bfbe4a66fedb92fec519d93a01cad9f5479fea285b37dcc60cfba"
+}

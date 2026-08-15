@@ -8,15 +8,24 @@ The sidecar contract is an implementation/runtime boundary, not a JSON-first des
 
 ## Current Priority
 
-Goal: `opentitan_temporal_protocol_gpu_resident_regression_discovery`
+Goal: `ibex2188_temporal_boundary_discovery_benchmark`
 
-Current priority: `opentitan_temporal_protocol_gpu_resident_regression_discovery`
+Current priority: `ibex2188_temporal_boundary_discovery_benchmark`
 
-Current next action: `review_three_issue_seed_set_and_select_next_expansion`
+Current next action: `build_ibex2188_gpu_profile_from_admitted_cpu_ground_truth`
 
-Current source artifact: `artifacts/opentitan_regression_discovery/opentitan_regression_discovery_summary.json`
+Current source artifact: `config/ibex2188_boundary_benchmark.json`
 
-Latest OpenTitan regression-discovery update: TL-UL #10818 has CPU/GPU semantic equivalence, 4096-state resident scale evidence, separated `new_coverage_seeds` / `oracle_violation_seeds` / `known_regression_seeds`, and exact random-vs-stratified comparison over the four-action domain. EDN #23526 establishes the second IP: bad revision `e407cd3feb97af4e8dcfdda2f5e60864b954ac15` reproduces the independent valid/ready oracle violation for `error_ack_backpressured`, fixed revision `c653e4fc69b22e9a1873167a00d926cb44992d17` does not reproduce it, CPU/GPU semantic observables match over the four-action domain, and `artifacts/edn23526_campaign/edn23526_campaign_summary.json` records separated coverage/violation/regression corpora plus random-vs-stratified metrics. entropy_src #10983 is now the third known issue: bad revision `b3a4b12f1ca121ea996dad9b2f3683c10731b442` asserts `early_sha3_process=1` before firmware starts the FW override insert window, fixed revision `d3101ad88815cd3128ffde4123548416f219e527` holds it at `0`, CPU/GPU semantic observables match in `artifacts/entropy10983_gpu_equivalence/entropy10983_gpu_equivalence.json`, and `artifacts/entropy10983_campaign/entropy10983_campaign_summary.json` records separated corpus outputs. `artifacts/opentitan_regression_discovery/opentitan_regression_discovery_summary.json` consolidates the three targets into one contract audit table. entropy_src #10983 has a one-action minimal trigger domain, so random and stratified metrics are intentionally identical; the next work is selecting the next expansion without adding PPO, packing, or full OpenTitan scale.
+Latest boundary-discovery update: TL-UL #10818 remains the first admitted GPU
+boundary benchmark. Ibex #2188 is now the second known-bug benchmark candidate:
+`config/ibex2188_boundary_benchmark.json` pins the public issue, bad/fixed
+revisions, ECC-capable OpenTitan Ibex configuration, checkpoint, independent
+oracle, semantic projection, and a two-point CPU ground truth over
+`fault_enable={disabled,guarded_bit0}`. The admitted CPU evidence records one
+bad-revision failure, one bad boundary edge, one failure component, one
+disappeared failure, and zero fixed failures. The next work is building the
+GPU profile from that admitted CPU ground truth; no selector, speedup, PPO/RL,
+unknown-bug, or exploit claim is made.
 
 Historical FC-069 update: Stage118 block-source `1760` is clean/raw-clean through candidate `2021`, and extended Stage119 maps dirty `source_id=2` to `compact.cfg_clone.entry_phi.producer_selector.counters3969` with `skipped_count=1536`. Stage121 now suppresses selected diagnostic atomics/marker reads before Stage120 after-observation and applies the selected suppression ids across the candidate set, not only the selected probe source. The source625 global-suppression run is clean after suppressing source611/source613/source615/source618/source620/source624 atomics plus source622 marker-read, classifying that producer-selector frontier as diagnostic perturbation traffic. Stage122 expanded-progress ABI then proved the first post-suppression lifecycle edge is still dirty but has no concrete record318/adjacent write target. Stage123 source1324 is excluded as adjacent diagnostic-counter traffic because suppressing it removes the Stage123 concrete write-window event while the CPU oracle still fails and record318 remains polluted. Stage124 transition evidence remains historical; use the OpenTitan paragraph above for the current priority.
 

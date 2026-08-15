@@ -186,6 +186,54 @@ regression-discovery contract: at least two IPs, bad-revision oracle violation,
 fixed-revision non-reproduction, CPU/GPU semantic equality, separated corpus
 files, identical random/stratified campaign budgets, and graph availability.
 
+## Ibex #2188 boundary benchmark
+
+`examples/ibex2188/ibex2188_ecc_temporal_tb.sv` is a directed local RTL
+reproducer for [Ibex issue #2188](https://github.com/lowRISC/ibex/issues/2188):
+an ECC register-file read error must raise `alert_major_internal_o` when the
+read operand matches the writeback address but the writeback stage is not
+actually writing. The bad revision is
+`668233699df9ec2a40413e69e0de0a5b10185980`; the fixed revision is
+`9e4a950aa6aa0e20eb638aeeb78743d4a9ddaaeb`.
+
+Run the guarded fault and the no-fault control against pinned local Ibex
+checkouts:
+
+```bash
+scripts/run_ibex2188_cpu_regression.sh \
+  --verilator /path/to/verilator \
+  --bad-checkout /path/to/ibex-6682336 \
+  --fixed-checkout /path/to/ibex-9e4a950 \
+  --out artifacts/ibex2188_guarded
+
+scripts/run_ibex2188_cpu_regression.sh \
+  --verilator /path/to/verilator \
+  --bad-checkout /path/to/ibex-6682336 \
+  --fixed-checkout /path/to/ibex-9e4a950 \
+  --no-fault \
+  --expect-bad-oracle 0 \
+  --expect-fixed-oracle 0 \
+  --out artifacts/ibex2188_disabled
+```
+
+Build the canonical two-point CPU ground truth from those observations:
+
+```bash
+python3 src/tools/build_ibex2188_cpu_ground_truth.py \
+  --target-config config/ibex2188_boundary_benchmark.json \
+  --disabled-observation artifacts/ibex2188_disabled/runner_observations.json \
+  --guarded-observation artifacts/ibex2188_guarded/runner_observations.json \
+  --sidecar-root /path/to/verilator-model-sidecar \
+  --out-dir evidence/ibex2188_cpu_ground_truth_v1
+```
+
+The admitted CPU sweep has exactly two `fault_enable` values:
+`disabled` and `guarded_bit0`. The sidecar analysis must recompute one bad
+failure, one bad boundary edge, one failure component, one disappeared failure,
+and zero fixed failures. This is a CPU ground-truth boundary profile and a
+future GPU-profile input; it is not a GPU equivalence, selector, speedup,
+unknown-bug-discovery, or exploit claim.
+
 ## Goal
 
 This repository is an experimental GPU sidecar runtime for RTL compiler frontends. Verilator is the current compatibility frontend because its generated C++ build path is the shortest route to a usable sidecar; CIRCT is a planned frontend target through the same sidecar contract idea.
@@ -208,11 +256,20 @@ This does not claim arbitrary RTL support, arbitrary filelist inference, broad n
 
 Current pointer, mirrored from `config/selection.json`:
 
-- `current_priority`: `opentitan_temporal_protocol_gpu_resident_regression_discovery`
-- `current_next_action`: `review_three_issue_seed_set_and_select_next_expansion`
-- `current_priority_source_artifact`: `artifacts/opentitan_regression_discovery/opentitan_regression_discovery_summary.json`
+- `current_priority`: `ibex2188_temporal_boundary_discovery_benchmark`
+- `current_next_action`: `build_ibex2188_gpu_profile_from_admitted_cpu_ground_truth`
+- `current_priority_source_artifact`: `config/ibex2188_boundary_benchmark.json`
 
-Latest OpenTitan regression-discovery update: TL-UL #10818, EDN #23526, and entropy_src #10983 now form the three-issue seed set. `artifacts/opentitan_regression_discovery/opentitan_regression_discovery_summary.json` consolidates the evidence that the targets span three IPs and have fixed revisions/checkpoints/action domains/oracles/semantic-manifest identities, bad-revision oracle violations, fixed-revision non-reproduction, CPU/GPU semantic equivalence, separated corpora, and reproducible random-vs-stratified summaries/graphs. entropy_src #10983 is a one-action minimal trigger, so its random-vs-stratified result is intentionally identical.
+Latest boundary-discovery update: TL-UL #10818 remains the first admitted GPU
+boundary benchmark. Ibex #2188 is now the second known-bug benchmark candidate:
+`config/ibex2188_boundary_benchmark.json` pins the public issue, bad/fixed
+revisions, ECC-capable OpenTitan Ibex configuration, checkpoint, independent
+oracle, semantic projection, and a two-point CPU ground truth over
+`fault_enable={disabled,guarded_bit0}`. The admitted CPU evidence records one
+bad-revision failure, one bad boundary edge, one failure component, one
+disappeared failure, and zero fixed failures. The next work is building the
+GPU profile from that admitted CPU ground truth; no selector, speedup, PPO/RL,
+unknown-bug, or exploit claim is made.
 
 Historical FC-069 update: Stage118 block-source `1760` is clean/raw-clean through candidate `2021`. Extended Stage119 maps dirty `block_source_id=1760`, `source_id=2` to `compact.cfg_clone.entry_phi.producer_selector.counters3969` with `skipped_count=1536`. This remains historical context for the old gateGPT frontier, not the current OpenTitan regression-discovery pointer.
 
